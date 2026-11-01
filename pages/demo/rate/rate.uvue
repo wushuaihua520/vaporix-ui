@@ -1,0 +1,358 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-rate</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="star" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">评分</text>
+								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">星形三档尺寸，选中琥珀色；分值文字与滑动阈值都按像素对齐。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-rate</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础用法</text>
+							<text class="demo-section__desc">v-model 绑定分值，点按或横向拖动都能改。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">综合评分</text>
+							<vx-rate v-model="rateScore" show-text @change="onRateChange" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">不带分值</text>
+							<vx-rate v-model="rateScore" @change="onRateChange" />
+						</view>
+						<text class="demo-hint">当前 {{ rateScore }} 分 · change 最近一次 {{ rateLastChange }} 分。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">星星数</text>
+							<text class="demo-section__desc">count 换成 7 颗；超过 10 颗按 10 颗算。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-rate v-model="rateCountScore" :count="7" show-text />
+						<text class="demo-hint">7 颗星；超过 10 颗按 10 颗算。一排建议不超过 7 颗，再多时换小尺寸或拆成多个维度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">半星</text>
+							<text class="demo-section__desc">左半区是半星，右半区是整星。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">半星</text>
+							<vx-rate v-model="rateHalfScore" allow-half show-text />
+						</view>
+						<text class="demo-hint">打开 allowHalf 后滑动按 0.5 递增；半星配分值文字才看得出 3 和 3.5 的差别。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">20 / 24 / 28，间距固定 8。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">sm · 20</text>
+							<vx-rate v-model="rateSizeScore" size="sm" show-text />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">md · 24</text>
+							<vx-rate v-model="rateSizeScore" show-text />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">lg · 28</text>
+							<vx-rate v-model="rateSizeScore" size="lg" show-text />
+						</view>
+						<text class="demo-hint">星形不并入图标三档；分值文字在 lg 时跟到正文一档。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">六种语义色，默认 warning 的琥珀色。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">warning</text>
+							<vx-rate v-model="rateTypeScore" type="warning" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">primary</text>
+							<vx-rate v-model="rateTypeScore" type="primary" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">success</text>
+							<vx-rate v-model="rateTypeScore" type="success" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">info</text>
+							<vx-rate v-model="rateTypeScore" type="info" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">danger</text>
+							<vx-rate v-model="rateTypeScore" type="danger" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">default</text>
+							<vx-rate v-model="rateTypeScore" type="default" />
+						</view>
+						<text class="demo-hint">不用 success / danger 表达分数高低，除非业务本身就在评价风险等级。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">选中色和未选中色分开覆盖。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">暖色</text>
+							<vx-rate v-model="rateCustomScore" active-color="#e5484d" void-color="#f4c7c9" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">品牌蓝</text>
+							<vx-rate v-model="rateCustomScore" active-color="#2b6be0" void-color="#dbe5f8" />
+						</view>
+						<text class="demo-hint">两个颜色都是字面值，不跟随亮色 / 暗色主题；对比度由业务保证。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">空心</text>
+							<text class="demo-section__desc">未选中换成线性空心，选中层仍是实心。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">实心</text>
+							<vx-rate v-model="rateHollowScore" />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">空心</text>
+							<vx-rate v-model="rateHollowScore" hollow />
+						</view>
+						<text class="demo-hint">空心描边用 disabled-text，实心未选中用 border；voidColor 只改这一层。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">只读与禁用</text>
+							<text class="demo-section__desc">小数按百分比裁出进度，两者都不响应点按。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">只读 3.45</text>
+							<vx-rate :model-value="3.45" readonly />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">只读 3.6</text>
+							<vx-rate :model-value="3.6" readonly />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">禁用</text>
+							<vx-rate :model-value="4.5" disabled show-text />
+						</view>
+						<text class="demo-hint">只读保留颜色，用于展示别人的评分；禁用才转灰，用于表单整体不可用。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">分值与组合</text>
+							<text class="demo-section__desc">showText 显示一位小数，text 自定义文案优先。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">分值</text>
+							<vx-rate :model-value="4.2" readonly show-text />
+						</view>
+						<view class="demo-rate-row">
+							<text class="demo-rate-row__label">文案</text>
+							<vx-rate :model-value="5" readonly text="很好" />
+						</view>
+						<view class="demo-rate-review">
+							<view class="demo-rate-review__head">
+								<text class="demo-rate-review__title">商品评价</text>
+								<vx-rate v-model="rateReviewScore" allow-half show-text />
+							</view>
+							<text class="demo-rate-review__body">包装完整，配送很快，和描述一致。</text>
+							<view class="demo-rate-review__foot">
+								<text class="demo-rate-review__meta">共 128 条评价</text>
+								<text class="demo-rate-review__action">查看全部</text>
+							</view>
+						</view>
+						<text class="demo-hint">评分只承载打分，标题、说明和提交入口放在组件外面。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 评分演示：同一页多组评分，分值各自独立；change 只记最近一次，用来对照事件。
+	const rateScore = ref(4)
+
+	const rateCountScore = ref(3)
+
+	const rateHalfScore = ref(3.5)
+
+	const rateSizeScore = ref(4)
+
+	const rateTypeScore = ref(4)
+
+	const rateCustomScore = ref(4)
+
+	const rateHollowScore = ref(4)
+
+	const rateReviewScore = ref(4.5)
+
+	const rateLastChange = ref(4)
+
+	const onRateChange = (value: number) => {
+		rateLastChange.value = value
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/switch/switch'
+	const nextPath: string = '/pages/demo/datetime/datetime'
+	const prevName = '开关选择器'
+	const nextName = '日期时间'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

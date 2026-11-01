@@ -1,0 +1,169 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-hero">
+					<view class="demo-home__head">
+						<view class="demo-brand">
+							<view class="demo-brand__mark">
+								<text class="demo-brand__mark-text">JS</text>
+							</view>
+							<view class="demo-brand__copy">
+								<text class="demo-brand__name">接口实验室</text>
+								<text class="demo-brand__meta">LIBS · JS API</text>
+							</view>
+						</view>
+						<view class="demo-home__actions">
+							<view class="demo-theme-toggle demo-home__theme"
+								hover-class="demo-theme-toggle--pressed" @click="onToggleTheme">
+								<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+							</view>
+						</view>
+					</view>
+
+					<text class="demo-hero__eyebrow demo-api__eyebrow">VAPORIX UI · JS API</text>
+					<view class="demo-hero__title-wrap">
+						<text class="demo-hero__title">不用组件</text>
+						<text class="demo-hero__title demo-hero__title--accent">也能用的接口</text>
+					</view>
+					<text class="demo-hero__lead">主题、图标表、日期时间、日历、农历和手势常量都在 libs 里，业务页面可以直接 import。</text>
+
+					<view class="demo-hero__stats">
+						<view class="demo-stat demo-stat--first">
+							<text class="demo-stat__value">{{ moduleCount }}</text>
+							<text class="demo-stat__label">模块</text>
+						</view>
+						<view class="demo-stat">
+							<text class="demo-stat__value">{{ apiCount }}</text>
+							<text class="demo-stat__label">重点接口</text>
+						</view>
+						<view class="demo-stat">
+							<text class="demo-stat__value">0</text>
+							<text class="demo-stat__label">页面依赖</text>
+						</view>
+					</view>
+				</view>
+
+				<view v-for="group in groups" :key="group.title" class="demo-catalog-group">
+					<view class="demo-catalog-group__head">
+						<text class="demo-catalog-group__title">{{ group.title }}</text>
+						<text class="demo-catalog-group__count">{{ group.items.length }} 个模块</text>
+					</view>
+					<view class="demo-catalog-grid">
+						<view v-for="(item, index) in group.items" :key="item.key" :class="cellClass(index)">
+							<view class="demo-catalog-card" hover-class="demo-catalog-card--pressed" :hover-stay-time="120"
+								@click="openModule(item)">
+								<view class="demo-catalog-card__top">
+									<view class="demo-catalog-card__icon">
+										<vx-icon :name="item.icon" size="md" type="primary" />
+									</view>
+									<vx-icon name="chevron-right" size="sm" />
+								</view>
+								<text class="demo-catalog-card__name">{{ item.name }}</text>
+								<text class="demo-catalog-card__en">{{ item.path }}</text>
+								<text class="demo-catalog-card__desc">{{ item.summary }}</text>
+								<view class="demo-api-card__foot">
+									<vx-tag size="sm" variant="soft" type="default"
+										:text="item.exports.length + ' 个重点接口'" />
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">快速上手</text>
+							<text class="demo-section__desc">libs 不依赖页面，直接 import 就能用。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-code">
+							<text class="demo-code__line demo-code__line--muted">// 主题：原生导航栏不读 CSS 变量</text>
+							<text class="demo-code__line">import { vxNavTheme } from '@/uni_modules/vaporix-ui/libs/theme'</text>
+							<text class="demo-code__line"></text>
+							<text class="demo-code__line">const theme = vxNavTheme(true)</text>
+							<text class="demo-code__line">uni.setNavigationBarColor({</text>
+							<text class="demo-code__line">  frontColor: theme.front,</text>
+							<text class="demo-code__line">  backgroundColor: theme.navBackground</text>
+							<text class="demo-code__line">})</text>
+						</view>
+						<view class="demo-api-note">
+							<text class="demo-hint">每个模块的详情页都有可运行的示例；常量类接口只做说明，不产生副作用。</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">MIT · Vaporix UI</text>
+					<text class="demo-footer__meta">libs/theme · icons · datetime · calendar · lunar · motion</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { DEMO_API_GROUPS, DEMO_API_MODULES } from '@/pages/api/shared/modules'
+	import { demoIsDark, setDemoTabTheme, syncDemoTabTheme } from '@/pages/demo/shared/theme'
+
+	type ApiModule = {
+		key: string
+		name: string
+		en: string
+		icon: string
+		path: string
+		summary: string
+		exports: string[]
+	}
+
+	type ApiGroup = {
+		title: string
+		items: ApiModule[]
+	}
+
+	const isDark = demoIsDark
+	const groups: ApiGroup[] = DEMO_API_GROUPS
+	const moduleCount = DEMO_API_MODULES.length
+	let exportTotal = 0
+	for (let index = 0; index < DEMO_API_MODULES.length; index++) {
+		exportTotal += DEMO_API_MODULES[index].exports.length
+	}
+	const apiCount = exportTotal
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const cellClass = (index: number): string => {
+		if (index % 2 === 0) return 'demo-catalog-cell'
+		return 'demo-catalog-cell demo-catalog-cell--end'
+	}
+
+	const openModule = (item: ApiModule) => {
+		uni.navigateTo({ url: '/pages/api-detail/api-detail?module=' + item.key })
+	}
+
+	const onToggleTheme = () => {
+		setDemoTabTheme(!isDark.value)
+	}
+
+	onShow(() => {
+		syncDemoTabTheme()
+	})
+</script>
+
+<style>
+	.demo-api__eyebrow {
+		margin-top: var(--vx-space-xl);
+	}
+
+	.demo-api-card__foot {
+		flex-direction: row;
+		margin-top: var(--vx-space-md);
+	}
+</style>

@@ -1,0 +1,366 @@
+<template>
+	<view :class="rootClass" :style="rootStyle">
+		<!-- 遮罩单独一层，浮层面板保持自己的底色，不被压暗。 -->
+		<view v-if="overlay && mask" class="vx-loading__mask" :style="maskStyle"></view>
+		<view :class="bodyClass">
+			<view v-if="variant === 'bars'" :class="spinnerClass">
+				<view v-for="bar in bars" :key="bar.key" class="vx-loading__bar" :style="bar.style"></view>
+			</view>
+			<view v-else :class="spinnerClass">
+				<view v-if="variant === 'ring'" class="vx-loading__track"></view>
+				<view class="vx-loading__arc" :style="arcStyle"></view>
+			</view>
+			<text v-if="text.length > 0" :class="textClass">{{ text }}</text>
+		</view>
+		<!-- App 上没有点击监听的透明层会把触摸漏下去。这一层只拦截，不关闭。 -->
+		<view v-if="overlay" class="vx-loading__shield" @click.stop="onOverlayClick"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxLoadingProps } from './props'
+	import { VX_SPIN_DURATION } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxLoadingProps>(), {
+		text: '加载中',
+		wrap: true,
+		type: 'default',
+		size: 'md',
+		variant: 'ring',
+		layout: 'row',
+		overlay: false,
+		mask: true,
+		maskColor: '',
+		zIndex: 150
+	})
+
+	const VX_LOADING_BAR_COUNT = 12
+
+	type VxLoadingBar = {
+		key: number
+		style: string
+	}
+
+	const onOverlayClick = () => {}
+
+	// 浮层里纵向摆，行内由 layout 决定。
+	const stacked = computed((): boolean => {
+		return props.overlay || props.layout === 'column'
+	})
+
+	// warning 的原色在浅底上太浅，跟 vx-icon 一样取 ink。
+	// default 在行内用次要灰，浮层里用正文色；面板上要有足够对比。
+	const tone = computed((): string => {
+		if (props.type === 'primary') return 'primary'
+		if (props.type === 'success') return 'success'
+		if (props.type === 'info') return 'info'
+		if (props.type === 'warning') return 'warning-ink'
+		if (props.type === 'danger') return 'danger'
+		return props.overlay ? 'text' : 'text-secondary'
+	})
+
+	const rootClass = computed((): string => {
+		return props.overlay ? 'vx-loading vx-loading--overlay' : 'vx-loading'
+	})
+
+	const bodyClass = computed((): string => {
+		let name = 'vx-loading__body'
+		if (stacked.value) name += ' vx-loading__body--column'
+		if (props.overlay) name += ' vx-loading__body--panel'
+		return name
+	})
+
+	const spinnerClass = computed((): string => {
+		let name = 'vx-loading__spinner'
+		if (props.size !== 'md') name += ` vx-loading__spinner--${props.size}`
+		if (props.text.length === 0) return name
+		// 纵排间距在下方，横排在右侧。没有文案时两边都不留。
+		name += stacked.value ? ' vx-loading__spinner--column' : ' vx-loading__spinner--with-text'
+		return name
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-loading__text'
+		if (props.size === 'lg') name += ' vx-loading__text--lg'
+		if (props.overlay) name += ' vx-loading__text--overlay'
+		if (!props.wrap) name += ' vx-loading__text--nowrap'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (!props.overlay) return ''
+		return `z-index: ${props.zIndex};`
+	})
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	// ring 只露 90°，arc 露 180°。颜色用内联变量，少写六套语义 class。
+	const arcStyle = computed((): string => {
+		const color = `var(--vx-color-${tone.value})`
+		let style = `border-top-color: ${color};`
+		if (props.variant === 'arc') style += ` border-right-color: ${color};`
+		return style
+	})
+
+	// 角度和负延迟按 12 等分，第一帧就错开。颜色跟 type，不在模板里拼。
+	// 非 bars 直接返回空列表，行内转圈不建这 12 条样式。
+	const bars = computed((): VxLoadingBar[] => {
+		if (props.variant !== 'bars') return []
+		const color = `var(--vx-color-${tone.value})`
+		const list: VxLoadingBar[] = []
+		const count = VX_LOADING_BAR_COUNT
+		for (let index = 0; index < count; index++) {
+			const step = Math.round((index * VX_SPIN_DURATION) / count)
+			list.push({
+				key: index + 1,
+				style: `transform: rotate(${index * 30}deg); animation-delay: -${step}ms; background-color: ${color};`
+			})
+		}
+		return list
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-loading {
+		flex-direction: row;
+		align-items: center;
+		align-self: flex-start;
+	}
+
+	/* 浮层铺满页面，面板居中；左右留 24，窄屏也不贴边。
+	   行内的 flex-start 不能带到这里，否则固定层会跟着父级收窄。 */
+	.vx-loading--overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		align-self: stretch;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+	}
+
+	.vx-loading__mask {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 行内默认横排。横排撑到一行文案，text="" 时尾部也不比带文案的矮。 */
+	.vx-loading__body {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		min-height: var(--vx-line-sm);
+	}
+
+	/* 横排才撑到一行文案。纵排和浮层按内容高度，空文案不留出一行。 */
+	.vx-loading__body--column {
+		flex-direction: column;
+		align-items: center;
+		min-height: 0;
+	}
+
+	/* 浮层面板：surface 底、1px 描边和 md 圆角，阴影只给这一层。 */
+	.vx-loading__body--panel {
+		z-index: 1;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-width: var(--vx-loading-min-width);
+		max-width: var(--vx-loading-max-width);
+		padding: var(--vx-space-xl);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+		box-shadow: var(--vx-shadow-lg);
+	}
+
+	/* 转圈本体只占一格，圆环和条纹都在里面绝对定位。 */
+	.vx-loading__spinner {
+		position: relative;
+		flex-shrink: 0;
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+	}
+
+	.vx-loading__spinner--sm {
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+	}
+
+	.vx-loading__spinner--lg {
+		width: var(--vx-icon-lg);
+		height: var(--vx-icon-lg);
+	}
+
+	/* 文案在右侧或下方；没有文案时不占间距。 */
+	.vx-loading__spinner--with-text {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-loading__spinner--column {
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	/* 底圈只给 ring；arc 不画底圈，只留开口的一段。 */
+	.vx-loading__track {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		box-sizing: border-box;
+		border-width: var(--vx-border-width-strong);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-loading__arc {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		box-sizing: border-box;
+		border-width: var(--vx-border-width-strong);
+		border-style: solid;
+		/* App 默认描边是黑色。开口的三边写明透明，内联色只覆盖要亮的边。 */
+		border-top-color: var(--vx-color-text-secondary);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+		border-left-color: transparent;
+		border-radius: var(--vx-radius-pill);
+		animation-name: vx-loading-spin;
+		animation-duration: var(--vx-duration-spin);
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	/* 条高是转圈的 22%、宽是 9%，贴在上沿正中。
+	   原点 Y = 50 / 22，转到转圈中心，不再为每条套一层 slot。 */
+	.vx-loading__bar {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		width: 9%;
+		height: 22%;
+		margin-left: -4.5%;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-text-secondary);
+		transform-origin: 50% 227.27%;
+		animation-name: vx-loading-bar;
+		animation-duration: var(--vx-duration-spin);
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	/* 盖住遮罩和面板。面板 z-index 是 1，这里更高，点在文案上也不会漏下去。 */
+	.vx-loading__shield {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 2;
+	}
+
+	.vx-loading__text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+		/* App 的 max-width 只接受数字或像素，这里交给父级宽度收口。
+		   App 默认 keep、Web 默认 pre-line，写明 normal，长文案才会按词换行。 */
+		white-space: normal;
+	}
+
+	.vx-loading__text--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-loading__text--overlay {
+		color: var(--vx-color-text);
+	}
+
+	/* 盖过上面的 normal。加载更多靠它保持单行。 */
+	.vx-loading__text--nowrap {
+		white-space: nowrap;
+	}
+
+	@keyframes vx-loading-spin {
+		from {
+			transform: rotate(0deg);
+		}
+
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes vx-loading-bar {
+		0% {
+			opacity: 1;
+		}
+
+		100% {
+			opacity: 0.16;
+		}
+	}
+
+	/* #ifdef WEB */
+	.vx-loading--overlay {
+		touch-action: none;
+		user-select: none;
+		cursor: progress;
+	}
+
+	.vx-loading__shield {
+		cursor: progress;
+	}
+
+	/* 和轻提示一样，淡入只在 Web 生效；5.26 的 App 没有关键帧，元素直接出现。 */
+	.vx-loading__mask {
+		animation-name: vx-loading-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-loading__body--panel {
+		animation-name: vx-loading-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-loading-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+	/* #endif */
+</style>

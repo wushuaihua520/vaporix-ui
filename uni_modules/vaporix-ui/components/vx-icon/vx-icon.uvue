@@ -1,0 +1,105 @@
+<template>
+	<text :class="rootClass" :style="rootStyle">{{ glyph }}</text>
+</template>
+
+<script setup>
+	import { VxIconProps } from './props'
+	import { VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+
+	const props = withDefaults(defineProps<VxIconProps>(), {
+		size: 'md',
+		type: 'default',
+		variant: 'regular',
+		color: ''
+	})
+
+	const glyph = computed((): string => {
+		const value = VX_ICON_GLYPHS[props.name]
+		return value != null ? value : ''
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-icon'
+		if (props.size !== 'md') name += ` vx-icon--${props.size}`
+		// color 是内联样式，会盖过 type，有颜色时不再挂语义 class。
+		if (props.color.length === 0 && props.type !== 'default') name += ` vx-icon--${props.type}`
+		const tier = VX_ICON_TIER[props.name]
+		// fill 和 extend 都改 font-family，合成一个 class，避免两条声明抢。
+		if (props.variant === 'fill') {
+			name += tier === 'extend' ? ' vx-icon--extend-fill' : ' vx-icon--fill'
+		} else if (tier === 'extend') {
+			name += ' vx-icon--extend'
+		}
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+</script>
+
+<style>
+	/* 核心字体在 variables.css，扩展字体在 icons-extend.css。
+	   用到 extend 名字时由业务引入扩展样式，这里只切 font-family。 */
+	.vx-icon {
+		flex-shrink: 0;
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+		font-family: VaporixIcons;
+		font-size: var(--vx-icon-md);
+		line-height: var(--vx-icon-md);
+		font-weight: var(--vx-weight-regular);
+		font-style: normal;
+		letter-spacing: 0;
+		text-align: center;
+		color: var(--vx-color-text);
+	}
+
+	.vx-icon--lg {
+		width: var(--vx-icon-lg);
+		height: var(--vx-icon-lg);
+		font-size: var(--vx-icon-lg);
+		line-height: var(--vx-icon-lg);
+	}
+
+	.vx-icon--sm {
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+		font-size: var(--vx-icon-sm);
+		line-height: var(--vx-icon-sm);
+	}
+
+	.vx-icon--primary {
+		color: var(--vx-color-primary);
+	}
+
+	.vx-icon--success {
+		color: var(--vx-color-success);
+	}
+
+	.vx-icon--info {
+		color: var(--vx-color-info);
+	}
+
+	/* 黄底上 --vx-color-warning 太浅，用 ink。 */
+	.vx-icon--warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-icon--danger {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-icon--fill {
+		font-family: VaporixIconsFill;
+	}
+
+	.vx-icon--extend {
+		font-family: VaporixIconsExtend;
+	}
+
+	.vx-icon--extend-fill {
+		font-family: VaporixIconsExtendFill;
+	}
+</style>

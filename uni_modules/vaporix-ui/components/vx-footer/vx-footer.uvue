@@ -1,0 +1,231 @@
+<template>
+	<!-- 页脚是页面收尾，不是控件。默认留在文档流里，fixed 时才脱离并让出安全区。 -->
+	<view v-if="copyright.length > 0 || links.length > 0 || $slots['default'] != null" :class="rootClass"
+		:style="rootStyle">
+		<!-- 业务自己的品牌行、社交入口放在标准行之前。 -->
+		<view v-if="$slots['default'] != null" :class="extraClass">
+			<slot></slot>
+		</view>
+
+		<view v-if="links.length > 0" class="vx-footer__links">
+			<view v-for="(item, index) in linkItems" :key="index" class="vx-footer__link-cell">
+				<view v-if="item.divided" class="vx-footer__separator" :style="separatorStyle"></view>
+				<view class="vx-footer__link" hover-class="vx-footer__link--pressed"
+					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onLinkClick(item.link)">
+					<text class="vx-footer__link-text" :style="item.textStyle">{{ item.text }}</text>
+				</view>
+			</view>
+		</view>
+
+		<text v-if="copyright.length > 0" :class="copyrightClass" :style="copyrightStyle">{{ copyright }}</text>
+	</view>
+</template>
+
+<script setup>
+	import { VxFooterProps, VxFooterLink } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxFooterProps>(), {
+		copyright: '',
+		links: (): Array<VxFooterLink> => [],
+		fixed: false,
+		color: '',
+		linkColor: '',
+		borderColor: '',
+		bgColor: ''
+	})
+
+	const emit = defineEmits<{
+		click: [link: VxFooterLink]
+	}>()
+
+	// fixed 单独一层修饰 class；尺寸和内边距的基础态留在主 class 上。
+	const rootClass = computed((): string => {
+		return props.fixed ? 'vx-footer vx-footer--fixed' : 'vx-footer'
+	})
+
+	// 只有标准行存在时才给插槽留底部间距；纯插槽页脚不留空档。
+	const extraClass = computed((): string => {
+		let name = 'vx-footer__extra'
+		if (props.links.length > 0 || props.copyright.length > 0) name += ' vx-footer__extra--spaced'
+		return name
+	})
+
+	// 链接行后面才需要 4px 的贴靠间距，单独一行版权时不加。
+	const copyrightClass = computed((): string => {
+		let name = 'vx-footer__copyright'
+		if (props.links.length > 0) name += ' vx-footer__copyright--offset'
+		return name
+	})
+
+	type VxFooterLinkItem = {
+		text: string
+		textStyle: string
+		divided: boolean
+		link: VxFooterLink
+	}
+
+	// 颜色在这里算完。模板里逐项拼 style，父级一刷新就会把原生样式再设一遍。
+	const linkItems = computed((): Array<VxFooterLinkItem> => {
+		const fallback = props.linkColor
+		const source = props.links
+		const list: Array<VxFooterLinkItem> = []
+		for (let index = 0; index < source.length; index++) {
+			const link = source[index]
+			let color = fallback
+			if (link.color != null && link.color.length > 0) color = link.color
+			list.push({
+				text: link.text,
+				textStyle: color.length > 0 ? `color: ${color};` : '',
+				divided: index > 0,
+				link: link
+			})
+		}
+		return list
+	})
+
+	const copyrightStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	// 分隔线与固定底栏的顶部描边共用一处颜色；不传时继续用主题的 border。
+	const separatorStyle = computed((): string => {
+		if (props.borderColor.length === 0) return ''
+		return `background-color: ${props.borderColor};`
+	})
+
+	const rootStyle = computed((): string => {
+		let style = ''
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		if (props.borderColor.length > 0) style += `border-top-color: ${props.borderColor};`
+		return style
+	})
+
+	// 组件只抛链接数据，路由和权限交给业务决定。
+	const onLinkClick = (link: VxFooterLink) => {
+		emit('click', link)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 页脚不是卡片：默认透明，靠页面底色和留白收尾。
+	   Web 默认 content-box，固定态的顶边会计入宽度，把底栏撑出安全区。
+	   页脚经常是列布局里的一项，最小宽度不压成 0 时，长链接会把整页撑宽。 */
+	.vx-footer {
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+		min-width: 0;
+		padding-top: var(--vx-space-xl);
+		padding-bottom: var(--vx-space-xl);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		background-color: transparent;
+	}
+
+	/* 固定底栏用 surface 和顶部 1px 描边，不用阴影。
+	   5.26 蒸汽模式没有 calc，安全区不能加进 padding，整块抬到变量之外；变量缺失时按 0。
+	   基础态 width 是 100%，再叠 left / right 会比安全区宽出一截，改回 auto 才由左右撑开。
+	   fixed 提到页面根上比层级。写 1 只为压住页面内容，更大的数会盖住后加的浮层。 */
+	.vx-footer--fixed {
+		position: fixed;
+		left: var(--uni-safe-area-inset-left, 0px);
+		right: var(--uni-safe-area-inset-right, 0px);
+		bottom: var(--uni-safe-area-inset-bottom, 0px);
+		z-index: 1;
+		width: auto;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-border);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 插槽里的内容自己决定横竖，这一层只负责居中与标准行之间的间距。
+	   最小宽度压成 0，宽内容不把页脚撑出父级。 */
+	.vx-footer__extra {
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.vx-footer__extra--spaced {
+		margin-bottom: var(--vx-space-md);
+	}
+
+	/* 链接少时一行居中，窄屏或更多链接时整体换行。
+	   Web 上这一层的最小宽度默认是内容宽，不压成 0 就换不了行。 */
+	.vx-footer__links {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.vx-footer__link-cell {
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	/* 分隔线只在相邻链接之间出现；高度取 12，和正文行高拉开层次。 */
+	.vx-footer__separator {
+		flex-shrink: 0;
+		width: var(--vx-border-width);
+		height: var(--vx-space-md);
+		background-color: var(--vx-color-border);
+	}
+
+	/* 32 的点击高度比文字本身大一圈，左右各留 8，分隔线两侧都透气。 */
+	.vx-footer__link {
+		flex-direction: row;
+		align-items: center;
+		height: var(--vx-compact-height-md);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	.vx-footer__link--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-footer__link-text {
+		color: var(--vx-color-primary-pressed);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		/* 链接是短文案，不换行；换行交给外层把整项推到下一行。 */
+		white-space: nowrap;
+	}
+
+	/* 版权是脚注，用正文小档和次要色，不和链接抢层级。
+	   宽度跟父级走，长备案号在框内换行。 */
+	.vx-footer__copyright {
+		width: 100%;
+		min-width: 0;
+		text-align: center;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-footer__copyright--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	/* #ifdef WEB */
+	.vx-footer__link {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

@@ -1,0 +1,703 @@
+<template>
+	<!-- 日期时间选择器是底部弹层：遮罩铺满页面，面板贴底。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
+	<!-- 滚轮只改草稿，点确定才写回 v-model；取消、遮罩和 close() 都不动已提交的值。 -->
+	<!-- 触摸只拦遮罩、头部和单位条：滚轮本身要接住手势，根节点不能统一 prevent，否则轮子拖不动。 -->
+	<view v-if="show" class="vx-datetime" :style="rootStyle">
+		<view :class="sheetMaskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
+
+		<!-- 外层只负责阴影和滑入；内层裁底色和按下态，避免 overflow 把阴影一起裁掉。 -->
+		<view class="vx-datetime__sheet" @click.stop>
+			<view class="vx-datetime__panel">
+				<!-- 头部固定 52：取消在左、确定在右。两侧动作等分，标题才在整行正中；没有标题时两个按钮贴着两端。 -->
+				<view class="vx-datetime__header" @touchmove.stop.prevent>
+					<view class="vx-datetime__action" hover-class="vx-datetime__action--pressed"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCancelTap">
+						<text class="vx-datetime__action-text">{{ cancelText }}</text>
+					</view>
+					<text v-if="hasTitle" class="vx-datetime__title">{{ title }}</text>
+					<view class="vx-datetime__action vx-datetime__action--end" hover-class="vx-datetime__action--pressed"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onConfirmTap">
+						<text class="vx-datetime__action-text vx-datetime__action-text--confirm">{{ confirmText }}</text>
+					</view>
+				</view>
+				<view class="vx-datetime__divider"></view>
+
+				<!-- 单位置顶：和滚轮等宽等分，一行放下全部单位；默认单位跟在数值后面。 -->
+				<view v-if="unitTop" class="vx-datetime__units" @touchmove.stop.prevent>
+					<view v-for="column in columns" :key="column.key" class="vx-datetime__unit">
+						<text class="vx-datetime__unit-text">{{ column.unit }}</text>
+					</view>
+				</view>
+
+				<!-- 滚轮的高度和每行高度都由令牌给定，指示器高度必须和行高一致，否则列不会按行对齐。 -->
+				<!-- picker-view 的原生蒙层写死了白色渐变，暗色主题下会发白，这里用 mask-class 去掉。 -->
+				<picker-view class="vx-datetime__picker" :value="columnIndices" :indicator-style="indicatorStyle"
+					mask-class="vx-datetime__fade" @change="onColumnChange">
+					<picker-view-column v-for="(column, columnIndex) in columns" :key="column.key">
+						<view v-for="(option, optionIndex) in column.options" :key="option"
+							class="vx-datetime__option">
+							<text :class="optionTextClass(columnIndex, optionIndex)">{{ optionLabel(column, option) }}</text>
+							<text v-if="!unitTop" class="vx-datetime__option-unit">{{ column.unit }}</text>
+						</view>
+					</picker-view-column>
+				</picker-view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import {
+		VxDatetimeField,
+		VxDatetimeParts,
+		VX_DATETIME_MODE_FIELDS,
+		VX_DATETIME_MODE_FORMATS,
+		VX_DATETIME_ROW,
+		VX_DATETIME_UNITS,
+		vxDatetimeClamp,
+		vxDatetimeDaysInMonth,
+		vxDatetimeFormat,
+		vxDatetimeNow,
+		vxDatetimePad,
+		vxDatetimeParse,
+		vxDatetimeSnap,
+		vxDatetimeSteps,
+		vxDatetimeYears
+	} from '../../libs/datetime'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VxDatetimeProps } from './props'
+
+	const props = withDefaults(defineProps<VxDatetimeProps>(), {
+		mode: 'datetime',
+		title: '',
+		cancelText: '取消',
+		confirmText: '确定',
+		startYear: 1980,
+		endYear: 2050,
+		minuteStep: 1,
+		secondStep: 1,
+		unitPosition: 'inline',
+		format: '',
+		maskClosable: true,
+		maskColor: '',
+		zIndex: 90
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	// v-model 是已经确定的值，打开时读它，点确定才写回。
+	const value = defineModel({
+		type: String,
+		default: ''
+	})
+
+	const emit = defineEmits<{
+		confirm: [value: string]
+		cancel: []
+		change: [value: string]
+	}>()
+
+	type DatetimeColumn = {
+		key: string
+		field: VxDatetimeField
+		unit: string
+		options: Array<number>
+	}
+
+	// 草稿按字段拆成六个 ref：滚动只改这里，点确定才落到 v-model。
+	const draftYear = ref(0)
+	const draftMonth = ref(1)
+	const draftDay = ref(1)
+	const draftHour = ref(0)
+	const draftMinute = ref(0)
+	const draftSecond = ref(0)
+
+	// 当前每一列停在第几项，直接绑在 picker-view 的 value 上。
+	const columnIndices = ref<Array<number>>([])
+
+	// 上一次抛出去的文本，滚动时相同值不再重复抛 change。
+	let lastChangeText = ''
+
+	const range = (start: number, end: number): Array<number> => {
+		const list: Array<number> = []
+		for (let current = start; current <= end; current++) list.push(current)
+		return list
+	}
+
+	const indexOfOption = (options: Array<number>, target: number): number => {
+		const found = options.indexOf(target)
+		return found >= 0 ? found : 0
+	}
+
+	// 年份区间收口在工具里，组件这边只读列表首尾。
+	const years = computed((): Array<number> => {
+		return vxDatetimeYears(props.startYear, props.endYear)
+	})
+
+	const yearLower = computed((): number => years.value[0])
+
+	const yearUpper = computed((): number => years.value[years.value.length - 1])
+
+	const minutes = computed((): Array<number> => vxDatetimeSteps(props.minuteStep))
+
+	const seconds = computed((): Array<number> => vxDatetimeSteps(props.secondStep))
+
+	const monthOptions: Array<number> = range(1, 12)
+
+	const hourOptions: Array<number> = range(0, 23)
+
+	// 天数跟着年月走，闰年由工具判断；二月换成 28 天后选中项要收口。
+	const dayOptions = computed((): Array<number> => {
+		return range(1, vxDatetimeDaysInMonth(draftYear.value, draftMonth.value))
+	})
+
+	const optionsOf = (field: VxDatetimeField): Array<number> => {
+		if (field === 'year') return years.value
+		if (field === 'month') return monthOptions
+		if (field === 'day') return dayOptions.value
+		if (field === 'hour') return hourOptions
+		if (field === 'minute') return minutes.value
+		return seconds.value
+	}
+
+	const valueOf = (field: VxDatetimeField): number => {
+		if (field === 'year') return draftYear.value
+		if (field === 'month') return draftMonth.value
+		if (field === 'day') return draftDay.value
+		if (field === 'hour') return draftHour.value
+		if (field === 'minute') return draftMinute.value
+		return draftSecond.value
+	}
+
+	const writeValue = (field: VxDatetimeField, next: number) => {
+		if (field === 'year') draftYear.value = next
+		else if (field === 'month') draftMonth.value = next
+		else if (field === 'day') draftDay.value = next
+		else if (field === 'hour') draftHour.value = next
+		else if (field === 'minute') draftMinute.value = next
+		else draftSecond.value = next
+	}
+
+	// 模式写错时回落到日期加时分，组件不会因为一列都取不到而崩掉。
+	const fields = computed((): Array<VxDatetimeField> => {
+		const list = VX_DATETIME_MODE_FIELDS[props.mode]
+		if (list != null) return list
+		return VX_DATETIME_MODE_FIELDS['datetime']
+	})
+
+	const columns = computed((): Array<DatetimeColumn> => {
+		const list: Array<DatetimeColumn> = []
+		const modeFields = fields.value
+		for (let index = 0; index < modeFields.length; index++) {
+			const field = modeFields[index]
+			list.push({
+				key: field,
+				field: field,
+				unit: VX_DATETIME_UNITS[field],
+				options: optionsOf(field)
+			})
+		}
+		return list
+	})
+
+	// 六列时（年月日时分秒）每列只有屏宽的六分之一，字号收一档，年、月、日才不会被截断。
+	const dense = computed((): boolean => fields.value.length > 5)
+
+	const hasTitle = computed((): boolean => props.title.length > 0)
+
+	const unitTop = computed((): boolean => props.unitPosition === 'top')
+
+	const pattern = computed((): string => {
+		if (props.format.length > 0) return props.format
+		const modePattern = VX_DATETIME_MODE_FORMATS[props.mode]
+		if (modePattern != null) return modePattern
+		return VX_DATETIME_MODE_FORMATS['datetime']
+	})
+
+	const parts = (): VxDatetimeParts => {
+		return {
+			year: draftYear.value,
+			month: draftMonth.value,
+			day: draftDay.value,
+			hour: draftHour.value,
+			minute: draftMinute.value,
+			second: draftSecond.value
+		}
+	}
+
+	const currentText = (): string => vxDatetimeFormat(parts(), pattern.value)
+
+	// 滚动停下时把下标记下来：选中行的字重靠它，不记的话高亮会留在旧行。
+	// 先比再写，相同下标不换新数组，避免和 picker-view 的 value 来回触发。
+	const applyIndices = (next: Array<number>) => {
+		const current = columnIndices.value
+		let changed = next.length !== current.length
+		for (let index = 0; index < next.length && !changed; index++) {
+			if (next[index] !== current[index]) changed = true
+		}
+		if (!changed) return
+		const list: Array<number> = []
+		for (let index = 0; index < next.length; index++) list.push(next[index])
+		columnIndices.value = list
+	}
+
+	// 把当前草稿换算成每列的下标。草稿已经收口过，indexOf 一定能命中。
+	const syncIndices = () => {
+		const list: Array<number> = []
+		const modeFields = fields.value
+		for (let index = 0; index < modeFields.length; index++) {
+			const field = modeFields[index]
+			list.push(indexOfOption(optionsOf(field), valueOf(field)))
+		}
+		applyIndices(list)
+	}
+
+	// 打开前把草稿对齐到 value：读不出来用当前时间，越界夹到年份区间，分钟 / 秒按步长对齐。
+	const prepare = () => {
+		const fallback = vxDatetimeNow()
+		const text = value.value
+		const source = text.length > 0 ? vxDatetimeParse(text, props.mode, fallback) : fallback
+		const clamped = vxDatetimeClamp(source, yearLower.value, yearUpper.value)
+		draftYear.value = clamped.year
+		draftMonth.value = clamped.month
+		draftDay.value = clamped.day
+		draftHour.value = clamped.hour
+		draftMinute.value = vxDatetimeSnap(clamped.minute, props.minuteStep, 59)
+		draftSecond.value = vxDatetimeSnap(clamped.second, props.secondStep, 59)
+		syncIndices()
+		lastChangeText = currentText()
+	}
+
+	// 单位跟在数值后面时按数值补零；年份不补，始终四位。
+	const optionLabel = (column: DatetimeColumn, option: number): string => {
+		if (column.field === 'year') return `${option}`
+		return vxDatetimePad(option)
+	}
+
+	// 行的外观不随选中变：高亮框由 picker-view 的指示器画，行跟着内容滚，挂底色会来回跳。
+	// class 顺序：基础 → 尺寸 → 状态。直接返回整串，滚动时不为每一行再拼接。
+	const optionTextClass = (columnIndex: number, optionIndex: number): string => {
+		const selected = columnIndices.value[columnIndex] === optionIndex
+		if (dense.value) {
+			if (selected) return 'vx-datetime__option-text vx-datetime__option-text--dense vx-datetime__option-text--selected'
+			return 'vx-datetime__option-text vx-datetime__option-text--dense'
+		}
+		if (selected) return 'vx-datetime__option-text vx-datetime__option-text--selected'
+		return 'vx-datetime__option-text'
+	}
+
+	// 只抛真正变过的值：收紧二月天数会再触发一次 change，那次不该重复抛给业务。
+	const emitChange = () => {
+		const text = currentText()
+		if (text === lastChangeText) return
+		lastChangeText = text
+		emit('change', text)
+	}
+
+	const onColumnChange = (event: UniPickerViewChangeEvent) => {
+		const next = event.detail.value
+		const modeFields = fields.value
+		if (next.length < modeFields.length) return
+
+		// 平台有时回小数。高亮用 === 比较下标，先收成整数再记，否则选中态对不上一行。
+		const positions: Array<number> = []
+		let realign = false
+		for (let index = 0; index < modeFields.length; index++) {
+			const field = modeFields[index]
+			const list = optionsOf(field)
+			let position = Math.round(next[index])
+			if (!isFinite(position) || position < 0) {
+				position = 0
+				realign = true
+			}
+			if (position >= list.length) {
+				position = list.length - 1
+				realign = true
+			}
+			positions.push(position)
+			writeValue(field, list[position])
+		}
+
+		// 年份或月份变了，二月的天数跟着变；选中的日超出当月时收口，并把那一列滚回去。
+		const maxDay = vxDatetimeDaysInMonth(draftYear.value, draftMonth.value)
+		if (draftDay.value > maxDay) {
+			draftDay.value = maxDay
+			realign = true
+		}
+
+		if (realign) syncIndices()
+		else applyIndices(positions)
+		emitChange()
+	}
+
+	const onConfirmTap = () => {
+		const text = currentText()
+		if (value.value !== text) value.value = text
+		show.value = false
+		emit('confirm', text)
+	}
+
+	const onCancelTap = () => {
+		if (!show.value) return
+		show.value = false
+		emit('cancel')
+	}
+
+	// 遮罩可关闭时按取消处理，和点取消按钮走同一条出口。
+	const onMaskTap = () => {
+		if (!props.maskClosable) return
+		onCancelTap()
+	}
+
+	const open = () => {
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 cancel；cancel 只代表用户取消。
+	const close = () => {
+		if (!show.value) return
+		show.value = false
+	}
+
+	// 打开时重新读 value，滚轮挂载时就能停在正确的位置。
+	// 打开期间父级改 value 不跟，避免把正在滚的轮子拽走。
+	watch(show, (visible: boolean) => {
+		if (!visible) return
+		prepare()
+	})
+
+	// 换模式时列变了，下标也要跟着重算。
+	watch(() => props.mode, () => {
+		if (!show.value) return
+		prepare()
+	})
+
+	// 年份区间变了，草稿里的年份可能已经不在列表里：收口后再对一次下标，滚轮不会停到第 0 项。
+	// 关着的时候不改草稿，下次打开会按新的年份区间重算。
+	const alignYear = () => {
+		if (!show.value) return
+		let year = draftYear.value
+		if (year < yearLower.value) year = yearLower.value
+		if (year > yearUpper.value) year = yearUpper.value
+		if (year !== draftYear.value) {
+			draftYear.value = year
+			const maxDay = vxDatetimeDaysInMonth(draftYear.value, draftMonth.value)
+			if (draftDay.value > maxDay) draftDay.value = maxDay
+		}
+		syncIndices()
+	}
+
+	watch(() => props.startYear, alignYear)
+
+	watch(() => props.endYear, alignYear)
+
+	// 步长变了，分钟和秒的候选值跟着变；草稿对齐到新网格，滚轮才不会停在不存在的刻度上。
+	// 关着的时候不改草稿，下次打开会按新步长对齐。
+	const alignStep = () => {
+		if (!show.value) return
+		const minute = vxDatetimeSnap(draftMinute.value, props.minuteStep, 59)
+		const second = vxDatetimeSnap(draftSecond.value, props.secondStep, 59)
+		if (minute !== draftMinute.value) draftMinute.value = minute
+		if (second !== draftSecond.value) draftSecond.value = second
+		syncIndices()
+	}
+
+	watch(() => props.minuteStep, alignStep)
+
+	watch(() => props.secondStep, alignStep)
+
+	const sheetMaskClass = computed((): string => {
+		if (props.maskClosable) return 'vx-datetime__mask vx-datetime__mask--closable'
+		return 'vx-datetime__mask'
+	})
+
+	// picker-view 的 indicator-style 只认行内样式，读不到 CSS 变量，高度跟 VX_DATETIME_ROW 对齐。
+	const indicatorStyle = `height: ${VX_DATETIME_ROW}px;`
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	const rootStyle = computed((): string => `z-index: ${props.zIndex};`)
+
+	// 挂载时已经打开的，先对齐再出第一帧；关着的等 show 的 watch。
+	if (show.value) prepare()
+
+	// 有的平台在挂载之后才应用 value：这里再对一次下标，值没变就是空操作，不会把滚轮拽走。
+	onMounted(() => {
+		if (!show.value) return
+		syncIndices()
+	})
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 90，和操作菜单同档。 */
+	.vx-datetime {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	.vx-datetime__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
+	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
+	.vx-datetime__sheet {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-self: center;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: var(--vx-datetime-max-width);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		box-shadow: var(--vx-shadow-lg);
+		overflow: visible;
+	}
+
+	/* 内层裁按压态和底色，圆角与阴影层一致，轮廓才重合。安全区作为内边距，滚轮不压住手势条。 */
+	.vx-datetime__panel {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+		overflow: hidden;
+	}
+
+	/* 头部高度沿用列表行 md 的 52：取消和确定都是整块热区，上下不另外留白。 */
+	.vx-datetime__header {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-list-height-md);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	/* 左右等分，标题才始终在整行正中；只按文字宽度排时，取消和确定字数不同会把标题挤偏。
+	   左右各 8 的内边距加头部 8，文字离屏幕 16。长文案裁在自己的格子里，不盖住标题。 */
+	.vx-datetime__action {
+		flex-direction: row;
+		flex: 1;
+		align-items: center;
+		justify-content: flex-start;
+		box-sizing: border-box;
+		min-width: 0;
+		height: 100%;
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		overflow: hidden;
+	}
+
+	.vx-datetime__action--end {
+		justify-content: flex-end;
+	}
+
+	.vx-datetime__action--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 标题占两份、左右各一份，文字在整行正中，又留得下六个字；超出用省略号。行高固定，头部不跟着长高。 */
+	.vx-datetime__title {
+		flex: 2;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		white-space: nowrap;
+		text-align: center;
+		text-overflow: ellipsis;
+	}
+
+	.vx-datetime__divider {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	/* 单位置顶时和滚轮列一一对齐，每格等分；单位用次要色，不抢数值。 */
+	.vx-datetime__units {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-xs);
+		padding-bottom: var(--vx-space-xs);
+	}
+
+	.vx-datetime__unit {
+		flex: 1;
+		align-items: center;
+		justify-content: center;
+		min-width: 0;
+	}
+
+	.vx-datetime__unit-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	/* 滚轮高度是五行，行高由指示器高度决定；两者都由令牌给定，改行高时一起改。 */
+	.vx-datetime__picker {
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-datetime-wheel);
+	}
+
+	/* 每一行是一整条热区，数值和单位居中排；高度和指示器一致，滚动时不会半行半行地停。 */
+	.vx-datetime__option {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-datetime-row);
+	}
+
+	/* 数值是滚轮的主角，默认次要色；选中行回到正文色并加粗，一眼能看出停在哪一行。
+	   字号跟操作菜单的动作行一致（15 / 22），五列并排时列与列之间仍留得住空隙；
+	   行高 44 不变，字号收小后上下留白变成 11，看起来更松。 */
+	.vx-datetime__option-text {
+		flex-shrink: 1;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	/* 六列时再收一档，年份和单位在窄列里也不会顶到一起。 */
+	.vx-datetime__option-text--dense {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-datetime__option-text--selected {
+		color: var(--vx-color-text);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-datetime__option-unit {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-xs);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	.vx-datetime__action-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		white-space: nowrap;
+	}
+
+	/* 确定是这一层唯一的实心操作，文字取 pressed 档，浅底上对比度更稳。 */
+	.vx-datetime__action-text--confirm {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	/* picker-view 的原生蒙层是写死的白色渐变，暗色主题下会在两端发白。
+	   这里把平台蒙层换成透明，靠选中行的字重和颜色分层。 */
+	.vx-datetime__fade {
+		background-color: transparent;
+		background-image: none;
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   定位层的 touch-action 关掉浏览器默认手势，页面在面板打开期间不跟着滚；
+	   滚轮自己用 JS 接手势，不受影响。 */
+	/* #ifdef WEB */
+	.vx-datetime {
+		touch-action: none;
+	}
+
+	.vx-datetime__mask {
+		animation-name: vx-datetime-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-datetime__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-datetime__action {
+		cursor: pointer;
+	}
+
+	.vx-datetime__sheet {
+		animation-name: vx-datetime-up;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-datetime-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-datetime-up {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
+</style>

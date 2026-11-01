@@ -1,0 +1,383 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-no-data</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="folder" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">暂无数据</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">内置线稿、字体图标、自定义图片和插槽都能换，动作和文案一起收尾。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-no-data</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础空状态</text>
+							<text class="demo-section__desc">默认线稿加一句文案；说明可选，没有动作时只居中显示。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-card--flush">
+						<view class="demo-no-data-board">
+							<vx-no-data text="暂无数据" />
+							<view class="demo-no-data-rule"></view>
+							<vx-no-data text="暂无订单" description="下拉刷新，或稍后再试" />
+						</view>
+					</view>
+					<text class="demo-hint">默认线稿按 96 / 128 / 160 缩放；主文案 15 / 22，说明 13 / 20，长文案在 320 宽度内换行。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">插图</text>
+							<text class="demo-section__desc">默认线稿、字体图标和自定义图片；icon 插槽再换一层。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-no-data-grid">
+							<view class="demo-no-data-tile">
+								<text class="demo-no-data-tile__label">默认线稿</text>
+								<view class="demo-no-data-tile__body">
+									<vx-no-data size="sm" text="暂无数据" />
+								</view>
+							</view>
+							<view class="demo-no-data-tile">
+								<text class="demo-no-data-tile__label">icon · search</text>
+								<view class="demo-no-data-tile__body">
+									<vx-no-data size="sm" icon="search" type="primary" text="没有找到" />
+								</view>
+							</view>
+							<view class="demo-no-data-tile">
+								<text class="demo-no-data-tile__label">image · 自定义插图</text>
+								<view class="demo-no-data-tile__body">
+									<vx-no-data size="sm" image="/static/demo/toast-custom.png" text="暂无收藏" />
+								</view>
+							</view>
+							<view class="demo-no-data-tile">
+								<text class="demo-no-data-tile__label">icon 插槽</text>
+								<view class="demo-no-data-tile__body">
+									<vx-no-data size="sm" text="暂无消息">
+										<template #icon>
+											<view class="demo-no-data-art">
+												<vx-icon name="inbox" size="lg" color="var(--vx-color-text-secondary)" />
+											</view>
+										</template>
+									</vx-no-data>
+								</view>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">image 优先于 icon，icon 插槽优先于两者；自定义插图按方框等比展示，方框和线稿同宽。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">语义色只给插图和图标圆，文案保持正文色。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-no-data-types">
+							<view class="demo-no-data-type">
+								<view class="demo-no-data-type__body">
+									<vx-no-data size="sm" type="danger" text="加载失败" />
+								</view>
+								<text class="demo-no-data-type__label">danger</text>
+							</view>
+							<view class="demo-no-data-type">
+								<view class="demo-no-data-type__body">
+									<vx-no-data size="sm" icon="alert-triangle" type="warning" text="库存不足" />
+								</view>
+								<text class="demo-no-data-type__label">warning</text>
+							</view>
+							<view class="demo-no-data-type">
+								<view class="demo-no-data-type__body">
+									<vx-no-data size="sm" icon="search" type="primary" text="没有找到" />
+								</view>
+								<text class="demo-no-data-type__label">primary</text>
+							</view>
+							<view class="demo-no-data-type">
+								<view class="demo-no-data-type__body">
+									<vx-no-data size="sm" icon="check-circle" type="success" text="都已处理" />
+								</view>
+								<text class="demo-no-data-type__label">success</text>
+							</view>
+							<view class="demo-no-data-type">
+								<view class="demo-no-data-type__body">
+									<vx-no-data size="sm" icon="info" type="info" text="暂无公告" />
+								</view>
+								<text class="demo-no-data-type__label">info</text>
+							</view>
+							<view class="demo-no-data-type">
+								<view class="demo-no-data-type__body">
+									<vx-no-data size="sm" text="暂无数据" />
+								</view>
+								<text class="demo-no-data-type__label">default</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">线稿的纸边和加号跟 type 走，warning 取 warning-ink；图标圆用对应 *-soft 底。类型不是装饰，只在有状态含义时传。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">插图 96 / 128 / 160，主文案 13 / 15 / 17。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-no-data-size">
+							<text class="demo-no-data-size__label">sm · 96</text>
+							<vx-no-data size="sm" text="暂无数据" description="sm 内边距 16" />
+						</view>
+						<view class="demo-no-data-size">
+							<text class="demo-no-data-size__label">md · 128</text>
+							<vx-no-data text="暂无数据" description="md 内边距 24" />
+						</view>
+						<view class="demo-no-data-size demo-no-data-size--last">
+							<text class="demo-no-data-size__label">lg · 160</text>
+							<vx-no-data size="lg" text="暂无数据" description="lg 插图到文案 24" />
+						</view>
+					</view>
+					<text class="demo-hint">尺寸只改插图、图标圆、字号和留白；同一屏只取一档，不混用。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">动作</text>
+							<text class="demo-section__desc">动作复用 vx-button；文案为空时不占位置。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-card--flush">
+						<view class="demo-no-data-board">
+							<vx-no-data text="您还没有购买任何商品~" action-text="去逛逛"
+								@action="onNoDataAction('去逛逛')" />
+							<view class="demo-no-data-rule"></view>
+							<vx-no-data text="暂无订单" description="下拉刷新，或稍后再试" action-text="刷新订单"
+								action-variant="soft" action-width="120px" @action="onNoDataAction('刷新订单')" />
+							<view class="demo-no-data-rule"></view>
+							<vx-no-data icon="search" type="primary" text="没有找到相关商品"
+								description="换个关键词试试" action-text="清空条件" action-variant="plain"
+								@action="onNoDataAction('清空条件')" />
+						</view>
+					</view>
+					<view class="demo-no-data-status">
+						<text class="demo-no-data-status__label">action</text>
+						<text class="demo-no-data-status__text">{{ noDataLastAction }}</text>
+					</view>
+					<text class="demo-hint">actionWidth 需要带单位；常规页面用 actionSize。空状态整块不响应点击，只有动作按钮可点。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">状态</text>
+							<text class="demo-section__desc">动作可以转圈或禁用；空状态本身没有禁用态。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-card--flush">
+						<view class="demo-no-data-board">
+							<vx-no-data text="正在重新加载" description="稍等片刻" action-text="重新加载"
+								action-loading />
+							<view class="demo-no-data-rule"></view>
+							<vx-no-data text="暂无权限" description="请联系管理员开通" action-text="申请权限"
+								action-disabled />
+						</view>
+					</view>
+					<text class="demo-hint">actionLoading 期间按钮不触发 action；actionDisabled 只管按钮，不改变插图、文案和整块空状态。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">插槽</text>
+							<text class="demo-section__desc">默认插槽换文案，icon 换插图，extra 换动作。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-card--flush">
+						<view class="demo-no-data-board">
+							<vx-no-data>
+								<text class="demo-no-data-slot-title">还没有消息</text>
+								<text class="demo-no-data-slot-desc">关注店铺后，新品和活动会出现在这里。</text>
+							</vx-no-data>
+							<view class="demo-no-data-rule"></view>
+							<vx-no-data>
+								<template #icon>
+									<view class="demo-no-data-art">
+										<vx-icon name="inbox" size="lg" color="var(--vx-color-text-secondary)" />
+									</view>
+								</template>
+								<text class="demo-no-data-slot-title">自定义插图</text>
+								<text class="demo-no-data-slot-desc">icon 插槽里可以放图标、图片或自己画的 view。</text>
+							</vx-no-data>
+							<view class="demo-no-data-rule"></view>
+							<vx-no-data text="购物车还是空的">
+								<template #extra>
+									<view class="demo-no-data-extra">
+										<view class="demo-no-data-extra__item">
+											<vx-button size="sm" text="再逛逛" @click="onNoDataAction('再逛逛')" />
+										</view>
+										<view class="demo-no-data-extra__item demo-no-data-extra__item--last">
+											<vx-button size="sm" variant="plain" text="清空"
+												@click="onNoDataAction('清空购物车')" />
+										</view>
+									</view>
+								</template>
+							</vx-no-data>
+						</view>
+					</view>
+					<text class="demo-hint">插槽内容不继承 text / description 的字号和颜色，自己带；extra 里可以放多个操作，主次仍然要分清。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">fill 在固定高度里居中；放进卡片时由卡片提供边界。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-card--flush">
+						<view class="demo-no-data-board">
+							<view class="demo-no-data-stage">
+								<vx-no-data fill text="暂无数据" action-text="刷新"
+									@action="onNoDataAction('刷新')" />
+							</view>
+							<view class="demo-no-data-card-wrap">
+								<vx-card title="最近订单" meta="0 条" :body-padded="false">
+									<vx-no-data size="sm" text="暂无订单" description="下单后会显示在这里"
+										action-text="去选商品" action-variant="soft"
+										@action="onNoDataAction('去选商品')" />
+								</vx-card>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">fill 只是 flex: 1，父级需要是纵向 flex；普通页面区块直接留在文档流里，不画外框、底色和阴影。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 空状态只抛 action，演示里记下最后一次点的是哪个动作。
+	const noDataLastAction = ref('还没有点击')
+
+	const onNoDataAction = (label: string) => {
+		noDataLastAction.value = label
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/loading/loading'
+	const nextPath: string = '/pages/demo/actionsheet/actionsheet'
+	const prevName = '加载与尾部'
+	const nextName = '操作菜单'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

@@ -1,0 +1,667 @@
+<template>
+	<!-- 单项只画标记、文案和额外内容；选中值由分组统一维护，单独使用时落在自己的 v-model 上。 -->
+	<!-- 点击停在单项上，外层列表行或卡片不会再收到同一次点击。 -->
+	<view :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click.stop="onSelect">
+		<view v-if="circleStart" :class="markerClass" :style="markerStyle">
+			<view v-if="checked" :class="checkClass" :style="checkStyle"></view>
+		</view>
+
+		<view :class="contentClass">
+			<view :class="bodyClass">
+				<!-- 默认插槽替换 label / description，用于带徽标或两行排版的富文案。 -->
+				<slot>
+					<text v-if="label.length > 0" :class="labelClass">{{ label }}</text>
+					<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
+				</slot>
+			</view>
+
+			<!-- 徽章、标签或价格放在文案后面；标记在行尾时正好在文案和标记之间。内容自己带颜色和字号。 -->
+			<view v-if="$slots['extra'] != null" :class="extraClass">
+				<slot name="extra"></slot>
+			</view>
+		</view>
+
+		<view v-if="!circleStart" :class="markerClass" :style="markerStyle">
+			<view v-if="checked" :class="checkClass" :style="checkStyle"></view>
+		</view>
+
+		<!-- 分割线绝对定位在行底，不占高度，三档行高才是准的；最后一项不画。 -->
+		<view v-if="showDivider" :class="dividerClass"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxRadioProps } from './props'
+	import { VX_RADIO_CONTEXT, VxRadioContext } from '../vx-radio-group/context'
+	import { VxRadioLayout, VxRadioPlacement, VxRadioVariant } from '../vx-radio-group/props'
+	import { VxSemantic, VxSize } from '../../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+
+	const props = withDefaults(defineProps<VxRadioProps>(), {
+		value: '',
+		label: '',
+		description: '',
+		disabled: false,
+		color: '',
+		borderColor: '',
+		checkColor: ''
+	})
+
+	// 单独使用时是这一项自己的选中状态；放进分组后由分组的 value 决定，这一份不再参与渲染。
+	const modelValue = defineModel({
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		change: [checked: boolean]
+	}>()
+
+	// 没有分组时标记仍能单独点选，外观落在默认档；放进分组后由分组统一决定尺寸、语义色和排布。
+	const radio = inject(VX_RADIO_CONTEXT, null) as VxRadioContext | null
+
+	// 分割线认实例而不是 value：value 可以重复，两项仍要各算各的位置。
+	const uid = 'vx-radio-' + Math.floor(Math.random() * 1000000000)
+	const registered = ref(false)
+
+	onMounted(() => {
+		if (radio != null) radio.register(uid)
+		registered.value = true
+	})
+
+	onUnmounted(() => {
+		if (radio != null) radio.unregister(uid)
+	})
+
+	const size = computed((): VxSize => {
+		return radio != null ? radio.size() : 'md'
+	})
+
+	const type = computed((): VxSemantic => {
+		return radio != null ? radio.type() : 'primary'
+	})
+
+	const variant = computed((): VxRadioVariant => {
+		return radio != null ? radio.variant() : 'circle'
+	})
+
+	const placement = computed((): VxRadioPlacement => {
+		return radio != null ? radio.placement() : 'start'
+	})
+
+	const layout = computed((): VxRadioLayout => {
+		return radio != null ? radio.layout() : 'inline'
+	})
+
+	const isDisabled = computed((): boolean => {
+		if (props.disabled) return true
+		return radio != null && radio.disabled()
+	})
+
+	const checked = computed((): boolean => {
+		if (radio != null) return radio.isChecked(props.value)
+		return modelValue.value
+	})
+
+	// 标记在文案前还是行尾。名字只在这里算一次，模板里不再拼字符串。
+	const circleStart = computed((): boolean => {
+		return placement.value !== 'end'
+	})
+
+	// class 顺序：基础 → 尺寸 → 排布 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-radio'
+		if (layout.value === 'list') name += ' vx-radio--list'
+		else name += ' vx-radio--inline'
+		if (size.value !== 'md') name += ` vx-radio--${layout.value}-${size.value}`
+		if (isDisabled.value) name += ' vx-radio--disabled'
+		return name
+	})
+
+	const contentClass = computed((): string => {
+		if (layout.value === 'list') return 'vx-radio__content vx-radio__content--list'
+		return 'vx-radio__content'
+	})
+
+	// 列表里文案列吃掉剩余宽度，extra 才靠到行尾；横排不伸展，extra 紧跟文案。
+	const bodyClass = computed((): string => {
+		if (layout.value === 'list') return 'vx-radio__body vx-radio__body--list'
+		return 'vx-radio__body'
+	})
+
+	// 20 高的标签对齐主文案首行：md 补 1，lg 补 2。sm 行高 20，正好，不加 class。
+	const extraClass = computed((): string => {
+		if (layout.value !== 'list' || size.value === 'sm') return 'vx-radio__extra'
+		if (size.value === 'lg') return 'vx-radio__extra vx-radio__extra--list-lg'
+		return 'vx-radio__extra vx-radio__extra--list'
+	})
+
+	// 圆圈和只画对号共用同一个盒子，未选中时盒子仍在，文案起点不会跳。
+	const markerClass = computed((): string => {
+		let name = 'vx-radio__marker'
+		if (size.value !== 'md') name += ` vx-radio__marker--${size.value}`
+		if (variant.value === 'check') {
+			name += ' vx-radio__marker--check'
+		} else if (checked.value) {
+			if (isDisabled.value) name += ' vx-radio__marker--checked-disabled'
+			else if (props.color.length === 0) name += ` vx-radio__marker--checked-${type.value}`
+		} else if (isDisabled.value) {
+			name += ' vx-radio__marker--disabled'
+		}
+		// 列表顶对齐后按首行行高居中：行高 20 / 22 / 24，标记 14 / 16 / 18，三档都差 6，补 3。横排整项居中，不加。
+		if (layout.value === 'list') name += ' vx-radio__marker--list'
+		name += placement.value === 'end'
+			? (size.value === 'lg' ? ' vx-radio__marker--end-lg' : ' vx-radio__marker--end')
+			: (size.value === 'lg' ? ' vx-radio__marker--start-lg' : ' vx-radio__marker--start')
+		return name
+	})
+
+	// 自定义选中色走内联，会盖过 class；只传 color 时对号仍取 type 的 on-*，两者的对比由业务保证。
+	const markerStyle = computed((): string => {
+		if (variant.value === 'check' || isDisabled.value) return ''
+		if (checked.value) {
+			if (props.color.length === 0) return ''
+			return `border-color: ${props.color}; background-color: ${props.color};`
+		}
+		if (props.borderColor.length === 0) return ''
+		return `border-color: ${props.borderColor};`
+	})
+
+	const checkClass = computed((): string => {
+		let name = 'vx-radio__check'
+		if (size.value !== 'md') name += ` vx-radio__check--${size.value}`
+		// 只画对号时没有圆圈托底，对号放大一档才和文案同高。
+		if (variant.value === 'check') {
+			name += ' vx-radio__check--solo'
+			if (size.value === 'sm') name += ' vx-radio__check--solo-sm'
+			else if (size.value === 'lg') name += ' vx-radio__check--solo-lg'
+		}
+		if (isDisabled.value) {
+			return name + (variant.value === 'check' ? ' vx-radio__check--disabled-solo' : ' vx-radio__check--disabled')
+		}
+		// 只画对号时，custom color 直接是对号色；圆圈样式里 color 是填充色，对号仍按语义取 on-*。
+		if (variant.value === 'check') {
+			if (props.color.length === 0 && props.checkColor.length === 0) name += ` vx-radio__check--${type.value}`
+			return name
+		}
+		if (props.checkColor.length === 0) name += ` vx-radio__check--on-${type.value}`
+		return name
+	})
+
+	const checkStyle = computed((): string => {
+		if (isDisabled.value) return ''
+		const custom = props.checkColor.length > 0
+			? props.checkColor
+			: (variant.value === 'check' ? props.color : '')
+		if (custom.length === 0) return ''
+		return `border-right-color: ${custom}; border-bottom-color: ${custom};`
+	})
+
+	const labelClass = computed((): string => {
+		let name = 'vx-radio__label'
+		if (layout.value === 'list') {
+			if (size.value === 'sm') name += ' vx-radio__label--list-sm'
+			else if (size.value === 'lg') name += ' vx-radio__label--list-lg'
+			else name += ' vx-radio__label--list'
+		} else if (size.value === 'sm') {
+			name += ' vx-radio__label--sm'
+		} else if (size.value === 'lg') {
+			name += ' vx-radio__label--lg'
+		}
+		if (isDisabled.value) name += ' vx-radio__label--disabled'
+		return name
+	})
+
+	const descriptionClass = computed((): string => {
+		let name = 'vx-radio__description'
+		if (props.label.length > 0) name += ' vx-radio__description--offset'
+		if (isDisabled.value) name += ' vx-radio__description--disabled'
+		return name
+	})
+
+	const dividerClass = computed((): string => {
+		if (size.value === 'sm') return 'vx-radio__divider vx-radio__divider--sm'
+		return 'vx-radio__divider'
+	})
+
+	const showDivider = computed((): boolean => {
+		if (layout.value !== 'list') return false
+		if (radio == null || !radio.divider()) return false
+		// 第一帧先不画：等登记完实例 id 再判断最后一项，避免最后一项闪一条线。
+		if (!registered.value) return false
+		return !radio.isLast(uid)
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。横排没有整行底色，按下只压透明度。
+	const hoverClass = computed((): string => {
+		if (isDisabled.value) return 'none'
+		return layout.value === 'list' ? 'vx-radio--pressed' : 'vx-radio--pressed-inline'
+	})
+
+	// 分组里空 value 没有确定的选中键，点击忽略；已经选中时不重复抛事件。
+	const onSelect = () => {
+		if (isDisabled.value) return
+		if (radio != null) {
+			if (props.value.length === 0) return
+			if (radio.isChecked(props.value)) return
+			radio.select(props.value)
+			emit('change', true)
+			return
+		}
+		if (modelValue.value) return
+		modelValue.value = true
+		emit('change', true)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 横排单项：高度取交互控件三档 32 / 40 / 48，整块是热区，不加左右内边距，
+	   和页面、卡片的左边缘对齐；项与项之间靠右外边距分开。 */
+	.vx-radio {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		min-height: var(--vx-control-height-md);
+	}
+
+	/* md / lg 项间距都是 16，只写在这里。min-width 压成 0，长文案才会换行；
+	   否则 flex 项的最小宽度是内容宽度，整行会被撑出父级。 */
+	.vx-radio--inline {
+		flex-shrink: 1;
+		min-width: 0;
+		margin-right: var(--vx-space-lg);
+	}
+
+	.vx-radio--inline-sm {
+		min-height: var(--vx-control-height-sm);
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-radio--inline-lg {
+		min-height: var(--vx-control-height-lg);
+	}
+
+	/* 列表项：一项一行，行高沿用列表行 44 / 52 / 60，左右内边距与列表行相同。
+	   分割线绝对定位在行底，行本身不画圆角，外轮廓交给外层卡片。
+	   min-width 0 配合 width 100%，长词不会把行撑出卡片。 */
+	.vx-radio--list {
+		position: relative;
+		flex-shrink: 0;
+		align-items: flex-start;
+		width: 100%;
+		min-width: 0;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-lg);
+		border-radius: 0;
+	}
+
+	.vx-radio--list-sm {
+		min-height: var(--vx-list-height-sm);
+		padding: var(--vx-space-sm) var(--vx-space-md);
+	}
+
+	.vx-radio--list-lg {
+		min-height: var(--vx-list-height-lg);
+		padding: var(--vx-space-lg) var(--vx-space-lg);
+	}
+
+	/* 按下态：列表整行铺 surface-pressed；横排没有底色，只把整项压到 0.8。
+	   行内文字和标记都不单独变色，按下结束后直接复位。 */
+	.vx-radio--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.vx-radio--pressed-inline {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-radio__content {
+		flex-direction: row;
+		align-items: center;
+		min-width: 0;
+	}
+
+	/* 列表里这一层占满标记以外的宽度，行尾标记才被推到最右；横排只按内容宽度排。
+	   首行对齐，两行说明时标记仍贴着主文案，不落到两行之间。 */
+	.vx-radio__content--list {
+		flex: 1;
+		align-items: flex-start;
+	}
+
+	/* 纵向排主文案和说明。不设 align-items，默认 stretch，文字宽度才跟这一列走。
+	   min-width 0 才能被压窄；overflow 收住长词，Web 默认 visible 会盖住右侧。 */
+	.vx-radio__body {
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* 列表里吃掉剩余宽度，短文案时 extra 靠右。横排不伸展，extra 紧跟文案。 */
+	.vx-radio__body--list {
+		flex: 1;
+	}
+
+	/* 标记盒子三档 14 / 16 / 18，比文案大 1–2px；圆圈和只画对号共用，未选中时盒子仍在，文案起点不会跳。 */
+	.vx-radio__marker {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: var(--vx-radio-size-md);
+		height: var(--vx-radio-size-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-text-secondary);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-radio__marker--sm {
+		width: var(--vx-radio-size-sm);
+		height: var(--vx-radio-size-sm);
+	}
+
+	.vx-radio__marker--lg {
+		width: var(--vx-radio-size-lg);
+		height: var(--vx-radio-size-lg);
+	}
+
+	/* 只画对号：去掉圆圈和底色，盒子仍占同样宽度，行内文案仍然对齐。 */
+	.vx-radio__marker--check {
+		border-width: 0;
+		background-color: transparent;
+	}
+
+	.vx-radio__marker--checked-primary {
+		border-color: var(--vx-color-primary);
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-radio__marker--checked-success {
+		border-color: var(--vx-color-success);
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-radio__marker--checked-info {
+		border-color: var(--vx-color-info);
+		background-color: var(--vx-color-info);
+	}
+
+	/* 琥珀原色在白底上不到 3:1，选中填充用 pressed，对号用 on-warning 的深色字。 */
+	.vx-radio__marker--checked-warning {
+		border-color: var(--vx-color-warning-pressed);
+		background-color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-radio__marker--checked-danger {
+		border-color: var(--vx-color-danger);
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-radio__marker--checked-default {
+		border-color: var(--vx-color-text);
+		background-color: var(--vx-color-text);
+	}
+
+	.vx-radio__marker--checked-disabled {
+		border-color: var(--vx-color-disabled-text);
+		background-color: var(--vx-color-disabled-text);
+	}
+
+	.vx-radio__marker--disabled {
+		border-color: var(--vx-color-disabled-text);
+	}
+
+	/* 列表顶对齐后按首行行高居中：行高 20 / 22 / 24，标记 14 / 16 / 18，三档都差 6，补 3。 */
+	.vx-radio__marker--list {
+		margin-top: 3px;
+	}
+
+	/* 标记已收到 14 / 16 / 18，8 / 12 相对圆圈偏空，收到上一档 4 / 8。位置不同，外边距落在不同一侧。 */
+	.vx-radio__marker--start {
+		margin-right: var(--vx-space-xs);
+	}
+
+	.vx-radio__marker--start-lg {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-radio__marker--end {
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-radio__marker--end-lg {
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 对号用旋转的右边框和下边框画。圆圈已收到 14 / 16 / 18，框内对号跟着收成 3×6 / 4×8 / 5×10，
+	   描边 sm 1.5px、md / lg 2px。border-box 下宽高是外框，长短两臂约 1 : 2。 */
+	.vx-radio__check {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 4px;
+		height: 8px;
+		border-right-width: 2px;
+		border-right-style: solid;
+		border-bottom-width: 2px;
+		border-bottom-style: solid;
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+		transform: rotate(45deg);
+	}
+
+	.vx-radio__check--sm {
+		width: 3px;
+		height: 6px;
+		border-right-width: 1.5px;
+		border-bottom-width: 1.5px;
+	}
+
+	.vx-radio__check--lg {
+		width: 5px;
+		height: 10px;
+	}
+
+	/* 只画对号时放大一档：没有圆圈托底，对号要和文案同高才读得出选中。 */
+	.vx-radio__check--solo {
+		width: 6px;
+		height: 12px;
+	}
+
+	.vx-radio__check--solo-sm {
+		width: 5px;
+		height: 10px;
+	}
+
+	.vx-radio__check--solo-lg {
+		width: 7px;
+		height: 14px;
+	}
+
+	.vx-radio__check--on-primary {
+		border-right-color: var(--vx-color-on-primary);
+		border-bottom-color: var(--vx-color-on-primary);
+	}
+
+	.vx-radio__check--on-success {
+		border-right-color: var(--vx-color-on-success);
+		border-bottom-color: var(--vx-color-on-success);
+	}
+
+	.vx-radio__check--on-info {
+		border-right-color: var(--vx-color-on-info);
+		border-bottom-color: var(--vx-color-on-info);
+	}
+
+	.vx-radio__check--on-warning {
+		border-right-color: var(--vx-color-on-warning);
+		border-bottom-color: var(--vx-color-on-warning);
+	}
+
+	.vx-radio__check--on-danger {
+		border-right-color: var(--vx-color-on-danger);
+		border-bottom-color: var(--vx-color-on-danger);
+	}
+
+	.vx-radio__check--on-default {
+		border-right-color: var(--vx-color-text-inverse);
+		border-bottom-color: var(--vx-color-text-inverse);
+	}
+
+	/* 只画对号时没有底色，对号本身就是选中色；warning 仍取 pressed。 */
+	.vx-radio__check--primary {
+		border-right-color: var(--vx-color-primary);
+		border-bottom-color: var(--vx-color-primary);
+	}
+
+	.vx-radio__check--success {
+		border-right-color: var(--vx-color-success);
+		border-bottom-color: var(--vx-color-success);
+	}
+
+	.vx-radio__check--info {
+		border-right-color: var(--vx-color-info);
+		border-bottom-color: var(--vx-color-info);
+	}
+
+	.vx-radio__check--warning {
+		border-right-color: var(--vx-color-warning-pressed);
+		border-bottom-color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-radio__check--danger {
+		border-right-color: var(--vx-color-danger);
+		border-bottom-color: var(--vx-color-danger);
+	}
+
+	.vx-radio__check--default {
+		border-right-color: var(--vx-color-text);
+		border-bottom-color: var(--vx-color-text);
+	}
+
+	.vx-radio__check--disabled {
+		border-right-color: var(--vx-color-surface);
+		border-bottom-color: var(--vx-color-surface);
+	}
+
+	/* 只画对号时没有灰色圆圈托底，对号要自己转灰，不能再用 surface 藏在卡片里。 */
+	.vx-radio__check--disabled-solo {
+		border-right-color: var(--vx-color-disabled-text);
+		border-bottom-color: var(--vx-color-disabled-text);
+	}
+
+	/* 横排文案 13 / 14 / 16、行高 20 / 22 / 24，字重 400，靠标记分层。
+	   App 默认 keep、Web 默认 pre-line，写明 normal 才会在列宽里折行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-radio__label,
+	.vx-radio__description {
+		flex-shrink: 0;
+		min-width: 0;
+		font-weight: var(--vx-weight-regular);
+		white-space: normal;
+	}
+
+	.vx-radio__label {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-radio__label--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-radio__label--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 列表行是正文档：13 / 15 / 17，行高 20 / 22 / 24，和 vx-list-cell 一致。 */
+	.vx-radio__label--list {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-radio__label--list-sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-radio__label--list-lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-radio__label--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 说明始终用辅助说明档，和主文案之间留 4；只有说明时不加。 */
+	.vx-radio__description {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-radio__description--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-radio__description--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 额外内容排在文案后面；标记在行尾时就在文案和标记之间。不参与压缩，和文案之间留 12。
+	   列表行和主文案首行居中，20 高的标签在 22 行高里补 1，sm 正好，lg 补 2。 */
+	.vx-radio__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-md);
+	}
+
+	.vx-radio__extra--list {
+		margin-top: 1px;
+	}
+
+	.vx-radio__extra--list-lg {
+		margin-top: 2px;
+	}
+
+	/* 分割线左右缩进和行内边距对齐；sm 更紧。 */
+	.vx-radio__divider {
+		position: absolute;
+		right: var(--vx-space-lg);
+		bottom: 0;
+		left: var(--vx-space-lg);
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	.vx-radio__divider--sm {
+		right: var(--vx-space-md);
+		left: var(--vx-space-md);
+	}
+
+	/* 可点的单项是指针，禁用是禁止；静态单项不会出现。 */
+	/* #ifdef WEB */
+	.vx-radio {
+		cursor: pointer;
+	}
+
+	.vx-radio--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-radio__marker {
+		pointer-events: none;
+	}
+	/* #endif */
+</style>

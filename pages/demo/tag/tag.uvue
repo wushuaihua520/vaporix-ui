@@ -1,0 +1,410 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">基础</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-tag</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="tag" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">标签</text>
+								<text class="demo-hero__title demo-hero__title--accent">6 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">标签只承载展示与关闭，没有点击态；自定义颜色分文字、底色和描边三处。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">基础</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-tag</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础标签</text>
+							<text class="demo-section__desc">六种语义色，默认实心 md。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-tag-wall">
+							<view v-for="tone in tagTones" :key="tone.type" class="demo-tag-wall__item">
+								<vx-tag :type="tone.type" :text="tone.label" />
+							</view>
+						</view>
+						<view class="demo-tag-wall">
+							<view class="demo-tag-wall__item">
+								<vx-tag type="success" variant="soft" text="已认证">
+									<template #prefix>
+										<vx-icon name="check" size="sm" color="var(--vx-color-success-pressed)" />
+									</template>
+								</vx-tag>
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" text="推荐">
+									<template #prefix>
+										<vx-icon name="star" size="sm" color="var(--vx-color-on-primary)" />
+									</template>
+								</vx-tag>
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="default" variant="plain" text="上海">
+									<template #prefix>
+										<vx-icon name="map-pin" size="sm" color="var(--vx-color-text-secondary)" />
+									</template>
+								</vx-tag>
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="danger" variant="soft" text="未读">
+									<text class="demo-tag-count">12</text>
+								</vx-tag>
+							</view>
+						</view>
+						<text class="demo-hint">标签使用独立紧凑高度：sm 28、md 32、lg 36；按钮/输入框另用 32 / 40 / 48。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">三种形态</text>
+							<text class="demo-section__desc">solid 实心、soft 浅底、plain 空心。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-tag-group">
+							<text class="demo-tag-group__label">solid · 实心</text>
+							<view class="demo-tag-wall">
+								<view v-for="tone in tagTones" :key="tone.type" class="demo-tag-wall__item">
+									<vx-tag :type="tone.type" :text="tone.label" />
+								</view>
+							</view>
+						</view>
+						<view class="demo-tag-group">
+							<text class="demo-tag-group__label">soft · 浅底</text>
+							<view class="demo-tag-wall">
+								<view v-for="tone in tagTones" :key="tone.type" class="demo-tag-wall__item">
+									<vx-tag :type="tone.type" variant="soft" :text="tone.label" />
+								</view>
+							</view>
+						</view>
+						<view class="demo-tag-group">
+							<text class="demo-tag-group__label">plain · 空心</text>
+							<view class="demo-tag-wall">
+								<view v-for="tone in tagTones" :key="tone.type" class="demo-tag-wall__item">
+									<vx-tag :type="tone.type" variant="plain" :text="tone.label" />
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">实心承载状态，浅底和空心让页面安静。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">字号跟档位走。sm、md 内边距都是 8，lg 是 12。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-size-row">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">sm</text>
+								<text class="demo-size-row__meta">28</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-tag-wall demo-tag-wall--flush">
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="sm" type="primary" text="主色" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="sm" type="success" variant="soft" text="浅底" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="sm" type="warning" variant="plain" text="空心" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="sm" type="default" text="中性" />
+									</view>
+								</view>
+							</view>
+						</view>
+						<view class="demo-size-row">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">md</text>
+								<text class="demo-size-row__meta">32</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-tag-wall demo-tag-wall--flush">
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag type="primary" text="主色" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag type="success" variant="soft" text="浅底" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag type="warning" variant="plain" text="空心" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag type="default" text="中性" />
+									</view>
+								</view>
+							</view>
+						</view>
+						<view class="demo-size-row demo-size-row--last">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">lg</text>
+								<text class="demo-size-row__meta">36</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-tag-wall demo-tag-wall--flush">
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="lg" type="primary" text="主色" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="lg" type="success" variant="soft" text="浅底" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="lg" type="warning" variant="plain" text="空心" />
+									</view>
+									<view class="demo-tag-wall__item demo-tag-wall__item--line">
+										<vx-tag size="lg" type="default" text="中性" />
+									</view>
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">字号同时跟档位走：13 / 14 / 16。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">轮廓</text>
+							<text class="demo-section__desc">圆角、胶囊、半圆角、平角。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-tag-wall">
+							<view class="demo-tag-wall__item">
+								<vx-tag text="默认圆角" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" text="胶囊" shape="pill" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" text="半圆角" shape="half" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" text="平角" shape="square" />
+							</view>
+						</view>
+						<view class="demo-tag-wall">
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" variant="plain" text="空心圆角" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" variant="plain" text="空心胶囊" shape="pill" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" variant="plain" text="空心半圆角" shape="half" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" variant="plain" text="空心平角" shape="square" />
+							</view>
+						</view>
+						<text class="demo-hint">半圆角是左边胶囊、右边平角，适合贴边排列。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">三个颜色各管一处，不做明暗推导。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-tag-wall">
+							<view class="demo-tag-wall__item">
+								<vx-tag text="自定义实心" bg-color="#2ba471" border-color="#2ba471" color="#ffffff" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag type="primary" text="自定义空心" variant="plain" color="#2ba471" border-color="#2ba471" />
+							</view>
+							<view class="demo-tag-wall__item">
+								<vx-tag text="自定义浅底" variant="soft" bg-color="#e6f4ec" border-color="#e6f4ec" color="#1f6b4a" />
+							</view>
+						</view>
+						<text class="demo-hint">没传的颜色继续跟 type，对比度由业务保证。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">可关闭</text>
+							<text class="demo-section__desc">点 × 抛 close，标签由业务移除。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-tag-wall">
+							<view v-for="item in removableTags" :key="item.id" class="demo-tag-wall__item">
+								<vx-tag :type="item.type" :variant="item.variant" :text="item.label" closable
+									@close="onRemoveTag(item.id)" />
+							</view>
+						</view>
+						<text class="demo-hint">还剩 {{ removableTags.length }} 个。</text>
+						<view class="demo-tag-reset">
+							<vx-button size="sm" type="default" text="恢复标签" @click="resetRemovableTags" />
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 演示页不引用组件库的类型：script setup 里只有 defineProps 用到的类型会被擦除，
+	// 普通 type 导入会留在运行时代码里，页面加载时报 missing export。
+	type TagSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type TagVariant = 'solid' | 'soft' | 'plain'
+
+	type TagTone = {
+		type: TagSemantic
+		label: string
+	}
+
+	type RemovableTag = {
+		id: string
+		label: string
+		type: TagSemantic
+		variant: TagVariant
+	}
+
+	const tagTones: TagTone[] = [
+		{ type: 'primary', label: '主色' },
+		{ type: 'success', label: '成功' },
+		{ type: 'info', label: '信息' },
+		{ type: 'warning', label: '警告' },
+		{ type: 'danger', label: '危险' },
+		{ type: 'default', label: '中性' }
+	]
+
+	const initialRemovableTags = (): RemovableTag[] => {
+		return [
+			{ id: 'inbox', label: '未读消息', type: 'primary', variant: 'solid' },
+			{ id: 'paid', label: '已支付', type: 'success', variant: 'soft' },
+			{ id: 'limit', label: '额度不足', type: 'danger', variant: 'plain' }
+		]
+	}
+
+	const removableTags = ref<RemovableTag[]>(initialRemovableTags())
+
+	const onRemoveTag = (id: string) => {
+		removableTags.value = removableTags.value.filter((item: RemovableTag): boolean => item.id !== id)
+	}
+
+	const resetRemovableTags = () => {
+		removableTags.value = initialRemovableTags()
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/icon/icon'
+	const nextPath: string = '/pages/demo/badge/badge'
+	const prevName = '图标'
+	const nextName = '徽章'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

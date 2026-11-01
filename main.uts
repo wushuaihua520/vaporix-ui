@@ -1,0 +1,14 @@
+import App from './App.uvue'
+import { createSSRApp } from 'vue'
+
+// #ifdef WEB
+import "@/uni_modules/vaporix-ui/libs/style/variables.css"
+import "@/pages/demo/shared/demo.css"
+// #endif
+
+export function createApp() {
+	const app = createSSRApp(App)
+	return {
+		app
+	}
+}

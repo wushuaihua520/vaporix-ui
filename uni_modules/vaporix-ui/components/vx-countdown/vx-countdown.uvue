@@ -1,0 +1,672 @@
+<template>
+	<view class="vx-countdown">
+		<view v-for="frame in frames" :key="frame.key" :class="frame.segmentClass">
+			<view :class="valueClass" :style="boxStyle">
+				<text :class="digitClass" :style="digitStyle">{{ segmentValues[frame.unitIndex] }}</text>
+			</view>
+			<text v-if="frame.hasMilliseconds" :class="dotClass" :style="auxiliaryStyle">.</text>
+			<view v-if="frame.hasMilliseconds" :class="msClass" :style="boxStyle">
+				<text :class="msDigitClass" :style="digitStyle">{{ millisecondDigit }}</text>
+			</view>
+			<text v-if="frame.trailing.length > 0" :class="frame.trailingClass"
+				:style="auxiliaryStyle">{{ frame.trailing }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxCountdownProps } from './props'
+
+	const props = withDefaults(defineProps<VxCountdownProps>(), {
+		time: 0,
+		showDays: false,
+		showHours: true,
+		showMinutes: true,
+		showSeconds: true,
+		showMilliseconds: false,
+		size: 'md',
+		variant: 'outline',
+		type: 'default',
+		separator: 'colon',
+		unit: 'zh',
+		autoStart: true,
+		bgColor: '',
+		color: '',
+		unitColor: '',
+		borderColor: ''
+	})
+
+	const emit = defineEmits<{
+		end: []
+		tick: [seconds: number]
+	}>()
+
+	type CountdownFrame = {
+		key: string
+		unitIndex: number
+		hasMilliseconds: boolean
+		trailing: string
+		trailingClass: string
+		segmentClass: string
+	}
+
+	const VX_COUNTDOWN_UNIT_SECONDS: Array<number> = [86400, 3600, 60, 1]
+	const VX_COUNTDOWN_UNIT_ZH: Array<string> = ['天', '时', '分', '秒']
+	const VX_COUNTDOWN_UNIT_EN: Array<string> = ['d', 'h', 'm', 's']
+
+	const secondsToMs = (seconds: number): number => {
+		// 负数、NaN、Infinity 都不能当剩余时间。
+		if (!(seconds > 0) || !isFinite(seconds)) return 0
+		// 0.1+0.2 乘 1000 的尾巴会让 % 100 得到灰尘，delay 变成 0，定时器空转。
+		const ms = Math.round(seconds * 1000)
+		// 秒数过大时乘 1000 会变成 Infinity，排不出截止时间。
+		if (!isFinite(ms)) return 0
+		return ms
+	}
+
+	const padValue = (count: number): string => {
+		if (count < 10) return `0${count}`
+		return `${count}`
+	}
+
+	const remainingMs = ref(secondsToMs(props.time))
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let timer = 0
+	let deadline = 0
+	let running = false
+	// 已经抛过的显示秒数。相同值直接丢掉，暂停和到点回调不会再补一次。
+	let lastTickSeconds = -1
+
+	const secondsVisible = computed((): boolean => {
+		if (props.showSeconds) return true
+		// 四段全关时回落到秒，组件不会只剩一个空容器。
+		if (props.showDays || props.showHours || props.showMinutes) return false
+		return true
+	})
+
+	const millisecondsVisible = computed((): boolean => {
+		return props.showMilliseconds && secondsVisible.value
+	})
+
+	// 秒数按剩余时间向上取整，最后一秒仍显示 1；毫秒位按 100ms 取整到十分位。
+	const tenthsTotal = computed((): number => {
+		if (remainingMs.value <= 0) return 0
+		return Math.ceil(remainingMs.value / 100)
+	})
+
+	const displaySeconds = computed((): number => {
+		if (remainingMs.value <= 0) return 0
+		if (millisecondsVisible.value) return Math.floor(tenthsTotal.value / 10)
+		return Math.ceil(remainingMs.value / 1000)
+	})
+
+	const millisecondDigit = computed((): string => {
+		return `${tenthsTotal.value % 10}`
+	})
+
+	// warning 的琥珀色不能直接当文字色。浅底的其它语义色再用 pressed 收深一档。
+	const textTone = computed((): string => {
+		if (props.type === 'default') return ''
+		if (props.type === 'warning') return 'warning-ink'
+		if (props.variant === 'soft') return `${props.type}-pressed`
+		return props.type
+	})
+
+	const segmentClassFor = (last: boolean): string => {
+		let name = 'vx-countdown__segment'
+		if (props.size !== 'md') name += ` vx-countdown__segment--${props.size}`
+		if (last) name += ' vx-countdown__segment--last'
+		return name
+	}
+
+	const appendTone = (name: string, base: string): string => {
+		if (textTone.value.length === 0) return name
+		return `${name} ${base}--${textTone.value}`
+	}
+
+	// 基础 → 尺寸 → 类型。十分位的宽度 class 只在有盒时挂；plain 不写宽度，收到字形。width:auto 不在允许的长度里。
+	const boxClass = (base: string): string => {
+		let name = base
+		if (props.size !== 'md') name += ` ${base}--${props.size}`
+		if (base === 'vx-countdown__ms' && props.variant !== 'plain') {
+			if (props.size === 'sm') name += ` ${base}--width-sm`
+			else if (props.size === 'lg') name += ` ${base}--width-lg`
+			else name += ` ${base}--width`
+		}
+		if (props.variant === 'plain') name += ` ${base}--plain`
+		else if (props.variant === 'soft') {
+			name += props.type === 'default' ? ` ${base}--soft` : ` ${base}--soft-${props.type}`
+		} else if (props.type !== 'default') {
+			name += ` ${base}--${props.type}`
+		}
+		return name
+	}
+
+	const valueClass = computed((): string => boxClass('vx-countdown__value'))
+	const msClass = computed((): string => boxClass('vx-countdown__ms'))
+
+	const digitClass = computed((): string => {
+		let name = 'vx-countdown__digit'
+		if (props.size !== 'md') name += ` vx-countdown__digit--${props.size}`
+		return appendTone(name, 'vx-countdown__digit')
+	})
+
+	// 十分位、冒号和单位 sm / md 共用 13 / 20，只在 lg 升一档。
+	const auxiliaryClass = (base: string): string => {
+		let name = base
+		if (props.size === 'lg') name += ` ${base}--lg`
+		return appendTone(name, base)
+	}
+
+	const msDigitClass = computed((): string => auxiliaryClass('vx-countdown__ms-digit'))
+	const unitClass = computed((): string => auxiliaryClass('vx-countdown__unit'))
+	const colonClass = computed((): string => auxiliaryClass('vx-countdown__colon'))
+	const dotClass = computed((): string => auxiliaryClass('vx-countdown__dot'))
+
+	// 行内样式盖过类型 class，只写业务传入的那一项。
+	const digitStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const auxiliaryStyle = computed((): string => {
+		if (props.unitColor.length === 0) return ''
+		return `color: ${props.unitColor};`
+	})
+
+	// plain 没有盒。描边色只盖 outline；浅底的边保持透明。
+	const boxStyle = computed((): string => {
+		if (props.variant === 'plain') return ''
+		let style = ''
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		if (props.variant === 'outline' && props.borderColor.length > 0) {
+			style += `border-color: ${props.borderColor};`
+		}
+		return style
+	})
+
+	// 盒、分隔和 class 不随读数变。秒级刷新只改 segmentValues，不重建这段字符串。
+	const frames = computed((): Array<CountdownFrame> => {
+		const visible: Array<boolean> = [props.showDays, props.showHours, props.showMinutes, secondsVisible.value]
+		const unitLabels: Array<string> = props.unit === 'en' ? VX_COUNTDOWN_UNIT_EN : VX_COUNTDOWN_UNIT_ZH
+		let lastVisible = -1
+		for (let index = 0; index < 4; index++) {
+			if (visible[index]) lastVisible = index
+		}
+		const list: Array<CountdownFrame> = []
+		for (let index = 0; index < 4; index++) {
+			if (!visible[index]) continue
+			const last = index === lastVisible
+			let trailing = ''
+			let trailingClass = ''
+			if (props.separator === 'colon') {
+				if (!last) {
+					trailing = ':'
+					trailingClass = colonClass.value
+				}
+			} else {
+				trailing = unitLabels[index]
+				trailingClass = unitClass.value
+			}
+			list.push({
+				key: `countdown-${index}`,
+				unitIndex: index,
+				hasMilliseconds: millisecondsVisible.value && index === 3,
+				trailing: trailing,
+				trailingClass: trailingClass,
+				segmentClass: segmentClassFor(last)
+			})
+		}
+		return list
+	})
+
+	// 隐藏的上层单位不取模，余数留给下一个可见单位。天不补零，其余不足两位补零。
+	const segmentValues = computed((): Array<string> => {
+		const values: Array<string> = ['', '', '', '']
+		let remainingSeconds = displaySeconds.value
+		const list = frames.value
+		for (let index = 0; index < list.length; index++) {
+			const unitIndex = list[index].unitIndex
+			const unitSeconds = VX_COUNTDOWN_UNIT_SECONDS[unitIndex]
+			const unitValue = Math.floor(remainingSeconds / unitSeconds)
+			remainingSeconds -= unitValue * unitSeconds
+			values[unitIndex] = unitIndex === 0 ? `${unitValue}` : padValue(unitValue)
+		}
+		return values
+	})
+
+	const stopTimer = () => {
+		if (timer === 0) return
+		clearTimeout(timer)
+		timer = 0
+	}
+
+	const readLeftMs = (): number => {
+		return Math.max(0, Math.round(deadline - Date.now()))
+	}
+
+	const emitTick = () => {
+		const displayed = displaySeconds.value
+		if (displayed === lastTickSeconds) return
+		lastTickSeconds = displayed
+		emit('tick', displayed)
+	}
+
+	const finish = () => {
+		stopTimer()
+		if (!running) return
+		running = false
+		remainingMs.value = 0
+		emitTick()
+		emit('end')
+	}
+
+	// 每次按剩余时间重排下一次触发，不靠递减计数，后台回来也不会越走越慢。
+	const schedule = () => {
+		stopTimer()
+		if (!running) return
+		const leftMs = readLeftMs()
+		if (leftMs <= 0) {
+			finish()
+			return
+		}
+		const tickInterval = millisecondsVisible.value ? 100 : 1000
+		const remainderMs = leftMs % tickInterval
+		const delay = remainderMs === 0 ? tickInterval : remainderMs
+		timer = setTimeout(() => {
+			timer = 0
+			if (!running) return
+			const tickLeftMs = readLeftMs()
+			if (tickLeftMs <= 0) {
+				finish()
+				return
+			}
+			remainingMs.value = tickLeftMs
+			emitTick()
+			schedule()
+		}, delay)
+	}
+
+	const start = () => {
+		if (running) return
+		if (remainingMs.value <= 0) {
+			// 结束后再 start 从 time 重来，不需要先 reset。
+			const restartMs = secondsToMs(props.time)
+			if (restartMs <= 0) return
+			remainingMs.value = restartMs
+			emitTick()
+		}
+		deadline = Date.now() + remainingMs.value
+		running = true
+		lastTickSeconds = displaySeconds.value
+		schedule()
+	}
+
+	const pause = () => {
+		if (!running) return
+		const leftMs = readLeftMs()
+		if (leftMs <= 0) {
+			finish()
+			return
+		}
+		remainingMs.value = leftMs
+		stopTimer()
+		running = false
+	}
+
+	// reset 总是接着跑。改 time 时要不要跑看 autoStart。两条都先停表，再按新的显示秒数补 tick。
+	const seek = (ms: number, shouldStart: boolean) => {
+		stopTimer()
+		running = false
+		remainingMs.value = ms
+		emitTick()
+		if (shouldStart && ms > 0) start()
+	}
+
+	const reset = (seconds: number = -1) => {
+		const nextMs = seconds >= 0 ? secondsToMs(seconds) : secondsToMs(props.time)
+		seek(nextMs, true)
+	}
+
+	watch(() => props.time, (seconds: number) => {
+		seek(secondsToMs(seconds), props.autoStart)
+	})
+
+	// 毫秒位关掉后回到 1 秒一跳。切换时把已经漏掉的时间补回来再重排。
+	watch(millisecondsVisible, () => {
+		if (running) remainingMs.value = readLeftMs()
+		emitTick()
+		if (running) schedule()
+	})
+
+	onMounted(() => {
+		if (props.autoStart && remainingMs.value > 0) start()
+	})
+
+	onUnmounted(() => {
+		stopTimer()
+		running = false
+	})
+
+	defineExpose({
+		start,
+		pause,
+		reset
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 倒计时是展示件，不加外部间距。
+	   横向 flex 里最小宽度默认跟内容走，段不会换行。压成 0，再用 max-width 收到父级以内。 */
+	.vx-countdown {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		min-width: 0;
+		/* #ifdef WEB */
+		max-width: 100%;
+		/* #endif */
+	}
+
+	/* 每个分段连着自己的分隔符或单位，换行时不会把冒号甩到下一行开头。
+	   整段一起换行，不压缩数字盒。 */
+	.vx-countdown__segment {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-countdown__segment--sm {
+		margin-right: var(--vx-space-xs);
+	}
+
+	.vx-countdown__segment--lg {
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-countdown__segment--last {
+		margin-right: 0;
+	}
+
+	/* 数字盒和十分位盒共用盒高、描边和底。高度是 border-box，透明边也不会把两盒错开。 */
+	.vx-countdown__value,
+	.vx-countdown__ms {
+		box-sizing: border-box;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		height: var(--vx-countdown-height-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 最小宽度等于高度，个位数和两位数占位一致；位数更多时自然撑宽。 */
+	.vx-countdown__value {
+		min-width: var(--vx-countdown-height-md);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+	}
+
+	.vx-countdown__ms--width {
+		width: var(--vx-countdown-ms-width-md);
+	}
+
+	.vx-countdown__value--sm,
+	.vx-countdown__ms--sm {
+		height: var(--vx-countdown-height-sm);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-countdown__value--sm {
+		min-width: var(--vx-countdown-height-sm);
+	}
+
+	.vx-countdown__ms--width-sm {
+		width: var(--vx-countdown-ms-width-sm);
+	}
+
+	.vx-countdown__value--lg,
+	.vx-countdown__ms--lg {
+		height: var(--vx-countdown-height-lg);
+	}
+
+	.vx-countdown__value--lg {
+		min-width: var(--vx-countdown-height-lg);
+	}
+
+	.vx-countdown__ms--width-lg {
+		width: var(--vx-countdown-ms-width-lg);
+	}
+
+	.vx-countdown__value--primary,
+	.vx-countdown__ms--primary {
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-countdown__value--success,
+	.vx-countdown__ms--success {
+		border-color: var(--vx-color-success);
+	}
+
+	.vx-countdown__value--info,
+	.vx-countdown__ms--info {
+		border-color: var(--vx-color-info);
+	}
+
+	/* 黄描边用 ink。--vx-color-warning 在白底上太浅。 */
+	.vx-countdown__value--warning,
+	.vx-countdown__ms--warning {
+		border-color: var(--vx-color-warning-ink);
+	}
+
+	.vx-countdown__value--danger,
+	.vx-countdown__ms--danger {
+		border-color: var(--vx-color-danger);
+	}
+
+	/* 浅底留着 1px 透明边，内容区和描边盒对齐。连盒一起去掉用 plain。 */
+	.vx-countdown__value--soft,
+	.vx-countdown__ms--soft {
+		background-color: var(--vx-color-default-soft);
+		border-color: transparent;
+	}
+
+	.vx-countdown__value--soft-primary,
+	.vx-countdown__ms--soft-primary {
+		background-color: var(--vx-color-primary-soft);
+		border-color: transparent;
+	}
+
+	.vx-countdown__value--soft-success,
+	.vx-countdown__ms--soft-success {
+		background-color: var(--vx-color-success-soft);
+		border-color: transparent;
+	}
+
+	.vx-countdown__value--soft-info,
+	.vx-countdown__ms--soft-info {
+		background-color: var(--vx-color-info-soft);
+		border-color: transparent;
+	}
+
+	.vx-countdown__value--soft-warning,
+	.vx-countdown__ms--soft-warning {
+		background-color: var(--vx-color-warning-soft);
+		border-color: transparent;
+	}
+
+	.vx-countdown__value--soft-danger,
+	.vx-countdown__ms--soft-danger {
+		background-color: var(--vx-color-danger-soft);
+		border-color: transparent;
+	}
+
+	.vx-countdown__value--plain,
+	.vx-countdown__ms--plain {
+		padding-left: 0;
+		padding-right: 0;
+		border-width: 0;
+		background-color: transparent;
+	}
+
+	.vx-countdown__value--plain {
+		min-width: 0;
+	}
+
+	/* 数字用正文档，比控件文案大一档；时间要一眼读出来，字重压到 600。
+	   App 默认 keep、Web 默认 pre-line，都会在边界换行；盒高固定，第二行会被裁掉。 */
+	.vx-countdown__digit {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		white-space: nowrap;
+	}
+
+	.vx-countdown__digit--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-countdown__digit--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 十分位是读数的补充，字号跟辅助文字，字重比主数字轻一档。 */
+	.vx-countdown__ms-digit {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		white-space: nowrap;
+	}
+
+	.vx-countdown__ms-digit--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	/* 单位、冒号和小数点都是辅助信息，默认次要灰。 */
+	.vx-countdown__unit,
+	.vx-countdown__colon,
+	.vx-countdown__dot {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	.vx-countdown__unit {
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-countdown__colon {
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-countdown__dot {
+		margin-left: var(--vx-space-xs);
+		margin-right: var(--vx-space-xs);
+	}
+
+	.vx-countdown__unit--lg {
+		margin-left: var(--vx-space-sm);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-countdown__colon--lg {
+		margin-left: var(--vx-space-sm);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-countdown__dot--lg {
+		margin-left: var(--vx-space-sm);
+		margin-right: var(--vx-space-sm);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	/* 类型色跟按钮、标签一样写在 class 上。warning 用 ink；浅底除 warning 外用 pressed。 */
+	.vx-countdown__digit--primary,
+	.vx-countdown__ms-digit--primary,
+	.vx-countdown__unit--primary,
+	.vx-countdown__colon--primary,
+	.vx-countdown__dot--primary {
+		color: var(--vx-color-primary);
+	}
+
+	.vx-countdown__digit--success,
+	.vx-countdown__ms-digit--success,
+	.vx-countdown__unit--success,
+	.vx-countdown__colon--success,
+	.vx-countdown__dot--success {
+		color: var(--vx-color-success);
+	}
+
+	.vx-countdown__digit--info,
+	.vx-countdown__ms-digit--info,
+	.vx-countdown__unit--info,
+	.vx-countdown__colon--info,
+	.vx-countdown__dot--info {
+		color: var(--vx-color-info);
+	}
+
+	.vx-countdown__digit--danger,
+	.vx-countdown__ms-digit--danger,
+	.vx-countdown__unit--danger,
+	.vx-countdown__colon--danger,
+	.vx-countdown__dot--danger {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-countdown__digit--warning-ink,
+	.vx-countdown__ms-digit--warning-ink,
+	.vx-countdown__unit--warning-ink,
+	.vx-countdown__colon--warning-ink,
+	.vx-countdown__dot--warning-ink {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-countdown__digit--primary-pressed,
+	.vx-countdown__ms-digit--primary-pressed,
+	.vx-countdown__unit--primary-pressed,
+	.vx-countdown__colon--primary-pressed,
+	.vx-countdown__dot--primary-pressed {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-countdown__digit--success-pressed,
+	.vx-countdown__ms-digit--success-pressed,
+	.vx-countdown__unit--success-pressed,
+	.vx-countdown__colon--success-pressed,
+	.vx-countdown__dot--success-pressed {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-countdown__digit--info-pressed,
+	.vx-countdown__ms-digit--info-pressed,
+	.vx-countdown__unit--info-pressed,
+	.vx-countdown__colon--info-pressed,
+	.vx-countdown__dot--info-pressed {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-countdown__digit--danger-pressed,
+	.vx-countdown__ms-digit--danger-pressed,
+	.vx-countdown__unit--danger-pressed,
+	.vx-countdown__colon--danger-pressed,
+	.vx-countdown__dot--danger-pressed {
+		color: var(--vx-color-danger-pressed);
+	}
+</style>

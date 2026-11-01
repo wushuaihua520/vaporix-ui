@@ -1,0 +1,392 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-rolling-news</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="volume-high" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">滚动消息</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">纵向或横向轮播消息，间隔和暂停都可控；当前条滑出、下一条滑入，不往回滚。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-rolling-news</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">滚动消息基础</text>
+							<text class="demo-section__desc">左侧图标、中间轮播、右侧箭头，点击抛当前条。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-rolling-news :items="rollingNewsEntries" icon="volume-high" arrow
+							@click="onRollingNewsClick" />
+						<view class="demo-rolling-status">
+							<text class="demo-rolling-status__label">click</text>
+							<text class="demo-rolling-status__text">{{ rollingNewsStatus }}</text>
+						</view>
+						<text class="demo-hint">默认纵向、3 秒一条；点击抛 click(index, item)，路由和请求留在业务。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">轮播方向</text>
+							<text class="demo-section__desc">纵向往上走一格，横向往左走一格；步长都是一整条。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">vertical · 纵向</text>
+							<vx-rolling-news :items="rollingNewsEntries" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group demo-rolling-group--last">
+							<text class="demo-rolling-label">horizontal · 横向</text>
+							<vx-rolling-news :items="rollingNewsEntries" direction="horizontal" icon="volume-high" />
+						</view>
+						<text class="demo-hint">方向只改位移轴，不改标题、图标和插槽的位置。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">三种外观</text>
+							<text class="demo-section__desc">card 带描边，soft 浅底，plain 透明；plain 不收左右内边距。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">card · 描边卡片</text>
+							<vx-rolling-news :items="rollingNewsEntries" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">soft · 浅底</text>
+							<vx-rolling-news :items="rollingNewsEntries" variant="soft" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group demo-rolling-group--last">
+							<text class="demo-rolling-label">plain · 透明</text>
+							<view class="demo-rolling-stage">
+								<vx-rolling-news :items="rollingNewsEntries" variant="plain" icon="volume-high" />
+							</view>
+						</view>
+						<text class="demo-hint">放进已经带描边的卡片时用 plain，避免两条边叠在一起。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">行高 32 / 40 / 48，字号 13 / 15 / 17，图标同档。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">sm · 32</text>
+							<vx-rolling-news :items="rollingNewsEntries" size="sm" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">md · 40</text>
+							<vx-rolling-news :items="rollingNewsEntries" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group demo-rolling-group--last">
+							<text class="demo-rolling-label">lg · 48</text>
+							<vx-rolling-news :items="rollingNewsEntries" size="lg" icon="volume-high" />
+						</view>
+						<text class="demo-hint">三档高度走自己的令牌，不并入按钮、输入框的控件三档。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">图标与插槽</text>
+							<text class="demo-section__desc">icon 换左侧图标，iconColor 换色；prefix / suffix 替换两侧内容。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">iconColor · warning-ink</text>
+							<vx-rolling-news :items="rollingNewsEntries" icon="alert-triangle"
+								icon-color="var(--vx-color-warning-ink)" />
+						</view>
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">prefix · 标签 + suffix · 短操作</text>
+							<vx-rolling-news :items="rollingNewsHotSearch" icon="search" @click="onRollingNewsClick">
+								<template #prefix>
+									<vx-tag type="danger" variant="soft" size="sm" text="热" />
+								</template>
+								<template #suffix>
+									<view class="demo-rolling-more" hover-class="demo-rolling-more--pressed"
+										@click="onRollingNewsSuffix">
+										<text class="demo-rolling-more__text">换一批</text>
+									</view>
+								</template>
+							</vx-rolling-news>
+						</view>
+						<text class="demo-hint demo-rolling-hint">prefix 和 suffix 是独立目标，点它们不会触发整条的 click。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">间隔与暂停</text>
+							<text class="demo-section__desc">interval 是两次切换的间隔；autoplay 关掉后停在第一条。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">interval · 1200</text>
+							<vx-rolling-news :items="rollingNewsEntries" :interval="1200" icon="refresh" />
+						</view>
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">interval · 5000</text>
+							<vx-rolling-news :items="rollingNewsEntries" :interval="5000" icon="refresh" />
+						</view>
+						<view class="demo-rolling-group demo-rolling-group--last">
+							<text class="demo-rolling-label">autoplay · 开关</text>
+							<vx-rolling-news :items="rollingNewsEntries" :autoplay="rollingNewsAutoplay" :interval="2000"
+								icon="refresh" />
+						</view>
+						<view class="demo-rolling-actions">
+							<vx-button block size="sm" :text="rollingNewsActionText" @click="toggleRollingNews" />
+						</view>
+						<text class="demo-hint demo-rolling-hint">手指按在整条上时暂停，松手后重新计时；换方向会从第一条重来。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">消息数据</text>
+							<text class="demo-section__desc">一条不轮播，空数组不渲染；静态展示关掉 clickable。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">items · 1 条</text>
+							<vx-rolling-news :items="rollingNewsSingle" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group">
+							<text class="demo-rolling-label">clickable · false</text>
+							<vx-rolling-news :items="rollingNewsEntries" :clickable="false" icon="volume-high" />
+						</view>
+						<view class="demo-rolling-group demo-rolling-group--last">
+							<text class="demo-rolling-label">items · 空数组</text>
+							<vx-rolling-news :items="[]" icon="volume-high" />
+							<view class="demo-rolling-empty">
+								<text class="demo-rolling-empty__text">上面什么都不渲染，只留这一行说明。</text>
+							</view>
+						</view>
+						<text class="demo-hint">从一条变多条会重新开始计时；换文案会回到第一条，避免停在半格上。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">页面通告、搜索框热词和卡片内公告，底色与圆角跟着场景走。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-rolling-news :items="rollingNewsNotices" variant="soft"
+							bg-color="var(--vx-color-warning-soft)" icon="alert-triangle"
+							icon-color="var(--vx-color-warning-ink)" @click="onRollingNewsNotice">
+							<template #suffix>
+								<view class="demo-rolling-close" hover-class="demo-rolling-close--pressed"
+									@click="onRollingNewsClose">
+									<vx-icon name="close" size="sm" color="var(--vx-color-warning-ink)" />
+								</view>
+							</template>
+						</vx-rolling-news>
+
+						<view class="demo-rolling-search">
+							<vx-rolling-news :items="rollingNewsHotSearch" variant="soft" shape="pill" icon="search"
+								icon-color="var(--vx-color-text-secondary)" :interval="2600" arrow
+								@click="onRollingNewsClick" />
+						</view>
+					</view>
+
+					<view class="demo-rolling-card">
+						<vx-card title="系统公告" meta="今天 09:00 更新">
+							<vx-rolling-news :items="rollingNewsNotices" variant="plain" size="sm" icon="bell"
+								icon-color="var(--vx-color-text-secondary)" :clickable="false" />
+						</vx-card>
+					</view>
+					<text class="demo-hint demo-rolling-hint">通告条用浅底加语义图标色，搜索框用胶囊；两者都只负责轮播，点击和关闭由业务处理。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 滚动消息演示：新闻、热词和通告各用一份数据，点哪一条都能在状态里看到。
+	type RollingNewsDemoItem = {
+		id: string
+		text: string
+	}
+
+	const rollingNewsEntries: RollingNewsDemoItem[] = [
+		{ id: 'news-1', text: '致力发展负责任的人工智能 中国发布八大治理原则' },
+		{ id: 'news-2', text: '格兰仕暗示拜访拼多多后遭天猫打压，拼多多高层赞其有勇气' },
+		{ id: 'news-3', text: '阿里计划将每股普通股拆为 8 股，增加筹资灵活性' }
+	]
+
+	const rollingNewsNotices: RollingNewsDemoItem[] = [
+		{ id: 'notice-1', text: '受台风影响，明天部分线路停运，出行前请查询最新时刻。' },
+		{ id: 'notice-2', text: '9 月 30 日至 10 月 7 日，客服热线服务时间调整为 9:00–18:00。' }
+	]
+
+	const rollingNewsHotSearch: RollingNewsDemoItem[] = [
+		{ id: 'hot-1', text: '夏季穿搭' },
+		{ id: 'hot-2', text: '减脂冬瓜荷叶蛋' },
+		{ id: 'hot-3', text: '玻尿酸补水面膜' }
+	]
+
+	const rollingNewsSingle: RollingNewsDemoItem[] = [
+		{ id: 'single-1', text: '只有一条时不轮播，也不会铺第二层。' }
+	]
+
+	const rollingNewsStatus = ref('还没有点击')
+
+	const rollingNewsAutoplay = ref(true)
+
+	const rollingNewsActionText = computed((): string => {
+		return rollingNewsAutoplay.value ? '暂停轮播' : '继续轮播'
+	})
+
+	const onRollingNewsClick = (index: number, item: RollingNewsDemoItem) => {
+		rollingNewsStatus.value = `第 ${index + 1} 条 · ${item.text}`
+	}
+
+	const onRollingNewsSuffix = () => {
+		rollingNewsStatus.value = '点了 suffix · 没有触发整条 click'
+	}
+
+	const onRollingNewsNotice = (index: number, item: RollingNewsDemoItem) => {
+		rollingNewsStatus.value = `通告第 ${index + 1} 条 · ${item.text}`
+	}
+
+	const onRollingNewsClose = () => {
+		rollingNewsStatus.value = '点了关闭 · 通告条不抛整条 click'
+	}
+
+	const toggleRollingNews = () => {
+		rollingNewsAutoplay.value = !rollingNewsAutoplay.value
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/countdown/countdown'
+	const nextPath: string = '/pages/demo/notice-bar/notice-bar'
+	const prevName = '倒计时'
+	const nextName = '通告栏'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

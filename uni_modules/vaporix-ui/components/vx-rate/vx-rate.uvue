@@ -1,0 +1,538 @@
+<template>
+	<!-- 手势挂在根上：滑动时手指可能已经离开按下时的那颗星，位移统一在根上换算。 -->
+	<view class="vx-rate" @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchCancel"
+		@mousemove="onMouseMove" @mouseup="onMouseUp">
+		<view class="vx-rate__stars">
+			<view v-for="star in stars" :key="star.key" :class="star.item">
+				<!-- 底层：未选中星形。空心时换成线性字形，和选中层用同一个字宽。 -->
+				<view :class="boxClass">
+					<text :class="voidGlyphClass" :style="voidStyle">{{ glyph }}</text>
+				</view>
+				<!-- 选中层：这一颗的宽度就是进度，内层保持整颗宽度，多出来的被裁掉。 -->
+				<view class="vx-rate__fill" :style="star.fill">
+					<view :class="boxClass">
+						<text :class="activeGlyphClass" :style="activeStyle">{{ glyph }}</text>
+					</view>
+				</view>
+				<!-- 左右半区各接一次点按：半星由左半区给出，滑动从按下那一刻的半区起算。 -->
+				<!-- 停在组件上，外层列表行不会再收到同一次点击。只读不接指针，点击落到外层。 -->
+				<view :class="leftHitClass" @click.stop="onPick(star.leftValue)"
+					@touchstart="onHitStart(star.leftValue, $event as UniTouchEvent)"
+					@mousedown="onMouseDown(star.leftValue, $event as UniMouseEvent)"></view>
+				<view :class="rightHitClass" @click.stop="onPick(star.rightValue)"
+					@touchstart="onHitStart(star.rightValue, $event as UniTouchEvent)"
+					@mousedown="onMouseDown(star.rightValue, $event as UniMouseEvent)"></view>
+			</view>
+		</view>
+		<text v-if="hasText" :class="textClass">{{ displayText }}</text>
+	</view>
+</template>
+
+<script setup>
+	import { VxRateProps } from './props'
+	import { VX_ICON_GLYPHS } from '../../libs/icons/codepoints'
+	import { VX_RATE_SIZE, VX_RATE_GAP, VX_RATE_DRAG_THRESHOLD, VX_RATE_CLICK_GUARD } from '../../libs/rate'
+
+	const props = withDefaults(defineProps<VxRateProps>(), {
+		count: 5,
+		size: 'md',
+		type: 'warning',
+		allowHalf: false,
+		hollow: false,
+		showText: false,
+		text: '',
+		activeColor: '',
+		voidColor: '',
+		readonly: false,
+		disabled: false
+	})
+
+	const modelValue = defineModel({
+		type: Number,
+		default: 0
+	})
+
+	const emit = defineEmits<{
+		change: [value: number]
+	}>()
+
+	type RateStar = {
+		key: string
+		fill: string
+		item: string
+		/** 左半区代表的分值；不允许半星时和右半区一样是整星。 */
+		leftValue: number
+		rightValue: number
+	}
+
+	// 星形直接用核心图标字体的 star 字形：vx-icon 的尺寸只有三档，评分要 20 / 24 / 28。
+	const glyph = VX_ICON_GLYPHS['star']
+
+	// 星形总数收敛到 1–10：0 颗没有意义，超过 10 颗一行放不下。非数字也按 1 颗。
+	const total = computed((): number => {
+		const count = Math.floor(props.count)
+		if (!(count >= 1)) return 1
+		if (count > 10) return 10
+		return count
+	})
+
+	// 只把显示收敛到范围内，不改写模型；小数留给只读展示。NaN 也按未评分处理。
+	const currentValue = computed((): number => {
+		const value = modelValue.value
+		if (!(value >= 0)) return 0
+		return value > total.value ? total.value : value
+	})
+
+	const interactive = computed((): boolean => {
+		return !props.readonly && !props.disabled
+	})
+
+	const step = computed((): number => {
+		return props.allowHalf ? 0.5 : 1
+	})
+
+	// 一颗星连同间距的像素宽度，只给滑动手势用。读不到 CSS 变量，常量在 libs/rate.ts。
+	const starStep = computed((): number => {
+		return VX_RATE_SIZE[props.size] + VX_RATE_GAP
+	})
+
+	const itemClass = computed((): string => {
+		if (props.size === 'md') return 'vx-rate__item'
+		return `vx-rate__item vx-rate__item--${props.size}`
+	})
+
+	const lastItemClass = computed((): string => {
+		return `${itemClass.value} vx-rate__item--last`
+	})
+
+	// 每颗星的填充宽度：满星 100，半星 50，未选中 0。小数按百分比保留，只读的 3.45 也如实显示。
+	const stars = computed((): RateStar[] => {
+		const list: RateStar[] = []
+		const value = currentValue.value
+		const half = props.allowHalf
+		const baseItem = itemClass.value
+		const endItem = lastItemClass.value
+		const count = total.value
+		for (let index = 0; index < count; index++) {
+			const ratio = value - index
+			let percent = 0
+			if (ratio >= 1) percent = 100
+			else if (ratio > 0) percent = Math.round(ratio * 100)
+			list.push({
+				key: `star-${index}`,
+				fill: `width: ${percent}%;`,
+				item: index === count - 1 ? endItem : baseItem,
+				leftValue: half ? index + 0.5 : index + 1,
+				rightValue: index + 1
+			})
+		}
+		return list
+	})
+
+	// class 顺序：基础 → 尺寸 → 类型 → 形状 → 状态。和样式表一致，后写的盖过先写的。
+	const glyphClass = (tone: string, outline: boolean, disabled: boolean): string => {
+		let name = 'vx-rate__glyph'
+		if (props.size !== 'md') name += ` vx-rate__glyph--${props.size}`
+		if (tone.length > 0) name += ` vx-rate__glyph--${tone}`
+		if (outline) name += ' vx-rate__glyph--outline'
+		if (disabled) name += ' vx-rate__glyph--disabled'
+		return name
+	}
+
+	// 自定义色走内联，会盖过 class；有字面值时不再挂语义 class。禁用时自定义色不生效。
+	const voidGlyphClass = computed((): string => {
+		if (props.hollow) return glyphClass('', true, false)
+		if (!props.disabled && props.voidColor.length > 0) return glyphClass('', false, false)
+		return glyphClass('void', false, false)
+	})
+
+	const voidStyle = computed((): string => {
+		if (props.disabled || props.voidColor.length === 0) return ''
+		return `color: ${props.voidColor};`
+	})
+
+	const activeGlyphClass = computed((): string => {
+		if (props.disabled) return glyphClass('', false, true)
+		if (props.activeColor.length > 0) return glyphClass('', false, false)
+		return glyphClass(props.type, false, false)
+	})
+
+	const activeStyle = computed((): string => {
+		if (props.disabled || props.activeColor.length === 0) return ''
+		return `color: ${props.activeColor};`
+	})
+
+	// 底层的空星和选中层的满星共用同一个盒子尺寸，两层才能严丝合缝地叠在一起。
+	const boxClass = computed((): string => {
+		if (props.size === 'md') return 'vx-rate__box'
+		return `vx-rate__box vx-rate__box--${props.size}`
+	})
+
+	const hitClass = (side: string): string => {
+		let name = `vx-rate__hit vx-rate__hit--${side}`
+		if (props.disabled) name += ' vx-rate__hit--disabled'
+		else if (props.readonly) name += ' vx-rate__hit--readonly'
+		return name
+	}
+
+	const leftHitClass = computed((): string => {
+		return hitClass('left')
+	})
+
+	const rightHitClass = computed((): string => {
+		return hitClass('right')
+	})
+
+	const hasText = computed((): boolean => {
+		return props.showText || props.text.length > 0
+	})
+
+	// 分值最多保留一位小数，整数不补 .0；自定义文案优先。
+	const displayText = computed((): string => {
+		if (props.text.length > 0) return props.text
+		const scaled = Math.round(currentValue.value * 10)
+		const whole = Math.floor(scaled / 10)
+		const fraction = scaled - whole * 10
+		if (fraction === 0) return `${whole}`
+		return `${whole}.${fraction}`
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-rate__text'
+		if (props.size === 'lg') name += ' vx-rate__text--lg'
+		if (props.disabled) name += ' vx-rate__text--disabled'
+		return name
+	})
+
+	// 手势状态只用来算下一次提交，不参与渲染，用普通变量就够了。
+	let dragging = false
+	let dragBase = 0
+	let dragStartX = 0
+	let dragStartY = 0
+	let dragMoved = false
+	let dragCancelled = false
+	// 点按或滑动结束后浏览器还会补发一次 click，记一个时间点挡住它，比布尔量加定时器稳。
+	let suppressUntil = 0
+	// 只挡住触摸之后补来的 mouse，不挡住下一次真正的鼠标点击。
+	let blockMouse = false
+
+	// 点按和滑动都走这里：按半星或整星对齐，再收敛到最小一档和满星之间。
+	const commit = (value: number) => {
+		const unit = step.value
+		let clamped = value
+		if (!(clamped >= unit)) clamped = unit
+		else if (clamped > total.value) clamped = total.value
+		const snapped = Math.round(clamped / unit) * unit
+		const next = Math.round(snapped * 10) / 10
+		if (next === currentValue.value) return
+		modelValue.value = next
+		emit('change', next)
+	}
+
+	// 鼠标点击和真机的 click 都走这里；已经由 touch / mouseup 提交过的，由 suppressUntil 挡掉。
+	const onPick = (value: number) => {
+		if (!interactive.value) return
+		if (Date.now() < suppressUntil) return
+		commit(value)
+	}
+
+	const begin = (value: number, pageX: number, pageY: number) => {
+		if (!interactive.value) return
+		dragging = true
+		dragBase = value
+		dragStartX = pageX
+		dragStartY = pageY
+		dragMoved = false
+		dragCancelled = false
+	}
+
+	// 先等横向位移超过阈值再接管；纵向为主的移动按滚动处理，抬起时也不提交分值。
+	const moveBy = (pageX: number, pageY: number) => {
+		if (!dragging) return
+		const distance = pageX - dragStartX
+		const vertical = pageY - dragStartY
+		if (!dragMoved) {
+			if (dragCancelled) return
+			if (Math.abs(vertical) > Math.abs(distance) && Math.abs(vertical) >= VX_RATE_DRAG_THRESHOLD) {
+				dragCancelled = true
+				return
+			}
+			if (Math.abs(distance) < VX_RATE_DRAG_THRESHOLD) return
+			dragMoved = true
+		}
+		commit(dragBase + distance / starStep.value)
+	}
+
+	const finish = () => {
+		if (!dragging) return
+		dragging = false
+		// 点按已经按按下的半区提交。抬起到另一半区时补发的 click 会改写分值，一起挡住。
+		suppressUntil = Date.now() + VX_RATE_CLICK_GUARD
+		if (dragMoved || dragCancelled) {
+			dragCancelled = false
+			return
+		}
+		commit(dragBase)
+	}
+
+	const onHitStart = (value: number, event: UniTouchEvent) => {
+		const touches = event.touches
+		if (touches.length === 0) return
+		begin(value, touches[0].pageX, touches[0].pageY)
+	}
+
+	const onTouchMove = (event: UniTouchEvent) => {
+		const touches = event.touches
+		if (touches.length === 0) return
+		moveBy(touches[0].pageX, touches[0].pageY)
+	}
+
+	const onTouchEnd = () => {
+		if (!dragging) return
+		blockMouse = true
+		finish()
+	}
+
+	const onTouchCancel = () => {
+		const active = dragging
+		dragging = false
+		dragMoved = false
+		dragCancelled = false
+		if (!active) return
+		blockMouse = true
+		suppressUntil = Date.now() + VX_RATE_CLICK_GUARD
+	}
+
+	// 鼠标离开组件后根节点收不到 mousemove，Web 上改在 window 跟到松开。
+	// #ifdef WEB
+	const onWindowMouseMove = (event: UniMouseEvent) => {
+		moveBy(event.pageX, event.pageY)
+	}
+
+	const endMouse = () => {
+		window.removeEventListener('mousemove', onWindowMouseMove)
+		window.removeEventListener('mouseup', endMouse)
+		finish()
+	}
+
+	onUnmounted(() => {
+		window.removeEventListener('mousemove', onWindowMouseMove)
+		window.removeEventListener('mouseup', endMouse)
+	})
+	// #endif
+
+	const onMouseDown = (value: number, event: UniMouseEvent) => {
+		// 触摸屏会在 touch 之后再补一套 mouse，这段时间内不重新起手。
+		if (dragging) return
+		if (blockMouse && Date.now() < suppressUntil) return
+		blockMouse = false
+		begin(value, event.pageX, event.pageY)
+		if (!dragging) return
+		// #ifdef WEB
+		window.addEventListener('mousemove', onWindowMouseMove)
+		window.addEventListener('mouseup', endMouse)
+		// #endif
+	}
+
+	const onMouseMove = (event: UniMouseEvent) => {
+		moveBy(event.pageX, event.pageY)
+	}
+
+	const onMouseUp = () => {
+		// #ifdef WEB
+		endMouse()
+		// #endif
+		// #ifndef WEB
+		finish()
+		// #endif
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	/* 不加 align-self：放进表单行时由父级垂直居中，放进纵向容器时横向占满不影响星形左对齐。 */
+	.vx-rate {
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.vx-rate__stars {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 星形盒同宽同高，两层叠放。右间距只留在星与星之间，末颗去掉，避免右侧多出一截。 */
+	.vx-rate__item {
+		position: relative;
+		flex-shrink: 0;
+		width: var(--vx-rate-size-md);
+		height: var(--vx-rate-size-md);
+		margin-right: var(--vx-rate-gap);
+	}
+
+	.vx-rate__item--lg {
+		width: var(--vx-rate-size-lg);
+		height: var(--vx-rate-size-lg);
+	}
+
+	.vx-rate__item--sm {
+		width: var(--vx-rate-size-sm);
+		height: var(--vx-rate-size-sm);
+	}
+
+	.vx-rate__item--last {
+		margin-right: 0;
+	}
+
+	.vx-rate__box {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-rate-size-md);
+		height: var(--vx-rate-size-md);
+	}
+
+	.vx-rate__box--lg {
+		width: var(--vx-rate-size-lg);
+		height: var(--vx-rate-size-lg);
+	}
+
+	.vx-rate__box--sm {
+		width: var(--vx-rate-size-sm);
+		height: var(--vx-rate-size-sm);
+	}
+
+	.vx-rate__glyph {
+		flex-shrink: 0;
+		font-family: VaporixIconsFill;
+		font-size: var(--vx-rate-size-md);
+		line-height: var(--vx-rate-size-md);
+		font-weight: var(--vx-weight-regular);
+		font-style: normal;
+		letter-spacing: 0;
+		text-align: center;
+	}
+
+	.vx-rate__glyph--lg {
+		font-size: var(--vx-rate-size-lg);
+		line-height: var(--vx-rate-size-lg);
+	}
+
+	.vx-rate__glyph--sm {
+		font-size: var(--vx-rate-size-sm);
+		line-height: var(--vx-rate-size-sm);
+	}
+
+	.vx-rate__glyph--primary {
+		color: var(--vx-color-primary);
+	}
+
+	.vx-rate__glyph--success {
+		color: var(--vx-color-success);
+	}
+
+	.vx-rate__glyph--info {
+		color: var(--vx-color-info);
+	}
+
+	/* 琥珀原色在白底上不到 3:1，星形填充用 pressed。 */
+	.vx-rate__glyph--warning {
+		color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-rate__glyph--danger {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-rate__glyph--default {
+		color: var(--vx-color-text);
+	}
+
+	/* 实心未选中用描边灰。空心不挂这个 class。 */
+	.vx-rate__glyph--void {
+		color: var(--vx-color-border);
+	}
+
+	/* 空心：未选中换成线性字体。描边用 disabled-text，白底上才看得见。 */
+	.vx-rate__glyph--outline {
+		font-family: VaporixIcons;
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-rate__glyph--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 选中层压在底层星形上，宽度是这一颗的进度；内层保持整颗宽度，多出来的被裁掉。
+	   App 默认就裁掉溢出，这里写明，Web 上才有同样的效果。 */
+	.vx-rate__fill {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		flex-direction: row;
+		align-items: center;
+		overflow: hidden;
+	}
+
+	/* 点按层盖在星形上，不占布局；左右各半，半星由左半区给出。
+	   App 默认 z-index 是 0，这层要压在选中层上面。 */
+	.vx-rate__hit {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 50%;
+		flex-direction: row;
+		z-index: 1;
+	}
+
+	.vx-rate__hit--left {
+		left: 0;
+	}
+
+	.vx-rate__hit--right {
+		right: 0;
+	}
+
+	/* 只读不接指针，点击落到外层卡片。App 上不生效时，脚本里的 interactive 仍会拦住。 */
+	.vx-rate__hit--readonly {
+		pointer-events: none;
+	}
+
+	/* 分值用辅助说明档。末颗星没有右间距，这里留 sm，和星间距同一档。lg 跟到正文，免得字号落差太大。 */
+	.vx-rate__text {
+		margin-left: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	.vx-rate__text--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-rate__text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* #ifdef WEB */
+	.vx-rate {
+		user-select: none;
+	}
+
+	.vx-rate__hit {
+		cursor: pointer;
+	}
+
+	/* 禁用仍接住点击，避免点在灰掉的评分上触发行点击。 */
+	.vx-rate__hit--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>

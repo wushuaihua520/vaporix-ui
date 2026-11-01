@@ -1,0 +1,382 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-image-group</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="image" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">图片组合</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">方框 40 / 64 / 88 三档，offset 控制贴边、留缝和堆叠；多行只走 wrap。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-image-group</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">单张和三张，默认横向排列；点击抛索引和 item。</text>
+						</view>
+					</view>
+					<view class="demo-image-lab">
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">单张</text>
+							<vx-image-group :items="singleItems" @click="onImageClick" />
+						</view>
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">贴边 · offset 0</text>
+							<vx-image-group :items="threeItems" @click="onImageClick" />
+						</view>
+						<view class="demo-image-lab__item demo-image-lab__item--last">
+							<text class="demo-image-label">留缝 · offset 8</text>
+							<vx-image-group :items="threeItems" :offset="8" @click="onImageClick" />
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">items 按顺序排，单张点击抛 index 和 item；最近点击：{{ imageLastAction }}。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">形状</text>
+							<text class="demo-section__desc">小圆角、圆形和平角，只改方框形状。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">rounded</text>
+							<vx-image-group :items="singleItems" :clickable="false" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">circle</text>
+							<vx-image-group :items="singleItems" shape="circle" :clickable="false" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">square</text>
+							<vx-image-group :items="singleItems" shape="square" :clickable="false" />
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">sm 用 sm 圆角，md / lg 用 md 圆角；circle 用于头像，square 用于连续图块。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">40 / 64 / 88 三档，同一组只用一档。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">sm · 40px</text>
+							<vx-image-group :items="singleItems" size="sm" :clickable="false" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">md · 64px</text>
+							<vx-image-group :items="singleItems" :clickable="false" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">lg · 88px</text>
+							<vx-image-group :items="singleItems" size="lg" :clickable="false" />
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">方框是固定正方形，不跟父级宽度缩放；更大的展示区交给卡片自己的图片。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">偏移</text>
+							<text class="demo-section__desc">负值重叠、正值留缝、0 贴边；重叠时可加圆环。</text>
+						</view>
+					</view>
+					<view class="demo-image-lab">
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">重叠 · offset -12 · ring</text>
+							<vx-image-group :items="fourItems" size="sm" shape="circle" :offset="-12" ring
+								@click="onImageClick" />
+						</view>
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">贴边 · offset 0</text>
+							<vx-image-group :items="fourItems" size="sm" shape="circle" @click="onImageClick" />
+						</view>
+						<view class="demo-image-lab__item demo-image-lab__item--last">
+							<text class="demo-image-label">留缝 · offset 12</text>
+							<vx-image-group :items="fourItems" size="sm" shape="circle" :offset="12"
+								@click="onImageClick" />
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">offset 取整，单位 px；后一张压在前一张上面，圆环让相邻两张分开。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">多行</text>
+							<text class="demo-section__desc">row 下打开 wrap，每行铺满后换行；负 offset 按 0 处理。</text>
+						</view>
+					</view>
+					<view class="demo-image-lab">
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">9 张 · 圆形 · offset 8 · 容器 280</text>
+							<view class="demo-image-wrap">
+								<vx-image-group :items="nineItems" size="sm" shape="circle" :offset="8" wrap
+									@click="onImageClick" />
+							</view>
+						</view>
+						<view class="demo-image-lab__item demo-image-lab__item--last">
+							<text class="demo-image-label">8 张 · 圆角 · offset 12 · 容器 280</text>
+							<view class="demo-image-wrap">
+								<vx-image-group :items="eightItems" :offset="12" wrap @click="onImageClick" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">wrap 只在 row 下生效，父级限宽后按行换行；横向和纵向留缝都取 offset，最后一行和最后一列不会多留空隙。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">纵向</text>
+							<text class="demo-section__desc">direction="column" 排一列，可重叠也可留缝。</text>
+						</view>
+					</view>
+					<view class="demo-image-columns">
+						<view class="demo-image-column">
+							<text class="demo-image-label">重叠 · offset -12</text>
+							<vx-image-group :items="fourItems" size="sm" shape="circle" direction="column"
+								:offset="-12" ring @click="onImageClick" />
+						</view>
+						<view class="demo-image-column demo-image-column--last">
+							<text class="demo-image-label">留缝 · offset 8</text>
+							<vx-image-group :items="fourItems" direction="column" :offset="8"
+								@click="onImageClick" />
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">纵向只从上往下排，左侧对齐；同一列只用一档尺寸。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">圆环与填充</text>
+							<text class="demo-section__desc">ring 区分相邻图；mode 切裁剪、等比和拉伸。</text>
+						</view>
+					</view>
+					<view class="demo-image-lab">
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">无圆环 · offset -12</text>
+							<vx-image-group :items="fourItems" shape="circle" :offset="-12"
+								@click="onImageClick" />
+						</view>
+						<view class="demo-image-lab__item">
+							<text class="demo-image-label">ring · 默认 surface 描边</text>
+							<vx-image-group :items="fourItems" shape="circle" :offset="-12" ring
+								@click="onImageClick" />
+						</view>
+						<view class="demo-image-lab__item demo-image-lab__item--last">
+							<text class="demo-image-label">ringColor · 跟随页面底色</text>
+							<vx-image-group :items="fourItems" shape="circle" :offset="-12" ring
+								ring-color="var(--vx-color-bg)" @click="onImageClick" />
+						</view>
+					</view>
+					<view class="demo-image-row demo-image-row--spaced">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">aspectFill</text>
+							<vx-image-group :items="wideItems" mode="aspectFill" :clickable="false" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">aspectFit</text>
+							<vx-image-group :items="wideItems" mode="aspectFit" :clickable="false" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">scaleToFill</text>
+							<vx-image-group :items="wideItems" mode="scaleToFill" :clickable="false" />
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">ring 是方框内侧的 2px 描边，不改变方框边长；默认 aspectFill，等比展示用 aspectFit。填充示例用 3:2 的横图，差别更明显。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">卡片里的相册、列表行里的群聊头像。</text>
+						</view>
+					</view>
+					<view class="demo-card-lab">
+						<view class="demo-card-lab__item">
+							<vx-card title="订单照片" meta="3 张" footer="点击图片查看大图">
+								<vx-image-group :items="threeItems" :offset="8" @click="onImageClick" />
+							</vx-card>
+						</view>
+						<view class="demo-card-lab__item demo-card-lab__item--last">
+							<vx-list-view title="群聊" description="最近活跃">
+								<vx-list-cell title="产品设计组" description="8 位成员 · 2 条未读" :divider="false"
+									@click="onRowClick">
+									<template #prefix>
+										<vx-image-group :items="fourItems" size="sm" shape="circle" :offset="-12"
+											ring :clickable="false" />
+									</template>
+									<template #extra>
+										<vx-badge :value="2" />
+									</template>
+								</vx-list-cell>
+							</vx-list-view>
+						</view>
+					</view>
+					<text class="demo-hint demo-image-hint">组合里由外层卡片和列表行提供标题、边界和操作；缩略图只负责图和点击。最近点击：{{ imageLastAction }}。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 图片组合演示：只维护一份照片列表，各分组按需要切片。
+	type ImageDemoItem = {
+		src: string
+		id: string
+	}
+
+	const photoItems: ImageDemoItem[] = [
+		{ src: '/static/demo/card/grid-1.jpg', id: '客厅' },
+		{ src: '/static/demo/card/grid-2.jpg', id: '绿植' },
+		{ src: '/static/demo/card/grid-3.jpg', id: '卧室' },
+		{ src: '/static/demo/card/grid-4.jpg', id: '书房' },
+		{ src: '/static/demo/card/grid-5.jpg', id: '餐厅' },
+		{ src: '/static/demo/card/grid-6.jpg', id: '沙发' },
+		{ src: '/static/demo/card/grid-7.jpg', id: '阳台' },
+		{ src: '/static/demo/card/grid-8.jpg', id: '书架' },
+		{ src: '/static/demo/card/grid-9.jpg', id: '厨房' }
+	]
+
+	const singleItems = photoItems.slice(0, 1)
+	const threeItems = photoItems.slice(0, 3)
+	const fourItems = photoItems.slice(0, 4)
+	const eightItems = photoItems.slice(0, 8)
+	const nineItems = photoItems.slice(0, 9)
+
+	// 填充方式用 3:2 的横图，aspectFit 和 scaleToFill 的差别才看得出来。
+	const wideItems: ImageDemoItem[] = [{ src: '/static/demo/card/thumb-1.jpg', id: '横幅' }]
+
+	const imageLastAction = ref('还没有点击')
+
+	const onImageClick = (index: number, item: ImageDemoItem) => {
+		imageLastAction.value = item.id.length > 0 ? item.id : '第 ' + (index + 1) + ' 张'
+	}
+
+	const onRowClick = () => {
+		imageLastAction.value = '产品设计组'
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/col/col'
+	const nextPath: string = '/pages/demo/qrcode/qrcode'
+	const prevName = '多端适配'
+	const nextName = '二维码'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

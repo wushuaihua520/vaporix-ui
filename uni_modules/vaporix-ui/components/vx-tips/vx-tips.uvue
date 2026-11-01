@@ -1,0 +1,403 @@
+<template>
+	<!-- 提示是浮层：fixed 定位，挂在页面根节点，不要放进 scroll-view 或卡片里。
+	     App 上相对页面（导航栏下方）定位，Web 上相对视口，顶部偏移由安全区变量补齐。 -->
+	<view v-if="show" :class="rootClass" :style="rootStyle">
+		<view :class="boxClass" :style="boxStyle" :hover-class="boxHoverClass"
+			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onBoxTap">
+			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明。 -->
+			<view :class="bgClass" :style="bgStyle"></view>
+			<view v-if="showBalance" class="vx-tips__balance"></view>
+			<view v-if="hasIcon" class="vx-tips__icon">
+				<vx-icon :name="iconName" size="md" :color="foregroundColor" />
+			</view>
+			<!-- 长文案在 maxWidth 内换行，这一层负责收窄，图标和关闭始终垂直居中。 -->
+			<view class="vx-tips__content">
+				<slot v-if="$slots['default'] != null"></slot>
+				<text v-else :class="textClass" :style="textStyle">{{ text }}</text>
+			</view>
+			<view v-if="closable" class="vx-tips__close">
+				<vx-icon name="close" size="md" :color="foregroundColor" />
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxTipsProps } from './props'
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxTipsProps>(), {
+		text: '',
+		type: 'default',
+		position: 'center',
+		duration: 2000,
+		offset: 0,
+		maxWidth: '320px',
+		closable: false,
+		zIndex: 100,
+		bgColor: '',
+		bgOpacity: 1,
+		color: ''
+	})
+
+	// 自动关闭和 close() 都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		close: []
+	}>()
+
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let timer = 0
+
+	const stopTimer = () => {
+		if (timer === 0) return
+		clearTimeout(timer)
+		timer = 0
+	}
+
+	const startTimer = () => {
+		stopTimer()
+		if (props.duration <= 0) return
+		timer = setTimeout(() => {
+			timer = 0
+			close()
+		}, props.duration)
+	}
+
+	// 已经开着时 watch 不触发，要在这里重新计时。从关到开交给 watch，避免连开两次表。
+	const open = () => {
+		if (show.value) startTimer()
+		else show.value = true
+	}
+
+	const close = () => {
+		stopTimer()
+		if (!show.value) return
+		show.value = false
+		emit('close')
+	}
+
+	// 父组件把 show 改成 false 时只停表，不再回抛 close。
+	watch(show, (value: boolean) => {
+		if (value) startTimer()
+		else stopTimer()
+	})
+
+	// 同一条提示换了文案、类型、位置或时长就重新计时，业务不用先关再开。
+	const contentKey = computed((): string => {
+		return `${props.position}|${props.type}|${props.text}|${props.duration}`
+	})
+
+	watch(contentKey, () => {
+		if (show.value) startTimer()
+	})
+
+	// watch 不立即执行，挂载时已经打开的要在这里计时。
+	if (show.value) startTimer()
+
+	onUnmounted(() => {
+		stopTimer()
+	})
+
+	// 实心语义色配 on-*；default 是深色反相底，与徽章实心 default 一致。
+	const textTone = computed((): string => {
+		return props.type === 'default' ? '' : `on-${props.type}`
+	})
+
+	// vx-icon 不继承父级颜色，图标和关闭图标都单独传，自定义色优先。
+	const foregroundColor = computed((): string => {
+		if (props.color.length > 0) return props.color
+		if (props.type === 'default') return 'var(--vx-color-text-inverse)'
+		return `var(--vx-color-on-${props.type})`
+	})
+
+	const hasIcon = computed((): boolean => {
+		return props.icon != null && props.icon.length > 0
+	})
+
+	// 关闭图标跟着文案走。顶部横幅铺满整条，才用左侧占位把正文配回中间。
+	const showBalance = computed((): boolean => {
+		return props.position === 'top' && props.closable
+	})
+
+	// 没传图标时给一个合法名字占位，hasIcon 为 false 不会渲染。
+	const iconName = computed((): VxIconName => {
+		return props.icon != null ? props.icon : 'info'
+	})
+
+	const rootClass = computed((): string => {
+		return `vx-tips vx-tips--${props.position}`
+	})
+
+	const boxClass = computed((): string => {
+		let name = 'vx-tips__box'
+		if (props.position === 'top') name += ' vx-tips__box--top'
+		if (props.closable) name += ' vx-tips__box--closable'
+		return name
+	})
+
+	// 语义色只在 bg 层上换，盒子本身不再铺底色；位置决定 bg 的圆角。
+	const bgClass = computed((): string => {
+		let name = 'vx-tips__bg'
+		if (props.type !== 'default') name += ` vx-tips__bg--${props.type}`
+		if (props.position === 'top') name += ' vx-tips__bg--top'
+		return name
+	})
+
+	// 透明度只作用在底色上，不把文字和图标一起淡掉。
+	const bgOpacity = computed((): number => {
+		const value = props.bgOpacity
+		if (!(value >= 0)) return 0
+		return value > 1 ? 1 : value
+	})
+
+	const bgStyle = computed((): string => {
+		let style = ''
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		style += `opacity: ${bgOpacity.value};`
+		return style
+	})
+
+	// 顶部横幅铺满整条，maxWidth 只作用于居中和底部；offset 让贴边距离，交给外边距。
+	const boxStyle = computed((): string => {
+		let style = ''
+		if (props.position !== 'top' && props.maxWidth.length > 0) style += `max-width: ${props.maxWidth};`
+		if (props.offset !== 0) {
+			if (props.position === 'top') style += `margin-top: ${props.offset}px;`
+			if (props.position === 'bottom') style += `margin-bottom: ${props.offset}px;`
+		}
+		return style
+	})
+
+	const rootStyle = computed((): string => {
+		return `z-index: ${props.zIndex};`
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-tips__text'
+		if (textTone.value.length > 0) name += ` vx-tips__text--${textTone.value}`
+		return name
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const boxHoverClass = computed((): string => {
+		return props.closable ? 'vx-tips__box--pressed' : 'none'
+	})
+
+	const onBoxTap = () => {
+		if (!props.closable) return
+		close()
+	}
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层左右拉满，盒子在里面居中，maxWidth 才有一条确定的宽度可用。
+	   left: 50% 再收缩时，可用宽只剩右半边，长文案会在远小于 320 的地方换行。
+	   层级写在行内，默认 100。App 默认 overflow 是 hidden，阴影画出盒子会被这层裁掉。
+	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-tips {
+		position: fixed;
+		left: var(--uni-safe-area-inset-left, 0px);
+		right: var(--uni-safe-area-inset-right, 0px);
+		flex-direction: column;
+		align-items: center;
+		overflow: visible;
+	}
+
+	/* App 上页面本来就在导航栏下方，顶部变量为 0。 */
+	.vx-tips--top {
+		top: var(--uni-safe-area-inset-top, 0px);
+	}
+
+	/* 只上移自身一半高度，层高就是提示高，上下的页面照常点击。 */
+	.vx-tips--center {
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	/* 安全区之外再留 16，手势条和圆角都不压住。
+	   offset 加在盒子的下边距上，和安全区、这层留白三者叠加。 */
+	.vx-tips--bottom {
+		bottom: var(--uni-safe-area-inset-bottom, 0px);
+		padding-bottom: var(--vx-space-lg);
+	}
+
+	/* 浮层盒：12 上下 + 22 行高 = 46，和顶部横幅等高。
+	   Web 默认 content-box，不写 border-box 会被内边距撑出 maxWidth。
+	   底色放在独立的 bg 层，盒子本身透明，阴影仍画在盒子上。 */
+	.vx-tips__box {
+		position: relative;
+		box-sizing: border-box;
+		flex-direction: row;
+		align-items: center;
+		margin-left: var(--vx-space-xl);
+		margin-right: var(--vx-space-xl);
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		border-radius: var(--vx-radius-md);
+		box-shadow: var(--vx-shadow-lg);
+	}
+
+	/* 只让底色带透明度；文字和图标不受影响。 */
+	.vx-tips__bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-text);
+	}
+
+	.vx-tips__bg--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-tips__bg--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-tips__bg--info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-tips__bg--warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-tips__bg--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	/* 铺满整条、直角，阴影比浮层轻一档。短文案靠这里居中，可关闭时左右用同宽占位。 */
+	.vx-tips__box--top {
+		justify-content: center;
+		width: 100%;
+		margin-left: 0;
+		margin-right: 0;
+		border-radius: 0;
+		box-shadow: var(--vx-shadow-md);
+	}
+
+	.vx-tips__bg--top {
+		border-radius: 0;
+	}
+
+	.vx-tips__box--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 消息会换行，这一层允许收缩，min-width 压成 0 才能在 maxWidth 内断开。 */
+	.vx-tips__content {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	.vx-tips__icon {
+		position: relative;
+		z-index: 1;
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	/* 和关闭图标同一尺寸，只占宽，不显示。 */
+	.vx-tips__balance {
+		flex-shrink: 0;
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-tips__close {
+		position: relative;
+		z-index: 1;
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-tips__text {
+		color: var(--vx-color-text-inverse);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+
+	.vx-tips__text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-tips__text--on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-tips__text--on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-tips__text--on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-tips__text--on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，淡入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   Web 上定位层不接指针，提示两侧的留白不挡下面的点击；
+	   App 上 pointer-events: none 会连子节点一起关掉，不能写。 */
+	/* #ifdef WEB */
+	.vx-tips {
+		pointer-events: none;
+	}
+
+	.vx-tips__box {
+		pointer-events: auto;
+		animation-name: vx-tips-in;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-tips__box--closable {
+		cursor: pointer;
+	}
+
+	@keyframes vx-tips-in {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+	/* #endif */
+</style>

@@ -1,0 +1,561 @@
+<template>
+	<!-- 滚动消息只做轮播：文案来自 items，点击抛给业务，不做详情、路由和请求。 -->
+	<!-- 两条消息用两层叠放：当前条滑出、下一条滑入，不加副本，也不往回滚。 -->
+	<view v-if="items.length > 0" :class="rootClass" :style="rootStyle" :hover-class="hoverClass"
+		:hover-stay-time="VX_PRESSED_STAY_TIME" @touchstart="onPressStart" @touchend="onPressEnd"
+		@touchcancel="onPressEnd">
+		<!-- prefix 放图标、标签或头像；传了就替换内置图标，内容自己带尺寸和颜色。独立目标，不触发整条 click。 -->
+		<view v-if="$slots['prefix'] != null" :class="prefixClass" :hover-stop-propagation="true" @click.stop>
+			<slot name="prefix"></slot>
+		</view>
+		<view v-else-if="hasIcon" :class="iconClass">
+			<vx-icon :name="iconName" :size="sizeName" :color="iconColorValue" />
+		</view>
+
+		<!-- 视口裁掉视口外的一格。高度取内容区令牌，不用百分比：App 上会落成 auto。 -->
+		<view :class="viewportClass">
+			<view v-for="layer in layers" :key="layer.key" :class="layer.layerClass" :style="layer.layerStyle">
+				<text :class="textClass" :style="textStyle">{{ layer.text }}</text>
+			</view>
+		</view>
+
+		<!-- suffix 放「查看全部」、标签或刷新；传了就替换箭头。独立目标，不触发整条 click。 -->
+		<view v-if="$slots['suffix'] != null" :class="suffixClass" :hover-stop-propagation="true" @click.stop>
+			<slot name="suffix"></slot>
+		</view>
+		<view v-else-if="arrow" :class="arrowClass">
+			<vx-icon name="chevron-right" :size="arrowSize" :color="arrowColor" />
+		</view>
+
+		<!-- 热区只在可点时铺一层；静态展示不拦点击，继续落到外层卡片或列表行。 -->
+		<view v-if="clickable" :class="hitClass" @click.stop="onClick"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxRollingNewsItem, VxRollingNewsProps } from './props'
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import {
+		VX_PRESSED_STAY_TIME,
+		VX_ROLLING_NEWS_DURATION,
+		VX_ROLLING_NEWS_INTERVAL,
+		VX_ROLLING_NEWS_SETTLE
+	} from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxRollingNewsProps>(), {
+		items: (): Array<VxRollingNewsItem> => [],
+		direction: 'vertical',
+		variant: 'card',
+		shape: 'rounded',
+		size: 'md',
+		iconColor: '',
+		bgColor: '',
+		color: '',
+		interval: VX_ROLLING_NEWS_INTERVAL,
+		autoplay: true,
+		arrow: false,
+		clickable: true
+	})
+
+	const emit = defineEmits<{
+		click: [index: number, item: VxRollingNewsItem]
+	}>()
+
+	type RollingNewsLayer = {
+		key: number
+		text: string
+		layerClass: string
+		layerStyle: string
+	}
+
+	// 当前条的下标和它所在的层；两层的角色在每次落位后对调。
+	const current = ref(0)
+	const front = ref(0)
+	// 过渡期间两层同时位移，落位后摘掉过渡再换内容。
+	const moving = ref(false)
+	// 按下时暂停轮播，松手后重新计时；它不参与渲染，不进响应式。
+	let pressed = false
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let tickTimer = 0
+	let moveTimer = 0
+
+	// 不认识的档位、方向、外观和形状都回落到默认值，class 只拼认识的名字。
+	const sizeName = computed((): 'sm' | 'md' | 'lg' => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	const directionName = computed((): 'vertical' | 'horizontal' => {
+		return props.direction === 'horizontal' ? 'horizontal' : 'vertical'
+	})
+
+	const variantName = computed((): 'card' | 'soft' | 'plain' => {
+		if (props.variant === 'soft' || props.variant === 'plain') return props.variant
+		return 'card'
+	})
+
+	const shapeName = computed((): 'rounded' | 'pill' | 'square' => {
+		if (props.shape === 'pill' || props.shape === 'square') return props.shape
+		return 'rounded'
+	})
+
+	// 间隔只认正数；负数、0 和读不出来的值都回到默认间隔，定时器不会空转。
+	const intervalValue = computed((): number => {
+		const value = Math.round(props.interval)
+		if (!(value > 0)) return VX_ROLLING_NEWS_INTERVAL
+		return value
+	})
+
+	// 数组换新时可能停在越界下标上，先收回到有效范围再算两层的内容。
+	const safeCurrent = computed((): number => {
+		const count = props.items.length
+		if (count === 0) return 0
+		const value = Math.floor(current.value)
+		if (!(value >= 0)) return 0
+		return value % count
+	})
+
+	// class 顺序：基础 → 尺寸 → 外观 → 形状 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-rolling-news'
+		if (sizeName.value !== 'md') name += ` vx-rolling-news--${sizeName.value}`
+		if (variantName.value === 'soft') name += ' vx-rolling-news--soft'
+		else if (variantName.value === 'card') name += ' vx-rolling-news--card'
+		else name += ' vx-rolling-news--plain'
+		if (shapeName.value === 'pill') name += ' vx-rolling-news--pill'
+		else if (shapeName.value === 'square') name += ' vx-rolling-news--square'
+		if (props.clickable) name += ' vx-rolling-news--clickable'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const textClass = computed((): string => {
+		if (sizeName.value === 'md') return 'vx-rolling-news__text'
+		return `vx-rolling-news__text vx-rolling-news__text--${sizeName.value}`
+	})
+
+	// 图标和文案之间 sm / md 留 8，lg 留 12；后缀同理。
+	const prefixClass = computed((): string => {
+		if (sizeName.value === 'lg') return 'vx-rolling-news__prefix vx-rolling-news__prefix--lg'
+		return 'vx-rolling-news__prefix'
+	})
+
+	const suffixClass = computed((): string => {
+		if (sizeName.value === 'lg') return 'vx-rolling-news__suffix vx-rolling-news__suffix--lg'
+		return 'vx-rolling-news__suffix'
+	})
+
+	// 内置图标和箭头只是提示，压到点击热区下面：点它们和点整条一样。
+	const iconClass = computed((): string => {
+		if (sizeName.value === 'lg') {
+			return 'vx-rolling-news__prefix vx-rolling-news__prefix--lg vx-rolling-news__prefix--behind'
+		}
+		return 'vx-rolling-news__prefix vx-rolling-news__prefix--behind'
+	})
+
+	const arrowClass = computed((): string => {
+		if (sizeName.value === 'lg') {
+			return 'vx-rolling-news__suffix vx-rolling-news__suffix--lg vx-rolling-news__suffix--behind'
+		}
+		return 'vx-rolling-news__suffix vx-rolling-news__suffix--behind'
+	})
+
+	const viewportClass = computed((): string => {
+		if (sizeName.value === 'md') return 'vx-rolling-news__viewport'
+		return `vx-rolling-news__viewport vx-rolling-news__viewport--${sizeName.value}`
+	})
+
+	const hitClass = computed((): string => {
+		if (sizeName.value === 'md') return 'vx-rolling-news__hit'
+		return `vx-rolling-news__hit vx-rolling-news__hit--${sizeName.value}`
+	})
+
+	const hasIcon = computed((): boolean => {
+		return props.icon != null && props.icon.length > 0
+	})
+
+	// 没传图标时给一个合法名字占位，hasIcon 为 false 不会渲染。
+	const iconName = computed((): VxIconName => {
+		return props.icon != null ? props.icon : 'volume-high'
+	})
+
+	// 内置图标是这条消息唯一的强调色；状态底色上由业务换成对应语义色。
+	const iconColorValue = computed((): string => {
+		if (props.iconColor.length > 0) return props.iconColor
+		return 'var(--vx-color-primary)'
+	})
+
+	// 箭头比主文案小一档：sm / md 用 14，lg 用 18。
+	const arrowSize = computed((): 'sm' | 'md' => {
+		return sizeName.value === 'lg' ? 'md' : 'sm'
+	})
+
+	const arrowColor: string = 'var(--vx-color-text-secondary)'
+
+	// 两个方向的位移都按层自身尺寸算：sm / md / lg 都不需要测量高度或宽度。
+	const layers = computed((): Array<RollingNewsLayer> => {
+		const source = props.items
+		const count = source.length
+		if (count === 0) return []
+
+		const movingNow = moving.value
+		const axis = directionName.value === 'vertical' ? 'Y' : 'X'
+		const index = safeCurrent.value
+		const sizeClass = sizeName.value === 'md' ? '' : ` vx-rolling-news__layer--${sizeName.value}`
+		// 只有一条时不叠第二层，也不位移，避免白白多画一层。
+		const layerCount = count > 1 ? 2 : 1
+		const frontLayer = count > 1 && front.value === 1 ? 1 : 0
+		const list: Array<RollingNewsLayer> = []
+
+		for (let layer = 0; layer < layerCount; layer++) {
+			const isFront = layer === frontLayer
+			const itemIndex = isFront ? index : (index + 1) % count
+			const entry = source[itemIndex]
+			let offset = 0
+			if (layerCount > 1) {
+				// 当前条往上 / 往左滑出，下一条从下面 / 右面进来。
+				if (movingNow) offset = isFront ? -100 : 0
+				else offset = isFront ? 0 : 100
+			}
+			// 尺寸在过渡之前，行高才不会被后面的 class 盖掉。
+			let layerClass = 'vx-rolling-news__layer' + sizeClass
+			if (movingNow) layerClass += ' vx-rolling-news__layer--animated'
+			list.push({
+				key: layer,
+				text: entry != null && entry.text != null ? entry.text : '',
+				layerClass: layerClass,
+				layerStyle: `transform: translate${axis}(${offset}%);`
+			})
+		}
+		return list
+	})
+
+	// 空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		return props.clickable ? 'vx-rolling-news--pressed' : 'none'
+	})
+
+	const canAuto = (): boolean => {
+		if (!props.autoplay) return false
+		if (pressed) return false
+		return props.items.length > 1
+	}
+
+	const clearTick = () => {
+		if (tickTimer === 0) return
+		clearTimeout(tickTimer)
+		tickTimer = 0
+	}
+
+	const clearMove = () => {
+		if (moveTimer === 0) return
+		clearTimeout(moveTimer)
+		moveTimer = 0
+	}
+
+	const scheduleTick = () => {
+		clearTick()
+		if (!canAuto()) return
+		tickTimer = setTimeout(step, intervalValue.value)
+	}
+
+	// 两层对调：滑进来的那层接住当前条，滑出去的那层在视口外准备下一条。
+	const settleMove = () => {
+		moveTimer = 0
+		const count = props.items.length
+		if (count <= 1) {
+			moving.value = false
+			current.value = 0
+			front.value = 0
+			return
+		}
+		const next = (safeCurrent.value + 1) % count
+		current.value = next
+		front.value = front.value === 0 ? 1 : 0
+		moving.value = false
+	}
+
+	// 周期从这一格开始算：每 interval 毫秒换下一条，220ms 的过渡包含在内。
+	const step = () => {
+		tickTimer = 0
+		if (!canAuto()) return
+		// 上一格还没落位时先等一拍，间隔比过渡短时也不会两格叠在一起。
+		if (moving.value) {
+			tickTimer = setTimeout(step, VX_ROLLING_NEWS_SETTLE)
+			return
+		}
+		moving.value = true
+		moveTimer = setTimeout(settleMove, VX_ROLLING_NEWS_DURATION + VX_ROLLING_NEWS_SETTLE)
+		tickTimer = setTimeout(step, intervalValue.value)
+	}
+
+	const resetToFirst = () => {
+		clearTick()
+		clearMove()
+		moving.value = false
+		current.value = 0
+		front.value = 0
+		scheduleTick()
+	}
+
+	const onPressStart = () => {
+		if (!canAuto()) return
+		pressed = true
+		clearTick()
+	}
+
+	const onPressEnd = () => {
+		if (!pressed) return
+		pressed = false
+		scheduleTick()
+	}
+
+	// 只有可点时才铺热区，这里再挡一次，避免业务绑了 click 却不想抛事件。
+	const onClick = () => {
+		if (!props.clickable) return
+		const item = props.items[safeCurrent.value]
+		if (item == null) return
+		emit('click', safeCurrent.value, item)
+	}
+
+	// 只比条数和文案，不比数组引用。同一份文案换一个数组不重来；改了 text 或条数才回到第一条。
+	const contentKey = computed((): string => {
+		const source = props.items
+		const parts: Array<string> = []
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			parts.push(entry != null && entry.text != null ? entry.text : '')
+		}
+		return parts.join('\u0001')
+	})
+
+	watch(contentKey, () => {
+		resetToFirst()
+	})
+
+	watch(() => props.autoplay, (value: boolean) => {
+		if (value) scheduleTick()
+		else clearTick()
+	})
+
+	// 停顿时长只重新计时，当前这一条继续显示；换方向要换位移轴，从第一条重来。
+	watch(intervalValue, () => {
+		scheduleTick()
+	})
+
+	watch(directionName, () => {
+		resetToFirst()
+	})
+
+	onMounted(() => {
+		scheduleTick()
+	})
+
+	onUnmounted(() => {
+		clearTick()
+		clearMove()
+		pressed = false
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 滚动消息是三档高的展示行，不是控件：高度只来自 --vx-rolling-news-height-*。
+	   1px 透明描边始终保留，换外观时内容不会上下跳。
+	   写明 overflow：App 默认 hidden、Web 默认 visible，胶囊角才裁得一样。 */
+	.vx-rolling-news {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		height: var(--vx-rolling-news-height-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: transparent;
+		border-radius: var(--vx-radius-md);
+		background-color: transparent;
+		overflow: hidden;
+	}
+
+	.vx-rolling-news--sm {
+		height: var(--vx-rolling-news-height-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-rolling-news--lg {
+		height: var(--vx-rolling-news-height-lg);
+	}
+
+	/* 浅底给搜索框、工具栏和页面底色上的通告条；plain 保持透明，放进卡片。 */
+	.vx-rolling-news--soft {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-rolling-news--card {
+		border-color: var(--vx-color-border);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* plain 放进已经带内边距的卡片或页面区块，左右不再补一层。 */
+	.vx-rolling-news--plain {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.vx-rolling-news--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-rolling-news--square {
+		border-radius: 0;
+	}
+
+	/* 整条按下只变淡，不换底色；自定义底色也不用再配一套 pressed 色。 */
+	.vx-rolling-news--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* prefix 是固定不动的左侧标识；图标、标签或头像由业务自己带尺寸。 */
+	.vx-rolling-news__prefix {
+		position: relative;
+		z-index: 3;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-rolling-news__prefix--lg {
+		margin-right: var(--vx-space-md);
+	}
+
+	/* 内置图标压到点击热区下面；传了 prefix 插槽时插槽自己接住点击。 */
+	.vx-rolling-news__prefix--behind {
+		z-index: 0;
+	}
+
+	/* 视口只裁切，不画底色和描边。高度取内容区令牌，不用 100%：
+	   父级是 align-items: center，App 上百分比高度会缩成内容高，绝对定位的层又没有内容高。 */
+	.vx-rolling-news__viewport {
+		position: relative;
+		flex: 1;
+		min-width: 0;
+		height: var(--vx-rolling-news-inner-md);
+		overflow: hidden;
+	}
+
+	/* 一层就是一条消息：滑出的是当前条，滑入的是下一条。
+	   换条时两层对调，滑出的那层在视口外跳到下一格，不往回滚。
+	   宽高写死：只靠四边定位时，App 上百分比高度会落成 auto，纵向 100% 位移就只剩文字高。
+	   高度取内容区，和视口一致，位移的 100% 才正好是一格。 */
+	.vx-rolling-news__layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: var(--vx-rolling-news-inner-md);
+		flex-direction: row;
+		align-items: center;
+		overflow: hidden;
+	}
+
+	/* 拖动和落位共用同一条 220ms 过渡；摘掉这个 class 时两个方向的变化都是瞬时的。 */
+	.vx-rolling-news__layer--animated {
+		transition-property: transform;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	/* 单行省略：App 默认 keep，写明 nowrap 才会截断；宽度收到层内，长文案不挤出箭头。 */
+	.vx-rolling-news__text {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.vx-rolling-news__text--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-rolling-news__text--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* suffix 是固定不动的右侧内容；箭头和插槽共用这一层。 */
+	.vx-rolling-news__suffix {
+		position: relative;
+		z-index: 3;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-rolling-news__suffix--lg {
+		margin-left: var(--vx-space-md);
+	}
+
+	/* 内置箭头同样压在热区下面，点箭头和点整条一样。 */
+	.vx-rolling-news__suffix--behind {
+		z-index: 0;
+	}
+
+	/* 可点热区盖住整条，prefix / suffix 用更高的层级露在上面。
+	   App 上没有背景的定位层经常接不到点击，全透明也要占一块背景。
+	   宽高写死：四边定位在 App 上高度会落成 auto，空热区就点不到。 */
+	.vx-rolling-news__hit {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 2;
+		width: 100%;
+		height: var(--vx-rolling-news-inner-md);
+		background-color: rgba(0, 0, 0, 0);
+	}
+
+	/* 三处共用内容区高度。放在基础高度后面，sm / lg 才能盖掉 md。 */
+	.vx-rolling-news__viewport--sm,
+	.vx-rolling-news__layer--sm,
+	.vx-rolling-news__hit--sm {
+		height: var(--vx-rolling-news-inner-sm);
+	}
+
+	.vx-rolling-news__viewport--lg,
+	.vx-rolling-news__layer--lg,
+	.vx-rolling-news__hit--lg {
+		height: var(--vx-rolling-news-inner-lg);
+	}
+
+	/* 可点整条是指针，静态展示保持默认指针。 */
+	/* #ifdef WEB */
+	.vx-rolling-news--clickable {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

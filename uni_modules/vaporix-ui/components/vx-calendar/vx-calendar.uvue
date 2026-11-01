@@ -1,0 +1,1274 @@
+<template>
+	<!-- 弹层模式铺满页面、面板贴底，挂在页面根节点；平铺模式是普通块，宽度跟随父级，不带底色和描边。 -->
+	<!-- 点选先落在草稿上：弹层模式点确定才写回 v-model；平铺模式没有确定出口，点选当场写回。 -->
+	<!-- 关闭叉、遮罩和 close() 都不动已提交的值。 -->
+	<view v-if="rendered" :class="rootClass" :style="rootStyle" @touchmove="onRootTouchMove">
+		<view v-if="popup" :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
+
+		<!-- 外层只负责阴影和滑入；内层裁底色，避免 overflow 把阴影一起裁掉。 -->
+		<view :class="sheetClass" @click.stop>
+			<view :class="panelClass">
+				<view v-if="popup" class="vx-calendar__header" @touchmove.stop.prevent>
+					<text class="vx-calendar__title">{{ title }}</text>
+					<view class="vx-calendar__close" hover-class="vx-calendar__close--pressed"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCancelTap">
+						<vx-icon name="close" color="var(--vx-color-text-secondary)" />
+					</view>
+				</view>
+				<view v-if="popup" class="vx-calendar__divider"></view>
+
+				<!-- 翻月行：两侧各一组箭头，年份在更外侧；两组同宽，标题才停在整行正中。 -->
+				<view class="vx-calendar__nav">
+					<view class="vx-calendar__nav-side">
+						<view v-if="showYearArrow" :class="prevYearArrow.rootClass" :hover-class="prevYearArrow.hoverClass"
+							:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="shiftView(-12)">
+							<view class="vx-calendar__double">
+								<vx-icon name="chevron-left" size="sm" :color="prevYearArrow.color" />
+								<vx-icon name="chevron-left" size="sm" :color="prevYearArrow.color" />
+							</view>
+						</view>
+						<view :class="prevMonthArrow.rootClass" :hover-class="prevMonthArrow.hoverClass"
+							:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="shiftView(-1)">
+							<vx-icon name="chevron-left" :color="prevMonthArrow.color" />
+						</view>
+					</view>
+					<text class="vx-calendar__nav-title">{{ monthTitle }}</text>
+					<view class="vx-calendar__nav-side">
+						<view :class="nextMonthArrow.rootClass" :hover-class="nextMonthArrow.hoverClass"
+							:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="shiftView(1)">
+							<vx-icon name="chevron-right" :color="nextMonthArrow.color" />
+						</view>
+						<view v-if="showYearArrow" :class="nextYearArrow.rootClass" :hover-class="nextYearArrow.hoverClass"
+							:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="shiftView(12)">
+							<view class="vx-calendar__double">
+								<vx-icon name="chevron-right" size="sm" :color="nextYearArrow.color" />
+								<vx-icon name="chevron-right" size="sm" :color="nextYearArrow.color" />
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<view class="vx-calendar__week">
+					<text v-for="label in weekLabels" :key="label" class="vx-calendar__week-text">{{ label }}</text>
+				</view>
+
+				<!-- 行数跟着月份走：五行够就不排第六行，当月之外的位置留空格，不排上下月的日期。 -->
+				<!-- 每天是一个等大方块，四边都和邻居留缝；小字槽高度固定，有没有小字都不影响数字的基线。 -->
+				<view class="vx-calendar__grid">
+					<view v-for="cell in cells" :key="cell.key" :class="cell.cellClass" :hover-class="cell.hoverClass"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCellTap(cell)">
+						<view v-if="cell.day.length > 0" :class="cell.tileClass" :style="cell.tileStyle">
+							<text :class="cell.dayClass" :style="cell.dayStyle">{{ cell.day }}</text>
+							<view v-if="cell.showNote" class="vx-calendar__note">
+								<vx-icon v-if="cell.check" name="check" size="sm" :color="cell.checkColor" />
+								<text v-else :class="cell.subClass" :style="cell.subStyle">{{ cell.sub }}</text>
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<view v-if="hasConfirm" class="vx-calendar__divider"></view>
+				<view v-if="hasConfirm" class="vx-calendar__footer" @touchmove.stop.prevent>
+					<text class="vx-calendar__result">{{ resultText }}</text>
+					<view :class="confirmClass" :hover-class="confirmHover" :hover-stay-time="VX_PRESSED_STAY_TIME"
+						@click.stop="confirm">
+						<text :class="confirmTextClass">{{ confirmText }}</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import {
+		VX_CALENDAR_MAX_YEAR,
+		VX_CALENDAR_MIN_YEAR,
+		VX_CALENDAR_WEEK_LABELS,
+		vxCalendarDayNumber,
+		vxCalendarFormat,
+		vxCalendarGrid,
+		vxCalendarMonthBounds,
+		vxCalendarMonthText,
+		vxCalendarParse,
+		vxCalendarShiftMonth,
+		vxCalendarToday,
+		vxCalendarWeekText
+	} from '../../libs/calendar'
+	import { vxLunarFromSolar } from '../../libs/lunar'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VxCalendarMark, VxCalendarProps } from './props'
+
+	const props = withDefaults(defineProps<VxCalendarProps>(), {
+		mode: 'single',
+		popup: false,
+		title: '日期选择',
+		confirmText: '确定',
+		startText: '开始',
+		endText: '结束',
+		placeholder: '请选择日期',
+		minDate: '',
+		maxDate: '',
+		showLunar: false,
+		showYearArrow: true,
+		showConfirm: true,
+		type: 'primary',
+		marks: (): Array<VxCalendarMark> => [],
+		maskClosable: true,
+		maskColor: '',
+		zIndex: 90
+	})
+
+	// 单个日期、区间两端各一个模型：区间模式不读也不写 modelValue，两种模式互不干扰。
+	const modelValue = defineModel({
+		type: String,
+		default: ''
+	})
+
+	const start = defineModel('start', {
+		type: String,
+		default: ''
+	})
+
+	const end = defineModel('end', {
+		type: String,
+		default: ''
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		confirm: []
+		cancel: []
+		change: []
+		monthChange: [year: number, month: number]
+	}>()
+
+	/** 表格里的一格，文案和样式都在这里算好，模板只绑定。 */
+	type CalendarCell = {
+		key: number
+		cellClass: string
+		hoverClass: string
+		tileClass: string
+		tileStyle: string
+		dayClass: string
+		dayStyle: string
+		subClass: string
+		subStyle: string
+		day: string
+		sub: string
+		check: boolean
+		checkColor: string
+		showNote: boolean
+		date: string
+		enabled: boolean
+	}
+
+	/** 翻月箭头的三个绑定，模板不再逐个现算。 */
+	type CalendarArrow = {
+		rootClass: string
+		hoverClass: string
+		color: string
+	}
+
+	/** 可选区间收口到 1900–2100 之后的结果。lower 大于 upper 表示起止写反，整天都不可选。 */
+	type CalendarLimit = {
+		lower: number
+		upper: number
+		lowerYear: number
+		lowerMonth: number
+		upperYear: number
+		upperMonth: number
+	}
+
+	/** 当前月的一格。农历和标记在这里算好，点选只改样式，不再重走换算。 */
+	type CalendarSlot = {
+		key: number
+		day: number
+		date: string
+		lunar: string
+		mark: VxCalendarMark | null
+		dayNumber: number
+	}
+
+	type CalendarMarkBook = {
+		byDate: Record<string, VxCalendarMark>
+		/** 任意一天带了文案或对勾。决定整月要不要给方块留出小字的位置。 */
+		noted: boolean
+	}
+
+	const weekLabels = VX_CALENDAR_WEEK_LABELS
+
+	// 草稿按模式拆开：滚动只看这里，点确定才落到 v-model。
+	const draftValue = ref('')
+	const draftStart = ref('')
+	const draftEnd = ref('')
+	// 区间下一次点的是起点还是终点。两端都定好时重新起头，和「再点一次重新选」一致。
+	const picking = ref(true)
+
+	// 当前显示的月，和选中哪天分开：翻月不改已选。
+	const initialDay = vxCalendarToday()
+	const viewYear = ref(initialDay.year)
+	const viewMonth = ref(initialDay.month)
+	// 今天只用来给数字换色，跨零点后由 prepare 再取一次。
+	const todayText = ref(vxCalendarFormat(initialDay.year, initialDay.month, initialDay.day))
+
+	const rendered = computed((): boolean => !props.popup || show.value)
+
+	const tone = computed((): string => {
+		const value = props.type
+		if (value === 'success' || value === 'info' || value === 'warning' || value === 'danger' || value === 'default') {
+			return value
+		}
+		return 'primary'
+	})
+
+	/** 读成 YYYY-MM-DD；读不出来当没选，不把原始串带进草稿。 */
+	const normalize = (text: string): string => {
+		const parts = vxCalendarParse(text)
+		if (parts == null) return ''
+		return vxCalendarFormat(parts.year, parts.month, parts.day)
+	}
+
+	// 可选区间：minDate / maxDate 收口到 1900–2100，农历表也在这个范围里。
+	// 起止写反时不对调：整天不可选，和文档约定一致，由调用方自己校验。
+	const limit = computed((): CalendarLimit => {
+		const floor = vxCalendarDayNumber(VX_CALENDAR_MIN_YEAR, 1, 1)
+		const ceiling = vxCalendarDayNumber(VX_CALENDAR_MAX_YEAR, 12, 31)
+		const minParts = vxCalendarParse(props.minDate)
+		const maxParts = vxCalendarParse(props.maxDate)
+		let lower = floor
+		let lowerYear = VX_CALENDAR_MIN_YEAR
+		let lowerMonth = 1
+		let upper = ceiling
+		let upperYear = VX_CALENDAR_MAX_YEAR
+		let upperMonth = 12
+		if (minParts != null) {
+			const value = vxCalendarDayNumber(minParts.year, minParts.month, minParts.day)
+			if (value > floor) {
+				lower = value
+				lowerYear = minParts.year
+				lowerMonth = minParts.month
+			}
+		}
+		if (maxParts != null) {
+			const value = vxCalendarDayNumber(maxParts.year, maxParts.month, maxParts.day)
+			if (value < ceiling) {
+				upper = value
+				upperYear = maxParts.year
+				upperMonth = maxParts.month
+			}
+		}
+		return {
+			lower: lower,
+			upper: upper,
+			lowerYear: lowerYear,
+			lowerMonth: lowerMonth,
+			upperYear: upperYear,
+			upperMonth: upperMonth
+		}
+	})
+
+	// 目标月里只要有一天落在可选区间内，就还能翻过去；四个箭头共用这一条。
+	// 起止写反时没有任何一个月可选，箭头全部停住。
+	const reachable = (year: number, month: number): boolean => {
+		const span = limit.value
+		if (span.lower > span.upper) return false
+		const bounds = vxCalendarMonthBounds(year, month)
+		return bounds.last >= span.lower && bounds.first <= span.upper
+	}
+
+	const canStep = (monthDelta: number): boolean => {
+		const target = vxCalendarShiftMonth(viewYear.value, viewMonth.value, monthDelta)
+		return reachable(target.year, target.month)
+	}
+
+	const canPrevMonth = computed((): boolean => canStep(-1))
+	const canNextMonth = computed((): boolean => canStep(1))
+	const canPrevYear = computed((): boolean => canStep(-12))
+	const canNextYear = computed((): boolean => canStep(12))
+
+	const monthTitle = computed((): string => vxCalendarMonthText(viewYear.value, viewMonth.value))
+
+	// 区间两端都没落下时，第一点点的是起点。
+	const syncDraft = () => {
+		draftValue.value = props.mode === 'single' ? normalize(modelValue.value) : ''
+		draftStart.value = props.mode === 'range' ? normalize(start.value) : ''
+		draftEnd.value = props.mode === 'range' ? normalize(end.value) : ''
+		picking.value = draftStart.value.length === 0 || draftEnd.value.length > 0
+	}
+
+	// 已经落定的值优先：有值时显示月跟着它走，不因为可选范围变化被挪到别处。
+	const committedDate = computed((): string => {
+		return props.mode === 'single' ? normalize(modelValue.value) : normalize(start.value)
+	})
+
+	// 没有已选值时，显示月整个落在可选范围之外就收到最近的边界月。
+	const clampView = () => {
+		if (committedDate.value.length > 0) return
+		const span = limit.value
+		if (span.lower > span.upper) return
+		const bounds = vxCalendarMonthBounds(viewYear.value, viewMonth.value)
+		if (bounds.last < span.lower) {
+			viewYear.value = span.lowerYear
+			viewMonth.value = span.lowerMonth
+		} else if (bounds.first > span.upper) {
+			viewYear.value = span.upperYear
+			viewMonth.value = span.upperMonth
+		}
+	}
+
+	// 打开时重新读模型：已选值优先，其次今天；已选值超出可选区间时仍停在那个月，不偷偷改值。
+	const prepare = () => {
+		const today = vxCalendarToday()
+		todayText.value = vxCalendarFormat(today.year, today.month, today.day)
+		syncDraft()
+
+		const selected = vxCalendarParse(props.mode === 'single' ? modelValue.value : start.value)
+		if (selected != null) {
+			// 已选值可能落在可选范围之外：照样停在那个月，用户才看得见自己选的是哪天。
+			viewYear.value = selected.year
+			viewMonth.value = selected.month
+			return
+		}
+		viewYear.value = today.year
+		viewMonth.value = today.month
+		clampView()
+	}
+
+	// 标记按日期归一：不补零的写法也能对上，读不出来的直接丢掉。同一天多条时留第一条。
+	const markBook = computed((): CalendarMarkBook => {
+		const byDate: Record<string, VxCalendarMark> = {}
+		let noted = false
+		const source = props.marks
+		for (let index = 0; index < source.length; index++) {
+			const item = source[index]
+			const date = normalize(item.date)
+			if (date.length === 0 || byDate[date] != null) continue
+			const text = item.text != null ? item.text : ''
+			const done = item.done === true
+			if (done || text.length > 0) noted = true
+			byDate[date] = {
+				date: date,
+				text: text,
+				bgColor: item.bgColor,
+				color: item.color,
+				done: done
+			}
+		}
+		return { byDate: byDate, noted: noted }
+	})
+
+	// 小字槽只在真有小字时给方块留白：纯日期模式下日期在方块正中，下方不留空。
+	// 任意一天有标记文案，整月都留白，翻月时数字基线才不会上下跳。
+	const hasNote = computed((): boolean => {
+		if (props.showLunar || props.mode === 'range') return true
+		return markBook.value.noted
+	})
+
+	// 农历只跟年月走。标记表更新时不要从 1900 年再换算一遍。
+	const lunarByDay = computed((): Array<string> => {
+		const list: Array<string> = []
+		for (let day = 0; day <= 31; day++) list.push('')
+		if (!props.showLunar) return list
+		const year = viewYear.value
+		const month = viewMonth.value
+		const grid = vxCalendarGrid(year, month)
+		for (let index = 0; index < grid.length; index++) {
+			const day = grid[index].day
+			if (day === 0) continue
+			const lunarDate = vxLunarFromSolar(year, month, day)
+			if (lunarDate != null) list[day] = lunarDate.dayText
+		}
+		return list
+	})
+
+	// 网格和标记跟年月、标记表走。点选改的是草稿，不进这里。
+	const monthGrid = computed((): Array<CalendarSlot> => {
+		const year = viewYear.value
+		const month = viewMonth.value
+		const grid = vxCalendarGrid(year, month)
+		let lastDayIndex = 0
+		for (let index = 0; index < grid.length; index++) {
+			if (grid[index].day > 0) lastDayIndex = index
+		}
+		const count = lastDayIndex < 35 ? 35 : 42
+		const lunar = lunarByDay.value
+		const marks = markBook.value.byDate
+		const list: Array<CalendarSlot> = []
+		for (let index = 0; index < count; index++) {
+			const source = grid[index]
+			const day = source.day
+			const mark = day > 0 ? marks[source.date] : null
+			list.push({
+				key: index,
+				day: day,
+				date: source.date,
+				lunar: day > 0 ? lunar[day] : '',
+				mark: mark != null ? mark : null,
+				dayNumber: day > 0 ? vxCalendarDayNumber(year, month, day) : 0
+			})
+		}
+		return list
+	})
+
+	/** 一格没有日期时只留空位，不排上下月的日子。 */
+	const blankCell = (key: number): CalendarCell => {
+		return {
+			key: key,
+			cellClass: 'vx-calendar__cell vx-calendar__cell--disabled',
+			hoverClass: 'none',
+			tileClass: 'vx-calendar__tile',
+			tileStyle: '',
+			dayClass: 'vx-calendar__day',
+			dayStyle: '',
+			subClass: 'vx-calendar__sub',
+			subStyle: '',
+			day: '',
+			sub: '',
+			check: false,
+			checkColor: '',
+			showNote: false,
+			date: '',
+			enabled: false
+		}
+	}
+
+	const cells = computed((): Array<CalendarCell> => {
+		const single = props.mode === 'single'
+		const toneName = tone.value
+		const noted = hasNote.value
+		const value = draftValue.value
+		const startDate = draftStart.value
+		const endDate = draftEnd.value
+		const hasEnd = endDate.length > 0
+		// 父级把两端填反时，浅底仍按日期先后铺；开始 / 结束文字留在各自的模型上。
+		const rangeFrom = hasEnd && startDate > endDate ? endDate : startDate
+		const rangeTo = hasEnd && startDate > endDate ? startDate : endDate
+		const span = limit.value
+		const bounded = span.lower <= span.upper
+		const today = todayText.value
+		const lunarOn = props.showLunar
+		const startLabel = props.startText
+		const endLabel = props.endText
+		const tileBase = noted ? 'vx-calendar__tile vx-calendar__tile--noted' : 'vx-calendar__tile'
+		const solidClass = `vx-calendar__solid-${toneName}`
+		const softClass = `vx-calendar__soft-${toneName}`
+		const onClass = `vx-calendar__on-${toneName}`
+		const accentClass = `vx-calendar__accent-${toneName}`
+		const slots = monthGrid.value
+		const list: Array<CalendarCell> = []
+
+		for (let index = 0; index < slots.length; index++) {
+			const source = slots[index]
+			if (source.day === 0) {
+				list.push(blankCell(source.key))
+				continue
+			}
+
+			const date = source.date
+			const enabled = bounded && source.dayNumber >= span.lower && source.dayNumber <= span.upper
+			const selected = single && value === date
+			const isStart = !single && startDate.length > 0 && date === startDate
+			const isEnd = !single && hasEnd && date === endDate
+			const inRange = !single && startDate.length > 0 && hasEnd && date > rangeFrom && date < rangeTo
+			const active = selected || isStart || isEnd
+			let sub = ''
+			if (isStart) sub = startLabel
+			else if (isEnd) sub = endLabel
+
+			// 范围外整格转灰：选中底色、今天的语义色和标记都不留。农历和端点文字仍在，只是换成禁用色。
+			if (!enabled) {
+				if (sub.length === 0 && lunarOn) sub = source.lunar
+				list.push({
+					key: source.key,
+					cellClass: 'vx-calendar__cell vx-calendar__cell--disabled',
+					hoverClass: 'none',
+					tileClass: tileBase,
+					tileStyle: '',
+					dayClass: 'vx-calendar__day vx-calendar__text--disabled',
+					dayStyle: '',
+					subClass: 'vx-calendar__sub vx-calendar__text--disabled',
+					subStyle: '',
+					day: `${source.day}`,
+					sub: sub,
+					check: false,
+					checkColor: '',
+					showNote: sub.length > 0,
+					date: date,
+					enabled: false
+				})
+				continue
+			}
+
+			// 选中和区间优先于标记：两端都表达位置时，只留位置那一层。
+			const mark = !active && !inRange ? source.mark : null
+			let tileClass = tileBase
+			let tileStyle = ''
+			let dayClass = 'vx-calendar__day'
+			let subClass = 'vx-calendar__sub'
+			let dayStyle = ''
+			let subStyle = ''
+			let check = false
+			let checkColor = ''
+
+			if (active) {
+				tileClass = `${tileBase} ${solidClass}`
+				dayClass = `vx-calendar__day ${onClass}`
+				subClass = `vx-calendar__sub ${onClass}`
+			} else if (inRange) {
+				// 区间不再连成一条：每天自己的方块铺一层浅底，上下左右都留缝。
+				tileClass = `${tileBase} ${softClass}`
+				dayClass = `vx-calendar__day ${accentClass}`
+				subClass = `vx-calendar__sub ${accentClass}`
+			} else if (date === today) {
+				dayClass = `vx-calendar__day ${accentClass}`
+			}
+
+			if (mark != null) {
+				const bg = mark.bgColor != null ? mark.bgColor : ''
+				const color = mark.color != null ? mark.color : ''
+				// 标记画成正圆，和选中的方块区分开；尺寸和方块一致，四边照样留缝。
+				tileClass = `${tileClass} vx-calendar__tile--circle`
+				if (bg.length > 0) tileStyle = `background-color: ${bg};`
+				if (color.length > 0) {
+					dayStyle = `color: ${color};`
+					subStyle = `color: ${color};`
+				}
+				if (mark.done === true) {
+					check = true
+					checkColor = color.length > 0 ? color : 'var(--vx-color-text)'
+				}
+				if (sub.length === 0 && mark.text != null && mark.text.length > 0) sub = mark.text
+			}
+			// 标记没写文案、也不是对勾时，农历仍排在下面。
+			if (sub.length === 0 && !check && lunarOn) sub = source.lunar
+
+			list.push({
+				key: source.key,
+				cellClass: 'vx-calendar__cell',
+				hoverClass: 'vx-calendar__cell--pressed',
+				tileClass: tileClass,
+				tileStyle: tileStyle,
+				dayClass: dayClass,
+				dayStyle: dayStyle,
+				subClass: subClass,
+				subStyle: subStyle,
+				day: `${source.day}`,
+				sub: sub,
+				check: check,
+				checkColor: checkColor,
+				showNote: sub.length > 0 || check,
+				date: date,
+				enabled: true
+			})
+		}
+		return list
+	})
+
+	const canConfirm = computed((): boolean => {
+		if (props.mode === 'single') return draftValue.value.length > 0
+		return draftStart.value.length > 0 && draftEnd.value.length > 0
+	})
+
+	const hasConfirm = computed((): boolean => props.popup && props.showConfirm)
+
+	// 底部结果先告诉用户选到了哪天：区间只选了一头时占位，确定按钮同时是灰的。
+	const resultText = computed((): string => {
+		if (props.mode === 'single') {
+			if (draftValue.value.length === 0) return props.placeholder
+			const parts = vxCalendarParse(draftValue.value)
+			if (parts == null) return draftValue.value
+			return `${draftValue.value} ${vxCalendarWeekText(parts.year, parts.month, parts.day)}`
+		}
+		if (draftStart.value.length === 0) return props.placeholder
+		if (draftEnd.value.length === 0) return `${draftStart.value} 至 ${props.placeholder}`
+		return `${draftStart.value} 至 ${draftEnd.value}`
+	})
+
+	const confirmClass = computed((): string => {
+		if (!canConfirm.value) return 'vx-calendar__confirm vx-calendar__confirm--disabled'
+		return `vx-calendar__confirm vx-calendar__solid-${tone.value}`
+	})
+
+	const confirmTextClass = computed((): string => {
+		if (!canConfirm.value) return 'vx-calendar__confirm-text vx-calendar__text--disabled'
+		return `vx-calendar__confirm-text vx-calendar__on-${tone.value}`
+	})
+
+	const confirmHover = computed((): string => {
+		return canConfirm.value ? 'vx-calendar__confirm--pressed' : 'none'
+	})
+
+	const rootClass = computed((): string => {
+		return props.popup ? 'vx-calendar vx-calendar--popup' : 'vx-calendar'
+	})
+
+	const sheetClass = computed((): string => {
+		return props.popup ? 'vx-calendar__sheet vx-calendar__sheet--popup' : 'vx-calendar__sheet'
+	})
+
+	const panelClass = computed((): string => {
+		return props.popup ? 'vx-calendar__panel vx-calendar__panel--popup' : 'vx-calendar__panel'
+	})
+
+	const maskClass = computed((): string => {
+		if (props.maskClosable) return 'vx-calendar__mask vx-calendar__mask--closable'
+		return 'vx-calendar__mask'
+	})
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	const rootStyle = computed((): string => {
+		if (!props.popup) return ''
+		return `z-index: ${props.zIndex};`
+	})
+
+	// vx-icon 不继承父级颜色，箭头单独传：翻不动时转成禁用灰。
+	const arrowOf = (enabled: boolean): CalendarArrow => {
+		if (!enabled) {
+			return {
+				rootClass: 'vx-calendar__arrow vx-calendar__arrow--disabled',
+				hoverClass: 'none',
+				color: 'var(--vx-color-disabled-text)'
+			}
+		}
+		return {
+			rootClass: 'vx-calendar__arrow',
+			hoverClass: 'vx-calendar__arrow--pressed',
+			color: 'var(--vx-color-text-secondary)'
+		}
+	}
+
+	const prevYearArrow = computed((): CalendarArrow => arrowOf(canPrevYear.value))
+	const prevMonthArrow = computed((): CalendarArrow => arrowOf(canPrevMonth.value))
+	const nextMonthArrow = computed((): CalendarArrow => arrowOf(canNextMonth.value))
+	const nextYearArrow = computed((): CalendarArrow => arrowOf(canNextYear.value))
+
+	// 翻到目标月；目标月整个落在可选范围外时不动，也不抛 monthChange。
+	const shiftView = (monthDelta: number) => {
+		const target = vxCalendarShiftMonth(viewYear.value, viewMonth.value, monthDelta)
+		if (!reachable(target.year, target.month)) return
+		viewYear.value = target.year
+		viewMonth.value = target.month
+		emit('monthChange', target.year, target.month)
+	}
+
+	// 平铺模式没有确定这一步，点选当场写回；弹层模式等确定。
+	const commit = () => {
+		if (props.mode === 'single') {
+			if (modelValue.value !== draftValue.value) modelValue.value = draftValue.value
+			return
+		}
+		if (start.value !== draftStart.value) start.value = draftStart.value
+		if (end.value !== draftEnd.value) end.value = draftEnd.value
+	}
+
+	const onCellTap = (cell: CalendarCell) => {
+		if (cell.date.length === 0 || !cell.enabled) return
+
+		if (props.mode === 'single') {
+			if (draftValue.value === cell.date) return
+			draftValue.value = cell.date
+		} else if (picking.value) {
+			draftStart.value = cell.date
+			draftEnd.value = ''
+			picking.value = false
+		} else if (cell.date < draftStart.value) {
+			// 点到起点前面不把区间往回扩：这一下当成重新起头。
+			draftStart.value = cell.date
+			draftEnd.value = ''
+		} else {
+			draftEnd.value = cell.date
+			picking.value = true
+		}
+
+		if (!props.popup) commit()
+		emit('change')
+	}
+
+	// 还没选完时直接返回：不写模型、不收起、不抛 confirm。弹层收起，平铺只补一次事件。
+	const confirm = () => {
+		if (!canConfirm.value) return
+		commit()
+		if (props.popup && show.value) show.value = false
+		emit('confirm')
+	}
+
+	const onCancelTap = () => {
+		if (!show.value) return
+		show.value = false
+		emit('cancel')
+	}
+
+	// 遮罩可关闭时按取消处理，和点关闭叉走同一条出口。
+	const onMaskTap = () => {
+		if (!props.maskClosable) return
+		onCancelTap()
+	}
+
+	// 平铺模式在滚动容器里，滑动要交给页面。弹层铺满时才拦住，避免把底下的列表一起拖走。
+	const onRootTouchMove = (event: UniTouchEvent) => {
+		if (!props.popup || !event.cancelable) return
+		event.preventDefault()
+		event.stopPropagation()
+	}
+
+	// 平铺模式忽略 show：open / close 不改模型，也不把正在翻的月拽回去。
+	const open = () => {
+		if (!props.popup) return
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 cancel；cancel 只代表用户取消。
+	const close = () => {
+		if (!props.popup || !show.value) return
+		show.value = false
+	}
+
+	// 打开时重新读模型，草稿和显示月都跟着回到已选位置。
+	watch(show, (visible: boolean) => {
+		if (!props.popup || !visible) return
+		prepare()
+	})
+
+	// 平铺模式常驻，父级换值时只同步草稿，不动当前显示的月份。
+	// 弹层模式只在自己打开时读一次，避免把正在翻的月拽走。
+	watch(modelValue, () => {
+		if (props.popup) return
+		syncDraft()
+	})
+
+	watch(start, () => {
+		if (props.popup) return
+		syncDraft()
+	})
+
+	watch(end, () => {
+		if (props.popup) return
+		syncDraft()
+	})
+
+	watch(() => props.mode, () => {
+		if (props.popup && !show.value) return
+		syncDraft()
+	})
+
+	// 可选区间变了，当前月可能整个落在范围外：收到最近的边界月，单元格也会跟着重新判断。
+	watch(() => props.minDate, clampView)
+	watch(() => props.maxDate, clampView)
+
+	// 挂载时已经打开的，先对齐再出第一帧；平铺模式也要先读一次模型，否则首帧是空的。
+	prepare()
+
+	defineExpose({
+		open,
+		close,
+		confirm
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 平铺时是普通块，宽度跟随父级；弹层时铺满页面，面板贴底居中。 */
+	.vx-calendar {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+	}
+
+	.vx-calendar--popup {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	.vx-calendar__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
+	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
+	.vx-calendar__sheet {
+		position: relative;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-self: center;
+		box-sizing: border-box;
+		width: 100%;
+		overflow: visible;
+	}
+
+	.vx-calendar__sheet--popup {
+		z-index: 1;
+		max-width: var(--vx-calendar-max-width);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		box-shadow: var(--vx-shadow-lg);
+	}
+
+	/* 内层裁底色，圆角与阴影层一致，轮廓才重合。安全区作为内边距，确定按钮不压住手势条。 */
+	.vx-calendar__panel {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.vx-calendar__panel--popup {
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 头部沿用列表行 md 的 52：标题居中，关闭叉贴右，两边内边距留出叉的位置，长标题不会钻到叉下面。 */
+	.vx-calendar__header {
+		position: relative;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-list-height-md);
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+	}
+
+	/* 弹层标题比月份小一档：层级上月份是主角，标题只交代这是什么。 */
+	.vx-calendar__title {
+		width: 100%;
+		overflow: hidden;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		white-space: nowrap;
+		text-align: center;
+		text-overflow: ellipsis;
+	}
+
+	/* 关闭叉是 44×44 的热区，和弹框的关闭叉同尺寸；图标 18 居中。 */
+	.vx-calendar__close {
+		position: absolute;
+		top: var(--vx-space-xs);
+		right: var(--vx-space-sm);
+		z-index: 1;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+	}
+
+	.vx-calendar__close--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-calendar__divider {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	/* 翻月行：左右两组箭头各占 80，标题 flex: 1 停在整行正中。 */
+	.vx-calendar__nav {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-list-height-sm);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+	}
+
+	.vx-calendar__nav-side {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+	}
+
+	/* 箭头的热区 40×44，比图标大一圈；禁用时只换图标色，不画灰底。 */
+	.vx-calendar__arrow {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 100%;
+	}
+
+	.vx-calendar__arrow--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 年份箭头两个小 chevron 并排：宽 30 放两个 14 的图标，中间留 2，和单箭头的间隔拉开。 */
+	.vx-calendar__double {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		width: 30px;
+	}
+
+	.vx-calendar__nav-title {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		white-space: nowrap;
+		text-align: center;
+		text-overflow: ellipsis;
+	}
+
+	/* 星期行和网格共用左右 4：七列等宽，格子正好压在同一套竖线上；留得少，格子才宽，
+	   36 的方块左右才留得出空隙。 */
+	.vx-calendar__week {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-calendar-week);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+	}
+
+	.vx-calendar__week-text {
+		flex: 1;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+
+	/* 一行七格：14.28% 而不是 1/7，避免浮点误差把第七列挤到下一行。行数由当月占几周决定。 */
+	.vx-calendar__grid {
+		flex-direction: row;
+		flex-wrap: wrap;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+		padding-bottom: var(--vx-space-sm);
+	}
+
+	.vx-calendar__cell {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 14.28%;
+		height: var(--vx-calendar-cell);
+	}
+
+	.vx-calendar__cell--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 一天一个等大方块：边长由令牌给定、不跟格子宽度走，四边自然留出空隙；
+	   圆角 10 是「带圆角的正方形」，和标记的正圆区分开。 */
+	.vx-calendar__tile {
+		position: relative;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: var(--vx-calendar-tile);
+		height: var(--vx-calendar-tile);
+		border-radius: var(--vx-control-radius-lg);
+	}
+
+	/* 有小字时日期让出 4：小字才不会贴上来；没有小字就让日期居中，下方不留空。 */
+	.vx-calendar__tile--noted {
+		padding-bottom: var(--vx-space-xs);
+	}
+
+	.vx-calendar__tile--circle {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	/* 小字槽钉在方块底部、不占布局：有没有小字，日期都停在方块正中，整行数字自然对齐。
+	   高度取一个图标，勾选图标正好放得下。 */
+	.vx-calendar__note {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		height: var(--vx-icon-sm);
+	}
+
+	.vx-calendar__day {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-calendar-line-day);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	/* 农历和「开始 / 结束」比日期小两档：10 / 12 塞得进 36 的方块，也不和数字抢注意力。 */
+	.vx-calendar__sub {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-calendar-font-sub);
+		line-height: var(--vx-calendar-line-sub);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	/* 实心底：选中日期、区间两端和确定按钮共用。 */
+	.vx-calendar__solid-primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-calendar__solid-success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-calendar__solid-info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-calendar__solid-warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-calendar__solid-danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-calendar__solid-default {
+		background-color: var(--vx-color-text);
+	}
+
+	/* 浅底：区间中间的日子，只铺一层衬底。 */
+	.vx-calendar__soft-primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-calendar__soft-success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-calendar__soft-info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-calendar__soft-warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-calendar__soft-danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-calendar__soft-default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 实心底上的文字取 on-*；warning 的琥珀底配深色字。 */
+	.vx-calendar__on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-calendar__on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-calendar__on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-calendar__on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-calendar__on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-calendar__on-default {
+		color: var(--vx-color-text-inverse);
+	}
+
+	/* 浅底上的文字取语义色；warning 在同一档浅底上用 ink。 */
+	.vx-calendar__accent-primary {
+		color: var(--vx-color-primary);
+	}
+
+	.vx-calendar__accent-success {
+		color: var(--vx-color-success);
+	}
+
+	.vx-calendar__accent-info {
+		color: var(--vx-color-info);
+	}
+
+	.vx-calendar__accent-warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-calendar__accent-danger {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-calendar__accent-default {
+		color: var(--vx-color-text);
+	}
+
+	/* 禁用写在所有颜色后面，选中、区间和标记都不盖过不可选。 */
+	.vx-calendar__text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 底部：结果行居中，确定按钮铺满整行、胶囊形，和弹层同宽。
+	   结果行只是交代选了什么，上下各留 8 就够，别抢按钮的高度。 */
+	.vx-calendar__footer {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-sm);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+	}
+
+	.vx-calendar__result {
+		width: 100%;
+		margin-bottom: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-calendar-line-result);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+
+	.vx-calendar__confirm {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-control-height-md);
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-calendar__confirm--disabled {
+		background-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-calendar__confirm--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-calendar__confirm-text {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		white-space: nowrap;
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   弹层期间关掉浏览器默认手势，页面不跟着滚；平铺模式在文档流里，不能关。 */
+	/* #ifdef WEB */
+	.vx-calendar--popup {
+		touch-action: none;
+	}
+
+	.vx-calendar__mask {
+		animation-name: vx-calendar-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-calendar__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-calendar__close {
+		cursor: pointer;
+	}
+
+	.vx-calendar__arrow {
+		cursor: pointer;
+	}
+
+	.vx-calendar__cell {
+		cursor: pointer;
+	}
+
+	.vx-calendar__cell--disabled {
+		cursor: default;
+	}
+
+	.vx-calendar__arrow--disabled {
+		cursor: default;
+	}
+
+	.vx-calendar__confirm {
+		cursor: pointer;
+	}
+
+	.vx-calendar__confirm--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-calendar__sheet--popup {
+		animation-name: vx-calendar-up;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-calendar-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-calendar-up {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
+</style>

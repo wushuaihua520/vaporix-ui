@@ -1,0 +1,419 @@
+<template>
+	<!-- 超链接：文字加可选下划线，点按按平台打开或复制。
+	     链接是正文级元素，不画底色、描边、圆角和内边距，宽度按内容排。 -->
+	<view v-if="hasRoot" :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		:hover-stop-propagation="canPress" @click="onClick">
+		<view v-if="hasPrefix" class="vx-link__affix">
+			<slot name="prefix"></slot>
+		</view>
+
+		<view v-if="hasDefaultSlot" class="vx-link__slot">
+			<slot></slot>
+		</view>
+		<text v-else-if="hasText" :class="contentClass" :style="contentStyle">{{ displayText }}</text>
+
+		<view v-if="hasSuffix" class="vx-link__affix vx-link__affix--suffix">
+			<slot name="suffix"></slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxLinkProps, VxLinkType, VxLinkWeight } from './props'
+	import { VxSize } from '../../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+
+	const props = withDefaults(defineProps<VxLinkProps>(), {
+		href: '',
+		text: '',
+		type: 'primary',
+		size: 'md',
+		weight: 'medium',
+		color: '',
+		underline: false,
+		action: 'auto',
+		tips: '',
+		disabled: false
+	})
+
+	const emit = defineEmits<{
+		click: [href: string]
+		copy: [value: string]
+	}>()
+
+	const slots = useSlots()
+
+	// 切前缀用这串的长度，TEL: / MAILTO: 这种大小写也能对齐。
+	const VX_LINK_TEL = 'tel:'
+	const VX_LINK_MAIL = 'mailto:'
+
+	const hrefValue = computed((): string => {
+		const href = props.href
+		if (href == null) return ''
+		return href.trim()
+	})
+
+	// 自定义颜色只在这里收口；字面值里带空格时 trim 掉，空串回落到 type。
+	const colorValue = computed((): string => {
+		const color = props.color
+		if (color == null) return ''
+		return color.trim()
+	})
+
+	// 不认识的尺寸按 md，不认识的语义色按 primary，避免 class 落空。
+	const sizeKey = computed((): VxSize => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	const typeKey = computed((): VxLinkType => {
+		const type = props.type
+		if (type === 'secondary' || type === 'success' || type === 'info' || type === 'warning'
+			|| type === 'danger' || type === 'default') {
+			return type
+		}
+		return 'primary'
+	})
+
+	const weightKey = computed((): VxLinkWeight => {
+		if (props.weight === 'regular' || props.weight === 'semibold' || props.weight === 'bold') {
+			return props.weight
+		}
+		return 'medium'
+	})
+
+	// 号码去掉 tel: 前缀。
+	const phoneValue = (href: string): string => {
+		if (!href.toLowerCase().startsWith(VX_LINK_TEL)) return ''
+		return href.slice(VX_LINK_TEL.length).trim()
+	}
+
+	// 邮箱去掉 mailto: 前缀和 ?subject= 这类参数；参数仍留在原始 href 里给 Web 用。
+	const mailValue = (href: string): string => {
+		if (!href.toLowerCase().startsWith(VX_LINK_MAIL)) return ''
+		let value = href.slice(VX_LINK_MAIL.length).trim()
+		const query = value.indexOf('?')
+		if (query >= 0) value = value.slice(0, query)
+		return value
+	}
+
+	// 复制的是号码或邮箱本身，不是带协议的整串；其它地址原样复制。
+	const clipboardValue = (href: string): string => {
+		const lower = href.toLowerCase()
+		if (lower.startsWith(VX_LINK_TEL)) return phoneValue(href)
+		if (lower.startsWith(VX_LINK_MAIL)) return mailValue(href)
+		return href
+	}
+
+	// 提示文案按地址类型给默认值；传了 tips 就整句替换。
+	const copyTips = (href: string): string => {
+		const tips = props.tips
+		const custom = tips == null ? '' : tips.trim()
+		if (custom.length > 0) return custom
+		const lower = href.toLowerCase()
+		if (lower.startsWith(VX_LINK_TEL)) return '号码已复制'
+		if (lower.startsWith(VX_LINK_MAIL)) return '邮箱已复制'
+		return '链接已复制'
+	}
+
+	// 没有可打开的地址时只做展示，不挂指针和按下态；disabled 优先于 href。
+	// javascript: 和 data: 会被 Web 的 a.click() 执行，不当成可点地址。
+	const canPress = computed((): boolean => {
+		if (props.disabled) return false
+		const href = hrefValue.value
+		if (href.length === 0) return false
+		const lower = href.toLowerCase()
+		if (lower.startsWith('javascript:') || lower.startsWith('data:') || lower.startsWith('vbscript:')) {
+			return false
+		}
+		if (lower.startsWith(VX_LINK_TEL)) return phoneValue(href).length > 0
+		if (lower.startsWith(VX_LINK_MAIL)) return mailValue(href).length > 0
+		return true
+	})
+
+	const displayText = computed((): string => {
+		const text = props.text
+		if (text != null && text.trim().length > 0) return text
+		return hrefValue.value
+	})
+
+	const hasDefaultSlot = computed((): boolean => slots['default'] != null)
+
+	const hasPrefix = computed((): boolean => slots['prefix'] != null)
+
+	const hasSuffix = computed((): boolean => slots['suffix'] != null)
+
+	const hasText = computed((): boolean => !hasDefaultSlot.value && displayText.value.length > 0)
+
+	const hasRoot = computed((): boolean => {
+		return hasText.value || hasDefaultSlot.value || hasPrefix.value || hasSuffix.value
+	})
+
+	// 顺序：基础 → 状态。可点才挂指针，禁用优先于可点。
+	const rootClass = computed((): string => {
+		let name = 'vx-link'
+		if (props.disabled) name += ' vx-link--disabled'
+		else if (canPress.value) name += ' vx-link--clickable'
+		return name
+	})
+
+	// 顺序：基础 → 尺寸 → 类型 → 状态 → 文本。
+	// 禁用色盖住类型色；字重和下划线不改颜色，排在禁用色后面。
+	const contentClass = computed((): string => {
+		let name = 'vx-link__content'
+		if (sizeKey.value !== 'md') name += ` vx-link__content--${sizeKey.value}`
+		if (!props.disabled && colorValue.value.length === 0 && typeKey.value !== 'primary') {
+			name += ` vx-link__content--${typeKey.value}`
+		}
+		if (props.disabled) name += ' vx-link__content--disabled'
+		if (weightKey.value !== 'medium') name += ` vx-link__content--${weightKey.value}`
+		if (props.underline) name += ' vx-link__content--underline'
+		return name
+	})
+
+	// 自定义颜色是字面值，优先于 type；禁用时只留 disabled-text。
+	const contentStyle = computed((): string => {
+		if (props.disabled) return ''
+		const color = colorValue.value
+		if (color.length === 0) return ''
+		return `color: ${color};`
+	})
+
+	// 空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		if (!canPress.value) return 'none'
+		return 'vx-link--pressed'
+	})
+
+	const showToast = (title: string) => {
+		if (title.length === 0) return
+		uni.showToast({
+			title: title,
+			icon: 'none'
+		})
+	}
+
+	const copyToClipboard = (href: string) => {
+		const value = clipboardValue(href)
+		if (value.length === 0) return
+		uni.setClipboardData({
+			data: value,
+			// 系统和微信会自带一条「内容已复制」，关掉后只留这里的 tips。
+			showToast: false,
+			success: () => {
+				emit('copy', value)
+				showToast(copyTips(href))
+			},
+			// Web 的 http 页面和部分浏览器会拒绝写剪贴板，提示手动复制。
+			fail: () => {
+				showToast('复制失败')
+			}
+		})
+	}
+
+	// #ifdef WEB
+	// Web 用临时 a 标签，跟着这一笔点击走，不会被当成没有用户手势的弹窗。
+	// tel: / mailto: 交给系统处理；其它地址（含站内路径）一律新开标签页。
+	const openOnWeb = (href: string) => {
+		const lower = href.toLowerCase()
+		const anchor = document.createElement('a')
+		anchor.href = href
+		anchor.style.display = 'none'
+		const systemScheme = lower.startsWith(VX_LINK_TEL) || lower.startsWith(VX_LINK_MAIL)
+		if (!systemScheme) {
+			anchor.target = '_blank'
+			anchor.rel = 'noopener noreferrer'
+		}
+		document.body.appendChild(anchor)
+		anchor.click()
+		document.body.removeChild(anchor)
+	}
+	// #endif
+
+	// #ifndef WEB
+	// App 和小程序能直接调起拨号；模拟器或没有拨号能力时退回复制号码。
+	const dialPhone = (href: string) => {
+		const phone = phoneValue(href)
+		if (phone.length === 0) return
+		uni.makePhoneCall({
+			phoneNumber: phone,
+			fail: (error: MakePhoneCallFail) => {
+				// 小程序里用户取消的 errMsg 带 cancel；设备不支持或号码无效才退回复制。
+				if (error.errMsg.toLowerCase().indexOf('cancel') >= 0) return
+				copyToClipboard(href)
+			}
+		})
+	}
+	// #endif
+
+	// 可点时拦下这一笔，不再触发外层列表行或卡片；按下态靠 hover-stop-propagation 停在链接上。
+	// 静态链接和禁用链接不拦，点它等同于点外层。
+	const onClick = (event: UniEvent) => {
+		if (!canPress.value) return
+		event.stopPropagation()
+		const href = hrefValue.value
+		emit('click', href)
+
+		const action = props.action
+		if (action === 'none') return
+		if (action === 'copy') {
+			copyToClipboard(href)
+			return
+		}
+
+		// 电话交给拨号；Web 没有拨号 API，仍用 a 标签跳系统。
+		if (href.toLowerCase().startsWith(VX_LINK_TEL)) {
+			// #ifdef WEB
+			openOnWeb(href)
+			// #endif
+			// #ifndef WEB
+			dialPhone(href)
+			// #endif
+			return
+		}
+
+		// 其它地址（含 mailto:）：Web 打开，App 和小程序复制。
+		// #ifdef WEB
+		openOnWeb(href)
+		// #endif
+		// #ifndef WEB
+		copyToClipboard(href)
+		// #endif
+	}
+</script>
+
+<style>
+	/* 行内尺寸：按内容宽度靠左，不跟父级拉满。
+	   App 的 view 不支持 inline-flex，用 flex 加 align-self 模拟行内块。
+	   flex 子项最小宽度默认是内容宽，压成 0 后 Web 的 max-width 才能收住长地址；flex-shrink 仍是 0，短链接在横排里不被挤扁。
+	   App 的 max-width 只认数字和 px，100% 会被忽略。 */
+	.vx-link {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		align-self: flex-start;
+		flex-shrink: 0;
+		min-width: 0;
+		box-sizing: border-box;
+	}
+
+	/* #ifdef WEB */
+	.vx-link {
+		max-width: 100%;
+	}
+	/* #endif */
+
+	/* 可点的是手指或指针，禁用是禁止；静态链接保持默认指针。
+	   顺序跟 rootClass 一致：禁用在前，可点在后。 */
+	/* #ifdef WEB */
+	.vx-link--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-link--clickable {
+		cursor: pointer;
+	}
+	/* #endif */
+
+	.vx-link--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 前缀、后缀只让出 4px，链接是行内元素，间距要贴住文字。 */
+	.vx-link__affix {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 0;
+		margin-right: var(--vx-space-xs);
+	}
+
+	.vx-link__affix--suffix {
+		margin-right: 0;
+		margin-left: var(--vx-space-xs);
+	}
+
+	/* 默认插槽替换文案。最小宽度压成 0，长文案才能在前后缀旁边换行。 */
+	.vx-link__slot {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	/* 正文 15 / 22，字重 medium。链接是文字，不借 --vx-font-control-*。
+	   最小宽度压成 0：这一层默认按整段文字撑开，Web 的 overflow-wrap 才断得了长地址。 */
+	.vx-link__content {
+		flex-shrink: 1;
+		min-width: 0;
+		color: var(--vx-color-primary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		white-space: pre-line;
+	}
+
+	/* Web 默认只在空格处断行，长地址会撑破窄容器；App 的 normal 已经会断开长单词。 */
+	/* #ifdef WEB */
+	.vx-link__content {
+		overflow-wrap: break-word;
+	}
+	/* #endif */
+
+	.vx-link__content--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-link__content--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-link__content--secondary {
+		color: var(--vx-color-text-secondary);
+	}
+
+	.vx-link__content--success {
+		color: var(--vx-color-success);
+	}
+
+	.vx-link__content--info {
+		color: var(--vx-color-info);
+	}
+
+	/* 琥珀原色在白底上不到 4.5:1，链接文字改用 warning-ink。 */
+	.vx-link__content--warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-link__content--danger {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-link__content--default {
+		color: var(--vx-color-text);
+	}
+
+	.vx-link__content--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-link__content--regular {
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-link__content--semibold {
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-link__content--bold {
+		font-weight: var(--vx-weight-bold);
+	}
+
+	/* 下划线跟随文字色，不改字重；打开后仍是同一档正文。 */
+	.vx-link__content--underline {
+		text-decoration-line: underline;
+	}
+</style>

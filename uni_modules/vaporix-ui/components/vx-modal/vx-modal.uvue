@@ -1,0 +1,576 @@
+<template>
+	<!-- 弹框是居中浮层：遮罩铺满页面，面板居中。挂在页面根节点，不要放进 scroll-view 或卡片。 -->
+	<!-- 默认取消 / 确定两个按钮；传了 actions 就整组替换。取消、关闭叉、可关闭的遮罩和可自动收起动作都会收起。 -->
+	<view v-if="show" class="vx-modal" :style="rootStyle" @touchmove.stop.prevent>
+		<view :class="maskClass" :style="maskStyle" @click="onMaskTap"></view>
+
+		<view :class="panelClass" @click.stop>
+			<!-- 关闭叉是独立出口：热区 44，图标 18，和取消共用 cancel；标题左右各让 24，避免压住热区。 -->
+			<view v-if="closable" class="vx-modal__close" hover-class="vx-modal__close--pressed"
+				:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCloseTap">
+				<vx-icon name="close" size="md" color="var(--vx-color-text-secondary)" />
+			</view>
+
+			<!-- 图标圆和标题都可选；都为空时不渲染头部，自定义正文可以直接从面板顶部开始。 -->
+			<view v-if="hasHeader" :class="headerClass">
+				<view v-if="hasIcon" :class="iconClass">
+					<vx-icon :name="iconName" size="lg" :color="iconColor" />
+				</view>
+				<text v-if="title.length > 0" class="vx-modal__title" :style="titleStyle">{{ title }}</text>
+			</view>
+
+			<!-- 默认插槽承载自定义表单；有插槽时 content 不再渲染。 -->
+			<view v-if="$slots['default'] != null || content.length > 0" :class="bodyClass">
+				<slot v-if="$slots['default'] != null"></slot>
+				<text v-else class="vx-modal__content" :style="contentStyle">{{ content }}</text>
+			</view>
+
+			<!-- 一个动作铺满，两个并排，三个及以上纵向排列；动作本身复用 vx-button。 -->
+			<view v-if="rows.length > 0" :class="footerClass">
+				<view v-for="row in rows" :key="row.key" :class="row.wrapperClass">
+					<vx-button block size="sm" :type="row.type" :variant="row.variant" :shape="actionShape"
+						:text="row.text" :disabled="row.disabled" :loading="row.loading" @click="onActionTap(row)" />
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import { VxSemantic } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VxModalAction, VxModalActionVariant, VxModalProps } from './props'
+
+	const props = withDefaults(defineProps<VxModalProps>(), {
+		title: '',
+		content: '',
+		size: 'md',
+		iconType: 'primary',
+		actions: (): Array<VxModalAction> => [],
+		showActions: true,
+		showCancel: true,
+		cancelText: '取消',
+		confirmText: '确定',
+		cancelType: 'default',
+		confirmType: 'primary',
+		confirmLoading: false,
+		confirmDisabled: false,
+		actionShape: 'rounded',
+		maskClosable: true,
+		closable: false,
+		closeOnAction: true,
+		titleColor: '',
+		contentColor: '',
+		maskColor: '',
+		zIndex: 110
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		confirm: []
+		cancel: []
+		action: [index: number, action: VxModalAction]
+	}>()
+
+	type ModalActionKind = 'cancel' | 'confirm' | 'action'
+
+	type ModalActionRow = {
+		key: string
+		index: number
+		kind: ModalActionKind
+		text: string
+		type: VxSemantic
+		variant: VxModalActionVariant
+		disabled: boolean
+		loading: boolean
+		wrapperClass: string
+	}
+
+	const hasIcon = computed((): boolean => {
+		return props.icon != null && props.icon.length > 0
+	})
+
+	// 没传图标时给一个合法名字占位，hasIcon 为 false 不会渲染。
+	const iconName = computed((): VxIconName => {
+		return props.icon != null ? props.icon : 'info'
+	})
+
+	const hasHeader = computed((): boolean => {
+		return props.title.length > 0 || hasIcon.value
+	})
+
+	// 浅底圆上取 pressed 档，warning 取 ink，default 取 text；和浅底按钮的文字规则一致。
+	const iconColor = computed((): string => {
+		if (props.iconType === 'primary') return 'var(--vx-color-primary-pressed)'
+		if (props.iconType === 'success') return 'var(--vx-color-success-pressed)'
+		if (props.iconType === 'info') return 'var(--vx-color-info-pressed)'
+		if (props.iconType === 'warning') return 'var(--vx-color-warning-ink)'
+		if (props.iconType === 'danger') return 'var(--vx-color-danger-pressed)'
+		return 'var(--vx-color-text)'
+	})
+
+	// class 顺序：基础 → 类型 → 状态。下边距只在后面还有标题时加。
+	const iconClass = computed((): string => {
+		let name = `vx-modal__icon vx-modal__icon--${props.iconType}`
+		if (props.title.length > 0) name += ' vx-modal__icon--before-title'
+		return name
+	})
+
+	const maskClass = computed((): string => {
+		return props.maskClosable ? 'vx-modal__mask vx-modal__mask--closable' : 'vx-modal__mask'
+	})
+
+	const panelClass = computed((): string => {
+		return `vx-modal__panel vx-modal__panel--${props.size}`
+	})
+
+	const headerClass = computed((): string => {
+		return props.closable ? 'vx-modal__header vx-modal__header--closable' : 'vx-modal__header'
+	})
+
+	const bodyClass = computed((): string => {
+		let name = hasHeader.value ? 'vx-modal__body vx-modal__body--after-header' : 'vx-modal__body'
+		if (props.closable && !hasHeader.value) name += ' vx-modal__body--closable'
+		return name
+	})
+
+	const titleStyle = computed((): string => {
+		if (props.titleColor.length === 0) return ''
+		return `color: ${props.titleColor};`
+	})
+
+	const contentStyle = computed((): string => {
+		if (props.contentColor.length === 0) return ''
+		return `color: ${props.contentColor};`
+	})
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	const rootStyle = computed((): string => {
+		return `z-index: ${props.zIndex};`
+	})
+
+	// 自定义动作非空时整组替换默认按钮；showActions=false 时连默认按钮一起省掉。
+	const actionCount = computed((): number => {
+		if (!props.showActions) return 0
+		if (props.actions.length > 0) return props.actions.length
+		return props.showCancel ? 2 : 1
+	})
+
+	// 一个铺满、两个并排；三个以上纵向排，避免窄屏挤出半截文字。
+	const isColumn = computed((): boolean => {
+		return actionCount.value > 2
+	})
+
+	const footerClass = computed((): string => {
+		return isColumn.value ? 'vx-modal__footer vx-modal__footer--column' : 'vx-modal__footer'
+	})
+
+	// class 顺序：基础 → 排列 → 间距；样式表顺序与此一致。
+	const actionWrapperClass = (index: number, total: number): string => {
+		let name = 'vx-modal__action'
+		if (isColumn.value) {
+			name += ' vx-modal__action--stacked'
+			if (index < total - 1) name += ' vx-modal__action--stacked-gap'
+		} else {
+			name += ' vx-modal__action--row'
+			if (index > 0) name += ' vx-modal__action--row-gap'
+		}
+		return name
+	}
+
+	const rows = computed((): Array<ModalActionRow> => {
+		if (!props.showActions) return []
+		const total = actionCount.value
+
+		if (props.actions.length > 0) {
+			const source = props.actions
+			const list: Array<ModalActionRow> = []
+			for (let index = 0; index < source.length; index++) {
+				const action = source[index]
+				const kind: ModalActionKind = action.role != null ? action.role : 'action'
+				list.push({
+					key: `action-${index}`,
+					index: index,
+					kind: kind,
+					text: action.text != null ? action.text : '',
+					type: action.type != null ? action.type : 'default',
+					variant: action.variant != null ? action.variant : 'solid',
+					disabled: action.disabled === true,
+					loading: action.loading === true,
+					wrapperClass: actionWrapperClass(index, total)
+				})
+			}
+			return list
+		}
+
+		const list: Array<ModalActionRow> = []
+		if (props.showCancel) {
+			const index = list.length
+			list.push({
+				key: 'cancel',
+				index: -1,
+				kind: 'cancel',
+				text: props.cancelText,
+				type: props.cancelType,
+				variant: 'plain',
+				disabled: false,
+				loading: false,
+				wrapperClass: actionWrapperClass(index, total)
+			})
+		}
+		const index = list.length
+		list.push({
+			key: 'confirm',
+			index: -1,
+			kind: 'confirm',
+			text: props.confirmText,
+			type: props.confirmType,
+			variant: 'solid',
+			disabled: props.confirmDisabled,
+			loading: props.confirmLoading,
+			wrapperClass: actionWrapperClass(index, total)
+		})
+		return list
+	})
+
+	const hide = () => {
+		if (!show.value) return
+		show.value = false
+	}
+
+	const onCancel = () => {
+		if (!show.value) return
+		hide()
+		emit('cancel')
+	}
+
+	// 关闭叉和取消走同一个出口，不受 maskClosable / closeOnAction 影响。
+	const onCloseTap = () => {
+		if (!props.closable) return
+		onCancel()
+	}
+
+	// 取消始终收起；确定和普通动作看 closeOnAction，异步提交时关掉再自己 close()。
+	const onActionTap = (row: ModalActionRow) => {
+		if (row.disabled || row.loading) return
+		if (row.kind === 'cancel') {
+			onCancel()
+			return
+		}
+
+		if (props.closeOnAction) hide()
+
+		if (row.kind === 'confirm') {
+			emit('confirm')
+			return
+		}
+
+		// 默认按钮的 index 是 -1。UTS 按下标读数组，越界会抛。
+		if (row.index < 0 || row.index >= props.actions.length) return
+		const action = props.actions[row.index]
+		if (action == null) return
+		emit('action', row.index, action)
+	}
+
+	// 遮罩可关闭时按取消处理，和点取消按钮走同一个出口。
+	const onMaskTap = () => {
+		if (!props.maskClosable) return
+		onCancel()
+	}
+
+	const open = () => {
+		show.value = true
+	}
+
+	// 只收起，不抛 cancel；cancel 只代表用户取消。
+	const close = () => {
+		hide()
+	}
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层铺满页面，面板居中。左右和上下留 24，窄屏上面板不会贴边。
+	   层级写在行内，默认 110，低于加载浮层（150）和轻提示（200）。
+	   App 默认 overflow 是 hidden，面板阴影画出这层会被裁掉。
+	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-modal {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: var(--vx-space-xl);
+		overflow: visible;
+	}
+
+	/* 遮罩垫在面板下面，只压页面，不压面板。 */
+	.vx-modal__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 面板用 surface 底、lg 圆角和 lg 阴影，不加描边。
+	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上内边距不会被挤掉。
+	   阴影画在这一层。App 会把画出盒子的阴影裁掉，必须 visible。 */
+	.vx-modal__panel {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-xl);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+		box-shadow: var(--vx-shadow-lg);
+		overflow: visible;
+	}
+
+	/* 字号固定，size 只改面板最大宽度；手机上由左右 24 的定位层内边距收窄。 */
+	.vx-modal__panel--sm {
+		max-width: var(--vx-modal-max-width-sm);
+	}
+
+	.vx-modal__panel--md {
+		max-width: var(--vx-modal-max-width-md);
+	}
+
+	.vx-modal__panel--lg {
+		max-width: var(--vx-modal-max-width-lg);
+	}
+
+	/* 关闭叉贴右上角，热区 44 不并入控件高度；没有底色，按下用整体透明度。 */
+	.vx-modal__close {
+		position: absolute;
+		top: var(--vx-space-xs);
+		right: var(--vx-space-xs);
+		z-index: 2;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-modal-close-size);
+		height: var(--vx-modal-close-size);
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-modal__close--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 纵向 flex 里这一层不收缩，48 的图标圆才不会被短屏压扁。正文和动作同样不收缩。 */
+	.vx-modal__header {
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+	}
+
+	/* 关闭叉占住右上角，标题左右各让 24，中央标题不会被叉压住。 */
+	.vx-modal__header--closable {
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+	}
+
+	/* 48 的图标圆不并入图标三档；图标仍用 lg 的 22。 */
+	.vx-modal__icon {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-modal-icon-size);
+		height: var(--vx-modal-icon-size);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-modal__icon--primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-modal__icon--success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-modal__icon--info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-modal__icon--warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-modal__icon--danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-modal__icon--default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 只有标题跟在后面才留 12。没有标题时，正文上边距单独留 12，两段不会叠成 24。 */
+	.vx-modal__icon--before-title {
+		margin-bottom: var(--vx-space-md);
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal，长文案才会按词换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩；min-width 压成 0，长词才能在面板里断开。 */
+	.vx-modal__title,
+	.vx-modal__content {
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		white-space: normal;
+		text-align: center;
+	}
+
+	.vx-modal__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	/* 正文和标题之间留 12；只有正文时从面板内边距开始。 */
+	.vx-modal__body {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.vx-modal__body--after-header {
+		margin-top: var(--vx-space-md);
+	}
+
+	/* 没有头部时关闭叉会压到正文右上角，右侧让出 24 的热区。 */
+	.vx-modal__body--closable {
+		padding-right: var(--vx-space-xl);
+	}
+
+	.vx-modal__content {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	/* 动作和正文之间留 24；两个并排，取消在左、确定在右。 */
+	.vx-modal__footer {
+		flex-direction: row;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		margin-top: var(--vx-space-xl);
+	}
+
+	.vx-modal__footer--column {
+		flex-direction: column;
+	}
+
+	/* min-width 压成 0：并排时长文案不会把另一半挤窄，纵向时也不会把面板撑出最大宽度。
+	   溢出裁在自己这一格。App 默认 hidden，Web 默认 visible，写明后长词不会盖住旁边的按钮。 */
+	.vx-modal__action {
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* 并排时两边等宽。不在这里写 flex-shrink: 0，否则两半不会各让一半。 */
+	.vx-modal__action--row {
+		flex: 1;
+	}
+
+	.vx-modal__action--row-gap {
+		margin-left: var(--vx-space-md);
+	}
+
+	/* 纵向排列时不收缩，短屏先挤定位层，不把 32 的按钮压扁。 */
+	.vx-modal__action--stacked {
+		flex-shrink: 0;
+		width: 100%;
+	}
+
+	.vx-modal__action--stacked-gap {
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，淡入和放大只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   这一层接住触摸，弹框打开期间页面不跟着滚。 */
+	/* #ifdef WEB */
+	.vx-modal {
+		touch-action: none;
+	}
+
+	.vx-modal__mask {
+		animation-name: vx-modal-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-modal__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-modal__close {
+		cursor: pointer;
+	}
+
+	.vx-modal__panel {
+		animation-name: vx-modal-pop;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-modal-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-modal-pop {
+		from {
+			opacity: 0;
+			transform: scale(0.96);
+		}
+
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+	/* #endif */
+</style>

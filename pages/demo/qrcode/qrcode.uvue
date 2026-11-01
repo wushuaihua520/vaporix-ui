@@ -1,0 +1,327 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-qrcode</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="qr-code" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">二维码</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">字节模式编码，自动选版本；模块按整数像素铺开，中心图标和纠错级别一起用。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-qrcode</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础用法</text>
+							<text class="demo-section__desc">text 变了就重新编码，不经过 canvas。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-qrcode-center">
+							<vx-qrcode :text="couponText" />
+						</view>
+						<view class="demo-qrcode-toolbar">
+							<text class="demo-qrcode-toolbar__text">当前内容 {{ couponText }}</text>
+							<vx-button size="sm" type="primary" text="换一个" @click="refreshCoupon" />
+						</view>
+						<text class="demo-hint">空内容显示空状态，超出容量显示错误提示；两种情况都不渲染空白方阵。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">120 / 160 / 200，或传带 px 的自定义边长。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-qrcode-size-row">
+							<text class="demo-qrcode-size-key">sm · 120</text>
+							<vx-qrcode :text="couponText" size="sm" />
+						</view>
+						<view class="demo-qrcode-size-row">
+							<text class="demo-qrcode-size-key">md · 160</text>
+							<vx-qrcode :text="couponText" />
+						</view>
+						<view class="demo-qrcode-size-row">
+							<text class="demo-qrcode-size-key">lg · 200</text>
+							<vx-qrcode :text="couponText" size="lg" />
+						</view>
+						<view class="demo-qrcode-size-row demo-qrcode-size-row--last">
+							<text class="demo-qrcode-size-key">width · 224</text>
+							<vx-qrcode :text="couponText" width="224px" />
+						</view>
+						<text class="demo-hint">width 只认 px；模块边长向下取整，多出来的当作空白边距，模块之间不会透缝。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">纠错级别</text>
+							<text class="demo-section__desc">L / M / Q / H，级别越高能丢的码字越多、版本也越大。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-qrcode-level-grid">
+							<view class="demo-qrcode-level-cell">
+								<vx-qrcode :text="couponText" size="sm" level="L" />
+								<text class="demo-qrcode-caption">L · 7%</text>
+							</view>
+							<view class="demo-qrcode-level-cell">
+								<vx-qrcode :text="couponText" size="sm" level="M" />
+								<text class="demo-qrcode-caption">M · 15%</text>
+							</view>
+							<view class="demo-qrcode-level-cell">
+								<vx-qrcode :text="couponText" size="sm" level="Q" />
+								<text class="demo-qrcode-caption">Q · 25%</text>
+							</view>
+							<view class="demo-qrcode-level-cell">
+								<vx-qrcode :text="couponText" size="sm" level="H" />
+								<text class="demo-qrcode-caption">H · 30%</text>
+							</view>
+						</view>
+						<text class="demo-hint">不带图标用默认 M；带中心图标或要印在容易磨损的物料上时用 H。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">深色模块和底色分开覆盖，两者对比度由业务保证。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-qrcode-color-row">
+							<view class="demo-qrcode-color-item">
+								<vx-qrcode :text="couponText" size="sm" color="#1d4ed8" />
+								<text class="demo-qrcode-caption">品牌蓝 #1d4ed8</text>
+							</view>
+							<view class="demo-qrcode-color-item demo-qrcode-color-item--last">
+								<vx-qrcode :text="couponText" size="sm" color="#0b7c46" bg-color="#f4fbf7" />
+								<text class="demo-qrcode-caption">深绿 + 浅绿底</text>
+							</view>
+						</view>
+						<text class="demo-hint">二维码必须深码浅底，反色后很多扫码器认不出来；默认不跟随亮色 / 暗色主题。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">中心图标</text>
+							<text class="demo-section__desc">logo 压住中间一小块，白边和纠错一起补回来。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-qrcode-color-row">
+							<view class="demo-qrcode-color-item">
+								<vx-qrcode :text="couponText" size="sm" level="H"
+									logo="/static/demo/card/avatar-cs.png" />
+								<text class="demo-qrcode-caption">logo · 22%</text>
+							</view>
+							<view class="demo-qrcode-color-item demo-qrcode-color-item--last">
+								<vx-qrcode :text="couponText" size="sm" level="H" :logo-size="0.28"
+									logo="/static/demo/card/avatar-cs.png" />
+								<text class="demo-qrcode-caption">logo · 28%</text>
+							</view>
+						</view>
+						<text class="demo-hint">logoSize 收敛到 0.12–0.3；比例越大，纠错余量越小，建议同时用 level="H"。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">内容与边界</text>
+							<text class="demo-section__desc">长链接照常编码，空内容和超容量各有自己的提示。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-qrcode-label">长链接</text>
+						<view class="demo-qrcode-center">
+							<vx-qrcode :text="longText" />
+						</view>
+						<text class="demo-hint">内容按 UTF-8 字节算容量，一个汉字占 3 字节；版本按内容长度自动选。</text>
+						<view class="demo-qrcode-divider"></view>
+						<text class="demo-qrcode-label">空内容</text>
+						<vx-qrcode :text="emptyText" size="sm" empty-text="二维码内容为空" />
+						<view class="demo-qrcode-divider"></view>
+						<text class="demo-qrcode-label">超出 H 级容量</text>
+						<vx-qrcode :text="overflowText" size="sm" level="H" />
+						<text class="demo-hint">H 级最多 1273 字节；超出的内容不截断，直接显示错误文案。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">放进优惠券详情：验证码在上，二维码居中，规则在下。</text>
+						</view>
+					</view>
+					<view class="demo-qrcode-coupon">
+						<view class="demo-qrcode-coupon__head">
+							<view class="demo-qrcode-coupon__copy">
+								<text class="demo-qrcode-coupon__name">购物券</text>
+								<text class="demo-qrcode-coupon__meta">期限：2019-07-01</text>
+							</view>
+							<vx-tag type="success" variant="soft" size="sm" text="可使用" />
+						</view>
+						<view class="demo-qrcode-coupon__code">
+							<text class="demo-qrcode-coupon__code-label">验证码</text>
+							<text class="demo-qrcode-coupon__code-value">{{ couponText }}</text>
+						</view>
+						<view class="demo-qrcode-coupon__qr">
+							<vx-qrcode :text="couponText" size="lg" />
+						</view>
+						<view class="demo-qrcode-coupon__rows">
+							<view class="demo-qrcode-coupon__row">
+								<text class="demo-qrcode-coupon__key">券有效期</text>
+								<text class="demo-qrcode-coupon__value">2019-06-01 至 2019-07-01</text>
+							</view>
+							<view class="demo-qrcode-coupon__row">
+								<text class="demo-qrcode-coupon__key">适用商家</text>
+								<text class="demo-qrcode-coupon__value">全部</text>
+							</view>
+						</view>
+						<view class="demo-qrcode-coupon__rules">
+							<text class="demo-qrcode-coupon__key">使用说明</text>
+							<text class="demo-qrcode-coupon__rule">1、可在任何适用商家内消费</text>
+							<text class="demo-qrcode-coupon__rule">2、解释权归 Thor 所有</text>
+						</view>
+					</view>
+					<text class="demo-hint">二维码只负责编码和展示；有效期、商家和说明由外面的卡片承载。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 二维码演示：验证码内容一处维护，基础、尺寸、颜色、组合几组共用。
+	const couponText = ref('xyz0900100200')
+
+	const longText = 'https://vaporix.dev/components/qrcode?from=demo&level=M&theme=light'
+
+	const emptyText = ''
+
+	// H 级上限 1273 字节，多一个字节就落到错误态；不拿它当正常内容渲染。
+	const overflowText = 'a'.repeat(1300)
+
+	const refreshCoupon = () => {
+		const digits = `${Math.floor(Math.random() * 9000000000) + 1000000000}`
+		couponText.value = `xyz${digits}`
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/image-group/image-group'
+	const nextPath: string = '/pages/demo/collapse/collapse'
+	const prevName = '图片组合'
+	const nextName = '折叠面板'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

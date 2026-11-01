@@ -1,0 +1,448 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">基础</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-badge</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="bell" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">徽章</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">默认危险色表达未读；计数封顶 99，圆点在计数前生效，叠图标时加一圈描边。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">基础</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-badge</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">数字角标</text>
+							<text class="demo-section__desc">六种语义色。默认 danger，纯计数用 default。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-badge-row">
+							<view v-for="(tone, index) in tagTones" :key="tone.type" class="demo-badge-row__item">
+								<vx-badge :type="tone.type" :value="index + 1" />
+							</view>
+						</view>
+						<text class="demo-hint">未读、待处理用 danger；普通数量用 default 或对应的语义色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">计数与封顶</text>
+							<text class="demo-section__desc">超过 max 显示 max+，小于 1 不占位。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-badge-row">
+							<view class="demo-badge-row__item">
+								<vx-badge :value="5" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge :value="88" type="default" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge :value="100" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge :value="12" :max="9" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge text="NEW" type="success" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge text="0" type="default" variant="soft" />
+							</view>
+						</view>
+						<text class="demo-hint">value 小于 1 不渲染；要显示 0 用 text="0"。text 优先于 value，也用来放短词。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">16 / 20 / 24，字号 12 / 13 / 14。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-size-row">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">sm</text>
+								<text class="demo-size-row__meta">16</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-badge-row demo-badge-row--flush">
+									<view class="demo-badge-row__item">
+										<vx-badge size="sm" :value="5" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge size="sm" type="default" :value="88" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge size="sm" type="primary" :value="100" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge size="sm" type="success" dot />
+									</view>
+								</view>
+							</view>
+						</view>
+						<view class="demo-size-row">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">md</text>
+								<text class="demo-size-row__meta">20</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-badge-row demo-badge-row--flush">
+									<view class="demo-badge-row__item">
+										<vx-badge :value="5" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge type="default" :value="88" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge type="primary" :value="100" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge type="success" dot />
+									</view>
+								</view>
+							</view>
+						</view>
+						<view class="demo-size-row demo-size-row--last">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">lg</text>
+								<text class="demo-size-row__meta">24</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-badge-row demo-badge-row--flush">
+									<view class="demo-badge-row__item">
+										<vx-badge size="lg" :value="5" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge size="lg" type="default" :value="88" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge size="lg" type="primary" :value="100" />
+									</view>
+									<view class="demo-badge-row__item">
+										<vx-badge size="lg" type="success" dot />
+									</view>
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">单字符是正圆，多字符按内容撑宽；圆点直径 6 / 8 / 10。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">圆点</text>
+							<text class="demo-section__desc">只表达有没有，不带数字。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-badge-row">
+							<view v-for="tone in tagTones" :key="tone.type" class="demo-badge-row__item">
+								<vx-badge :type="tone.type" dot />
+							</view>
+						</view>
+						<view class="demo-badge-row demo-badge-row--flush">
+							<view class="demo-badge-row__item">
+								<vx-badge type="danger" dot size="sm" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge type="danger" dot />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge type="danger" dot size="lg" />
+							</view>
+						</view>
+						<text class="demo-hint">dot 优先于 value 和 text；圆点不随语义色改尺寸。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">形态与颜色</text>
+							<text class="demo-section__desc">实心、浅底；自定义颜色只覆盖底色和文字。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-badge-row">
+							<view v-for="tone in tagTones" :key="tone.type" class="demo-badge-row__item">
+								<vx-badge :type="tone.type" :value="8" />
+							</view>
+						</view>
+						<view class="demo-badge-row">
+							<view v-for="tone in tagTones" :key="tone.type" class="demo-badge-row__item">
+								<vx-badge :type="tone.type" variant="soft" :value="8" />
+							</view>
+						</view>
+						<view class="demo-badge-row demo-badge-row--flush">
+							<view class="demo-badge-row__item">
+								<vx-badge :value="88" type="default" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge :value="99" type="default" variant="soft" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge text="VIP" bg-color="#1f6b4a" color="#ffffff" />
+							</view>
+							<view class="demo-badge-row__item">
+								<vx-badge :value="6" bg-color="#e8f1ff" color="#1d4ed8" />
+							</view>
+						</view>
+						<text class="demo-hint">实心 default 是深色中性底，浅底 default 才是浅灰底的中性计数。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">绝对定位</text>
+							<text class="demo-section__desc">默认圆心落在内容右上角，ring 用 surface 色把徽章和下层分开。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-badge-row demo-badge-row--flush">
+							<view class="demo-badge-anchor-cell">
+								<vx-badge absolute ring :value="9" type="danger" size="sm">
+									<view class="demo-badge-anchor">
+										<vx-icon name="bell" size="lg" />
+									</view>
+								</vx-badge>
+								<text class="demo-badge-anchor__label">默认</text>
+							</view>
+							<view class="demo-badge-anchor-cell">
+								<vx-badge absolute ring :value="9" type="danger" size="sm" :offset-x="4" :offset-y="-4">
+									<view class="demo-badge-anchor">
+										<vx-icon name="mail" size="lg" />
+									</view>
+								</vx-badge>
+								<text class="demo-badge-anchor__label">外移</text>
+							</view>
+							<view class="demo-badge-anchor-cell">
+								<vx-badge absolute ring :value="9" bg-color="#ffffff" color="#d92d20" size="sm">
+									<view class="demo-badge-anchor">
+										<vx-icon name="message-square" size="lg" />
+									</view>
+								</vx-badge>
+								<text class="demo-badge-anchor__label">白底</text>
+							</view>
+							<view class="demo-badge-anchor-cell demo-badge-anchor-cell--last">
+								<vx-badge absolute ring dot type="danger">
+									<view class="demo-badge-anchor">
+										<vx-icon name="shopping-cart" size="lg" />
+									</view>
+								</vx-badge>
+								<text class="demo-badge-anchor__label">圆点</text>
+							</view>
+						</view>
+						<text class="demo-hint">offsetX / offsetY 是默认位置上的微调，单位 px；正值向右、向下。定位层不接收点击。外层 overflow: hidden 会裁掉伸出的角。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">入口场景</text>
+							<text class="demo-section__desc">行末计数不叠 ring，页签角上只用圆点。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-badge-list">
+							<view class="demo-badge-list__row">
+								<view class="demo-badge-list__icon">
+									<vx-icon name="bell" size="sm" />
+								</view>
+								<text class="demo-badge-list__label">系统通知</text>
+								<vx-badge :value="12" />
+							</view>
+							<view class="demo-badge-list__row">
+								<view class="demo-badge-list__icon">
+									<vx-icon name="inbox" size="sm" />
+								</view>
+								<text class="demo-badge-list__label">待处理工单</text>
+								<vx-badge :value="5" type="warning" />
+							</view>
+							<view class="demo-badge-list__row demo-badge-list__row--last">
+								<view class="demo-badge-list__icon">
+									<vx-icon name="clock" size="sm" />
+								</view>
+								<text class="demo-badge-list__label">待审核</text>
+								<vx-badge :value="128" />
+							</view>
+						</view>
+						<text class="demo-hint">128 显示 99+；数字角标靠行末对齐，和其他控件右基线一致。</text>
+					</view>
+					<view class="demo-card demo-card--spaced">
+						<view class="demo-badge-tabs">
+							<view class="demo-badge-tab">
+								<view class="demo-badge-tab__icon">
+									<vx-badge absolute ring dot type="danger">
+										<vx-icon name="home" size="lg" />
+									</vx-badge>
+								</view>
+								<text class="demo-badge-tab__label">首页</text>
+							</view>
+							<view class="demo-badge-tab">
+								<view class="demo-badge-tab__icon">
+									<vx-badge absolute ring :value="6" type="danger" size="sm">
+										<vx-icon name="message-square" size="lg" />
+									</vx-badge>
+								</view>
+								<text class="demo-badge-tab__label">消息</text>
+							</view>
+							<view class="demo-badge-tab">
+								<view class="demo-badge-tab__icon">
+									<vx-icon name="shopping-cart" size="lg" />
+								</view>
+								<text class="demo-badge-tab__label">购物车</text>
+							</view>
+							<view class="demo-badge-tab">
+								<view class="demo-badge-tab__icon">
+									<vx-icon name="user" size="lg" />
+								</view>
+								<text class="demo-badge-tab__label">我的</text>
+							</view>
+						</view>
+						<text class="demo-hint">页签角上用 sm 或圆点，徽章只压住图标的一角。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 演示页不引用组件库的类型：script setup 里只有 defineProps 用到的类型会被擦除，
+	// 普通 type 导入会留在运行时代码里，页面加载时报 missing export。
+	type TagSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type TagTone = {
+		type: TagSemantic
+		label: string
+	}
+
+	const tagTones: TagTone[] = [
+		{ type: 'primary', label: '主色' },
+		{ type: 'success', label: '成功' },
+		{ type: 'info', label: '信息' },
+		{ type: 'warning', label: '警告' },
+		{ type: 'danger', label: '危险' },
+		{ type: 'default', label: '中性' }
+	]
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/tag/tag'
+	const nextPath: string = '/pages/demo/input/input'
+	const prevName = '标签'
+	const nextName = '输入框'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

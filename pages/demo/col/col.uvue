@@ -1,0 +1,536 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-col</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="columns" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">多端适配</text>
+								<text class="demo-hero__title demo-hero__title--accent">6 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">列管占宽：24 栅格跨度、左侧偏移、视觉位移和断点。蒸汽模式没有 @media，断点按窗口宽度在脚本里算。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-col</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">跨度</text>
+							<text class="demo-section__desc">span 24 / 12 / 8 / 6，默认 24 占满一整行。</text>
+						</view>
+					</view>
+					<view class="demo-col-stage">
+						<vx-row :gutter="12" :line-gutter="12">
+							<vx-col :span="24">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">span 24 · 整行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="12">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">12</text>
+								</view>
+							</vx-col>
+							<vx-col :span="12">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">12</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">6</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">span 取 1–24 的整数，0 表示这一档不显示，负数按 0，超过 24 按整行。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">偏移</text>
+							<text class="demo-section__desc">offset 在左边空出几列，上限是 24 - span。</text>
+						</view>
+					</view>
+					<view class="demo-col-stage">
+						<text class="demo-col-label">offset=0</text>
+						<vx-row :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-col-stage demo-col-stage--next">
+						<text class="demo-col-label">offset=4 · 空出四列</text>
+						<vx-row :gutter="12">
+							<vx-col :span="8" :offset="4">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-col-stage demo-col-stage--next">
+						<text class="demo-col-label">offset=8</text>
+						<vx-row :gutter="12">
+							<vx-col :span="8" :offset="8">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">偏移和跨度一起收口：8 + 8 = 16 ≤ 24，写超了按上限算，不会把列挤到下一行。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">位移</text>
+							<text class="demo-section__desc">push 右移、pull 左移，只改视觉位置，占位不变。</text>
+						</view>
+					</view>
+					<view class="demo-col-stage">
+						<text class="demo-col-label">push=4</text>
+						<vx-row :gutter="12">
+							<vx-col :span="8" :push="4">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">8 · push 4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-col-stage demo-col-stage--next">
+						<text class="demo-col-label">pull=4</text>
+						<vx-row :gutter="12">
+							<vx-col :span="8" :pull="4">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">8 · pull 4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">同时传 push 和 pull 取净值；位移不改变占位，后面的列不会跟着挪。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">隐藏</text>
+							<text class="demo-section__desc">三列里中间那列写 span=0：这一档不显示，但仍留在页面里。</text>
+						</view>
+					</view>
+					<view class="demo-col-stage">
+						<vx-row :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="0">
+								<view class="demo-col-box demo-col-box--hidden">
+									<text class="demo-col-box__text demo-col-box__text--hidden">0</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-col-box">
+									<text class="demo-col-box__text">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">span=0 是 display: none，不是不渲染；切回宽屏时不用重建。断点也能传 0，例如 md=0 表示桌面收起。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">断点</text>
+							<text class="demo-section__desc">span=24 sm=12 md=8 lg=6，按窗口宽度往上覆盖。</text>
+						</view>
+					</view>
+					<view class="demo-col-stage">
+						<view class="demo-col-meter">
+							<text class="demo-col-meter__value">窗口 {{ windowWidth }}px</text>
+							<text class="demo-col-meter__tier">当前档位 {{ tier }}</text>
+						</view>
+						<vx-row :gutter="12" :line-gutter="12">
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">A</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">B</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">C</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-col-box demo-col-box--soft">
+									<text class="demo-col-box__text demo-col-box__text--soft">D</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">断点只改 span，offset / push / pull 在所有宽度上同一个值；sm / md / lg / xl 分别从 576 / 768 / 992 / 1200 起。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">四个数据格排两行，下面一张通栏卡片。</text>
+						</view>
+					</view>
+					<view class="demo-col-stage">
+						<vx-row :gutter="12" :line-gutter="12">
+							<vx-col :span="12" :md="6">
+								<view class="demo-col-card">
+									<text class="demo-col-card__value">1 284</text>
+									<text class="demo-col-card__label">今日访问</text>
+								</view>
+							</vx-col>
+							<vx-col :span="12" :md="6">
+								<view class="demo-col-card">
+									<text class="demo-col-card__value">32</text>
+									<text class="demo-col-card__label">待处理</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24">
+								<view class="demo-col-card demo-col-card--plain">
+									<text class="demo-col-card__label">近七天趋势</text>
+									<view class="demo-col-chart">
+										<view class="demo-col-chart__bar demo-col-chart__bar--1"></view>
+										<view class="demo-col-chart__bar demo-col-chart__bar--2"></view>
+										<view class="demo-col-chart__bar demo-col-chart__bar--3"></view>
+										<view class="demo-col-chart__bar demo-col-chart__bar--4"></view>
+										<view class="demo-col-chart__bar demo-col-chart__bar--5"></view>
+										<view class="demo-col-chart__bar demo-col-chart__bar--6"></view>
+										<view class="demo-col-chart__bar demo-col-chart__bar--7"></view>
+									</view>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">列只负责宽度，卡片的外框、内边距和内容都在列里；同一行用同一种卡片，行距交给 lineGutter。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 多端适配演示：断点按窗口宽度算，这里把当前宽度和档位读出来给用户对照。
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const windowWidth = ref(0)
+
+	const tier = computed((): string => {
+		if (windowWidth.value >= 1200) return 'xl · 宽屏'
+		if (windowWidth.value >= 992) return 'lg · 桌面'
+		if (windowWidth.value >= 768) return 'md · 平板横屏'
+		if (windowWidth.value >= 576) return 'sm · 平板竖屏'
+		return 'span · 手机'
+	})
+
+	const prevPath: string = '/pages/demo/row/row'
+	const nextPath: string = '/pages/demo/image-group/image-group'
+	const prevName = '栅格布局'
+	const nextName = '图片组合'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+		windowWidth.value = uni.getWindowInfo().windowWidth
+	})
+</script>
+
+<style>
+	.demo-col-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-col-stage--next {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-col-label {
+		margin-bottom: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-col-box {
+		box-sizing: border-box;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		padding-top: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-col-box--soft {
+		border-color: var(--vx-color-primary-soft);
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.demo-col-box--hidden {
+		border-color: var(--vx-color-border);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-col-box__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-col-box__text--soft {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.demo-col-box__text--hidden {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 窗口宽度读数：断点不是猜的，这一行就是列正在用的那个数。 */
+	.demo-col-meter {
+		flex-direction: row;
+		align-items: baseline;
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.demo-col-meter__value {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-col-meter__tier {
+		margin-left: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-col-card {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-col-card--plain {
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-col-card__value {
+		font-size: var(--vx-font-xl);
+		line-height: var(--vx-line-xl);
+		font-weight: var(--vx-weight-bold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-col-card__label {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 趋势条只是占位图形：演示的是栅格，不是图表。 */
+	.demo-col-chart {
+		flex-direction: row;
+		align-items: flex-end;
+		height: 64px;
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-col-chart__bar {
+		flex: 1;
+		margin-right: var(--vx-space-xs);
+		border-radius: 3px;
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.demo-col-chart__bar--1 {
+		height: 40%;
+	}
+
+	.demo-col-chart__bar--2 {
+		height: 64%;
+	}
+
+	.demo-col-chart__bar--3 {
+		height: 32%;
+	}
+
+	.demo-col-chart__bar--4 {
+		height: 84%;
+	}
+
+	.demo-col-chart__bar--5 {
+		height: 56%;
+	}
+
+	.demo-col-chart__bar--6 {
+		height: 72%;
+	}
+
+	.demo-col-chart__bar--7 {
+		height: 48%;
+		margin-right: 0;
+	}
+</style>

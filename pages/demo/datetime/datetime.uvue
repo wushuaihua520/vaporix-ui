@@ -1,0 +1,542 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-datetime</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="calendar" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">日期时间</text>
+								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">底部滚轮只改草稿，点确定才写回 v-model；取消和遮罩都不动已选值。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-datetime</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">日期加时间</text>
+							<text class="demo-section__desc">默认模式，年月日加时分，打开时停在已选值。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="选择日期时间" @click="onDatetimeBasic" />
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">已选：{{ datetimeValue }}</text>
+							<text class="demo-datetime-status__meta">datetime</text>
+						</view>
+						<text class="demo-hint">点确定才写回 v-model；取消、遮罩和 close() 都不改已提交的值，再次打开还是上一次的结果。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">日期模式</text>
+							<text class="demo-section__desc">年、年月、月日，一直到年月日时分秒，列数跟着模式走。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="年" @click="onDatetimeYear" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="年月" @click="onDatetimeYearMonth" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="月日" @click="onDatetimeMonthDay" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="年月日" @click="onDatetimeDate" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="年月日时" @click="onDatetimeDateHour" />
+							</view>
+						</view>
+						<vx-button block size="sm" type="default" text="年月日时分秒"
+							@click="onDatetimeDatetimeSecond" />
+						<text class="demo-hint">六列时数值自动收一档字号，年月日时分秒也不会被列宽截断；月份和日期补零，年份保持四位。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">时间模式</text>
+							<text class="demo-section__desc">时分、时分秒、分秒，只出现时间列。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="时分" @click="onDatetimeTime" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="时分秒" @click="onDatetimeTimeSecond" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="分秒" @click="onDatetimeMinuteSecond" />
+							</view>
+						</view>
+						<text class="demo-hint">时间模式不出现年份列，读不出来时用当前时间；分钟和秒都补两位。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">默认值与年份区间</text>
+							<text class="demo-section__desc">value 决定打开时停在哪，年份区间限定可选范围。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="设置默认显示 2019-09-12 18:01"
+							@click="onDatetimePreset" />
+						<text class="demo-hint">这里把年份区间收到 2013–2026：打开时停在设好的 2019 年，年份列只有这 14 个值。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">步长</text>
+							<text class="demo-section__desc">分钟、秒按步长分组，适合预约和提醒。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="5 分钟"
+									@click="onDatetimeMinuteStep" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="15 分 + 15 秒"
+									@click="onDatetimeSecondStep" />
+							</view>
+						</view>
+						<text class="demo-hint">minuteStep / secondStep 取 1–30；已选值不在步长网格上时，打开前对齐到最近的刻度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">单位置顶</text>
+							<text class="demo-section__desc">unit-position="top" 时单位单独排一行，滚轮只留数字。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="单位置顶" @click="onDatetimeUnitTop" />
+						<text class="demo-hint">单位条和滚轮列等分对齐；默认 inline 把年、月、日跟在数值后面，六列时更省宽度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义格式</text>
+							<text class="demo-section__desc">format 只改输出文本，不改变哪些列可以选。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="YYYY/MM/DD"
+									@click="onDatetimeSlashFormat" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="MM 月 DD 日"
+									@click="onDatetimeCnFormat" />
+							</view>
+						</view>
+						<text class="demo-hint">格式串认 YYYY / MM / DD / HH / mm / ss，其余字符原样保留；这里是月日模式加中文后缀。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">标题与遮罩</text>
+							<text class="demo-section__desc">title 放在头部中间，maskColor 只改遮罩。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="标题 + 品牌遮罩" @click="onDatetimeBrand" />
+						<text class="demo-hint">遮罩传 var(--vx-color-*) 时跟随亮暗主题，传字面值时对比度由业务保证。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法与变更事件</text>
+							<text class="demo-section__desc">open() 打开，close() 只收起；滚动停止才抛 change。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="open() 打开"
+									@click="onDatetimeOpen" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="close() 关闭" @click="onDatetimeClose" />
+							</view>
+						</view>
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">最近滚动：{{ datetimeLastChange }}</text>
+							<text class="demo-datetime-status__meta">change</text>
+						</view>
+						<text class="demo-hint">close() 只收起，不抛 cancel；change 在滚动停止、值真的变了之后才抛，业务可以据此联动第二级选择器。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">表单组合</text>
+							<text class="demo-section__desc">只读输入行加箭头，点整行打开选择器。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-input v-model="bookingDate" label="预约日期" label-width="88px" readonly arrow
+								placeholder="请选择日期" @click="onBookingOpen" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-input v-model="remindTime" label="提醒时间" label-width="88px" readonly arrow
+								placeholder="请选择时间" @click="onRemindOpen" />
+						</view>
+						<text class="demo-hint">两个实例各管一个值：日期用 date 模式，时间用 time 模式；确定后直接写回输入框的 v-model。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 日期时间选择器同样挂在页面根上，遮罩才盖得住滚动容器和固定页脚。 -->
+		<vx-datetime ref="datetimeRef" v-model="datetimeValue" v-model:show="datetimeVisible"
+			:mode="datetimeMode" :title="datetimeTitle" :start-year="datetimeStartYear"
+			:end-year="datetimeEndYear" :minute-step="datetimeMinuteStep" :second-step="datetimeSecondStep"
+			:unit-position="datetimeUnitPosition" :format="datetimeFormat" :mask-color="datetimeMaskColor"
+			@change="onDatetimeChange" />
+
+		<!-- 表单组合各自一个实例：两个值互相不影响，也不用跟着实验室来回切模式。 -->
+		<vx-datetime v-model="bookingDate" v-model:show="bookingVisible" mode="date" title="选择预约日期" />
+
+		<vx-datetime v-model="remindTime" v-model:show="remindVisible" mode="time" title="选择提醒时间"
+			format="HH:mm" />
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 日期时间选择器：一个共享实例跑完实验室，两个独立实例给表单组合用。
+	type DatetimeDemoMode =
+		| 'year'
+		| 'year-month'
+		| 'month-day'
+		| 'date'
+		| 'date-hour'
+		| 'datetime'
+		| 'datetime-second'
+		| 'time'
+		| 'time-second'
+		| 'minute-second'
+
+	type DatetimeDemoUnitPosition = 'inline' | 'top'
+
+	type DatetimeDemoApi = {
+		open?: () => void
+		close?: () => void
+	}
+
+	type DatetimeDemoConfig = {
+		mode: DatetimeDemoMode
+		value?: string
+		title?: string
+		startYear?: number
+		endYear?: number
+		minuteStep?: number
+		secondStep?: number
+		unitPosition?: DatetimeDemoUnitPosition
+		format?: string
+		maskColor?: string
+	}
+
+	const datetimeVisible = ref(false)
+
+	const datetimeValue = ref('2026-10-26 11:30')
+
+	const datetimeMode = ref<DatetimeDemoMode>('datetime')
+
+	const datetimeTitle = ref('')
+
+	const datetimeStartYear = ref(1980)
+
+	const datetimeEndYear = ref(2050)
+
+	const datetimeMinuteStep = ref(1)
+
+	const datetimeSecondStep = ref(1)
+
+	const datetimeUnitPosition = ref<DatetimeDemoUnitPosition>('inline')
+
+	const datetimeFormat = ref('')
+
+	const datetimeMaskColor = ref('')
+
+	const datetimeLastChange = ref('还没有滚动')
+
+	const datetimeRef = ref<DatetimeDemoApi | null>(null)
+
+	// 每个模式配一份对得上的默认值，切模式时滚轮和输出都停在合理位置。
+	const datetimePreset = (mode: DatetimeDemoMode): string => {
+		if (mode === 'year') return '2026'
+		if (mode === 'year-month') return '2026-10'
+		if (mode === 'month-day') return '10-26'
+		if (mode === 'date') return '2026-10-26'
+		if (mode === 'date-hour') return '2026-10-26 11'
+		if (mode === 'datetime') return '2026-10-26 11:30'
+		if (mode === 'datetime-second') return '2026-10-26 11:30:00'
+		if (mode === 'time') return '11:30'
+		if (mode === 'time-second') return '11:30:00'
+		return '30:00'
+	}
+
+	// 每次点按钮都重配一遍共享实例，再打开；配置在打开前就位，滚轮挂载时停在正确位置。
+	// 同一个模式再次打开时保留已经确定的值，用来对「取消不改 v-model」。
+	const applyDatetimeConfig = (config: DatetimeDemoConfig) => {
+		const sameMode = datetimeMode.value === config.mode
+		datetimeMode.value = config.mode
+		if (config.value != null) datetimeValue.value = config.value
+		else if (!sameMode || datetimeValue.value.length === 0) datetimeValue.value = datetimePreset(config.mode)
+		datetimeTitle.value = config.title != null ? config.title : ''
+		datetimeStartYear.value = config.startYear != null ? config.startYear : 1980
+		datetimeEndYear.value = config.endYear != null ? config.endYear : 2050
+		datetimeMinuteStep.value = config.minuteStep != null ? config.minuteStep : 1
+		datetimeSecondStep.value = config.secondStep != null ? config.secondStep : 1
+		datetimeUnitPosition.value = config.unitPosition != null ? config.unitPosition : 'inline'
+		datetimeFormat.value = config.format != null ? config.format : ''
+		datetimeMaskColor.value = config.maskColor != null ? config.maskColor : ''
+		datetimeVisible.value = true
+	}
+
+	const onDatetimeBasic = () => {
+		applyDatetimeConfig({ mode: 'datetime', title: '选择日期时间' })
+	}
+
+	const onDatetimeYear = () => {
+		applyDatetimeConfig({ mode: 'year' })
+	}
+
+	const onDatetimeYearMonth = () => {
+		applyDatetimeConfig({ mode: 'year-month' })
+	}
+
+	const onDatetimeDate = () => {
+		applyDatetimeConfig({ mode: 'date' })
+	}
+
+	const onDatetimeMonthDay = () => {
+		applyDatetimeConfig({ mode: 'month-day' })
+	}
+
+	const onDatetimeDateHour = () => {
+		applyDatetimeConfig({ mode: 'date-hour' })
+	}
+
+	const onDatetimeDatetimeSecond = () => {
+		applyDatetimeConfig({ mode: 'datetime-second' })
+	}
+
+	const onDatetimeTime = () => {
+		applyDatetimeConfig({ mode: 'time' })
+	}
+
+	const onDatetimeTimeSecond = () => {
+		applyDatetimeConfig({ mode: 'time-second' })
+	}
+
+	const onDatetimeMinuteSecond = () => {
+		applyDatetimeConfig({ mode: 'minute-second' })
+	}
+
+	// 2019 年这份默认值超出默认区间也照样能显示：年份区间在打开前才收口。
+	const onDatetimePreset = () => {
+		applyDatetimeConfig({ mode: 'datetime', value: '2019-09-12 18:01', startYear: 2013, endYear: 2026 })
+	}
+
+	const onDatetimeMinuteStep = () => {
+		applyDatetimeConfig({ mode: 'datetime', minuteStep: 5 })
+	}
+
+	const onDatetimeSecondStep = () => {
+		applyDatetimeConfig({ mode: 'datetime-second', minuteStep: 15, secondStep: 15 })
+	}
+
+	const onDatetimeUnitTop = () => {
+		applyDatetimeConfig({ mode: 'datetime', unitPosition: 'top' })
+	}
+
+	const onDatetimeSlashFormat = () => {
+		applyDatetimeConfig({ mode: 'date', format: 'YYYY/MM/DD' })
+	}
+
+	const onDatetimeCnFormat = () => {
+		applyDatetimeConfig({ mode: 'month-day', format: 'MM 月 DD 日' })
+	}
+
+	const onDatetimeBrand = () => {
+		applyDatetimeConfig({
+			mode: 'date',
+			title: '选择出行日期',
+			maskColor: 'rgba(43, 107, 224, 0.28)'
+		})
+	}
+
+	const onDatetimeOpen = () => {
+		datetimeRef.value?.open?.()
+	}
+
+	const onDatetimeClose = () => {
+		datetimeRef.value?.close?.()
+	}
+
+	const onDatetimeChange = (value: string) => {
+		datetimeLastChange.value = value
+	}
+
+	// 表单组合：两个值各自维护，选择器只负责把结果写回输入框。
+	const bookingDate = ref('')
+
+	const bookingVisible = ref(false)
+
+	const remindTime = ref('')
+
+	const remindVisible = ref(false)
+
+	const onBookingOpen = () => {
+		bookingVisible.value = true
+	}
+
+	const onRemindOpen = () => {
+		remindVisible.value = true
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/rate/rate'
+	const nextPath: string = '/pages/demo/picker/picker'
+	const prevName = '评分'
+	const nextName = '联动选择'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

@@ -1,0 +1,689 @@
+<template>
+	<!-- 点击停在开关上：列表里整行可点时，外层列表行或卡片不会再收到同一次点击。 -->
+	<view :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click.stop="onToggle">
+		<!-- 轨道在文案前时先画；列表里文案用 flex 撑开，轨道仍被推到行尾。 -->
+		<view v-if="!trackEnd" :class="trackClass" :style="trackStyle">
+			<view :class="thumbClass" :style="thumbStyle">
+				<view v-if="loadingActive" :class="spinnerClass" :style="spinnerStyle"></view>
+			</view>
+		</view>
+
+		<view v-if="showContent" :class="contentClass">
+			<view v-if="hasCopy" class="vx-switch__body">
+				<!-- 默认插槽替换 label / description，用于带图标或两行排版的富文案。 -->
+				<slot>
+					<text v-if="label.length > 0" :class="labelClass">{{ label }}</text>
+					<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
+				</slot>
+			</view>
+
+			<!-- 标签、徽章或状态放在文案后面；轨道在行尾时正好在文案和轨道之间。 -->
+			<view v-if="$slots['extra'] != null" :class="extraClass">
+				<slot name="extra"></slot>
+			</view>
+		</view>
+
+		<view v-if="trackEnd" :class="trackClass" :style="trackStyle">
+			<view :class="thumbClass" :style="thumbStyle">
+				<view v-if="loadingActive" :class="spinnerClass" :style="spinnerStyle"></view>
+			</view>
+		</view>
+
+		<!-- 分割线绝对定位在行底，不占高度；list 里最后一行由业务关掉。 -->
+		<view v-if="showDivider" :class="dividerClass"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxSwitchProps, VxSwitchLayout } from './props'
+	import { VxSemantic, VxSize } from '../../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+
+	const props = withDefaults(defineProps<VxSwitchProps>(), {
+		label: '',
+		description: '',
+		size: 'md',
+		type: 'primary',
+		layout: 'inline',
+		placement: 'end',
+		divider: false,
+		disabled: false,
+		loading: false,
+		color: '',
+		trackColor: '',
+		thumbColor: '',
+		borderColor: ''
+	})
+
+	// 没有绑定时 defineModel 自己保存局部值，组件仍能单独切换。
+	const modelValue = defineModel({
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		change: [value: boolean]
+	}>()
+
+	const slots = useSlots()
+
+	// 滑块位移 = 轨道宽 - 滑块 - 两侧各 2px 内边距。App 读不到 CSS 变量，
+	// 按档位写在这里，和 --vx-switch-width-* / --vx-switch-thumb-* 同值。
+	const VX_SWITCH_TRAVEL: Record<VxSize, number> = {
+		sm: 16,
+		md: 20,
+		lg: 24
+	}
+
+	// 不认识的尺寸按 md，不认识的语义色按 default。尺寸 class 只拼 sm / lg。
+	const sizeKey = computed((): VxSize => {
+		const size = props.size
+		if (size === 'sm' || size === 'lg') return size
+		return 'md'
+	})
+
+	const typeKey = computed((): VxSemantic => {
+		const type = props.type
+		if (type === 'primary' || type === 'success' || type === 'info' || type === 'warning' || type === 'danger') {
+			return type
+		}
+		return 'default'
+	})
+
+	const layoutKey = computed((): VxSwitchLayout => {
+		return props.layout === 'list' ? 'list' : 'inline'
+	})
+
+	// 开关默认在行尾：设置项先读名称再读状态。只有明确写 start 才放到文案前。
+	const trackEnd = computed((): boolean => {
+		return props.placement !== 'start'
+	})
+
+	// 文案或默认插槽才占一列。只传 extra 时旁边仍有内容，间距规则和文案相同。
+	const hasCopy = computed((): boolean => {
+		if (props.label.length > 0 || props.description.length > 0) return true
+		return slots['default'] != null
+	})
+
+	const hasAside = computed((): boolean => {
+		if (hasCopy.value) return true
+		return slots['extra'] != null
+	})
+
+	// 列表始终留内容列，行尾轨道才推得过去。单行没有内容时不挂空节点。
+	const showContent = computed((): boolean => {
+		if (layoutKey.value === 'list') return true
+		return hasAside.value
+	})
+
+	const checked = computed((): boolean => {
+		return modelValue.value === true
+	})
+
+	// 加载只在可用时出现；和 disabled 同时为真时按禁用处理，不画加载圈。
+	const loadingActive = computed((): boolean => {
+		return props.loading && !props.disabled
+	})
+
+	const showDivider = computed((): boolean => {
+		return layoutKey.value === 'list' && props.divider
+	})
+
+	// class 顺序：基础 → 排布 → 尺寸 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-switch'
+		if (layoutKey.value === 'list') name += ' vx-switch--list'
+		else name += ' vx-switch--inline'
+		if (sizeKey.value !== 'md') name += ` vx-switch--${layoutKey.value}-${sizeKey.value}`
+		if (props.disabled) name += ' vx-switch--disabled'
+		else if (loadingActive.value) name += ' vx-switch--loading'
+		return name
+	})
+
+	const contentClass = computed((): string => {
+		if (layoutKey.value === 'list') return 'vx-switch__content vx-switch__content--list'
+		return 'vx-switch__content'
+	})
+
+	const labelClass = computed((): string => {
+		let name = 'vx-switch__label'
+		if (layoutKey.value === 'list') {
+			if (sizeKey.value === 'sm') name += ' vx-switch__label--list-sm'
+			else if (sizeKey.value === 'lg') name += ' vx-switch__label--list-lg'
+			else name += ' vx-switch__label--list'
+		} else if (sizeKey.value === 'sm') {
+			name += ' vx-switch__label--sm'
+		} else if (sizeKey.value === 'lg') {
+			name += ' vx-switch__label--lg'
+		}
+		if (props.disabled) name += ' vx-switch__label--disabled'
+		return name
+	})
+
+	const descriptionClass = computed((): string => {
+		let name = 'vx-switch__description'
+		if (props.label.length > 0) name += ' vx-switch__description--offset'
+		if (props.disabled) name += ' vx-switch__description--disabled'
+		return name
+	})
+
+	// 列表里的标签和主文案首行对齐；单行仍整项垂直居中。
+	const extraClass = computed((): string => {
+		if (layoutKey.value !== 'list') return 'vx-switch__extra'
+		if (sizeKey.value === 'sm') return 'vx-switch__extra vx-switch__extra--list-sm'
+		if (sizeKey.value === 'lg') return 'vx-switch__extra vx-switch__extra--list-lg'
+		return 'vx-switch__extra vx-switch__extra--list'
+	})
+
+	// 轨道和文案之间留 8，lg 留 12；位置不同，外边距落在不同一侧。没有旁边的内容时不留。
+	const trackClass = computed((): string => {
+		let name = 'vx-switch__track'
+		if (sizeKey.value !== 'md') name += ` vx-switch__track--${sizeKey.value}`
+		if (hasAside.value) {
+			if (trackEnd.value) {
+				name += sizeKey.value === 'lg' ? ' vx-switch__track--end-lg' : ' vx-switch__track--end'
+			} else {
+				name += sizeKey.value === 'lg' ? ' vx-switch__track--start-lg' : ' vx-switch__track--start'
+			}
+		}
+		if (props.disabled) {
+			name += checked.value ? ' vx-switch__track--on-disabled' : ' vx-switch__track--off-disabled'
+		} else if (checked.value) {
+			name += ` vx-switch__track--on-${typeKey.value}`
+		}
+		return name
+	})
+
+	// 关闭时滑块是 surface 底加 text-secondary 描边；打开时底色和描边一起取 on-*。
+	const thumbClass = computed((): string => {
+		let name = 'vx-switch__thumb'
+		if (sizeKey.value !== 'md') name += ` vx-switch__thumb--${sizeKey.value}`
+		if (props.disabled) {
+			name += checked.value ? ' vx-switch__thumb--on-disabled' : ' vx-switch__thumb--off-disabled'
+		} else if (checked.value) {
+			name += ` vx-switch__thumb--on-${typeKey.value}`
+		}
+		return name
+	})
+
+	// 加载圈画在滑块里。打开时跟轨道语义色；关闭时不另挂 class，底色就是正文色。
+	const spinnerClass = computed((): string => {
+		let name = 'vx-switch__spinner'
+		if (sizeKey.value !== 'md') name += ` vx-switch__spinner--${sizeKey.value}`
+		if (checked.value) name += ` vx-switch__spinner--${typeKey.value}`
+		return name
+	})
+
+	// 自定义轨道色走内联，会盖过 class；禁用时不生效。
+	const trackStyle = computed((): string => {
+		if (props.disabled) return ''
+		if (checked.value) {
+			if (props.color.length === 0) return ''
+			return `background-color: ${props.color};`
+		}
+		if (props.trackColor.length === 0) return ''
+		return `background-color: ${props.trackColor};`
+	})
+
+	// 选中位移写在首帧样式里，过渡只在后续变化时发生，不另挂 mounted 开关。
+	// 自定义滑块色同时改两种状态；打开时描边一起收掉，避免外面多一圈 on-*。
+	const thumbStyle = computed((): string => {
+		let style = ''
+		if (checked.value) style += ` transform: translateX(${VX_SWITCH_TRAVEL[sizeKey.value]}px);`
+		if (props.disabled) return style
+		if (props.thumbColor.length > 0) {
+			style += ` background-color: ${props.thumbColor};`
+			if (checked.value) style += ` border-color: ${props.thumbColor};`
+		}
+		if (!checked.value && props.borderColor.length > 0) {
+			style += ` border-color: ${props.borderColor};`
+		}
+		return style
+	})
+
+	// 加载圈默认跟语义色；打开时自定义轨道色也跟着走，关闭时固定用正文色。
+	const spinnerStyle = computed((): string => {
+		if (!loadingActive.value) return ''
+		if (!checked.value || props.color.length === 0) return ''
+		return `border-color: ${props.color}; border-right-color: transparent; border-bottom-color: transparent;`
+	})
+
+	const dividerClass = computed((): string => {
+		if (sizeKey.value === 'sm') return 'vx-switch__divider vx-switch__divider--sm'
+		return 'vx-switch__divider'
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。列表整行铺底色，单行只压透明度。
+	const hoverClass = computed((): string => {
+		if (props.disabled || props.loading) return 'none'
+		return layoutKey.value === 'list' ? 'vx-switch--pressed' : 'vx-switch--pressed-inline'
+	})
+
+	const onToggle = () => {
+		if (props.disabled || props.loading) return
+		const next = !modelValue.value
+		modelValue.value = next
+		emit('change', next)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 单行：高度取控件三档 32 / 40 / 48，整块是热区，不加左右内边距，
+	   和页面、卡片的左边缘对齐。列表项固定占满整行。 */
+	.vx-switch {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		min-height: var(--vx-control-height-md);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-switch--inline {
+		/* 单行在放不下时允许收窄，长文案换行。不收 align-self：纵向父级拉满后才有确定宽度，
+		   文案才能换行；没有文案时轨道靠左，右侧空白仍是热区。 */
+		flex-shrink: 1;
+	}
+
+	.vx-switch--inline-sm {
+		min-height: var(--vx-control-height-sm);
+	}
+
+	.vx-switch--inline-lg {
+		min-height: var(--vx-control-height-lg);
+	}
+
+	/* 列表行：一项一行，行高沿用列表行 44 / 52 / 60，左右内边距与列表行相同。
+	   垂直居中留在根节点：两行说明把行撑高时轨道仍在行中，不跟复选框那样贴首行。
+	   分割线绝对定位，定位包含块只建在列表上。 */
+	.vx-switch--list {
+		position: relative;
+		width: 100%;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-lg);
+		border-radius: 0;
+	}
+
+	.vx-switch--list-sm {
+		min-height: var(--vx-list-height-sm);
+		padding: var(--vx-space-sm) var(--vx-space-md);
+	}
+
+	.vx-switch--list-lg {
+		min-height: var(--vx-list-height-lg);
+		padding: var(--vx-space-lg) var(--vx-space-lg);
+	}
+
+	/* 按下态：列表整行铺 surface-pressed；单行没有底色，只把整项压到 0.8。 */
+	.vx-switch--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.vx-switch--pressed-inline {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-switch__content {
+		flex-direction: row;
+		align-items: center;
+		min-width: 0;
+	}
+
+	/* 列表里文案吃掉剩余宽度，行尾的轨道才会被推到最右；单行只按内容宽度排。
+	   文案和 extra 顶对齐，轨道仍由根节点垂直居中，不跟这一列走。 */
+	.vx-switch__content--list {
+		flex: 1;
+		align-items: flex-start;
+	}
+
+	.vx-switch__body {
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	/* 轨道三档 36 × 20 / 44 × 24 / 52 × 28，固定胶囊；关闭轨道用浅灰底，
+	   不铺深灰，状态主要靠滑块位置和描边。
+	   滑块留在 inset 里，不靠 overflow 裁。Web 的 view 默认已经裁切，再写一层只多一个裁剪层。 */
+	.vx-switch__track {
+		position: relative;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: var(--vx-switch-width-md);
+		height: var(--vx-switch-height-md);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-default-soft);
+		transition-property: background-color;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-switch__track--sm {
+		width: var(--vx-switch-width-sm);
+		height: var(--vx-switch-height-sm);
+	}
+
+	.vx-switch__track--lg {
+		width: var(--vx-switch-width-lg);
+		height: var(--vx-switch-height-lg);
+	}
+
+	.vx-switch__track--start {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-switch__track--end {
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-switch__track--start-lg {
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-switch__track--end-lg {
+		margin-left: var(--vx-space-md);
+	}
+
+	.vx-switch__track--on-primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-switch__track--on-success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-switch__track--on-info {
+		background-color: var(--vx-color-info);
+	}
+
+	/* 琥珀原色在白底上不到 3:1，打开轨道用 pressed。 */
+	.vx-switch__track--on-warning {
+		background-color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-switch__track--on-danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-switch__track--on-default {
+		background-color: var(--vx-color-text);
+	}
+
+	.vx-switch__track--off-disabled {
+		background-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-switch__track--on-disabled {
+		background-color: var(--vx-color-disabled-text);
+	}
+
+	/* 滑块四周各留 2。关闭时 surface 底加 text-secondary 1px 描边，
+	   打开时底色和描边一起取 on-*，描边自然收掉。
+	   transition 简写写不了多个属性；duration 和 timing 也只能各一条，和 property 共用。
+	   鸿蒙拍平后过渡可能不生效，滑块直接落位。 */
+	.vx-switch__thumb {
+		position: absolute;
+		top: var(--vx-switch-inset);
+		left: var(--vx-switch-inset);
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: var(--vx-switch-thumb-md);
+		height: var(--vx-switch-thumb-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-text-secondary);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-surface);
+		transition-property: transform, background-color, border-color;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-switch__thumb--sm {
+		width: var(--vx-switch-thumb-sm);
+		height: var(--vx-switch-thumb-sm);
+	}
+
+	.vx-switch__thumb--lg {
+		width: var(--vx-switch-thumb-lg);
+		height: var(--vx-switch-thumb-lg);
+	}
+
+	.vx-switch__thumb--on-primary {
+		border-color: var(--vx-color-on-primary);
+		background-color: var(--vx-color-on-primary);
+	}
+
+	.vx-switch__thumb--on-success {
+		border-color: var(--vx-color-on-success);
+		background-color: var(--vx-color-on-success);
+	}
+
+	.vx-switch__thumb--on-info {
+		border-color: var(--vx-color-on-info);
+		background-color: var(--vx-color-on-info);
+	}
+
+	.vx-switch__thumb--on-warning {
+		border-color: var(--vx-color-on-warning);
+		background-color: var(--vx-color-on-warning);
+	}
+
+	.vx-switch__thumb--on-danger {
+		border-color: var(--vx-color-on-danger);
+		background-color: var(--vx-color-on-danger);
+	}
+
+	.vx-switch__thumb--on-default {
+		border-color: var(--vx-color-text-inverse);
+		background-color: var(--vx-color-text-inverse);
+	}
+
+	/* 禁用关闭：浅灰轨道上留一圈更浅的描边；禁用打开：滑块用 surface 藏在灰轨道里。 */
+	.vx-switch__thumb--off-disabled {
+		border-color: var(--vx-color-disabled-text);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-switch__thumb--on-disabled {
+		border-color: var(--vx-color-surface);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 加载圈画在滑块里：半圈缺口圆环，打开时跟语义色，关闭时用正文色，
+	   避免和滑块的 text-secondary 描边叠成两层同色圆环。
+	   关键帧不放进 WEB，和按钮、加载动画一样；5.26 的 App 和鸿蒙拍平读不到时停在静态缺口，
+	   文案要能独立说明在等什么。 */
+	.vx-switch__spinner {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: var(--vx-switch-spinner-md);
+		height: var(--vx-switch-spinner-md);
+		border-width: 1.5px;
+		border-style: solid;
+		border-color: var(--vx-color-text);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+		border-radius: var(--vx-radius-pill);
+		animation-name: vx-switch-spin;
+		animation-duration: var(--vx-duration-spin);
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	.vx-switch__spinner--sm {
+		width: var(--vx-switch-spinner-sm);
+		height: var(--vx-switch-spinner-sm);
+	}
+
+	.vx-switch__spinner--lg {
+		width: var(--vx-switch-spinner-lg);
+		height: var(--vx-switch-spinner-lg);
+	}
+
+	.vx-switch__spinner--primary {
+		border-color: var(--vx-color-primary);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	.vx-switch__spinner--success {
+		border-color: var(--vx-color-success);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	.vx-switch__spinner--info {
+		border-color: var(--vx-color-info);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	.vx-switch__spinner--warning {
+		border-color: var(--vx-color-warning);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	.vx-switch__spinner--danger {
+		border-color: var(--vx-color-danger);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	.vx-switch__spinner--default {
+		border-color: var(--vx-color-text);
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	/* 单行文案用控件字号 13 / 14 / 16、行高 20 / 22 / 24；列表行改用正文档位 13 / 15 / 17。 */
+	.vx-switch__label {
+		flex-shrink: 0;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: normal;
+	}
+
+	.vx-switch__label--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-switch__label--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-switch__label--list {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-switch__label--list-sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-switch__label--list-lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-switch__label--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 说明始终用辅助说明档，和主文案之间留 4；只有说明时不加。 */
+	.vx-switch__description {
+		flex-shrink: 0;
+		min-width: 0;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: normal;
+	}
+
+	.vx-switch__description--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-switch__description--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 额外内容排在文案后面，不参与压缩，和文案之间留 12；内容自己带颜色和字号。
+	   列表里和主文案首行居中：20 高的标签在 22 行高里补 1，sm 正好，lg 补 2。 */
+	.vx-switch__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-md);
+	}
+
+	.vx-switch__extra--list {
+		margin-top: 1px;
+	}
+
+	.vx-switch__extra--list-sm {
+		margin-top: 0;
+	}
+
+	.vx-switch__extra--list-lg {
+		margin-top: 2px;
+	}
+
+	/* 分割线左右缩进和行内边距对齐；sm 更紧。 */
+	.vx-switch__divider {
+		position: absolute;
+		right: var(--vx-space-lg);
+		bottom: 0;
+		left: var(--vx-space-lg);
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	.vx-switch__divider--sm {
+		right: var(--vx-space-md);
+		left: var(--vx-space-md);
+	}
+
+	/* 可点的开关是指针，禁用是禁止，加载是进行中。 */
+	/* #ifdef WEB */
+	.vx-switch {
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.vx-switch--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-switch--loading {
+		cursor: progress;
+	}
+
+	.vx-switch__track {
+		pointer-events: none;
+	}
+	/* #endif */
+
+	@keyframes vx-switch-spin {
+		from {
+			transform: rotate(0deg);
+		}
+
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

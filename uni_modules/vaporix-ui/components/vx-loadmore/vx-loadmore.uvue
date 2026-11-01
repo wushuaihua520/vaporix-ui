@@ -1,0 +1,31 @@
+<template>
+	<view class="vx-loadmore">
+		<!-- 转圈和文案都交给 vx-loading。关掉换行，长句也不会把尾部撑得比 vx-nomore 高。 -->
+		<vx-loading :text="text" :type="type" :size="size" :variant="variant" :wrap="false" />
+	</view>
+</template>
+
+<script setup>
+	import { VxLoadmoreProps } from './props'
+
+	withDefaults(defineProps<VxLoadmoreProps>(), {
+		text: '正在加载...',
+		type: 'default',
+		size: 'md',
+		variant: 'ring'
+	})
+</script>
+
+<style>
+	/* 和 vx-nomore 共用一套尾部节奏：上下 16，文案 13 / 20，替换时不跳高度。 */
+	.vx-loadmore {
+		box-sizing: border-box;
+		width: 100%;
+		align-self: stretch;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding-top: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+	}
+</style>

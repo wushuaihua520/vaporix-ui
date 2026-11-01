@@ -1,0 +1,363 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-switch</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="toggle-right" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">开关选择器</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">布尔切换。v-model 立即写回；list 排布让整行可点，loading 期间拦下点击并保持当前状态。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-switch</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">没有文案时是一只独立开关；带文案时点文案也切换。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch v-model="notify" label="接收推送" @change="onNotifyChange" />
+						<view class="demo-sw-row">
+							<vx-switch v-model="silent" />
+							<text class="demo-sw-row__text">没有文案，只有开关</text>
+						</view>
+					</view>
+					<text class="demo-hint">推送：{{ notify ? '已打开' : '已关闭' }}。v-model 在点按当下写回，不等保存。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">整行与分割线</text>
+							<text class="demo-section__desc">layout="list" 一行一项并让整行可点；divider 画行底 1px。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch v-model="notify" layout="list" label="接收推送" description="订单和物流提醒" divider />
+						<vx-switch v-model="silent" layout="list" label="夜间免打扰" description="22:00 到 08:00" divider />
+						<vx-switch v-model="sound" layout="list" label="提示音" description="消息到达时播放" />
+					</view>
+					<text class="demo-hint">同一张卡片的最后一行不要开 divider；整行热区包含文案、说明和轨道。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">轨道位置</text>
+							<text class="demo-section__desc">placement="end" 默认推到行尾，start 放在文案前。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<text class="demo-sw-label">placement="end" · 默认</text>
+						<vx-switch v-model="notify" layout="list" label="接收推送" />
+					</view>
+					<view class="demo-sw-stage demo-sw-stage--next">
+						<text class="demo-sw-label">placement="start"</text>
+						<vx-switch v-model="notify" layout="list" label="接收推送" placement="start" />
+					</view>
+					<text class="demo-hint">inline 排布下轨道跟在文案后面；list 排布下放在 start 会让轨道贴左、文案跟着走。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">三档 32 / 40 / 48，轨道、滑块和文案一起变。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch v-model="notify" size="sm" label="sm" />
+						<view class="demo-sw-gap">
+							<vx-switch v-model="notify" size="md" label="md · 默认" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch v-model="notify" size="lg" label="lg" />
+						</view>
+					</view>
+					<text class="demo-hint">同一组开关只用一档尺寸；热区高度跟着档位走，都不低于 44。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">type 只改打开时的轨道色，warning 取 warning-pressed。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch :model-value="true" type="primary" label="primary" />
+						<view class="demo-sw-gap">
+							<vx-switch :model-value="true" type="success" label="success" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch :model-value="true" type="info" label="info" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch :model-value="true" type="warning" label="warning" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch :model-value="true" type="danger" label="danger" />
+						</view>
+					</view>
+					<text class="demo-hint">语义色表达状态，不用于装饰；关闭态统一用 default-soft 轨道。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">状态</text>
+							<text class="demo-section__desc">loading 拦下点击并保持状态；disabled 整只转灰。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch v-model="saving" label="保存中" loading />
+						<view class="demo-sw-gap">
+							<vx-switch v-model="saved" label="已保存" loading />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch v-model="locked" label="系统托管，不可改" disabled />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch v-model="lockedAuto" label="自动续费" description="关闭前需先取消订阅" disabled />
+						</view>
+					</view>
+					<view class="demo-sw-gap">
+						<vx-button size="sm" text="切换保存中 / 已保存" @click="toggleSaving" />
+					</view>
+					<text class="demo-hint">loading 时轨道保持当前状态、滑块里转半圈缺口圆环；disabled 同时停用点击和加载圈。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色与组合</text>
+							<text class="demo-section__desc">四个颜色各改一处；下面是一张通知设置卡。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch v-model="brand" label="color · 打开轨道" color="#8a2b33" />
+						<view class="demo-sw-gap">
+							<vx-switch v-model="brand2" label="trackColor · 关闭轨道" track-color="#2f6f4f" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch v-model="brand3" label="thumbColor · 滑块" thumb-color="#7a5b13" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch v-model="brand4" label="borderColor · 关闭描边" border-color="#2f6f4f" />
+						</view>
+					</view>
+					<view class="demo-sw-stage demo-sw-stage--next">
+						<view class="demo-sw-card">
+							<text class="demo-sw-card__title">通知</text>
+							<vx-switch v-model="notify" layout="list" label="接收推送" description="订单、物流和活动" divider />
+							<vx-switch v-model="silent" layout="list" label="夜间免打扰" description="22:00 到 08:00" divider />
+							<vx-switch v-model="sound" layout="list" label="提示音" />
+						</view>
+					</view>
+					<text class="demo-hint">自定义色都是字面值、不跟随主题；打开轨道的自定义色会同时改加载圈，关闭轨道的不会。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 开关演示：v-model 是布尔值；loading 由父级控制，用来模拟请求进行中。
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const notify = ref(true)
+	const silent = ref(false)
+	const sound = ref(true)
+	const saving = ref(false)
+	const saved = ref(true)
+	const locked = ref(true)
+	const lockedAuto = ref(true)
+	const brand = ref(true)
+	const brand2 = ref(false)
+	const brand3 = ref(true)
+	const brand4 = ref(false)
+
+	const onNotifyChange = (value: boolean) => {
+		// value 已经写回 v-model；需要请求时在这里发
+	}
+
+	const toggleSaving = () => {
+		saving.value = !saving.value
+		saved.value = !saved.value
+	}
+
+	const prevPath: string = '/pages/demo/checkbox/checkbox'
+	const nextPath: string = '/pages/demo/datetime/datetime'
+	const prevName = '多项选择器'
+	const nextName = '日期时间选择器'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	.demo-sw-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-sw-stage--next {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-sw-label {
+		margin-bottom: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-sw-gap {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-sw-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-sw-row__text {
+		margin-left: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 组合演示：一张通知设置卡，标题在上、开关整行铺开。 */
+	.demo-sw-card {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-sw-card__title {
+		margin-bottom: var(--vx-space-sm);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+</style>

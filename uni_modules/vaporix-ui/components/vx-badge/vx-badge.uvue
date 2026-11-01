@@ -1,0 +1,344 @@
+<template>
+	<!-- 外圈负责定位和覆盖描边，内圈才是可见的胶囊。
+	     盒模型默认 border-box，描边写在胶囊上会吃掉高度，16px 再扣 4px 字会被裁。 -->
+	<view :class="rootClass">
+		<slot v-if="absolute"></slot>
+		<view v-if="showMark" :class="markClass" :style="markStyle">
+			<view :class="pillClass" :style="pillStyle">
+				<text v-if="!dot" :class="textClass" :style="textStyle">{{ label }}</text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxBadgeProps } from './props'
+
+	const props = withDefaults(defineProps<VxBadgeProps>(), {
+		value: 0,
+		text: '',
+		max: 99,
+		dot: false,
+		type: 'danger',
+		variant: 'solid',
+		size: 'md',
+		absolute: false,
+		offsetX: 0,
+		offsetY: 0,
+		ring: false,
+		bgColor: '',
+		color: ''
+	})
+
+	// 计数小于 1 不占位，业务不用再算一次 v-if。dot 和 text 不看 value。
+	const showMark = computed((): boolean => {
+		if (props.dot) return true
+		if (props.text.length > 0) return true
+		return props.value >= 1
+	})
+
+	const label = computed((): string => {
+		if (props.text.length > 0) return props.text
+		const count = Math.floor(props.value)
+		return count > props.max ? `${props.max}+` : `${count}`
+	})
+
+	// 实心用 on-*，浅底用 *-pressed。warning 浅底用 ink，黄底上 pressed 色不够深。
+	// 实心 default 是深色中性底，文字走基础态的 text-inverse，不再挂类型 class。
+	// 浅底 default 是浅灰底；text-secondary 在这层底上只有 4.2:1，落到 text 才够 4.5。
+	const textTone = computed((): string => {
+		const type = props.type
+		if (props.variant === 'soft') {
+			if (type === 'primary') return 'primary-pressed'
+			if (type === 'success') return 'success-pressed'
+			if (type === 'info') return 'info-pressed'
+			if (type === 'warning') return 'warning-ink'
+			if (type === 'danger') return 'danger-pressed'
+			return 'text'
+		}
+		if (type === 'primary') return 'on-primary'
+		if (type === 'success') return 'on-success'
+		if (type === 'info') return 'on-info'
+		if (type === 'warning') return 'on-warning'
+		if (type === 'danger') return 'on-danger'
+		return ''
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-badge'
+		if (props.absolute) name += ' vx-badge--absolute'
+		// 独立徽章不显示时整块移除，别在 flex 行里留一个 0 宽的项。absolute 还要托住插槽。
+		else if (!showMark.value) name += ' vx-badge--hidden'
+		if (props.ring) name += ' vx-badge--ring'
+		return name
+	})
+
+	const markClass = computed((): string => {
+		let name = 'vx-badge__mark'
+		if (props.absolute) name += ' vx-badge__mark--absolute'
+		if (props.ring) name += ' vx-badge__mark--ring'
+		return name
+	})
+
+	const pillClass = computed((): string => {
+		let name = 'vx-badge__pill'
+		// 圆点只按直径走，不套胶囊高度，否则 8px 的点会被撑到 20px。
+		if (props.dot) {
+			if (props.size === 'lg') name += ' vx-badge__pill--dot-lg'
+			else if (props.size === 'sm') name += ' vx-badge__pill--dot-sm'
+			else name += ' vx-badge__pill--dot'
+		} else if (props.size !== 'md') {
+			name += ` vx-badge__pill--${props.size}`
+		}
+
+		if (props.variant === 'soft') {
+			name += props.type === 'default' ? ' vx-badge__pill--soft-default' : ` vx-badge__pill--soft-${props.type}`
+		} else if (props.type !== 'default') {
+			name += ` vx-badge__pill--${props.type}`
+		}
+		return name
+	})
+
+	// 只覆盖 top / right。半宽半高的平移留在 class 上，宽胶囊不用在脚本里抄尺寸。
+	const markStyle = computed((): string => {
+		if (!props.absolute) return ''
+		if (props.offsetX === 0 && props.offsetY === 0) return ''
+		return `top: ${props.offsetY}px; right: ${-props.offsetX}px;`
+	})
+
+	const pillStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-badge__text'
+		if (props.size !== 'md') name += ` vx-badge__text--${props.size}`
+		if (textTone.value.length > 0) name += ` vx-badge__text--${textTone.value}`
+		return name
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 根节点只是托住胶囊的壳：行里跟着父级对齐，拉高时靠 align-items 让胶囊仍居中。
+	   外层不像标签那样 align-self: flex-start，否则在比徽章高的行里会贴顶。
+	   Web 上 flex 子项默认可收缩，写成 0，行宽不够时胶囊不被挤扁。 */
+	.vx-badge {
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	/* 独立徽章没有内容时整块移除；absolute 的根节点还要托住插槽内容，不能隐藏。 */
+	.vx-badge--hidden {
+		display: none;
+	}
+
+	/* absolute 时根节点是定位基准，默认插槽的内容先排，徽章再叠到右上角。
+	   这里必须贴住内容宽度，否则绝对定位会按整行算。
+	   App 默认 overflow 是 hidden，角标伸出根节点、阴影伸出描边都会被裁。
+	   Android 拍平后 visible 不生效，这两层不要加 flatten。 */
+	.vx-badge--absolute {
+		position: relative;
+		align-self: flex-start;
+		overflow: visible;
+	}
+
+	.vx-badge--ring {
+		overflow: visible;
+	}
+
+	/* 默认 1。父级把 --vx-badge-opacity 写成字面量时只淡化角标，插槽文字不跟着变。 */
+	.vx-badge__mark {
+		flex-direction: row;
+		flex-shrink: 0;
+		opacity: var(--vx-badge-opacity);
+	}
+
+	/* 覆盖在图标上时不吃点击，点击落到插槽内容上。 */
+	.vx-badge__mark--absolute {
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 1;
+		/* 写在定位层上，不写在根上，否则插槽内容也点不到。拍平不支持 pointer-events，这层不要加 flatten。 */
+		pointer-events: none;
+		/* 百分比相对自身边框盒。右上角先对齐，再平移半宽、负半高，圆心落在角上。宽胶囊和圆点同一条。 */
+		transform: translate(50%, -50%);
+	}
+
+	/* 描边用外圈内边距做，不占胶囊内部；颜色取页面底色，换主题自动跟着走。
+	   白底徽章压在浅色页面上会没边，这里补一层浮层阴影，md 才看得出白色胶囊。
+	   阴影画在盒外，这层自己的默认 hidden 会先裁掉。Android 拍平后 visible 不生效，这层也不要加 flatten。 */
+	.vx-badge__mark--ring {
+		padding: var(--vx-border-width-strong);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-surface);
+		box-shadow: var(--vx-shadow-md);
+		overflow: visible;
+	}
+
+	.vx-badge__pill {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		/* 高度要包含左右 4px，单字符才是正圆。Web 默认 content-box，不写会被 padding 撑宽。 */
+		box-sizing: border-box;
+		height: var(--vx-badge-height-md);
+		min-width: var(--vx-badge-height-md);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-text);
+	}
+
+	.vx-badge__pill--lg {
+		height: var(--vx-badge-height-lg);
+		min-width: var(--vx-badge-height-lg);
+	}
+
+	.vx-badge__pill--sm {
+		height: var(--vx-badge-height-sm);
+		min-width: var(--vx-badge-height-sm);
+	}
+
+	/* 圆点不带左右内边距，宽高相等才是正圆。 */
+	.vx-badge__pill--dot {
+		width: var(--vx-badge-dot-md);
+		height: var(--vx-badge-dot-md);
+		min-width: var(--vx-badge-dot-md);
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.vx-badge__pill--dot-lg {
+		width: var(--vx-badge-dot-lg);
+		height: var(--vx-badge-dot-lg);
+		min-width: var(--vx-badge-dot-lg);
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.vx-badge__pill--dot-sm {
+		width: var(--vx-badge-dot-sm);
+		height: var(--vx-badge-dot-sm);
+		min-width: var(--vx-badge-dot-sm);
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.vx-badge__pill--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-badge__pill--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-badge__pill--info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-badge__pill--warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-badge__pill--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-badge__pill--soft-primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-badge__pill--soft-success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-badge__pill--soft-info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-badge__pill--soft-warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-badge__pill--soft-danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-badge__pill--soft-default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-badge__text {
+		color: var(--vx-color-text-inverse);
+		font-size: var(--vx-badge-font-md);
+		line-height: var(--vx-badge-height-md);
+		font-weight: var(--vx-weight-medium);
+		/* App 默认 keep、Web 默认 pre-line，都会在边界换行；盒子高度固定，第二行会被裁掉。 */
+		white-space: nowrap;
+	}
+
+	.vx-badge__text--lg {
+		font-size: var(--vx-badge-font-lg);
+		line-height: var(--vx-badge-height-lg);
+	}
+
+	.vx-badge__text--sm {
+		font-size: var(--vx-badge-font-sm);
+		line-height: var(--vx-badge-height-sm);
+	}
+
+	.vx-badge__text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-badge__text--on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-badge__text--on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-badge__text--on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-badge__text--on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-badge__text--primary-pressed {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-badge__text--success-pressed {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-badge__text--info-pressed {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-badge__text--warning-ink {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-badge__text--danger-pressed {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	.vx-badge__text--text {
+		color: var(--vx-color-text);
+	}
+</style>

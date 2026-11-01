@@ -1,0 +1,370 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">基础</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-icon</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="star" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">图标</text>
+								<text class="demo-hero__title demo-hero__title--accent">4 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">core 112 个默认加载，extend 1000 个按需引入；尺寸只有 14 / 18 / 22 三档。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">基础</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-icon</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">14 / 18 / 22。绘制区大约是字号的 0.9。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-size-row">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">lg</text>
+								<text class="demo-size-row__meta">22</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-icon-row">
+									<view class="demo-icon-row__item">
+										<vx-icon name="search" size="lg" />
+									</view>
+									<view class="demo-icon-row__item">
+										<vx-icon name="calendar" size="lg" />
+									</view>
+									<view class="demo-icon-row__item">
+										<vx-icon name="user" size="lg" />
+									</view>
+									<view class="demo-icon-row__item demo-icon-row__item--last">
+										<vx-icon name="settings" size="lg" />
+									</view>
+								</view>
+							</view>
+						</view>
+						<view class="demo-size-row">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">md</text>
+								<text class="demo-size-row__meta">18</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-icon-row">
+									<view class="demo-icon-row__item">
+										<vx-icon name="search" />
+									</view>
+									<view class="demo-icon-row__item">
+										<vx-icon name="calendar" />
+									</view>
+									<view class="demo-icon-row__item">
+										<vx-icon name="user" />
+									</view>
+									<view class="demo-icon-row__item demo-icon-row__item--last">
+										<vx-icon name="settings" />
+									</view>
+								</view>
+							</view>
+						</view>
+						<view class="demo-size-row demo-size-row--last">
+							<view class="demo-size-row__key">
+								<text class="demo-size-row__name">sm</text>
+								<text class="demo-size-row__meta">14</text>
+							</view>
+							<view class="demo-size-row__control">
+								<view class="demo-icon-row">
+									<view class="demo-icon-row__item">
+										<vx-icon name="search" size="sm" />
+									</view>
+									<view class="demo-icon-row__item">
+										<vx-icon name="calendar" size="sm" />
+									</view>
+									<view class="demo-icon-row__item">
+										<vx-icon name="user" size="sm" />
+									</view>
+									<view class="demo-icon-row__item demo-icon-row__item--last">
+										<vx-icon name="settings" size="sm" />
+									</view>
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">14px 只放箭头、关闭、勾。复杂图形用 18 或 22。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">语义色</text>
+							<text class="demo-section__desc">五种语义色。反白和灰色用 color。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-icon-row">
+							<view class="demo-icon-row__item">
+								<vx-icon name="close" size="lg" />
+							</view>
+							<view class="demo-icon-row__item">
+								<vx-icon name="chevron-down" type="primary" size="lg" />
+							</view>
+							<view class="demo-icon-row__item">
+								<vx-icon name="check" type="success" size="lg" />
+							</view>
+							<view class="demo-icon-row__item">
+								<vx-icon name="info" type="info" size="lg" />
+							</view>
+							<view class="demo-icon-row__item">
+								<vx-icon name="calendar" type="warning" size="lg" />
+							</view>
+							<view class="demo-icon-row__item">
+								<vx-icon name="trash" type="danger" size="lg" />
+							</view>
+							<view class="demo-icon-row__item demo-icon-row__item--last">
+								<vx-icon name="eye" color="var(--vx-color-text-secondary)" size="lg" />
+							</view>
+						</view>
+						<text class="demo-hint">默认文字色。type 是语义色，color 临时改色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">按钮与输入框</text>
+							<text class="demo-section__desc">反白和灰色自己传。前缀图标跟输入框尺寸。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-stack">
+							<view class="demo-stack__item">
+								<vx-button block type="primary" text="继续">
+									<view class="demo-icon-inline">
+										<vx-icon name="chevron-right" color="var(--vx-color-on-primary)" />
+									</view>
+								</vx-button>
+							</view>
+							<view class="demo-stack__item">
+								<vx-button block type="primary" text="继续" variant="plain">
+									<view class="demo-icon-inline">
+										<vx-icon name="chevron-right" color="var(--vx-color-primary-pressed)" />
+									</view>
+								</vx-button>
+							</view>
+							<view class="demo-stack__item">
+								<vx-button block type="primary" text="已保存" variant="soft">
+									<view class="demo-icon-inline">
+										<vx-icon name="check" color="var(--vx-color-primary-pressed)" />
+									</view>
+								</vx-button>
+							</view>
+							<view class="demo-stack__item">
+								<vx-button block type="primary" text="继续" variant="link">
+									<view class="demo-icon-inline">
+										<vx-icon name="chevron-right" color="var(--vx-color-primary-pressed)" />
+									</view>
+								</vx-button>
+							</view>
+							<view class="demo-stack__item">
+								<vx-button block type="primary" text="禁用" disabled>
+									<view class="demo-icon-inline">
+										<vx-icon name="chevron-right" color="var(--vx-color-disabled-text)" />
+									</view>
+								</vx-button>
+							</view>
+							<view class="demo-stack__item demo-stack__item--last">
+								<vx-button block type="primary" text="加载中" loading>
+									<view class="demo-icon-inline">
+										<vx-icon name="chevron-right" color="var(--vx-color-on-primary)" />
+									</view>
+								</vx-button>
+							</view>
+						</view>
+					</view>
+					<view class="demo-card demo-card--spaced">
+						<view class="demo-field">
+							<vx-input v-model="iconSearchWord" placeholder="搜索关键词">
+								<template #prefix>
+									<vx-icon name="search" color="var(--vx-color-text-secondary)" />
+								</template>
+							</vx-input>
+						</view>
+						<view class="demo-field">
+							<vx-input v-model="iconDateValue" placeholder="选择日期" readonly arrow>
+								<template #prefix>
+									<vx-icon name="calendar" color="var(--vx-color-text-secondary)" />
+								</template>
+							</vx-input>
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-input model-value="不可编辑" disabled>
+								<template #prefix>
+									<vx-icon name="user" color="var(--vx-color-disabled-text)" />
+								</template>
+							</vx-input>
+						</view>
+						<text class="demo-hint">前缀跟输入框尺寸。反白用 color 传。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">核心图标</text>
+							<text class="demo-section__desc">core 112 个。extend 1000 个要另外引入样式。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-icon-switch">
+							<view class="demo-icon-switch__item">
+								<vx-button size="sm" :variant="iconVariant === 'regular' ? 'solid' : 'plain'" :type="iconVariant === 'regular' ? 'primary' : 'default'" text="Regular" @click="iconVariant = 'regular'" />
+							</view>
+							<view class="demo-icon-switch__item demo-icon-switch__item--last">
+								<vx-button size="sm" :variant="iconVariant === 'fill' ? 'solid' : 'plain'" :type="iconVariant === 'fill' ? 'primary' : 'default'" text="Fill" @click="iconVariant = 'fill'" />
+							</view>
+						</view>
+						<view class="demo-icon-grid">
+							<view v-for="name in visibleIconNames" :key="name" class="demo-icon-cell">
+								<vx-icon :name="name" :variant="iconVariant" size="lg" />
+								<text class="demo-icon-cell__name">{{ name }}</text>
+							</view>
+						</view>
+						<view v-if="hiddenIconCount > 0" class="demo-icon-switch">
+							<view class="demo-icon-switch__item demo-icon-switch__item--last">
+								<vx-button size="sm" type="default" variant="plain" :text="iconMoreText" @click="showAllIcons" />
+							</view>
+						</view>
+						<text class="demo-hint">先渲染 {{ visibleIconNames.length }} 个，整表 {{ iconNames.length }} 个。字体在包里，扩展字体要另外引入。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { VX_ICON_CORE_NAMES } from '@/uni_modules/vaporix-ui/libs/icons/codepoints'
+
+	const iconSearchWord = ref('')
+
+	const iconDateValue = ref('')
+
+	const iconVariant = ref<'regular' | 'fill'>('regular')
+
+	const iconNames = VX_ICON_CORE_NAMES
+	const iconPreviewLimit = ref(40)
+
+	const visibleIconNames = computed((): string[] => {
+		const limit = iconPreviewLimit.value < iconNames.length ? iconPreviewLimit.value : iconNames.length
+		const list: string[] = []
+		for (let index = 0; index < limit; index++) {
+			list.push(iconNames[index])
+		}
+		return list
+	})
+
+	const hiddenIconCount = computed((): number => {
+		return iconNames.length - visibleIconNames.value.length
+	})
+
+	const iconMoreText = computed((): string => {
+		return '再看 ' + hiddenIconCount.value + ' 个'
+	})
+
+	const showAllIcons = () => {
+		iconPreviewLimit.value = iconNames.length
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/button/button'
+	const nextPath: string = '/pages/demo/tag/tag'
+	const prevName = '按钮'
+	const nextName = '标签'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

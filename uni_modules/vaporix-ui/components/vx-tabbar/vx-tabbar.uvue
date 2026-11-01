@@ -1,0 +1,731 @@
+<template>
+	<!-- 标签栏是自定义 tabBar：只负责选中和点击，页面内容、路由和权限交给业务。 -->
+	<!-- 一个标签栏最多一个凸起项，多传时只认最先出现的那一项。凸起按钮仍占它所在的列，点整列都算这一项。 -->
+	<view v-if="items.length > 0" class="vx-tabbar__host">
+		<!-- 固定时补一个等高占位，放在页面末尾才不会被标签栏盖住。凸起项让出的透明区域不计入占位，
+		     那一段是浮在内容上的按钮，不该把正文推下去。 -->
+		<view v-if="showSpacer" class="vx-tabbar__spacer">
+			<view :class="spacerClass"></view>
+			<view v-if="safeArea" class="vx-tabbar__spacer-safe"></view>
+		</view>
+
+		<view :class="rootClass" :style="rootStyle">
+			<!-- 底色单独一层：凸起项上方要留透明区，不能让整条铺到屏幕顶端。 -->
+			<view :class="surfaceClass" :style="surfaceStyle"></view>
+
+			<view :class="rowClass">
+				<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
+					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
+					<view class="vx-tabbar__stack">
+						<!-- 凸起项也留同高的图标位，标签才和普通项落在同一条线上。 -->
+						<view v-if="hasMedia" :class="row.mediaClass">
+							<template v-if="row.barMediaVisible">
+								<vx-icon v-if="row.iconVisible" :name="row.iconName" :size="row.iconSize"
+									:variant="row.iconVariant" :color="row.iconColor" />
+								<image v-else :class="row.imageClass" :src="row.imageSrc" mode="aspectFit" />
+								<view v-if="row.badgeVisible" :class="row.markClass">
+									<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+										:type="badgeType" />
+								</view>
+							</template>
+						</view>
+
+						<text v-if="row.text.length > 0" :class="row.textClass"
+							:style="row.textStyle">{{ row.text }}</text>
+					</view>
+
+					<!-- 凸起圆钮挂在这一列里：整列都在标签栏范围内，落在圆钮上的点击不会漏掉。 -->
+					<view v-if="row.raised" :class="row.bubbleClass">
+						<view :class="row.mediaClass">
+							<vx-icon v-if="row.iconVisible" :name="row.bubbleIconName" :size="row.bubbleIconSize"
+								:variant="row.bubbleIconVariant" :color="row.bubbleIconColor" />
+							<image v-else-if="row.imageVisible" :class="row.imageClass" :src="row.bubbleImageSrc"
+								mode="aspectFit" />
+							<view v-if="row.badgeVisible" :class="row.markClass">
+								<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+									:type="badgeType" />
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxTabbarProps, VxTabbarItem } from './props'
+	import { VxIconVariant, VxSemantic, VxSize } from '../../libs/types/common'
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxTabbarProps>(), {
+		items: (): Array<VxTabbarItem> => [],
+		size: 'md',
+		type: 'primary',
+		fixed: true,
+		placeholder: true,
+		safeArea: true,
+		divider: true,
+		bgColor: '',
+		color: '',
+		badgeMax: 99,
+		badgeType: 'danger',
+		iconVariant: 'regular',
+		activeIconVariant: 'regular',
+		zIndex: 1
+	})
+
+	const modelValue = defineModel({
+		type: Number,
+		default: 0
+	})
+
+	const emit = defineEmits<{
+		change: [index: number]
+		click: [index: number, item: VxTabbarItem]
+	}>()
+
+	type TabbarRow = {
+		index: number
+		itemClass: string
+		mediaClass: string
+		bubbleClass: string
+		markClass: string
+		textClass: string
+		textStyle: string
+		imageClass: string
+		iconName: VxIconName
+		iconSize: 'md' | 'lg'
+		iconVariant: VxIconVariant
+		iconColor: string
+		iconVisible: boolean
+		imageSrc: string
+		imageVisible: boolean
+		bubbleIconName: VxIconName
+		bubbleIconSize: 'md' | 'lg'
+		bubbleIconVariant: VxIconVariant
+		bubbleIconColor: string
+		bubbleImageSrc: string
+		badgeVisible: boolean
+		badge: number
+		dot: boolean
+		text: string
+		raised: boolean
+		barMediaVisible: boolean
+		hoverClass: string
+	}
+
+	// 负数在取整前就判掉，-0.4 才不会被收成 0。超出末项按未选中处理，不硬夹到最后一个。
+	const activeIndex = computed((): number => {
+		const count = props.items.length
+		if (count === 0) return -1
+		const raw = modelValue.value
+		if (!(raw >= 0)) return -1
+		const value = Math.round(raw)
+		if (value > count - 1) return -1
+		return value
+	})
+
+	// 不认识的尺寸按 md 处理。
+	const sizeName = computed((): VxSize => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	// 不认识的语义色按 default 处理。
+	const typeName = computed((): VxSemantic => {
+		const type = props.type
+		if (type === 'primary' || type === 'success' || type === 'info' || type === 'warning' || type === 'danger') {
+			return type
+		}
+		return 'default'
+	})
+
+	// 选中文字和图标共用一档：warning 落在浅色底上要用 ink，default 用正文色。
+	const activeTone = computed((): string => {
+		const type = typeName.value
+		if (type === 'warning') return 'warning-ink'
+		return type
+	})
+
+	const activeColor = computed((): string => {
+		const type = typeName.value
+		if (type === 'default') return 'var(--vx-color-text)'
+		if (type === 'warning') return 'var(--vx-color-warning-ink)'
+		return `var(--vx-color-${type})`
+	})
+
+	// 凸起圆钮是实心主色块，图标取对应的 on-*；default 用正文色底配反色字。
+	const bubbleIconColor = computed((): string => {
+		const type = typeName.value
+		if (type === 'default') return 'var(--vx-color-text-inverse)'
+		return `var(--vx-color-on-${type})`
+	})
+
+	// 多传凸起项时只认第一个，后面的按普通项排，避免两个圆钮叠在同一条加高的栏上。
+	const raisedIndex = computed((): number => {
+		const source = props.items
+		for (let index = 0; index < source.length; index++) {
+			if (source[index].raised === true) return index
+		}
+		return -1
+	})
+
+	// 整条都没有图标时，标签直接居中；有一项带图标就统一留出图标位，标签才对得齐。
+	const hasMedia = computed((): boolean => {
+		const source = props.items
+		const raised = raisedIndex.value
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			if (index === raised) return true
+			if (entry.icon != null && entry.icon.length > 0) return true
+			if (entry.activeIcon != null && entry.activeIcon.length > 0) return true
+			if (entry.image != null && entry.image.length > 0) return true
+			if (entry.activeImage != null && entry.activeImage.length > 0) return true
+		}
+		return false
+	})
+
+	const showSpacer = computed((): boolean => {
+		return props.fixed && props.placeholder && props.items.length > 0
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-tabbar'
+		if (props.fixed) name += ' vx-tabbar--fixed'
+		if (props.safeArea) name += ' vx-tabbar--safe'
+		return name
+	})
+
+	// 固定用传入层级。未固定写 0，把 surface / row / bubble 收进同一层，圆钮不跟页面别的定位元素抢。
+	const rootStyle = computed((): string => {
+		if (props.fixed) return `z-index: ${props.zIndex};`
+		return 'z-index: 0;'
+	})
+
+	// 有凸起项时，底色层从凸起按钮的顶部之下开始；上面那一段保持透明，只留给圆钮。
+	const surfaceClass = computed((): string => {
+		let name = 'vx-tabbar__surface'
+		if (raisedIndex.value >= 0) name += ` vx-tabbar__surface--raised-${sizeName.value}`
+		if (!props.divider) name += ' vx-tabbar__surface--no-divider'
+		return name
+	})
+
+	const surfaceStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	// 行高是普通栏高，凸起时再加上圆钮伸出的那一段。
+	const rowClass = computed((): string => {
+		let name = 'vx-tabbar__row'
+		if (raisedIndex.value >= 0) name += ` vx-tabbar__row--raised-${sizeName.value}`
+		else if (sizeName.value !== 'md') name += ` vx-tabbar__row--${sizeName.value}`
+		return name
+	})
+
+	const spacerClass = computed((): string => {
+		let name = 'vx-tabbar__spacer-bar'
+		if (sizeName.value !== 'md') name += ` vx-tabbar__spacer-bar--${sizeName.value}`
+		return name
+	})
+
+	const mediaClass = computed((): string => {
+		let name = 'vx-tabbar__media'
+		if (sizeName.value !== 'md') name += ` vx-tabbar__media--${sizeName.value}`
+		return name
+	})
+
+	const rows = computed((): Array<TabbarRow> => {
+		const list: Array<TabbarRow> = []
+		const source = props.items
+		const current = activeIndex.value
+		const size = sizeName.value
+		const raisedAt = raisedIndex.value
+		const iconSize: 'md' | 'lg' = size === 'sm' ? 'md' : 'lg'
+		const fallbackIcon: VxIconName = 'grid-2x2'
+		const customColor = props.color.length > 0 ? props.color : ''
+		const tone = activeTone.value
+		const activeIconColor = activeColor.value
+		const raisedIconColor = bubbleIconColor.value
+		const bubbleType = typeName.value
+
+		let textBase = 'vx-tabbar__text'
+		if (size === 'sm') textBase += ' vx-tabbar__text--sm'
+		else if (size === 'lg') textBase += ' vx-tabbar__text--lg'
+		if (hasMedia.value) {
+			if (size === 'sm') textBase += ' vx-tabbar__text--spaced-sm'
+			else if (size === 'lg') textBase += ' vx-tabbar__text--spaced-lg'
+			else textBase += ' vx-tabbar__text--spaced'
+		}
+
+		let liftClass = ''
+		if (raisedAt >= 0) liftClass = ` vx-tabbar__item--lift-${size}`
+
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			const disabled = entry.disabled === true
+			const action = entry.action === true
+			const raised = index === raisedAt
+			// action 项只做按钮，不参与选中；当前索引指向它时也不点亮。
+			const active = !action && index === current
+			const text = entry.text != null ? entry.text : ''
+			const badge = entry.badge != null ? entry.badge : 0
+			const dot = entry.dot === true
+			const hasBadge = dot || badge >= 1
+
+			const baseIcon = entry.icon != null && entry.icon.length > 0 ? entry.icon : entry.activeIcon
+			const currentIcon = active && entry.activeIcon != null && entry.activeIcon.length > 0
+				? entry.activeIcon
+				: baseIcon
+			const baseImage = entry.image != null && entry.image.length > 0 ? entry.image : entry.activeImage
+			const currentImage = active && entry.activeImage != null && entry.activeImage.length > 0
+				? entry.activeImage
+				: baseImage
+			const imageVisible = baseImage != null && baseImage.length > 0
+			const iconVisible = !imageVisible && baseIcon != null && baseIcon.length > 0
+
+			let iconColor = customColor.length > 0 ? customColor : 'var(--vx-color-text-secondary)'
+			if (active) iconColor = activeIconColor
+			if (disabled) iconColor = 'var(--vx-color-disabled-text)'
+
+			let itemClass = 'vx-tabbar__item'
+			itemClass += liftClass
+			if (disabled) itemClass += ' vx-tabbar__item--disabled'
+
+			let bubbleClass = 'vx-tabbar__bubble'
+			if (size !== 'md') bubbleClass += ` vx-tabbar__bubble--${size}`
+			bubbleClass += ` vx-tabbar__bubble--${bubbleType}`
+			if (disabled) bubbleClass += ' vx-tabbar__bubble--disabled'
+
+			let textClass = textBase
+			if (active) textClass += ` vx-tabbar__text--active-${tone}`
+			if (disabled) textClass += ' vx-tabbar__text--disabled'
+
+			// 自定义颜色只盖未选中项；选中态跟 type，禁用态跟 disabled-text。
+			let textStyle = ''
+			if (!active && !disabled && customColor.length > 0) textStyle = `color: ${customColor};`
+
+			const imageClass = disabled ? 'vx-tabbar__image vx-tabbar__image--disabled' : 'vx-tabbar__image'
+			const markClass = disabled ? 'vx-tabbar__mark vx-tabbar__mark--disabled' : 'vx-tabbar__mark'
+
+			list.push({
+				index: index,
+				itemClass: itemClass,
+				mediaClass: mediaClass.value,
+				bubbleClass: bubbleClass,
+				markClass: markClass,
+				textClass: textClass,
+				textStyle: textStyle,
+				imageClass: imageClass,
+				iconName: currentIcon != null ? currentIcon : fallbackIcon,
+				iconSize: iconSize,
+				iconVariant: active ? props.activeIconVariant : props.iconVariant,
+				iconColor: iconColor,
+				iconVisible: iconVisible,
+				imageSrc: currentImage != null ? currentImage : '',
+				imageVisible: imageVisible,
+				// 凸起圆钮不跟选中态，action 和普通页签都用未选中的图标。
+				bubbleIconName: baseIcon != null ? baseIcon : fallbackIcon,
+				bubbleIconSize: iconSize,
+				bubbleIconVariant: props.iconVariant,
+				bubbleIconColor: disabled ? 'var(--vx-color-disabled-text)' : raisedIconColor,
+				bubbleImageSrc: baseImage != null ? baseImage : '',
+				badgeVisible: hasBadge,
+				badge: badge,
+				dot: dot,
+				text: text,
+				raised: raised,
+				barMediaVisible: !raised && (iconVisible || imageVisible),
+				// 空字符串关不掉按下态，要写 none。
+				hoverClass: disabled ? 'none' : 'vx-tabbar__item--pressed'
+			})
+		}
+		return list
+	})
+
+	// 停在标签上，外层卡片不会再收到同一次点击。
+	const onClick = (index: number) => {
+		const entry = props.items[index]
+		if (entry == null || entry.disabled === true) return
+		if (entry.action === true) {
+			emit('click', index, entry)
+			return
+		}
+		if (index !== activeIndex.value) {
+			modelValue.value = index
+			emit('change', index)
+		}
+		emit('click', index, entry)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 宿主只负责纵向占位：固定时高度来自占位，普通时高度来自栏本身。
+	   App 默认 overflow 是 hidden；角标会伸出栏顶，这一层也要放开裁切。 */
+	.vx-tabbar__host {
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 100%;
+		overflow: visible;
+	}
+
+	/* 整条是透明的定位层，底色由 __surface 从凸起项下方开始铺。
+	   App 默认 overflow 是 hidden，圆钮伸出栏外会被裁；这层不要加 flatten。 */
+	.vx-tabbar {
+		position: relative;
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		overflow: visible;
+		background-color: transparent;
+	}
+
+	/* 基础态 width 是 100%，再叠 left / right 会比安全区宽出一截，改回 auto 才由左右撑开。 */
+	.vx-tabbar--fixed {
+		position: fixed;
+		left: var(--uni-safe-area-inset-left, 0px);
+		right: var(--uni-safe-area-inset-right, 0px);
+		bottom: 0;
+		width: auto;
+	}
+
+	/* 安全区算在栏内：底色一直铺到屏幕底边，内容仍落在手势条之上。
+	   5.26 没有 calc，高度和留白分开写，不合并成一个值。 */
+	.vx-tabbar--safe {
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+	}
+
+	/* 底色层撑满整条，包含底部安全区；顶部 1px 分割线画在这里。
+	   有凸起项时 top 让出圆钮，透明段只在圆钮周围出现。 */
+	.vx-tabbar__surface {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-tabbar__surface--raised-sm {
+		top: var(--vx-tabbar-raise-lift-sm);
+	}
+
+	.vx-tabbar__surface--raised-md {
+		top: var(--vx-tabbar-raise-lift-md);
+	}
+
+	.vx-tabbar__surface--raised-lg {
+		top: var(--vx-tabbar-raise-lift-lg);
+	}
+
+	/* 写在描边后面，只关掉线宽，底色仍保留。 */
+	.vx-tabbar__surface--no-divider {
+		border-top-width: 0;
+	}
+
+	/* 栏高不含凸起项伸出的那一段：凸起时整行加高，图标位仍落在下半个栏里。
+	   角标会伸出栏顶，这一层也跟着放开裁切。 */
+	.vx-tabbar__row {
+		position: relative;
+		z-index: 1;
+		flex-direction: row;
+		align-items: stretch;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-tabbar-height-md);
+		overflow: visible;
+	}
+
+	.vx-tabbar__row--sm {
+		height: var(--vx-tabbar-height-sm);
+	}
+
+	.vx-tabbar__row--lg {
+		height: var(--vx-tabbar-height-lg);
+	}
+
+	.vx-tabbar__row--raised-sm {
+		height: var(--vx-tabbar-row-raised-sm);
+	}
+
+	.vx-tabbar__row--raised-md {
+		height: var(--vx-tabbar-row-raised-md);
+	}
+
+	.vx-tabbar__row--raised-lg {
+		height: var(--vx-tabbar-row-raised-lg);
+	}
+
+	/* 每一列都是热区，凸起圆钮的活动范围也算在这一列里。
+	   左右各留 4：5 个标签并排时，长文案不会顶到相邻列。 */
+	.vx-tabbar__item {
+		position: relative;
+		flex: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		height: 100%;
+		/* 单行文案的最小宽度会撑破 flex: 1，等宽就没了。 */
+		min-width: 0;
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+		overflow: visible;
+	}
+
+	/* 有凸起项时每一列都让出伸出段。只垫凸起那一列的话，其余项会在加高的整行里居中，标签对不齐。
+	   圆钮的 top 相对这一列的边框盒，不受这段 padding 影响，仍从列顶画。 */
+	.vx-tabbar__item--lift-sm {
+		padding-top: var(--vx-tabbar-raise-lift-sm);
+	}
+
+	.vx-tabbar__item--lift-md {
+		padding-top: var(--vx-tabbar-raise-lift-md);
+	}
+
+	.vx-tabbar__item--lift-lg {
+		padding-top: var(--vx-tabbar-raise-lift-lg);
+	}
+
+	.vx-tabbar__item--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 图标、图片和文案竖排居中；宽度拉满，长文案才有省略的边界。
+	   角标压在图标右上角并伸出这一层，App 默认裁切要去掉。 */
+	.vx-tabbar__stack {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-width: 0;
+		overflow: visible;
+	}
+
+	/* 图标位固定为图片方框的边长，字体图标在方框里居中。
+	   凸起项的圆钮比它大，但标签仍按这个高度排。 */
+	.vx-tabbar__media {
+		position: relative;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-tabbar-media-md);
+		height: var(--vx-tabbar-media-md);
+		overflow: visible;
+	}
+
+	.vx-tabbar__media--sm {
+		width: var(--vx-tabbar-media-sm);
+		height: var(--vx-tabbar-media-sm);
+	}
+
+	.vx-tabbar__media--lg {
+		width: var(--vx-tabbar-media-lg);
+		height: var(--vx-tabbar-media-lg);
+	}
+
+	.vx-tabbar__image {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 图片不能改色，禁用时压暗。0.4 比 --vx-opacity-disabled 再暗一档，没有 disabled 色可换。 */
+	.vx-tabbar__image--disabled {
+		opacity: 0.4;
+	}
+
+	/* 角标贴图标右上角，不参与布局；圆心落在角上，和徽章的 absolute 同一条。 */
+	.vx-tabbar__mark {
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 1;
+		flex-direction: row;
+		align-items: center;
+		transform: translate(50%, -50%);
+	}
+
+	/* 只改角标透明度。写在图片或文字的 opacity 上会连内容一起淡。
+	   定义变量不能再套 var()，0.5 与 --vx-opacity-disabled 相同。 */
+	.vx-tabbar__mark--disabled {
+		--vx-badge-opacity: 0.5;
+	}
+
+	/* 文案走 --vx-tabbar-font-* / --vx-tabbar-line-*：sm / md 都是 13 / 20，lg 收到 14 / 22。
+	   不借控件字号。App 默认 keep、Web 默认 pre-line，写明 nowrap 才会单行省略。 */
+	.vx-tabbar__text {
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		text-align: center;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-tabbar-font-md);
+		line-height: var(--vx-tabbar-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.vx-tabbar__text--sm {
+		font-size: var(--vx-tabbar-font-sm);
+		line-height: var(--vx-tabbar-line-sm);
+	}
+
+	.vx-tabbar__text--lg {
+		font-size: var(--vx-tabbar-font-lg);
+		line-height: var(--vx-tabbar-line-lg);
+	}
+
+	/* 图标位和文案的间距：sm / md 是 2，lg 是 4。不借 --vx-space-*，改留白不该带动标签栏。 */
+	.vx-tabbar__text--spaced-sm {
+		margin-top: var(--vx-tabbar-gap-sm);
+	}
+
+	.vx-tabbar__text--spaced {
+		margin-top: var(--vx-tabbar-gap-md);
+	}
+
+	.vx-tabbar__text--spaced-lg {
+		margin-top: var(--vx-tabbar-gap-lg);
+	}
+
+	/* 选中态同时换色和字重，不靠颜色单独表达当前项。 */
+	.vx-tabbar__text--active-primary {
+		color: var(--vx-color-primary);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabbar__text--active-success {
+		color: var(--vx-color-success);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabbar__text--active-info {
+		color: var(--vx-color-info);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabbar__text--active-warning-ink {
+		color: var(--vx-color-warning-ink);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabbar__text--active-danger {
+		color: var(--vx-color-danger);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabbar__text--active-default {
+		color: var(--vx-color-text);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* 禁用写在选中态后面，当前项被禁用时文字仍转灰。 */
+	.vx-tabbar__text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 凸起圆钮：圆心在标签栏上沿附近，底部和标签留 3px 空隙。
+	   宽高和顶部都在这里写死，和 --vx-tabbar-raise-lift-* 一起改。 */
+	.vx-tabbar__bubble {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		z-index: 2;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: var(--vx-tabbar-raise-size-md);
+		height: var(--vx-tabbar-raise-size-md);
+		border-radius: var(--vx-radius-pill);
+		transform: translateX(-50%);
+		overflow: visible;
+	}
+
+	.vx-tabbar__bubble--sm {
+		width: var(--vx-tabbar-raise-size-sm);
+		height: var(--vx-tabbar-raise-size-sm);
+	}
+
+	.vx-tabbar__bubble--lg {
+		width: var(--vx-tabbar-raise-size-lg);
+		height: var(--vx-tabbar-raise-size-lg);
+	}
+
+	.vx-tabbar__bubble--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-tabbar__bubble--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-tabbar__bubble--info {
+		background-color: var(--vx-color-info);
+	}
+
+	/* 琥珀色底配白字不够，和按钮一样取 pressed 档。 */
+	.vx-tabbar__bubble--warning {
+		background-color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-tabbar__bubble--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-tabbar__bubble--default {
+		background-color: var(--vx-color-text);
+	}
+
+	/* 写在类型色后面，禁用时把底色换回中性。 */
+	.vx-tabbar__bubble--disabled {
+		background-color: var(--vx-color-disabled-bg);
+	}
+
+	/* 固定时补的占位，只算可见栏高和安全区；凸起圆钮伸出的透明段不占位。 */
+	.vx-tabbar__spacer {
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 100%;
+	}
+
+	.vx-tabbar__spacer-bar {
+		width: 100%;
+		height: var(--vx-tabbar-height-md);
+	}
+
+	.vx-tabbar__spacer-bar--sm {
+		height: var(--vx-tabbar-height-sm);
+	}
+
+	.vx-tabbar__spacer-bar--lg {
+		height: var(--vx-tabbar-height-lg);
+	}
+
+	.vx-tabbar__spacer-safe {
+		width: 100%;
+		height: var(--uni-safe-area-inset-bottom, 0px);
+	}
+
+	/* #ifdef WEB */
+	.vx-tabbar__item {
+		cursor: pointer;
+	}
+
+	.vx-tabbar__item--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>

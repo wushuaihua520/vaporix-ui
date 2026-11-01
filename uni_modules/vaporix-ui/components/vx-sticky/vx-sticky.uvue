@@ -1,0 +1,306 @@
+<template>
+	<!-- App 不支持 position: sticky，吸顶靠 scrollTop 在 fixed 和文档流之间切换。
+	     吸顶后补一个等高占位，下面内容不跳；suffix 决定推到哪一段结束。 -->
+	<view class="vx-sticky">
+		<!-- 安全区顶部只写在 CSS 里，脚本读不到。放一个 1px 的同位 fixed 标尺，
+		     用 createSelectorQuery 把 fixed 的坐标原点量回来，脚本和样式才对得上。 -->
+		<view class="vx-sticky__ruler"></view>
+
+		<view :class="barClass" :style="barStyle">
+			<slot></slot>
+			<view v-if="showDivider" class="vx-sticky__divider"></view>
+		</view>
+
+		<view v-if="stuck" class="vx-sticky__placeholder" :style="placeholderStyle"></view>
+
+		<!-- 一直渲染：量高度时结果下标稳定，没有 suffix 时高度就是 0。 -->
+		<view class="vx-sticky__body">
+			<slot name="suffix"></slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxStickyProps } from './props'
+
+	const props = withDefaults(defineProps<VxStickyProps>(), {
+		scrollTop: 0,
+		offsetTop: 0,
+		zIndex: 10,
+		shadow: false,
+		bgColor: ''
+	})
+
+	const emit = defineEmits<{
+		change: [stuck: boolean]
+	}>()
+
+	const instance = getCurrentInstance()
+
+	// 位置值要参与 computed，所以用 ref；一次测量后基本不变。
+	const measured = ref(false)
+	const baseTop = ref(0)
+	const anchorTop = ref(0)
+	const anchorScroll = ref(0)
+	const rootLeft = ref(0)
+	const rootWidth = ref(0)
+	const barHeight = ref(0)
+	const bodyHeight = ref(0)
+
+	let retryTimer = 0
+	let retryCount = 0
+	let measureId = 0
+
+	// 负数和 NaN 都不让吸顶条钻到安全区里。
+	const offset = computed((): number => {
+		return props.offsetTop > 0 ? props.offsetTop : 0
+	})
+
+	// NaN 比大小永远是 false，不限定范围的条会被直接当成已吸顶。负数留着，回弹时才能松开。
+	const resolvedScrollTop = computed((): number => {
+		const value = props.scrollTop
+		if (value > 0 || value <= 0) return value
+		return 0
+	})
+
+	const stickyLine = computed((): number => {
+		return baseTop.value + offset.value
+	})
+
+	// 未吸顶时组件顶部跟着滚动走；超过 stickyLine 就停住。
+	const naturalTop = computed((): number => {
+		return anchorTop.value - (resolvedScrollTop.value - anchorScroll.value)
+	})
+
+	// suffix 有内容才限定范围；空插槽和不传都按整页吸顶处理。
+	const bounded = computed((): boolean => {
+		return bodyHeight.value > 0
+	})
+
+	const stuck = computed((): boolean => {
+		if (!measured.value) return false
+		if (naturalTop.value > stickyLine.value) return false
+		if (!bounded.value) return true
+		// 容器底边滚出页面顶部才复位：这时吸顶条已经整条推出去，切回文档流不会跳。
+		return naturalTop.value + barHeight.value + bodyHeight.value > baseTop.value
+	})
+
+	// 容器末尾把吸顶条一起顶上去；其余时间停在吸顶线。
+	const barTop = computed((): number => {
+		if (!bounded.value) return stickyLine.value
+		const pushedTop = naturalTop.value + bodyHeight.value
+		return pushedTop < stickyLine.value ? pushedTop : stickyLine.value
+	})
+
+	// 吸顶时保持原来的横向位置和宽度，缩进、卡片内的窄条都跟文档流一致。
+	const barStyle = computed((): string => {
+		let style = ''
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		if (!stuck.value) return style
+		// top、left 取整：半像素时固定层的文字会发虚。宽度不取整，避免少 1px 把内容挤换行。
+		style += `position: fixed; top: ${Math.round(barTop.value)}px; left: ${Math.round(rootLeft.value)}px; width: ${rootWidth.value}px; z-index: ${props.zIndex};`
+		return style
+	})
+
+	const barClass = computed((): string => {
+		let name = 'vx-sticky__bar'
+		if (!stuck.value) return name
+		name += ' vx-sticky__bar--stuck'
+		if (props.shadow) name += ' vx-sticky__bar--shadow'
+		return name
+	})
+
+	const showDivider = computed((): boolean => {
+		return stuck.value && !props.shadow
+	})
+
+	const placeholderStyle = computed((): string => {
+		return `height: ${barHeight.value}px;`
+	})
+
+	const clearRetry = () => {
+		if (retryTimer === 0) return
+		clearTimeout(retryTimer)
+		retryTimer = 0
+	}
+
+	const scheduleMeasure = () => {
+		if (retryTimer !== 0) return
+		retryTimer = setTimeout(() => {
+			retryTimer = 0
+			measure()
+		}, 50)
+	}
+
+	// 量根节点而不是吸顶条：吸顶条已经 fixed 时，根节点仍是文档流里的真实位置和宽度。
+	// 吸顶条只取高度，容器高度 = 条高 + suffix 高，刷新时不受旧占位高度影响。
+	const measure = () => {
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) return
+		// 后发起的测量覆盖先发起的；过期回调不再改基准，也不再排下一次重试。
+		const id = ++measureId
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.vx-sticky__ruler')
+			.boundingClientRect()
+			.select('.vx-sticky')
+			.boundingClientRect()
+			.select('.vx-sticky__bar')
+			.boundingClientRect()
+			.select('.vx-sticky__body')
+			.boundingClientRect()
+			.exec((result) => {
+				if (id !== measureId) return
+				if (result.length < 4) return
+				const rulerRect = result[0] as NodeInfo | null
+				const rootRect = result[1] as NodeInfo | null
+				const barRect = result[2] as NodeInfo | null
+				const bodyRect = result[3] as NodeInfo | null
+				if (rulerRect == null || rootRect == null || barRect == null || bodyRect == null) return
+
+				const nextBaseTop = rulerRect.top
+				const nextAnchorTop = rootRect.top
+				const nextLeft = rootRect.left
+				const nextWidth = rootRect.width
+				const nextBarHeight = barRect.height
+				const nextBodyHeight = bodyRect.height
+				if (nextBaseTop == null || nextAnchorTop == null || nextLeft == null || nextWidth == null ||
+					nextBarHeight == null || nextBodyHeight == null) return
+
+				// 排版还没结束时先不吸顶，过一帧再量；连试三次还量不到就保持原状。
+				if (nextBarHeight <= 0 || nextWidth <= 0) {
+					if (retryCount < 3) {
+						retryCount++
+						scheduleMeasure()
+					}
+					return
+				}
+
+				retryCount = 0
+				baseTop.value = nextBaseTop
+				anchorTop.value = nextAnchorTop
+				// 排版结果在回调里才到，滚动值也在这里读，避免和发起查询时隔了一次滚动。
+				anchorScroll.value = resolvedScrollTop.value
+				rootLeft.value = nextLeft
+				rootWidth.value = nextWidth
+				barHeight.value = nextBarHeight
+				bodyHeight.value = nextBodyHeight
+				measured.value = true
+			})
+	}
+
+	const refresh = () => {
+		retryCount = 0
+		clearRetry()
+		measure()
+	}
+
+	onMounted(() => {
+		// 等节点挂上再量；createSelectorQuery 的回调会等排版结束。
+		nextTick(() => {
+			measure()
+		})
+	})
+
+	onUnmounted(() => {
+		measureId++
+		clearRetry()
+	})
+
+	// 状态变了才抛；挂载时已经吸顶的情况也会抛一次 true，业务按需忽略第一次。
+	watch(stuck, (value: boolean) => {
+		emit('change', value)
+	})
+
+	// 首屏的字体、图片常常晚于挂载落位；第一次滚动补测一次，把位置基准对齐。
+	// 之后只由 refresh() 触发，滚动过程中不再反复测量。
+	let remeasuredOnScroll = false
+	watch(resolvedScrollTop, () => {
+		if (remeasuredOnScroll) return
+		remeasuredOnScroll = true
+		// 挂载时的三次重试可能已经用完，第一次滚动另给一轮。
+		retryCount = 0
+		clearRetry()
+		measure()
+	})
+
+	defineExpose({
+		refresh
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 根节点留在文档流里，只负责顺序和占位。条在吸顶时脱离这一层，宽度和缩进由脚本按根节点量。
+	   App 默认 overflow 是 hidden，会把吸顶后的条和阴影裁在这层里。
+	   拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-sticky {
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		overflow: visible;
+	}
+
+	/* 1px 见方、不接点击；只用来量 fixed 坐标里的安全区顶部。
+	   尺寸不影响测量，留 1px 是让节点一定参与排版。
+	   fixed 会升到页面根上，叶子节点关掉指针，避免挡住左上角那一个点。
+	   拍平不支持 pointer-events，这层不要加 flatten。 */
+	.vx-sticky__ruler {
+		position: fixed;
+		top: var(--uni-safe-area-inset-top, 0px);
+		left: 0;
+		width: 1px;
+		height: 1px;
+		pointer-events: none;
+	}
+
+	/* 条在文档流里保持透明、不加内边距，外观由插槽内容决定。
+	   底色只在吸顶后铺出来，没吸顶时不改变页面原来的样子。
+	   分割线和阴影画出盒外，这层自己的默认 hidden 会先裁掉。
+	   拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-sticky__bar {
+		position: relative;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		overflow: visible;
+	}
+
+	.vx-sticky__bar--stuck {
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 阴影只给吸顶这一层；默认还是安静的 1px 分割线。
+	   吸顶条压在内容上，用 md 而不是 sm，白底和页面底色才分得开。 */
+	.vx-sticky__bar--shadow {
+		box-shadow: var(--vx-shadow-md);
+	}
+
+	/* 线绝对定位在条底，不占高度，吸顶前后条高一致。 */
+	.vx-sticky__divider {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-border);
+	}
+
+	/* 等高占位由脚本给 height；透明，不画任何东西。 */
+	.vx-sticky__placeholder {
+		flex-shrink: 0;
+		width: 100%;
+	}
+
+	/* suffix 内容和条同宽，限定范围时撑出容器高度。 */
+	.vx-sticky__body {
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+	}
+</style>

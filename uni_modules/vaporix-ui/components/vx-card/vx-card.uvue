@@ -1,0 +1,403 @@
+<template>
+	<!-- 卡片只提供结构和边界，内容由业务组合。 -->
+	<!-- 点击停在卡片上，外层不会再收到同一次点击。 -->
+	<view :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click.stop="onClick">
+		<!-- 标题、图片、右侧文字和头部插槽都为空时不渲染头部，正文直接顶到卡片上沿。 -->
+		<view
+			v-if="title.length > 0 || meta.length > 0 || avatar.length > 0 || $slots['prefix'] != null || $slots['extra'] != null"
+			class="vx-card__head" :style="headStyle">
+			<view :class="headRowClass">
+				<!-- prefix 替换头像，交给业务放图标、品牌图或自定义头像。 -->
+				<view v-if="$slots['prefix'] != null" :class="mediaClass">
+					<slot name="prefix"></slot>
+				</view>
+				<view v-else-if="avatar.length > 0" :class="avatarClass">
+					<image class="vx-card__avatar-image" :src="avatar" mode="aspectFill" />
+				</view>
+
+				<view class="vx-card__heading">
+					<text v-if="title.length > 0" :class="titleClass" :style="titleStyle">{{ title }}</text>
+				</view>
+
+				<!-- extra 替换 meta；标签、时间、状态都放这里，内容自己带颜色。 -->
+				<view v-if="$slots['extra'] != null" class="vx-card__extra">
+					<slot name="extra"></slot>
+				</view>
+				<text v-else-if="meta.length > 0" class="vx-card__meta" :style="metaStyle">{{ meta }}</text>
+			</view>
+
+			<!-- 分割线左右让出内边距，和标题、正文的起点对齐。 -->
+			<view v-if="headerDivider" :class="ruleClass"></view>
+		</view>
+
+		<!-- 默认插槽替换 content；图片和列表要贴边时传 :body-padded="false"。 -->
+		<view v-if="$slots['default'] != null || content.length > 0" :class="bodyClass">
+			<slot>
+				<text :class="contentClass">{{ content }}</text>
+			</slot>
+		</view>
+
+		<!-- suffix 替换 footer；底部文案和展开操作共用一个位置。 -->
+		<view v-if="$slots['suffix'] != null || footer.length > 0" :class="footClass">
+			<slot name="suffix">
+				<text class="vx-card__foot-text">{{ footer }}</text>
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxCardProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxCardProps>(), {
+		title: '',
+		meta: '',
+		avatar: '',
+		avatarShape: 'rounded',
+		size: 'md',
+		content: '',
+		footer: '',
+		headerBg: '',
+		headerDivider: true,
+		bodyPadded: true,
+		full: false,
+		clickable: false,
+		titleColor: '',
+		metaColor: ''
+	})
+
+	const emit = defineEmits<{
+		click: []
+	}>()
+
+	// 尺寸改内边距、头像和标题档位，正文只给 sm 收紧一档；md 是基础样式，不挂修饰 class。
+	const sizedClass = (base: string, size: string): string => {
+		if (size === 'md') return base
+		return `${base} ${base}--${size}`
+	}
+
+	// class 顺序：基础 → 形状 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-card'
+		if (props.full) name += ' vx-card--full'
+		if (props.clickable) name += ' vx-card--clickable'
+		return name
+	})
+
+	const headRowClass = computed((): string => {
+		return sizedClass('vx-card__head-row', props.size)
+	})
+
+	const titleClass = computed((): string => {
+		return sizedClass('vx-card__title', props.size)
+	})
+
+	const avatarClass = computed((): string => {
+		let name = sizedClass('vx-card__avatar', props.size)
+		if (props.avatarShape === 'circle') name += ' vx-card__avatar--circle'
+		return name
+	})
+
+	const mediaClass = computed((): string => {
+		return sizedClass('vx-card__media', props.size)
+	})
+
+	const ruleClass = computed((): string => {
+		return sizedClass('vx-card__rule', props.size)
+	})
+
+	const bodyClass = computed((): string => {
+		let name = sizedClass('vx-card__body', props.size)
+		if (!props.bodyPadded) name += ' vx-card__body--flush'
+		return name
+	})
+
+	// 正文 lg 和 md 同档，只给 sm 补一个修饰 class。
+	const contentClass = computed((): string => {
+		if (props.size !== 'sm') return 'vx-card__content'
+		return 'vx-card__content vx-card__content--sm'
+	})
+
+	const footClass = computed((): string => {
+		return sizedClass('vx-card__foot', props.size)
+	})
+
+	const headStyle = computed((): string => {
+		if (props.headerBg.length === 0) return ''
+		return `background-color: ${props.headerBg};`
+	})
+
+	const titleStyle = computed((): string => {
+		if (props.titleColor.length === 0) return ''
+		return `color: ${props.titleColor};`
+	})
+
+	const metaStyle = computed((): string => {
+		if (props.metaColor.length === 0) return ''
+		return `color: ${props.metaColor};`
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		return props.clickable ? 'vx-card--pressed' : 'none'
+	})
+
+	// 静态卡片不抛 click。卡片里要单独操作时，那个操作自己 stop。
+	// 模板上的 .stop 把点击留在卡片内；静态卡片不抛 click，只负责收住事件。
+	const onClick = () => {
+		if (!props.clickable) return
+		emit('click')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 卡片默认是描边容器：surface 底、1px 描边、md 圆角，不加阴影。
+	   overflow 裁掉头部底色和贴边图片的四角。
+	   Web 默认 content-box，宽度 100% 再加描边会撑出父级。
+	   min-width 压成 0，放进横向 flex 时卡片才能跟着父级收缩。 */
+	.vx-card {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 通栏只去掉左右描边和圆角，上下描边保留，用来和页面区块分开。 */
+	.vx-card--full {
+		border-left-width: 0;
+		border-right-width: 0;
+		border-radius: 0;
+	}
+
+	/* 整卡按下用透明度；列表行才用整块底色，卡片面积大，换底太重。 */
+	.vx-card--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-card__head {
+		flex-direction: column;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 头部上下留白、行高下限和左右内边距一起决定高度；有头像时由头像撑高。 */
+	.vx-card__head-row {
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-lg);
+	}
+
+	.vx-card__head-row--sm {
+		min-height: var(--vx-list-height-sm);
+		padding: var(--vx-space-sm) var(--vx-space-md);
+	}
+
+	.vx-card__head-row--lg {
+		min-height: var(--vx-list-height-lg);
+		padding: var(--vx-space-lg) var(--vx-space-xl);
+	}
+
+	/* 标题区吃掉剩余宽度。最小宽度压成 0，长标题换行，右侧 meta 保持自身宽度。
+	   Web 默认 visible，超出的词裁在标题区里。 */
+	.vx-card__heading {
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-card__title,
+	.vx-card__content,
+	.vx-card__foot-text {
+		flex-shrink: 0;
+		min-width: 0;
+		width: 100%;
+		white-space: normal;
+	}
+
+	.vx-card__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-card__title--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-card__title--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 时间是辅助说明，三档都保持 13 / 20；长文案单行截断，不把标题挤没。
+	   App 的 max-width 只支持数字和 px，用令牌收口。 */
+	.vx-card__meta {
+		flex-shrink: 0;
+		max-width: var(--vx-card-meta-max);
+		overflow: hidden;
+		margin-left: var(--vx-space-md);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	/* extra 插槽可能放标签或自定义操作，这里只管右对齐。 */
+	.vx-card__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-md);
+	}
+
+	/* prefix 插槽替换头像；间距跟头像保持同一档。 */
+	.vx-card__media {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-card__media--sm {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-card__media--lg {
+		margin-right: var(--vx-space-lg);
+	}
+
+	/* 头像由外层裁圆角，图片本身铺满；底色给加载中和失败留一块稳定区域。 */
+	.vx-card__avatar {
+		flex-shrink: 0;
+		overflow: hidden;
+		width: var(--vx-card-avatar-md);
+		height: var(--vx-card-avatar-md);
+		margin-right: var(--vx-space-md);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-card__avatar--sm {
+		width: var(--vx-card-avatar-sm);
+		height: var(--vx-card-avatar-sm);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-card__avatar--lg {
+		width: var(--vx-card-avatar-lg);
+		height: var(--vx-card-avatar-lg);
+		margin-right: var(--vx-space-lg);
+	}
+
+	.vx-card__avatar--circle {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-card__avatar-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 1px 分割线画在头部内，左右和内容起点对齐。 */
+	.vx-card__rule {
+		height: var(--vx-border-width);
+		margin-left: var(--vx-space-lg);
+		margin-right: var(--vx-space-lg);
+		background-color: var(--vx-color-border);
+	}
+
+	.vx-card__rule--sm {
+		margin-left: var(--vx-space-md);
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-card__rule--lg {
+		margin-left: var(--vx-space-xl);
+		margin-right: var(--vx-space-xl);
+	}
+
+	/* 正文四边同档内边距；flush 留给封面图和列表行，盖掉尺寸 class。 */
+	.vx-card__body {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding: var(--vx-space-lg);
+	}
+
+	.vx-card__body--sm {
+		padding: var(--vx-space-md);
+	}
+
+	.vx-card__body--lg {
+		padding: var(--vx-space-xl);
+	}
+
+	.vx-card__body--flush {
+		padding: 0;
+	}
+
+	.vx-card__content {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-card__content--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* 底部和正文之间留 8；有正文时加起来是 24，没正文时也不会贴住分割线。 */
+	.vx-card__foot {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding: var(--vx-space-sm) var(--vx-space-lg) var(--vx-space-lg);
+	}
+
+	.vx-card__foot--sm {
+		padding: var(--vx-space-xs) var(--vx-space-md) var(--vx-space-md);
+	}
+
+	.vx-card__foot--lg {
+		padding: var(--vx-space-md) var(--vx-space-xl) var(--vx-space-xl);
+	}
+
+	.vx-card__foot-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	/* #ifdef WEB */
+	.vx-card--clickable {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

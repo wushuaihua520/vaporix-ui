@@ -1,0 +1,830 @@
+<template>
+	<!-- 通告栏只显示一条消息；多条消息轮播交给 vx-rolling-news。 -->
+	<!-- 滚动只用 text：文字和视口都要可测，默认插槽内容不参与位移。 -->
+	<view v-if="show && hasContent" :class="rootClass" :style="rootStyle" :hover-class="hoverClass"
+		:hover-stay-time="VX_PRESSED_STAY_TIME" @click="onClick($event)">
+		<!-- prefix 替换内置图标，放标签、头像或自定义图形；它是独立目标，不触发整条 click。 -->
+		<view v-if="$slots['prefix'] != null" :class="prefixClass" :hover-stop-propagation="true" @click.stop>
+			<slot name="prefix"></slot>
+		</view>
+		<view v-else-if="hasIcon" :class="prefixClass">
+			<vx-icon :name="iconName" :size="sizeName" :color="iconColorValue" />
+		</view>
+
+		<!-- 视口只负责裁切，轨道用 transition 匀速左移；5.26 的 App 没有关键帧，这条路径五端一致。 -->
+		<view v-if="scrollActive" :class="viewportClass">
+			<view :class="trackClass" :style="trackStyle">
+				<text :class="scrollTextClass" :style="textStyle">{{ text }}</text>
+			</view>
+		</view>
+		<view v-else class="vx-notice-bar__content">
+			<slot v-if="$slots['default'] != null"></slot>
+			<text v-else :class="textClass" :style="textStyle">{{ text }}</text>
+		</view>
+
+		<!-- suffix 是独立目标，放「查看」、标签或刷新；传了就排在关闭前面。 -->
+		<view v-if="$slots['suffix'] != null" :class="suffixClass" :hover-stop-propagation="true" @click.stop>
+			<slot name="suffix"></slot>
+		</view>
+
+		<view v-if="closable" :class="closeClass" hover-class="vx-notice-bar__close--pressed"
+			:hover-stay-time="VX_PRESSED_STAY_TIME" :hover-stop-propagation="true" @click.stop="close()">
+			<vx-icon name="close" :size="closeIconSize" :color="iconColorValue" />
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxNoticeBarProps } from './props'
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import {
+		VX_NOTICE_BAR_MEASURE_DELAY,
+		VX_NOTICE_BAR_SETTLE,
+		VX_NOTICE_BAR_SPEED,
+		VX_NOTICE_BAR_SPEED_MAX,
+		VX_NOTICE_BAR_SPEED_MIN,
+		VX_PRESSED_STAY_TIME
+	} from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxNoticeBarProps>(), {
+		text: '',
+		type: 'warning',
+		variant: 'soft',
+		size: 'md',
+		shape: 'square',
+		iconColor: '',
+		wrap: false,
+		scrollable: false,
+		speed: VX_NOTICE_BAR_SPEED,
+		activeMode: 'backwards',
+		closable: false,
+		bgColor: '',
+		color: '',
+		clickable: true
+	})
+
+	const show = defineModel('show', {
+		type: Boolean,
+		default: true
+	})
+
+	const emit = defineEmits<{
+		click: []
+		close: []
+	}>()
+
+	const slots = useSlots()
+	const instance = getCurrentInstance()
+
+	// 滚动只在这个分支里成立；有默认插槽时保持静态，交给业务自己排。
+	const scrollActive = computed((): boolean => {
+		return props.scrollable && slots['default'] == null && props.text.length > 0
+	})
+
+	// scrollable 优先于 wrap：滚动必须是单行。有插槽时 scrollable 只表示不换行。
+	const wrapMode = computed((): boolean => {
+		return props.wrap && !props.scrollable
+	})
+
+	const hasContent = computed((): boolean => {
+		return props.text.length > 0 || slots['default'] != null
+	})
+
+	// 不认识的档位和语义色都回到默认值，class 只拼认识的名字。
+	const sizeName = computed((): 'sm' | 'md' | 'lg' => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	const typeName = computed((): 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default' => {
+		const type = props.type
+		if (type === 'primary' || type === 'success' || type === 'info' || type === 'danger') return type
+		if (type === 'default') return 'default'
+		return 'warning'
+	})
+
+	const variantName = computed((): 'soft' | 'solid' | 'plain' => {
+		if (props.variant === 'solid' || props.variant === 'plain') return props.variant
+		return 'soft'
+	})
+
+	const shapeName = computed((): 'rounded' | 'pill' | 'square' => {
+		if (props.shape === 'rounded' || props.shape === 'pill') return props.shape
+		return 'square'
+	})
+
+	// 实心用 on-*，浅底和透明用 *-pressed；warning 的琥珀底要配 on-warning，
+	// 浅底和纯文字用 warning-ink，黄底上 pressed 色不够深。default 实心是反相底，配反色字。
+	const textTone = computed((): string => {
+		const type = typeName.value
+		if (variantName.value === 'solid') {
+			if (type === 'default') return 'inverse'
+			return `on-${type}`
+		}
+		if (type === 'default') return ''
+		if (type === 'warning') return 'warning-ink'
+		return `${type}-pressed`
+	})
+
+	const hasIcon = computed((): boolean => {
+		return props.icon != null && props.icon.length > 0
+	})
+
+	// 没传图标时给一个合法名字占位，hasIcon 为 false 不会渲染。
+	const iconName = computed((): VxIconName => {
+		return props.icon != null ? props.icon : 'volume-high'
+	})
+
+	// vx-icon 不继承父级颜色：自定义 iconColor 优先，其次跟随文案的自定义颜色，
+	// 都没有时按语义前景取令牌。关闭图标也走这一份。
+	const iconColorValue = computed((): string => {
+		if (props.iconColor.length > 0) return props.iconColor
+		if (props.color.length > 0) return props.color
+		if (textTone.value.length === 0) return 'var(--vx-color-text)'
+		if (textTone.value === 'inverse') return 'var(--vx-color-text-inverse)'
+		return `var(--vx-color-${textTone.value})`
+	})
+
+	// 关闭图标比文案小一档：lg 用 18，其余用 14。
+	const closeIconSize = computed((): 'sm' | 'md' => {
+		return sizeName.value === 'lg' ? 'md' : 'sm'
+	})
+
+	// class 顺序：基础 → 尺寸 → 外观 → 形状 → 换行 → 关闭 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-notice-bar'
+		if (sizeName.value !== 'md') name += ` vx-notice-bar--${sizeName.value}`
+		if (variantName.value === 'plain') name += ' vx-notice-bar--plain'
+		else name += ` vx-notice-bar--${variantName.value}-${typeName.value}`
+		if (shapeName.value === 'rounded') name += ' vx-notice-bar--rounded'
+		else if (shapeName.value === 'pill') name += ' vx-notice-bar--pill'
+		if (wrapMode.value) name += ` vx-notice-bar--wrap-${sizeName.value}`
+		if (props.closable) name += ' vx-notice-bar--closable'
+		if (props.clickable) name += ' vx-notice-bar--clickable'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const viewportClass = computed((): string => {
+		if (sizeName.value === 'md') return 'vx-notice-bar__viewport'
+		return `vx-notice-bar__viewport vx-notice-bar__viewport--${sizeName.value}`
+	})
+
+	const prefixClass = computed((): string => {
+		if (sizeName.value === 'lg') return 'vx-notice-bar__prefix vx-notice-bar__prefix--lg'
+		return 'vx-notice-bar__prefix'
+	})
+
+	const suffixClass = computed((): string => {
+		if (sizeName.value === 'lg') return 'vx-notice-bar__suffix vx-notice-bar__suffix--lg'
+		return 'vx-notice-bar__suffix'
+	})
+
+	const closeClass = computed((): string => {
+		let name = 'vx-notice-bar__close'
+		if (sizeName.value === 'lg') name += ' vx-notice-bar__close--lg'
+		else if (sizeName.value === 'sm') name += ' vx-notice-bar__close--sm'
+		return name
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-notice-bar__text'
+		if (sizeName.value !== 'md') name += ` vx-notice-bar__text--${sizeName.value}`
+		if (textTone.value.length > 0) name += ` vx-notice-bar__text--${textTone.value}`
+		if (wrapMode.value) name += ' vx-notice-bar__text--wrap'
+		return name
+	})
+
+	const scrollTextClass = computed((): string => {
+		let name = 'vx-notice-bar__scroll-text'
+		if (sizeName.value !== 'md') name += ` vx-notice-bar__text--${sizeName.value}`
+		if (textTone.value.length > 0) name += ` vx-notice-bar__text--${textTone.value}`
+		return name
+	})
+
+	const hoverClass = computed((): string => {
+		return props.clickable ? 'vx-notice-bar--pressed' : 'none'
+	})
+
+	// 速度取整并收在 20–600；0、负数和读不出来的值回到 100。
+	const speedValue = computed((): number => {
+		const value = Math.round(props.speed)
+		if (!(value > 0)) return VX_NOTICE_BAR_SPEED
+		if (value < VX_NOTICE_BAR_SPEED_MIN) return VX_NOTICE_BAR_SPEED_MIN
+		if (value > VX_NOTICE_BAR_SPEED_MAX) return VX_NOTICE_BAR_SPEED_MAX
+		return value
+	})
+
+	// 测量结果只用于算滚动距离和时长，不直接参与布局。
+	const viewportWidth = ref(0)
+	const textWidth = ref(0)
+	const ready = ref(false)
+	const offset = ref(0)
+	const animating = ref(false)
+	// 这一轮从起点走到完全离开左侧的距离；forwards 的第一轮少走一个视口宽。
+	const passDistance = ref(0)
+
+	// 第一轮是否还没开始；forwards 只改第一轮的起点。
+	let firstPass = true
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let measureTimer = 0
+	let startTimer = 0
+	let endTimer = 0
+	let measureTries = 0
+	let measureId = 0
+
+	const passDuration = computed((): number => {
+		if (!(passDistance.value > 0)) return 0
+		return Math.round((passDistance.value / speedValue.value) * 1000)
+	})
+
+	// 尺寸在过渡和等待之前：后写的 class 才盖得住行高。App 上 height:100% 会落成 auto。
+	const trackClass = computed((): string => {
+		let name = 'vx-notice-bar__track'
+		if (sizeName.value !== 'md') name += ` vx-notice-bar__track--${sizeName.value}`
+		if (animating.value) name += ' vx-notice-bar__track--animated'
+		if (!ready.value) name += ' vx-notice-bar__track--waiting'
+		return name
+	})
+
+	// 只有动画期间才挂过渡；复位时摘掉，位置变化才是瞬时的。
+	const trackStyle = computed((): string => {
+		let style = `transform: translateX(${offset.value}px);`
+		if (animating.value && passDuration.value > 0) {
+			style += ` transition-duration: ${passDuration.value}ms;`
+		}
+		return style
+	})
+
+	const canMeasure = (): boolean => {
+		return typeof uni !== 'undefined' && typeof uni.createSelectorQuery === 'function'
+	}
+
+	const clearMeasure = () => {
+		if (measureTimer === 0) return
+		clearTimeout(measureTimer)
+		measureTimer = 0
+	}
+
+	const clearStart = () => {
+		if (startTimer === 0) return
+		clearTimeout(startTimer)
+		startTimer = 0
+	}
+
+	const clearEnd = () => {
+		if (endTimer === 0) return
+		clearTimeout(endTimer)
+		endTimer = 0
+	}
+
+	const clearScroll = () => {
+		clearStart()
+		clearEnd()
+		animating.value = false
+	}
+
+	// 文字比视口宽才需要走；刚好放得下时停在原位。
+	const canScrollNow = (): boolean => {
+		if (!show.value || !scrollActive.value || !ready.value) return false
+		if (textWidth.value <= 0 || viewportWidth.value <= 0) return false
+		return textWidth.value > viewportWidth.value
+	}
+
+	const runPass = () => {
+		if (!canScrollNow()) return
+		firstPass = false
+		animating.value = true
+		offset.value = -textWidth.value
+		endTimer = setTimeout(() => {
+			endTimer = 0
+			if (!canScrollNow()) return
+			// 走到完全离开左侧后先复位到右侧，再起跑；两端都看不见，跳变不会被看到。
+			animating.value = false
+			offset.value = viewportWidth.value
+			passDistance.value = viewportWidth.value + textWidth.value
+			startTimer = setTimeout(() => {
+				startTimer = 0
+				runPass()
+			}, VX_NOTICE_BAR_SETTLE)
+		}, passDuration.value + VX_NOTICE_BAR_SETTLE)
+	}
+
+	const beginPass = () => {
+		clearScroll()
+		if (!canScrollNow()) {
+			offset.value = 0
+			return
+		}
+		// backwards 从右侧入场；forwards 的第一轮直接从左侧起点开始。
+		const forwardsStart = firstPass && props.activeMode === 'forwards'
+		const startOffset = forwardsStart ? 0 : viewportWidth.value
+		passDistance.value = startOffset + textWidth.value
+		offset.value = startOffset
+		startTimer = setTimeout(() => {
+			startTimer = 0
+			runPass()
+		}, VX_NOTICE_BAR_SETTLE)
+	}
+
+	const restartScroll = () => {
+		firstPass = true
+		beginPass()
+	}
+
+	const measure = () => {
+		measureTimer = 0
+		if (!show.value || !scrollActive.value) return
+		const proxy = instance != null ? instance.proxy : null
+		if (!canMeasure() || proxy == null) {
+			ready.value = true
+			offset.value = 0
+			return
+		}
+		// 后发起的测量覆盖先发起的；过期回调不再改结果，也不再排重试。
+		const id = ++measureId
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.vx-notice-bar__viewport')
+			.boundingClientRect()
+			.select('.vx-notice-bar__scroll-text')
+			.boundingClientRect()
+			.exec((result) => {
+				if (id !== measureId) return
+				if (result.length < 2) {
+					retryMeasure()
+					return
+				}
+				const viewportRect = result[0] as NodeInfo | null
+				const textRect = result[1] as NodeInfo | null
+				if (viewportRect == null || textRect == null) {
+					retryMeasure()
+					return
+				}
+				const nextViewportWidth = viewportRect.width
+				const nextTextWidth = textRect.width
+				if (nextViewportWidth == null || nextTextWidth == null) {
+					retryMeasure()
+					return
+				}
+				// 首次排版、字重还没落定时先别下结论，过一帧再量；三次仍为 0 就按静态展示。
+				if (nextViewportWidth <= 0 || nextTextWidth <= 0) {
+					retryMeasure()
+					return
+				}
+				viewportWidth.value = nextViewportWidth
+				textWidth.value = nextTextWidth
+				ready.value = true
+				firstPass = true
+				beginPass()
+			})
+	}
+
+	const retryMeasure = () => {
+		if (measureTries >= 3) {
+			ready.value = true
+			offset.value = 0
+			return
+		}
+		measureTries++
+		measureTimer = setTimeout(measure, VX_NOTICE_BAR_MEASURE_DELAY)
+	}
+
+	const scheduleMeasure = () => {
+		if (!show.value || !scrollActive.value) return
+		clearMeasure()
+		clearScroll()
+		measureId++
+		measureTries = 0
+		ready.value = false
+		offset.value = 0
+		if (!canMeasure()) {
+			// 文档站等没有 uni 选择器的环境按静态展示，不抛错。
+			ready.value = true
+			return
+		}
+		measureTimer = setTimeout(measure, VX_NOTICE_BAR_MEASURE_DELAY)
+	}
+
+	// 静态不 stop，点击继续冒泡。可点时停在整条上，避免外层卡片再收一次。
+	const onClick = (event: UniEvent) => {
+		if (!props.clickable) return
+		event.stopPropagation()
+		emit('click')
+	}
+
+	const close = () => {
+		if (!show.value) return
+		show.value = false
+		emit('close')
+	}
+
+	const open = () => {
+		if (!show.value) show.value = true
+		else if (scrollActive.value) scheduleMeasure()
+	}
+
+	const refresh = () => {
+		if (show.value && scrollActive.value) scheduleMeasure()
+	}
+
+	// 文案、档位、两侧插槽、图标和关闭叉都会改可用宽度；收成一个键，同一帧只量一次。
+	const measureKey = computed((): string => {
+		const prefix = slots['prefix'] != null ? '1' : '0'
+		const suffix = slots['suffix'] != null ? '1' : '0'
+		const icon = hasIcon.value ? '1' : '0'
+		const closable = props.closable ? '1' : '0'
+		return `${props.text}\u0001${sizeName.value}\u0001${prefix}${suffix}${icon}${closable}`
+	})
+
+	watch(measureKey, () => {
+		if (scrollActive.value) scheduleMeasure()
+	})
+
+	watch(scrollActive, (value: boolean) => {
+		if (value) scheduleMeasure()
+		else {
+			// 让已经在路上的选择器回调失效，隐藏后不再改状态。
+			measureId++
+			clearMeasure()
+			clearScroll()
+			ready.value = false
+			offset.value = 0
+		}
+	})
+
+	// 改速度和起点只重置节奏，不重新量宽度。
+	watch(speedValue, () => {
+		if (canScrollNow()) restartScroll()
+	})
+
+	watch(() => props.activeMode, () => {
+		if (canScrollNow()) restartScroll()
+	})
+
+	watch(show, (value: boolean) => {
+		if (value) {
+			if (scrollActive.value) scheduleMeasure()
+			return
+		}
+		// 隐藏时作废在途测量，避免回调在 v-if 移除节点后重新起表。
+		measureId++
+		clearMeasure()
+		clearScroll()
+	})
+
+	onMounted(() => {
+		if (scrollActive.value) scheduleMeasure()
+	})
+
+	onUnmounted(() => {
+		measureId++
+		clearMeasure()
+		clearScroll()
+	})
+
+	defineExpose({
+		open,
+		close,
+		refresh
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 通告栏是三档高的展示行，不是控件：单行固定高，wrap 时只做最小高。
+	   默认平角通栏；圆角和胶囊只改外轮廓，行高不跟着变。 */
+	.vx-notice-bar {
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-notice-bar-height-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		overflow: hidden;
+		background-color: transparent;
+	}
+
+	.vx-notice-bar--sm {
+		height: var(--vx-notice-bar-height-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-notice-bar--lg {
+		height: var(--vx-notice-bar-height-lg);
+	}
+
+	/* 语义浅底：文字和图标取 *-pressed，warning 用 warning-ink；default 是中性浅灰。 */
+	.vx-notice-bar--soft-primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-notice-bar--soft-success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-notice-bar--soft-info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-notice-bar--soft-warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-notice-bar--soft-danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-notice-bar--soft-default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 实心底配 on-*；default 用正文色的反相底，和消息提示保持一致。 */
+	.vx-notice-bar--solid-primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-notice-bar--solid-success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-notice-bar--solid-info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-notice-bar--solid-warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-notice-bar--solid-danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-notice-bar--solid-default {
+		background-color: var(--vx-color-text);
+	}
+
+	/* plain 没有底色，也不补左右内边距，放进已经带内边距的卡片。 */
+	.vx-notice-bar--plain {
+		padding-left: 0;
+		padding-right: 0;
+		background-color: transparent;
+	}
+
+	.vx-notice-bar--rounded {
+		border-radius: var(--vx-radius-md);
+	}
+
+	.vx-notice-bar--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	/* wrap 只放开高度；垂直内边距按档位给，行高仍取正文档位。 */
+	.vx-notice-bar--wrap-sm {
+		height: auto;
+		min-height: var(--vx-notice-bar-height-sm);
+		padding-top: var(--vx-space-xs);
+		padding-bottom: var(--vx-space-xs);
+	}
+
+	.vx-notice-bar--wrap-md {
+		height: auto;
+		min-height: var(--vx-notice-bar-height-md);
+		padding-top: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+	}
+
+	.vx-notice-bar--wrap-lg {
+		height: auto;
+		min-height: var(--vx-notice-bar-height-lg);
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+	}
+
+	/* 关闭热区贴住右边缘，宽度等于行高；右侧留白交给热区自己。 */
+	.vx-notice-bar--closable {
+		padding-right: 0;
+	}
+
+	.vx-notice-bar--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* prefix 是固定不动的左侧标识；插槽内容自己带尺寸和颜色。 */
+	.vx-notice-bar__prefix {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-notice-bar__prefix--lg {
+		margin-right: var(--vx-space-md);
+	}
+
+	/* 静态内容只负责收窄。Web 默认 overflow 是 visible，长文案裁在这一层，不盖住关闭叉。 */
+	.vx-notice-bar__content {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* 先占满内容区再省略。只靠 flex 收缩时文字不压缩。
+	   App 默认 keep、Web 默认 pre-line，这里固定单行。 */
+	.vx-notice-bar__text {
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* 滚动文案不换行、不收缩；宽度就是文字本身的宽度，量出来算时长。
+	   基础样式写在尺寸档之前，sm / lg 才能盖掉这里的 15 / 22。 */
+	.vx-notice-bar__scroll-text {
+		flex-shrink: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	.vx-notice-bar__text--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-notice-bar__text--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 视口裁掉轨道外的部分。高度取行高令牌：里面的轨道是绝对定位，没有内容高，
+	   父级又是 align-items: center，App 上百分比高度会缩成 0。 */
+	.vx-notice-bar__viewport {
+		position: relative;
+		flex: 1;
+		align-self: stretch;
+		min-width: 0;
+		height: var(--vx-notice-bar-height-md);
+		overflow: hidden;
+	}
+
+	.vx-notice-bar__viewport--sm {
+		height: var(--vx-notice-bar-height-sm);
+	}
+
+	.vx-notice-bar__viewport--lg {
+		height: var(--vx-notice-bar-height-lg);
+	}
+
+	/* 轨道是绝对定位的一行，位移只作用在它身上；文字宽度不参与父级布局。
+	   高度直接取行高令牌：App 上 height:100% 会落成 auto，文字就贴在顶上。 */
+	.vx-notice-bar__track {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: var(--vx-notice-bar-height-md);
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.vx-notice-bar__track--sm {
+		height: var(--vx-notice-bar-height-sm);
+	}
+
+	.vx-notice-bar__track--lg {
+		height: var(--vx-notice-bar-height-lg);
+	}
+
+	/* 动画只过渡 transform，匀速走完；摘掉这个 class 时复位是瞬时的。 */
+	.vx-notice-bar__track--animated {
+		transition-property: transform;
+		transition-timing-function: linear;
+	}
+
+	/* 测量完成前先不露出来，避免长文案先停在左边再跳回右侧。 */
+	.vx-notice-bar__track--waiting {
+		opacity: 0;
+	}
+
+	/* suffix 是固定不动的右侧内容；关闭按钮排在它后面。 */
+	.vx-notice-bar__suffix {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-notice-bar__suffix--lg {
+		margin-left: var(--vx-space-md);
+	}
+
+	/* 关闭热区跟行高一样宽，撑满内容区高度，图标居中。 */
+	.vx-notice-bar__close {
+		flex-shrink: 0;
+		align-self: stretch;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-notice-bar-height-md);
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-notice-bar__close--sm {
+		width: var(--vx-notice-bar-height-sm);
+	}
+
+	.vx-notice-bar__close--lg {
+		width: var(--vx-notice-bar-height-lg);
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-notice-bar__close--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 语义前景：实心配 on-*，default 实心配反色字，浅底和透明配 *-pressed。 */
+	.vx-notice-bar__text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-notice-bar__text--on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-notice-bar__text--on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-notice-bar__text--on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-notice-bar__text--on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-notice-bar__text--inverse {
+		color: var(--vx-color-text-inverse);
+	}
+
+	.vx-notice-bar__text--primary-pressed {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-notice-bar__text--success-pressed {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-notice-bar__text--info-pressed {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-notice-bar__text--warning-ink {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-notice-bar__text--danger-pressed {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	/* 换行放在语义色后面，和 class 字符串一致：尺寸 → 前景 → 换行。 */
+	.vx-notice-bar__text--wrap {
+		white-space: normal;
+		overflow: visible;
+		text-overflow: clip;
+	}
+
+	/* 可点整条是指针，关闭热区也是指针；静态展示保持默认。 */
+	/* #ifdef WEB */
+	.vx-notice-bar--clickable {
+		cursor: pointer;
+	}
+
+	.vx-notice-bar__close {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

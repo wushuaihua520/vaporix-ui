@@ -1,0 +1,363 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-sticky</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="map-pin" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">吸顶容器</text>
+								<text class="demo-hero__title demo-hero__title--accent">4 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">吸顶前透明，贴顶后铺 surface 底加 1px 分割线；suffix 决定吸顶范围。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-sticky</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">吸顶基础</text>
+							<text class="demo-section__desc">吸顶条贴到页面顶部后停住，suffix 里的内容滚完再复位。</text>
+						</view>
+					</view>
+					<view class="demo-sticky-card">
+						<vx-sticky :scroll-top="demoScrollTop" @change="onStickyBasicChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">商品详情</text>
+									<text class="demo-sticky-bar__meta">共 12 条</text>
+								</view>
+								<vx-tag size="sm" :type="stickyBasicStuck ? 'success' : 'default'"
+									:variant="stickyBasicStuck ? 'soft' : 'plain'"
+									:text="stickyBasicStuck ? '已吸顶' : '未吸顶'" />
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyDetailRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyDetailRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<text class="demo-hint">吸顶条在文档流里保持透明，贴到顶部后才铺 surface 底、加 1px 分割线；不传 suffix 时会一直吸到页面末尾。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">吸顶距离</text>
+							<text class="demo-section__desc">在安全区之外再让出 56px，用阴影和下面的内容分开。</text>
+						</view>
+					</view>
+					<view class="demo-sticky-card">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="56" shadow
+							@change="onStickyOffsetChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">吸顶距离 56</text>
+									<text class="demo-sticky-bar__meta">距安全区 56px</text>
+								</view>
+								<text class="demo-sticky-bar__state">{{ stickyOffsetStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyOffsetRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyOffsetRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<text class="demo-hint">offsetTop 是在顶部安全区之外再让出的距离，单位 px；Web 的导航栏和刘海由安全区变量自动避开。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">指定范围</text>
+							<text class="demo-section__desc">两组各自带 suffix，上一组滚完把吸顶条顶出去，下一组接上。</text>
+						</view>
+					</view>
+					<view class="demo-sticky-card">
+						<vx-sticky :scroll-top="demoScrollTop" @change="onStickyRangeFirstChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">第一组</text>
+									<text class="demo-sticky-bar__meta">待付款订单</text>
+								</view>
+								<vx-tag size="sm" :type="stickyRangeFirstStuck ? 'primary' : 'default'"
+									:variant="stickyRangeFirstStuck ? 'soft' : 'plain'"
+									:text="stickyRangeFirstStuck ? '吸顶中' : '未吸顶'" />
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyRangeFirstRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyRangeFirstRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+						<vx-sticky :scroll-top="demoScrollTop" @change="onStickyRangeSecondChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">第二组</text>
+									<text class="demo-sticky-bar__meta">已发货订单</text>
+								</view>
+								<vx-tag size="sm" :type="stickyRangeSecondStuck ? 'primary' : 'default'"
+									:variant="stickyRangeSecondStuck ? 'soft' : 'plain'"
+									:text="stickyRangeSecondStuck ? '吸顶中' : '未吸顶'" />
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyRangeSecondRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyRangeSecondRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<text class="demo-hint">suffix 插槽放吸顶条后面的内容；两组之间用最后一行分割线收口，容器底边往上推时吸顶条一起推出，切换不跳高度。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">阴影与底色</text>
+							<text class="demo-section__desc">shadow 用浮层阴影代替分割线；bgColor 不跟主题，未吸顶也生效。</text>
+						</view>
+					</view>
+					<view class="demo-sticky-card">
+						<vx-sticky :scroll-top="demoScrollTop" shadow @change="onStickyShadowChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">浮层阴影</text>
+									<text class="demo-sticky-bar__meta">shadow</text>
+								</view>
+								<text class="demo-sticky-bar__state">{{ stickyShadowStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyShadowRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyShadowRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<view class="demo-sticky-card demo-sticky-card--gap">
+						<vx-sticky :scroll-top="demoScrollTop" bg-color="#2b6be0" shadow
+							@change="onStickyBrandChange">
+							<view :class="stickyBrandBarClass">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title demo-sticky-bar__title--brand">品牌底色</text>
+									<text class="demo-sticky-bar__meta demo-sticky-bar__meta--brand">bgColor #2b6be0</text>
+								</view>
+								<text class="demo-sticky-bar__state demo-sticky-bar__state--brand">{{ stickyBrandStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyBrandRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyBrandRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<text class="demo-hint">阴影只使用 --vx-shadow-md；bgColor 是字面值，亮色、暗色都保持同一个品牌色，对比度由业务保证。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	const demoScrollTop = ref(0)
+
+	// 吸顶演示：suffix 里的内容决定推到哪结束，这里记每个示例的吸顶状态。
+	type StickyDemoRow = {
+		title: string
+		value: string
+	}
+
+	const stickyDetailRows: StickyDemoRow[] = [
+		{ title: '库存与价格', value: '现货' },
+		{ title: '规格参数', value: '6 种' },
+		{ title: '售后保障', value: '7 天无理由' },
+		{ title: '配送说明', value: '包邮' },
+		{ title: '常见问题', value: '12 条' },
+		{ title: '用户评价', value: '4.9 分' }
+	]
+
+	const stickyOffsetRows: StickyDemoRow[] = [
+		{ title: '吸顶距离', value: '56px' },
+		{ title: '阴影', value: 'shadow' },
+		{ title: '分割线', value: '不画' },
+		{ title: '覆盖关系', value: '压住内容' }
+	]
+
+	const stickyRangeFirstRows: StickyDemoRow[] = [
+		{ title: '订单 20261024001', value: '待付款' },
+		{ title: '订单 20261024002', value: '待付款' },
+		{ title: '订单 20261024003', value: '待付款' },
+		{ title: '订单 20261024004', value: '待付款' }
+	]
+
+	const stickyRangeSecondRows: StickyDemoRow[] = [
+		{ title: '订单 20261023008', value: '已发货' },
+		{ title: '订单 20261023009', value: '已发货' },
+		{ title: '订单 20261023010', value: '已发货' },
+		{ title: '订单 20261023011', value: '已发货' }
+	]
+
+	const stickyShadowRows: StickyDemoRow[] = [
+		{ title: '分割线', value: '换成阴影' },
+		{ title: '阴影档位', value: 'md' },
+		{ title: '底色', value: 'surface' }
+	]
+
+	const stickyBrandRows: StickyDemoRow[] = [
+		{ title: '底色来源', value: 'bgColor' },
+		{ title: '跟随主题', value: '否' },
+		{ title: '未吸顶也生效', value: '是' }
+	]
+
+	const stickyBasicStuck = ref(false)
+
+	const stickyOffsetStuck = ref(false)
+
+	const stickyRangeFirstStuck = ref(false)
+
+	const stickyRangeSecondStuck = ref(false)
+
+	const stickyShadowStuck = ref(false)
+
+	const stickyBrandStuck = ref(false)
+
+	const onStickyBasicChange = (stuck: boolean) => {
+		stickyBasicStuck.value = stuck
+	}
+
+	const onStickyOffsetChange = (stuck: boolean) => {
+		stickyOffsetStuck.value = stuck
+	}
+
+	const onStickyRangeFirstChange = (stuck: boolean) => {
+		stickyRangeFirstStuck.value = stuck
+	}
+
+	const onStickyRangeSecondChange = (stuck: boolean) => {
+		stickyRangeSecondStuck.value = stuck
+	}
+
+	const onStickyShadowChange = (stuck: boolean) => {
+		stickyShadowStuck.value = stuck
+	}
+
+	const onStickyBrandChange = (stuck: boolean) => {
+		stickyBrandStuck.value = stuck
+	}
+
+	// 未吸顶时跟上卡片上圆角；吸顶后条离开卡片，不再收角。
+	const stickyBrandBarClass = computed((): string => {
+		let name = 'demo-sticky-bar'
+		if (!stickyBrandStuck.value) name += ' demo-sticky-bar--card'
+		return name
+	})
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/tabs/tabs'
+	const nextPath: string = '/pages/demo/navigation-bar/navigation-bar'
+	const prevName = '标签页'
+	const nextName = '导航栏'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

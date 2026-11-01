@@ -1,0 +1,439 @@
+<template>
+	<view :class="rootClass" :style="rootStyle" @click.stop="onRootClick">
+		<view :class="minusClass" :hover-class="minusHoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+			@click.stop="onStep(-1)">
+			<vx-icon name="minus" :size="size" :color="minusIconColor" />
+		</view>
+		<input :class="valueClass" :style="valueStyle" :type="inputType" :value="draft" :disabled="disabled"
+			@input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm" />
+		<view :class="plusClass" :hover-class="plusHoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+			@click.stop="onStep(1)">
+			<vx-icon name="plus" :size="size" :color="plusIconColor" />
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxNumberBoxProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxNumberBoxProps>(), {
+		min: 1,
+		max: 99,
+		step: 1,
+		size: 'md',
+		variant: 'outline',
+		shape: 'rounded',
+		disabled: false,
+		invalid: false,
+		bgColor: '',
+		color: '',
+		iconColor: ''
+	})
+
+	const modelValue = defineModel({
+		type: Number,
+		default: 1
+	})
+
+	const emit = defineEmits<{
+		change: [value: number]
+		focus: []
+		blur: []
+	}>()
+
+	const focused = ref(false)
+	const draft = ref('')
+	// 上一次收口后的值，只用来判断这次失焦或确认是否要抛 change，不参与渲染。
+	let settledValue = 0
+
+	// 非数字按默认 1 / 99，否则和边界的比较全是 false，加减都会停住。min 大于 max 时交换。
+	const lowerBound = computed((): number => {
+		const min = isFinite(props.min) ? props.min : 1
+		const max = isFinite(props.max) ? props.max : 99
+		return min <= max ? min : max
+	})
+
+	const upperBound = computed((): number => {
+		const min = isFinite(props.min) ? props.min : 1
+		const max = isFinite(props.max) ? props.max : 99
+		return min <= max ? max : min
+	})
+
+	const stepSize = computed((): number => {
+		const value = Math.abs(props.step)
+		return value > 0 && isFinite(value) ? value : 1
+	})
+
+	// 科学计数法的字符串没有小数点，1.25e-4 会被当成整数。先展开到 6 位再数。
+	const fractionDigits = (value: number): number => {
+		if (!isFinite(value)) return 0
+		let text = `${value}`
+		if (text.indexOf('e') >= 0 || text.indexOf('E') >= 0) text = value.toFixed(6)
+		const dot = text.indexOf('.')
+		if (dot < 0) return 0
+		let count = text.length - dot - 1
+		while (count > 0 && text.charAt(dot + count) === '0') count--
+		return count > 6 ? 6 : count
+	}
+
+	// 步长和边界不变，小数位不用在每次按键时重算。
+	const boundDigits = computed((): number => {
+		let digits = fractionDigits(stepSize.value)
+		const lowerDigits = fractionDigits(lowerBound.value)
+		if (lowerDigits > digits) digits = lowerDigits
+		const upperDigits = fractionDigits(upperBound.value)
+		if (upperDigits > digits) digits = upperDigits
+		return digits
+	})
+
+	const roundValue = (value: number): number => {
+		if (!isFinite(value)) return value
+		let digits = boundDigits.value
+		const valueDigits = fractionDigits(value)
+		if (valueDigits > digits) digits = valueDigits
+		if (digits === 0) return Math.round(value)
+		return Number(value.toFixed(digits))
+	}
+
+	const normalizeValue = (value: number): number => {
+		if (!isFinite(value)) return roundValue(lowerBound.value)
+		const next = roundValue(value)
+		if (next < lowerBound.value) return roundValue(lowerBound.value)
+		if (next > upperBound.value) return roundValue(upperBound.value)
+		return next
+	}
+
+	const formatValue = (value: number): string => {
+		if (!isFinite(value)) return ''
+		return `${roundValue(value)}`
+	}
+
+	// 把收口后的值写回输入框和 v-model。相对上一次收口有变化时返回 true。
+	const settle = (next: number): boolean => {
+		const text = formatValue(next)
+		if (draft.value !== text) draft.value = text
+		const changed = next !== settledValue
+		settledValue = next
+		if (modelValue.value !== next) modelValue.value = next
+		return changed
+	}
+
+	watch(modelValue, (value: number) => {
+		// 输入框里已经是同一个数时，保留用户正在敲的原始文本；父级改了别的值才覆盖。
+		if (focused.value) {
+			const text = draft.value.trim()
+			const parsed = text.length > 0 ? Number(text) : NaN
+			if (!isNaN(parsed) && roundValue(parsed) === roundValue(value)) return
+		}
+		// 父级写入的越界值原样显示，不在这里夹回，也不抛 change。
+		settledValue = isFinite(value) ? roundValue(value) : value
+		const text = formatValue(value)
+		if (draft.value !== text) draft.value = text
+	}, { immediate: true })
+
+	const currentValue = computed((): number => {
+		if (!focused.value) {
+			const value = modelValue.value
+			if (!isFinite(value)) return lowerBound.value
+			return roundValue(value)
+		}
+		const text = draft.value.trim()
+		if (text.length === 0) return lowerBound.value
+		const value = Number(text)
+		if (!isFinite(value)) {
+			const fallback = modelValue.value
+			return isFinite(fallback) ? roundValue(fallback) : lowerBound.value
+		}
+		return roundValue(value)
+	})
+
+	// digit 键盘没有负号。下限为负时改用 text，失焦再把非数字收口。
+	const inputType = computed((): string => {
+		return lowerBound.value < 0 ? 'text' : 'digit'
+	})
+
+	const canDecrease = computed((): boolean => !props.disabled && currentValue.value > lowerBound.value)
+	const canIncrease = computed((): boolean => !props.disabled && currentValue.value < upperBound.value)
+
+	const rootClass = computed((): string => {
+		let name = 'vx-number-box'
+		if (props.size !== 'md') name += ` vx-number-box--${props.size}`
+		if (props.variant === 'soft') name += ' vx-number-box--soft'
+		if (props.shape === 'pill') name += ' vx-number-box--pill'
+		else if (props.shape === 'square') name += ' vx-number-box--square'
+		if (props.disabled) name += ' vx-number-box--disabled'
+		else {
+			if (focused.value) name += ' vx-number-box--focused'
+			if (props.invalid) name += ' vx-number-box--invalid'
+		}
+		return name
+	})
+
+	const buttonClass = (can: boolean): string => {
+		let name = 'vx-number-box__button'
+		if (props.size !== 'md') name += ` vx-number-box__button--${props.size}`
+		if (props.disabled || !can) name += ' vx-number-box__button--disabled'
+		return name
+	}
+
+	const minusClass = computed((): string => buttonClass(canDecrease.value))
+	const plusClass = computed((): string => buttonClass(canIncrease.value))
+
+	const valueClass = computed((): string => {
+		let name = 'vx-number-box__value'
+		if (props.size !== 'md') name += ` vx-number-box__value--${props.size}`
+		if (props.disabled) name += ' vx-number-box__value--disabled'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (props.disabled || props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	const valueStyle = computed((): string => {
+		if (props.disabled || props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const iconColorFor = (can: boolean): string => {
+		if (props.disabled || !can) return 'var(--vx-color-disabled-text)'
+		return props.iconColor.length > 0 ? props.iconColor : 'var(--vx-color-text-secondary)'
+	}
+
+	const minusIconColor = computed((): string => iconColorFor(canDecrease.value))
+	const plusIconColor = computed((): string => iconColorFor(canIncrease.value))
+
+	const hoverClassFor = (can: boolean): string => {
+		if (props.disabled || !can) return 'none'
+		// 浅底在亮色比 surface-pressed 更深，暗色描边又更浅，铺上去方向会反。自定义底色同样不铺。
+		if (props.variant === 'soft' || props.bgColor.length > 0) return 'vx-number-box__button--pressed-fade'
+		return 'vx-number-box__button--pressed'
+	}
+
+	const minusHoverClass = computed((): string => hoverClassFor(canDecrease.value))
+	const plusHoverClass = computed((): string => hoverClassFor(canIncrease.value))
+
+	const onInput = (event: UniInputEvent) => {
+		if (props.disabled) return
+		// 蒸汽模式给 detail.value；浏览器预览给原生 target.value，两边都接住。
+		let text = draft.value
+		if (event.detail != null && event.detail.value != null) {
+			text = event.detail.value
+		} else {
+			const target = event.target as UniInputElement | null
+			if (target != null && target.value != null) text = target.value
+		}
+		draft.value = text
+		const trimmed = text.trim()
+		if (trimmed.length === 0) return
+		const parsed = Number(trimmed)
+		if (!isFinite(parsed)) return
+		// 输入中只同步范围内的有效值。越界、空值等失焦再收口，正在敲的 0 和小数点不会被改写。
+		if (parsed < lowerBound.value || parsed > upperBound.value) return
+		const next = roundValue(parsed)
+		if (next === modelValue.value) return
+		modelValue.value = next
+	}
+
+	const onFocus = () => {
+		if (props.disabled) return
+		focused.value = true
+		if (isFinite(modelValue.value)) settledValue = roundValue(modelValue.value)
+		emit('focus')
+	}
+
+	// 根节点的 click 只做事件边界，数值区点进来不再冒泡到外层列表行或卡片。
+	const onRootClick = () => {
+	}
+
+	// 编辑结束时把草稿收口：空值回 min，非数字回到最近一次有效值，越界夹到边界。
+	const commitDraft = () => {
+		let next = modelValue.value
+		const text = draft.value.trim()
+		if (text.length === 0) {
+			next = lowerBound.value
+		} else {
+			const parsed = Number(text)
+			if (isFinite(parsed)) next = parsed
+		}
+		next = normalizeValue(next)
+		if (settle(next)) emit('change', next)
+	}
+
+	const onBlur = () => {
+		focused.value = false
+		if (props.disabled) draft.value = formatValue(modelValue.value)
+		else commitDraft()
+		emit('blur')
+	}
+
+	const onConfirm = () => {
+		if (props.disabled) return
+		commitDraft()
+	}
+
+	const onStep = (direction: number) => {
+		if (props.disabled) return
+		const raw = focused.value ? currentValue.value : modelValue.value
+		const base = normalizeValue(raw)
+		// 先按收口后的值判断越界，0.30000000000000004 这种尾巴不算越界。
+		// 没在编辑、模型本身越界：这一下只夹回边界。编辑中的越界草稿仍先夹回再走一步。
+		// Web 上按钮会先 blur，失焦已经夹过，接着这一下再走一步，和 App 同一次点击的结果一致。
+		const comparable = isFinite(raw) ? roundValue(raw) : raw
+		const outside = !isFinite(comparable) || comparable < lowerBound.value || comparable > upperBound.value
+		if (!focused.value && outside) {
+			const above = isFinite(comparable) && comparable > upperBound.value
+			const below = isFinite(comparable) && comparable < lowerBound.value
+			// 置灰的那一侧不改值。高于上限只响应减号，低于下限只响应加号。
+			if (above && direction > 0) return
+			if (below && direction < 0) return
+			if (!isFinite(comparable) && direction < 0) return
+			if (settle(base)) emit('change', base)
+			return
+		}
+		if (direction < 0 && base <= lowerBound.value) return
+		if (direction > 0 && base >= upperBound.value) return
+		const next = normalizeValue(base + stepSize.value * direction)
+		if (settle(next)) emit('change', next)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-number-box {
+		flex-direction: row;
+		align-items: center;
+		align-self: flex-start;
+		box-sizing: border-box;
+		height: var(--vx-control-height-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-control-radius-md);
+		background-color: var(--vx-color-surface);
+		/* 按下底色铺到按钮边缘，由根节点裁出圆角。 */
+		overflow: hidden;
+	}
+
+	.vx-number-box--lg {
+		height: var(--vx-control-height-lg);
+		border-radius: var(--vx-control-radius-lg);
+	}
+
+	.vx-number-box--sm {
+		height: var(--vx-control-height-sm);
+		border-radius: var(--vx-control-radius-sm);
+	}
+
+	.vx-number-box--soft {
+		background-color: var(--vx-color-default-soft);
+		border-color: transparent;
+	}
+
+	.vx-number-box--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-number-box--square {
+		border-radius: 0;
+	}
+
+	.vx-number-box--focused {
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-number-box--invalid {
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-number-box--disabled {
+		background-color: var(--vx-color-disabled-bg);
+		border-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-number-box__button {
+		flex-direction: row;
+		flex-shrink: 0;
+		/* 根上是 align-items: center。App 里 height:100% 会缩成图标高，按下底色包不住。 */
+		align-self: stretch;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-control-height-md);
+		height: 100%;
+	}
+
+	.vx-number-box__button--lg {
+		width: var(--vx-control-height-lg);
+	}
+
+	.vx-number-box__button--sm {
+		width: var(--vx-control-height-sm);
+	}
+
+	.vx-number-box__button--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	/* 浅底和自定义底色不铺 surface-pressed：亮色会更浅，暗色描边又反向。只让图标变淡。 */
+	.vx-number-box__button--pressed-fade {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-number-box__value {
+		flex-shrink: 0;
+		align-self: stretch;
+		box-sizing: border-box;
+		width: var(--vx-number-box-field-md);
+		height: 100%;
+		padding-top: 0;
+		padding-right: 0;
+		padding-bottom: 0;
+		padding-left: 0;
+		border-width: 0;
+		background-color: transparent;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+
+	.vx-number-box__value--lg {
+		width: var(--vx-number-box-field-lg);
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-number-box__value--sm {
+		width: var(--vx-number-box-field-sm);
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-number-box__value--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* #ifdef WEB */
+	.vx-number-box__button {
+		cursor: pointer;
+	}
+
+	.vx-number-box__button--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-number-box__value {
+		cursor: text;
+		font-family: inherit;
+		outline: none;
+	}
+
+	.vx-number-box__value--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>

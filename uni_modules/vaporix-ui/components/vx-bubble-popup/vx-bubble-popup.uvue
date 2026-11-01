@@ -1,0 +1,1262 @@
+<template>
+	<!-- 气泡弹框默认包住触发元素，面板按触发元素的位置落到页面固定层上，外层裁切不会把它剪掉。
+	     打开时先量一次触发区和面板尺寸，再算 top / left；滚动或改尺寸后重新量。 -->
+	<!-- inline 模式不再有触发区：默认插槽是气泡内容，prefix / suffix 放头像，整行按 align 对齐。 -->
+	<view :class="rootClass">
+		<!-- 安全区和导航栏会让 fixed 的原点不在屏幕左上角。放一个 1px 的同位 fixed 标尺，
+		     用 createSelectorQuery 把 fixed 的坐标原点量回来，触发区和面板才对得上。 -->
+		<view v-if="!inline" class="vx-bubble-popup__ruler"></view>
+
+		<!-- 外部点击层压在页面和触发区上，气泡自身再高一层。
+		     透明层也接住点击和触摸，打开期间页面不跟着滚；mask 关闭时不改变页面颜色。 -->
+		<view v-if="hasCatcher" :class="catcherClass" :style="catcherStyle" @click.stop="onOutsideTap"
+			@touchmove.stop.prevent></view>
+
+		<view v-if="!inline" class="vx-bubble-popup__trigger">
+			<slot></slot>
+		</view>
+
+		<view v-if="hasPrefix" class="vx-bubble-popup__prefix">
+			<slot name="prefix"></slot>
+		</view>
+
+		<!-- 没量完之前只占位、不可见；量到尺寸再显示，第一帧不会落在错误位置。 -->
+		<view v-if="hasBubble" :class="bubbleClass" :style="bubbleStyle">
+			<view :class="panelClass" @click.stop>
+				<!-- 菜单优先：传了 items 就不再渲染 content 和行内插槽。 -->
+				<view v-if="hasMenu" class="vx-bubble-popup__menu">
+					<view v-for="row in rows" :key="row.index" :class="row.rowClass" :hover-class="row.hoverClass"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onItemTap(row)">
+						<view v-if="row.hasIcon" class="vx-bubble-popup__icon">
+							<vx-icon :name="row.icon" size="md" :color="row.iconColor" />
+						</view>
+						<text class="vx-bubble-popup__text" :style="row.textStyle">{{ row.text }}</text>
+						<text v-if="row.value.length > 0" :class="row.valueClass" :style="row.valueStyle">{{ row.value }}</text>
+						<!-- 有选中项时每行都留勾的空位，没选中不画图标，切换时文案不横跳。 -->
+						<view v-if="hasSelection" class="vx-bubble-popup__check">
+							<vx-icon v-if="row.selected" name="check" size="sm" :color="row.itemColor" />
+						</view>
+						<view v-if="row.hasDivider" :class="row.dividerClass" :style="row.dividerStyle"></view>
+					</view>
+				</view>
+
+				<view v-else-if="hasInlineSlot || content.length > 0" class="vx-bubble-popup__content">
+					<slot v-if="hasInlineSlot"></slot>
+					<text v-else class="vx-bubble-popup__content-text" :style="contentStyle">{{ content }}</text>
+				</view>
+
+				<!-- extra 是自定义内容位：可以单独撑起一个气泡，也可以排在菜单下面当补充操作。 -->
+				<view v-if="hasExtra" class="vx-bubble-popup__extra">
+					<slot name="extra"></slot>
+				</view>
+			</view>
+
+			<!-- 尾巴用一块旋转 45° 的小方块，外层裁掉一半；描边是真正的 1px，和面板同色同粗。
+			     surface 面板的描边会从尾巴底部横穿过去，接缝把这一小段线盖掉。 -->
+			<view v-if="arrow && variant === 'surface'" :class="seamClass" :style="arrowPositionStyle"></view>
+			<view v-if="arrow" :class="arrowClass" :style="arrowPositionStyle">
+				<view :class="arrowTipClass"></view>
+			</view>
+		</view>
+
+		<view v-if="hasSuffix" class="vx-bubble-popup__suffix">
+			<slot name="suffix"></slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import {
+		VxBubblePopupAlign,
+		VxBubblePopupItem,
+		VxBubblePopupItemType,
+		VxBubblePopupPlacement,
+		VxBubblePopupProps,
+		VxBubblePopupVariant
+	} from './props'
+
+	const props = withDefaults(defineProps<VxBubblePopupProps>(), {
+		inline: false,
+		placement: 'bottom',
+		align: 'start',
+		variant: 'surface',
+		type: 'primary',
+		offset: 8,
+		arrow: true,
+		arrowOffset: 0,
+		width: '',
+		maxWidth: '',
+		items: (): Array<VxBubblePopupItem> => [],
+		content: '',
+		divider: false,
+		closeOnSelect: true,
+		mask: false,
+		outsideClosable: true,
+		maskColor: '',
+		zIndex: 90
+	})
+
+	// 收起都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		select: [index: number, item: VxBubblePopupItem]
+		close: []
+	}>()
+
+	const slots = useSlots()
+	const instance = getCurrentInstance()
+
+	// 气泡离屏幕至少留 8，和 --vx-space-sm 同值。箭头微调之后也收到这一档。
+	const EDGE_GAP = 8
+	// 箭头中心离气泡角至少 16，避开 md 圆角。脚本读不到令牌。
+	const ARROW_INSET = 16
+	// 底边 14 的一半，和 --vx-bubble-arrow 同值。退路定位用它把接缝和尾巴一起居中。
+	const ARROW_HALF = 7
+	// 布局没落定时再试三次，间隔 50ms；还量不到就退回跟随触发区的绝对定位。
+	const MEASURE_RETRY = 3
+	const MEASURE_RETRY_DELAY = 50
+	// 打开这一下也可能让外层滚动（点进可视区、聚焦按钮）；刚打开的滚动不算用户滚动。
+	const SCROLL_GRACE = 320
+
+	type BubblePopupRow = {
+		index: number
+		text: string
+		value: string
+		icon: VxIconName
+		hasIcon: boolean
+		selected: boolean
+		rowClass: string
+		hoverClass: string
+		textStyle: string
+		valueClass: string
+		valueStyle: string
+		iconColor: string
+		itemColor: string
+		hasDivider: boolean
+		dividerClass: string
+		dividerStyle: string
+	}
+
+	const hasMenu = computed((): boolean => {
+		return props.items.length > 0
+	})
+
+	// inline 的默认插槽是气泡内容；popover 的默认插槽是触发区，不参与面板判断。
+	const hasInlineSlot = computed((): boolean => {
+		return props.inline && slots['default'] != null
+	})
+
+	const hasExtra = computed((): boolean => {
+		return slots['extra'] != null
+	})
+
+	const hasPrefix = computed((): boolean => {
+		return props.inline && slots['prefix'] != null
+	})
+
+	const hasSuffix = computed((): boolean => {
+		return props.inline && slots['suffix'] != null
+	})
+
+	// 只要有一行选中，整列都留出勾的宽度，切换选中时文案宽度不变。
+	const hasSelection = computed((): boolean => {
+		const source = props.items
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			if (entry != null && entry.selected === true) return true
+		}
+		return false
+	})
+
+	const hasContent = computed((): boolean => {
+		return hasMenu.value || hasInlineSlot.value || props.content.length > 0 || hasExtra.value
+	})
+
+	// inline 不受 show 控制，始终跟着数据渲染；要隐藏整条用 v-if。
+	const hasBubble = computed((): boolean => {
+		if (props.inline) return hasContent.value
+		return show.value && hasContent.value
+	})
+
+	// outsideClosable 关掉且不铺遮罩时连点击层一起省掉，页面还能正常操作。
+	const hasCatcher = computed((): boolean => {
+		if (props.inline) return false
+		if (!show.value || !hasContent.value) return false
+		return props.mask || props.outsideClosable
+	})
+
+	// 位置状态：ready 前气泡不可见，避免在左上角闪一帧；量不到时退回绝对定位。
+	const positionReady = ref(false)
+	const positionFallback = ref(false)
+	const bubbleLeft = ref(0)
+	const bubbleTop = ref(0)
+	// 未加 arrowOffset 的箭头中心，和箭头所在边的长度。微调在样式里加，改 offset 不用重测。
+	const arrowAnchor = ref(0)
+	const arrowLimit = ref(0)
+	const activePlacement = ref<VxBubblePopupPlacement>(props.placement)
+
+	let measureTimer = 0
+	let measureCount = 0
+	let measureId = 0
+	let openedAt = 0
+
+	// App 会把负数之外的来源色算成不透明，这里只挡 NaN；负数内缩是允许的。
+	const resolvedOffset = computed((): number => {
+		const value = props.offset
+		if (value > 0 || value <= 0) return value
+		return 0
+	})
+
+	const arrowShift = computed((): number => {
+		const value = props.arrowOffset
+		if (value > 0 || value <= 0) return value
+		return 0
+	})
+
+	// 实心底上的前景：default 是正文色反相底，用反色字；其余用各自的 on-*。
+	// 箭头底色写在 class 里，和面板同一组语义色，不在这里再算一份。
+	const solidForeground = computed((): string => {
+		if (props.type === 'success') return 'var(--vx-color-on-success)'
+		if (props.type === 'info') return 'var(--vx-color-on-info)'
+		if (props.type === 'warning') return 'var(--vx-color-on-warning)'
+		if (props.type === 'danger') return 'var(--vx-color-on-danger)'
+		if (props.type === 'default') return 'var(--vx-color-text-inverse)'
+		return 'var(--vx-color-on-primary)'
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-bubble-popup'
+		if (!props.inline) return name
+		name += ' vx-bubble-popup--inline'
+		if (props.align === 'center') name += ' vx-bubble-popup--align-center'
+		else if (props.align === 'end') name += ' vx-bubble-popup--align-end'
+		return name
+	})
+
+	const bubbleClass = computed((): string => {
+		let name = 'vx-bubble-popup__bubble'
+		if (!props.inline) name += ' vx-bubble-popup__bubble--popover'
+		else {
+			name += ' vx-bubble-popup__bubble--inline'
+			if (!hasMenu.value) name += ' vx-bubble-popup__bubble--chat'
+		}
+		if (hasMenu.value) name += ' vx-bubble-popup__bubble--menu'
+		// enter 放在最后：状态盖过尺寸，量完才挂上，第一帧不会从左上角飞进来。
+		if (!props.inline && positionReady.value) name += ' vx-bubble-popup__bubble--enter'
+		return name
+	})
+
+	const panelClass = computed((): string => {
+		let name = 'vx-bubble-popup__panel'
+		if (props.variant === 'solid') name += ` vx-bubble-popup__panel--solid-${props.type}`
+		else name += ' vx-bubble-popup__panel--surface'
+		if (props.inline) name += ' vx-bubble-popup__panel--inline'
+		if (!props.inline && positionReady.value) name += ' vx-bubble-popup__panel--enter'
+		return name
+	})
+
+	// 外层只负责贴边和裁掉方块的下半截；尾巴本身是一块旋转 45° 的方块。
+	const arrowClass = computed((): string => {
+		return `vx-bubble-popup__arrow vx-bubble-popup__arrow--${activePlacement.value}`
+	})
+
+	const arrowTipClass = computed((): string => {
+		let name = `vx-bubble-popup__arrow-tip vx-bubble-popup__arrow-tip--${activePlacement.value}`
+		if (props.variant === 'solid') name += ` vx-bubble-popup__arrow-tip--solid-${props.type}`
+		return name
+	})
+
+	// 接缝比底边窄 1px，贴在面板描边上；没有它，面板描边会从尾巴底部横穿出来。
+	const seamClass = computed((): string => {
+		return `vx-bubble-popup__arrow-seam vx-bubble-popup__arrow-seam--${activePlacement.value}`
+	})
+
+	const catcherClass = computed((): string => {
+		return props.mask ? 'vx-bubble-popup__catcher vx-bubble-popup__catcher--mask' : 'vx-bubble-popup__catcher'
+	})
+
+	const catcherStyle = computed((): string => {
+		let style = `z-index: ${props.zIndex};`
+		if (props.mask && props.maskColor.length > 0) style += ` background-color: ${props.maskColor};`
+		return style
+	})
+
+	// 固定层先按量到的坐标落位；量完之前藏在 0 点，不画出来。
+	// 量不到时退回跟随触发区的绝对定位，宁可有外层裁切，也不留一个永远看不见的面板。
+	const bubbleStyle = computed((): string => {
+		let style = ''
+		if (props.width.length > 0) style += ` width: ${props.width};`
+		if (props.maxWidth.length > 0) style += ` max-width: ${props.maxWidth};`
+		if (props.inline) return style
+
+		style += ` z-index: ${props.zIndex + 1};`
+		if (!positionReady.value) return `${style} top: 0px; left: 0px; visibility: hidden;`
+
+		if (positionFallback.value) {
+			style += ' position: absolute;'
+			const gap = resolvedOffset.value
+			const placement = activePlacement.value
+			if (placement === 'top') style += ` bottom: 100%; margin-bottom: ${gap}px;`
+			else if (placement === 'left') style += ` right: 100%; margin-right: ${gap}px;`
+			else if (placement === 'right') style += ` left: 100%; margin-left: ${gap}px;`
+			else style += ` top: 100%; margin-top: ${gap}px;`
+
+			if (placement === 'left' || placement === 'right') {
+				if (props.align === 'center') style += ' top: 50%; transform: translateY(-50%);'
+				else if (props.align === 'end') style += ' bottom: 0;'
+				else style += ' top: 0;'
+			} else {
+				if (props.align === 'center') style += ' left: 50%; transform: translateX(-50%);'
+				else if (props.align === 'end') style += ' right: 0;'
+				else style += ' left: 0;'
+			}
+			return style
+		}
+
+		return `${style} top: ${bubbleTop.value}px; left: ${bubbleLeft.value}px;`
+	})
+
+	// 微调加在测量结果上。改 arrowOffset 只重算这里，不再跑 createSelectorQuery。
+	const arrowCenter = computed((): number => {
+		const limit = arrowLimit.value
+		if (limit <= 0) return 0
+		let along = arrowAnchor.value + arrowShift.value
+		const maxAlong = limit - EDGE_GAP
+		if (along < EDGE_GAP) along = EDGE_GAP
+		if (along > maxAlong) along = maxAlong
+		return Math.round(along)
+	})
+
+	// 箭头和接缝共用这一份。量不到时 16 是窗口起点，加上半个底边再平移一半，
+	// 窗口仍从 16 起，13px 接缝才能压在 14px 底边正中。正值向右或向下，end 反过来减。
+	const arrowPositionStyle = computed((): string => {
+		const placement = activePlacement.value
+		const shift = arrowShift.value
+
+		if (props.inline) {
+			if (placement === 'left' || placement === 'right') {
+				return ` top: 50%; transform: translateY(-50%); margin-top: ${shift}px;`
+			}
+			return ` left: 50%; transform: translateX(-50%); margin-left: ${shift}px;`
+		}
+
+		if (positionFallback.value) {
+			const edge = ARROW_INSET + ARROW_HALF
+			if (placement === 'left' || placement === 'right') {
+				if (props.align === 'center') {
+					return ` top: 50%; transform: translateY(-50%); margin-top: ${shift}px;`
+				}
+				if (props.align === 'end') return ` bottom: ${edge - shift}px; transform: translateY(50%);`
+				return ` top: ${edge + shift}px; transform: translateY(-50%);`
+			}
+
+			if (props.align === 'center') {
+				return ` left: 50%; transform: translateX(-50%); margin-left: ${shift}px;`
+			}
+			if (props.align === 'end') return ` right: ${edge - shift}px; transform: translateX(50%);`
+			return ` left: ${edge + shift}px; transform: translateX(-50%);`
+		}
+
+		if (placement === 'left' || placement === 'right') {
+			return ` top: ${arrowCenter.value}px; transform: translateY(-50%);`
+		}
+		return ` left: ${arrowCenter.value}px; transform: translateX(-50%);`
+	})
+
+	const contentStyle = computed((): string => {
+		if (props.variant !== 'solid') return ''
+		return `color: ${solidForeground.value};`
+	})
+
+	// 菜单项的颜色按「表面 / 实心 → 类型 → 选中 → 禁用」合成；禁用写在最后，盖过语义色。
+	// 图标和勾要传 var(--vx-color-*)，所以颜色在脚本里算一次，文案也用同一份，避免两处规则漂移。
+	const itemColor = (type: VxBubblePopupItemType, disabled: boolean, selected: boolean): string => {
+		if (props.variant === 'solid') return solidForeground.value
+		if (disabled) return 'var(--vx-color-disabled-text)'
+		if (type === 'danger') return 'var(--vx-color-danger-pressed)'
+		if (type === 'primary' || selected) return 'var(--vx-color-primary-pressed)'
+		return ''
+	}
+
+	const rows = computed((): Array<BubblePopupRow> => {
+		const list: Array<BubblePopupRow> = []
+		const source = props.items
+		const last = source.length - 1
+		const solid = props.variant === 'solid'
+		const foreground = solid ? solidForeground.value : ''
+		// 分割线每行同一份，不在循环里再拼。
+		let dividerClass = 'vx-bubble-popup__divider'
+		let dividerStyle = ''
+		if (solid) {
+			dividerClass += ' vx-bubble-popup__divider--solid'
+			dividerStyle = `background-color: ${foreground};`
+		}
+
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			const text = entry.text != null ? entry.text : ''
+			const value = entry.value != null ? entry.value : ''
+			const type: VxBubblePopupItemType = entry.type != null ? entry.type : 'default'
+			const disabled = entry.disabled === true
+			const selected = entry.selected === true
+			const color = itemColor(type, disabled, selected)
+			const hasIcon = entry.icon != null && entry.icon.length > 0
+			const iconName: VxIconName = hasIcon && entry.icon != null ? entry.icon : 'info'
+			const colorStyle = color.length > 0 ? `color: ${color};` : ''
+			// 实心且未禁用时短值再降一档；禁用行本身已经变淡，不再乘一次透明度。
+			const tinted = solid && !disabled && color.length > 0
+
+			let rowClass = 'vx-bubble-popup__item'
+			if (disabled) rowClass += ' vx-bubble-popup__item--disabled'
+			if (disabled && solid) rowClass += ' vx-bubble-popup__item--disabled-solid'
+
+			// uni-app 里空字符串关不掉按下态，要写 none。
+			let hoverClass = 'none'
+			if (!disabled) {
+				hoverClass = solid ? 'vx-bubble-popup__item--pressed-solid' : 'vx-bubble-popup__item--pressed'
+			}
+
+			list.push({
+				index: index,
+				text: text,
+				value: value,
+				icon: iconName,
+				hasIcon: hasIcon,
+				selected: selected,
+				rowClass: rowClass,
+				hoverClass: hoverClass,
+				textStyle: colorStyle,
+				valueClass: tinted ? 'vx-bubble-popup__value vx-bubble-popup__value--tinted' : 'vx-bubble-popup__value',
+				valueStyle: colorStyle,
+				iconColor: color,
+				itemColor: color,
+				hasDivider: props.divider && index < last,
+				dividerClass: dividerClass,
+				dividerStyle: dividerStyle
+			})
+		}
+		return list
+	})
+
+	const clearMeasureTimer = () => {
+		if (measureTimer === 0) return
+		clearTimeout(measureTimer)
+		measureTimer = 0
+	}
+
+	const resetPosition = () => {
+		measureId++
+		clearMeasureTimer()
+		measureCount = 0
+		positionReady.value = false
+		positionFallback.value = false
+	}
+
+	const giveUpMeasure = () => {
+		activePlacement.value = props.placement
+		positionFallback.value = true
+		positionReady.value = true
+	}
+
+	// 量一次就够；排版没落定时先等一帧，失败再补试三次。后发起的测量覆盖先发起的。
+	const measure = () => {
+		if (props.inline || !show.value) return
+		if (typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') {
+			giveUpMeasure()
+			return
+		}
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) {
+			giveUpMeasure()
+			return
+		}
+
+		const id = ++measureId
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.vx-bubble-popup__ruler')
+			.boundingClientRect()
+			.select('.vx-bubble-popup__trigger')
+			.boundingClientRect()
+			.select('.vx-bubble-popup__bubble')
+			.boundingClientRect()
+			.exec((result) => {
+				if (id !== measureId) return
+				if (result.length < 3) {
+					retryMeasure()
+					return
+				}
+
+				const rulerRect = result[0] as NodeInfo | null
+				const triggerRect = result[1] as NodeInfo | null
+				const bubbleRect = result[2] as NodeInfo | null
+				if (rulerRect == null || triggerRect == null || bubbleRect == null) {
+					retryMeasure()
+					return
+				}
+
+				const rulerTop = rulerRect.top
+				const rulerLeft = rulerRect.left
+				const triggerTop = triggerRect.top
+				const triggerLeft = triggerRect.left
+				const triggerWidth = triggerRect.width
+				const triggerHeight = triggerRect.height
+				const bubbleWidth = bubbleRect.width
+				const bubbleHeight = bubbleRect.height
+				if (rulerTop == null || rulerLeft == null || triggerTop == null || triggerLeft == null ||
+					triggerWidth == null || triggerHeight == null || bubbleWidth == null || bubbleHeight == null) {
+					retryMeasure()
+					return
+				}
+				if (bubbleWidth <= 0 || bubbleHeight <= 0) {
+					retryMeasure()
+					return
+				}
+
+				// 触发区在 fixed 坐标系里的位置；fixed 顶点由标尺量回来，App 上导航栏和安全区都算进去。
+				const localLeft = triggerLeft - rulerLeft
+				const localTop = triggerTop - rulerTop
+				const localRight = localLeft + triggerWidth
+				const localBottom = localTop + triggerHeight
+
+				let viewWidth = 0
+				let viewHeight = 0
+				if (typeof uni !== 'undefined' && typeof uni.getWindowInfo === 'function') {
+					const info = uni.getWindowInfo()
+					if (info != null) {
+						const width = info.windowWidth
+						const height = info.windowHeight
+						if (width != null && height != null && width > 0 && height > 0) {
+							viewWidth = width
+							viewHeight = height
+						}
+					}
+				}
+
+				const gap = resolvedOffset.value
+				const requested = props.placement
+				let placement = requested
+
+				// 默认贴近触发区；这一侧放不下、对面放得下时翻过去，边缘的菜单不会顶出屏幕。
+				if (viewWidth > 0 && viewHeight > 0) {
+					const fits = (side: VxBubblePopupPlacement): boolean => {
+						if (side === 'bottom') return localBottom + gap + bubbleHeight <= viewHeight - EDGE_GAP
+						if (side === 'top') return localTop - gap - bubbleHeight >= EDGE_GAP
+						if (side === 'right') return localRight + gap + bubbleWidth <= viewWidth - EDGE_GAP
+						return localLeft - gap - bubbleWidth >= EDGE_GAP
+					}
+					const opposite: VxBubblePopupPlacement = requested === 'bottom' ? 'top'
+						: requested === 'top' ? 'bottom'
+						: requested === 'right' ? 'left' : 'right'
+					if (!fits(requested) && fits(opposite)) placement = opposite
+				}
+				activePlacement.value = placement
+
+				let left = localLeft
+				let top = localTop
+				if (placement === 'bottom') top = localBottom + gap
+				else if (placement === 'top') top = localTop - bubbleHeight - gap
+				else if (placement === 'right') left = localRight + gap
+				else left = localLeft - bubbleWidth - gap
+
+				if (placement === 'left' || placement === 'right') {
+					if (props.align === 'center') top = localTop + triggerHeight / 2 - bubbleHeight / 2
+					else if (props.align === 'end') top = localBottom - bubbleHeight
+					else top = localTop
+				} else {
+					if (props.align === 'center') left = localLeft + triggerWidth / 2 - bubbleWidth / 2
+					else if (props.align === 'end') left = localRight - bubbleWidth
+					else left = localLeft
+				}
+
+				if (viewWidth > 0) {
+					const maxLeft = viewWidth - bubbleWidth - EDGE_GAP
+					if (left < EDGE_GAP) left = EDGE_GAP
+					if (left > maxLeft) left = maxLeft
+					if (maxLeft < EDGE_GAP) left = EDGE_GAP
+				}
+				if (viewHeight > 0) {
+					const maxTop = viewHeight - bubbleHeight - EDGE_GAP
+					if (top < EDGE_GAP) top = EDGE_GAP
+					if (top > maxTop) top = maxTop
+					if (maxTop < EDGE_GAP) top = EDGE_GAP
+				}
+
+				// 箭头跟着触发区中心；面板被挤到屏幕边时，箭头在面板范围内收口，仍然指向触发区。
+				let center = 0
+				let along = 0
+				if (placement === 'left' || placement === 'right') {
+					center = localTop + triggerHeight / 2
+					along = center - top
+				} else {
+					center = localLeft + triggerWidth / 2
+					along = center - left
+				}
+				const limit = placement === 'left' || placement === 'right' ? bubbleHeight : bubbleWidth
+				const maxAlong = limit - ARROW_INSET
+				if (maxAlong > ARROW_INSET) {
+					if (along < ARROW_INSET) along = ARROW_INSET
+					if (along > maxAlong) along = maxAlong
+				} else {
+					along = limit / 2
+				}
+
+				measureCount = 0
+				bubbleLeft.value = Math.round(left)
+				bubbleTop.value = Math.round(top)
+				arrowAnchor.value = along
+				arrowLimit.value = limit
+				positionFallback.value = false
+				positionReady.value = true
+			})
+	}
+
+	const retryMeasure = () => {
+		if (measureCount >= MEASURE_RETRY) {
+			giveUpMeasure()
+			return
+		}
+		measureCount++
+		scheduleMeasure(MEASURE_RETRY_DELAY)
+	}
+
+	const scheduleMeasure = (delay: number) => {
+		if (props.inline || !show.value) return
+		clearMeasureTimer()
+		measureTimer = setTimeout(() => {
+			measureTimer = 0
+			measure()
+		}, delay)
+	}
+
+	const preparePosition = () => {
+		if (props.inline) return
+		openedAt = Date.now()
+		positionReady.value = false
+		positionFallback.value = false
+		measureCount = 0
+		activePlacement.value = props.placement
+		// 等节点挂上再量；createSelectorQuery 的回调会等排版结束。
+		nextTick(() => {
+			scheduleMeasure(0)
+		})
+	}
+
+	const refresh = () => {
+		if (props.inline || !show.value) return
+		measureCount = 0
+		scheduleMeasure(0)
+	}
+
+	// 外部点击和 select 分开出口：select 是选了动作，close 只代表用户点了外面。
+	const dismiss = () => {
+		if (!show.value) return
+		show.value = false
+		emit('close')
+	}
+
+	const onOutsideTap = () => {
+		if (!props.outsideClosable) return
+		dismiss()
+	}
+
+	// 点击停在菜单项上；默认先收起再抛 select，父级在事件里改 show 也不会被覆盖。
+	// inline 模式没有显隐，组件只把选中项抛出去，勾由业务更新。
+	const onItemTap = (row: BubblePopupRow) => {
+		if (row.index < 0 || row.index >= props.items.length) return
+		const item = props.items[row.index]
+		if (item == null || item.disabled === true) return
+		if (props.closeOnSelect && !props.inline) show.value = false
+		emit('select', row.index, item)
+	}
+
+	const open = () => {
+		if (props.inline) return
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 close；close 只代表用户点了外面。
+	const close = () => {
+		if (props.inline) return
+		if (!show.value) return
+		show.value = false
+	}
+
+	const toggle = () => {
+		if (props.inline) return
+		show.value = !show.value
+	}
+
+	// 打开一次量一次；收起时作废还没回来的回调。
+	watch(show, (value: boolean) => {
+		if (props.inline) return
+		if (value) preparePosition()
+		else resetPosition()
+	})
+
+	// 内容、宽度、方向和描边会改面板尺寸或落点。箭头微调只改样式，分割线不占高度，都不重测。
+	// 只改数组内容、不换数组时，长度变化也要重新量；原地改文案由 refresh() 兜底。
+	watch((): Array<VxBubblePopupItem> => props.items, () => {
+		scheduleMeasure(0)
+	})
+	watch((): number => props.items.length, () => {
+		scheduleMeasure(0)
+	})
+	watch((): string => props.content, () => {
+		scheduleMeasure(0)
+	})
+	watch((): string => props.width, () => {
+		scheduleMeasure(0)
+	})
+	watch((): string => props.maxWidth, () => {
+		scheduleMeasure(0)
+	})
+	watch((): VxBubblePopupAlign => props.align, () => {
+		scheduleMeasure(0)
+	})
+	watch((): number => props.offset, () => {
+		scheduleMeasure(0)
+	})
+	// surface 有 1px 描边，solid 没有，切换后面板尺寸变了。
+	watch((): VxBubblePopupVariant => props.variant, () => {
+		scheduleMeasure(0)
+	})
+	watch((): VxBubblePopupPlacement => props.placement, (value: VxBubblePopupPlacement) => {
+		// 打开时等测量回调再改方向，箭头和气泡同一帧换边。
+		if (!props.inline && show.value) {
+			scheduleMeasure(0)
+			return
+		}
+		activePlacement.value = value
+	})
+
+	onMounted(() => {
+		if (props.inline || !show.value) return
+		preparePosition()
+	})
+
+	onUnmounted(() => {
+		measureId++
+		clearMeasureTimer()
+	})
+
+	// Web 上页面滚动时触发区会离开气泡，收起比让气泡留在原地更稳；窗口尺寸变化则重新量。
+	// #ifdef WEB
+	const onWindowScroll = () => {
+		if (!show.value) return
+		if (Date.now() - openedAt < SCROLL_GRACE) return
+		dismiss()
+	}
+
+	const onWindowResize = () => {
+		if (props.inline || !show.value) return
+		refresh()
+	}
+
+	// Web 上 Esc 是菜单的键盘出口；App 没有键盘焦点，只保留点击出口。
+	const onWindowKeydown = (event: KeyboardEvent) => {
+		if (event.key !== 'Escape' && event.key !== 'Esc') return
+		if (!show.value) return
+		dismiss()
+	}
+
+	onMounted(() => {
+		// inline 留在文档流里，一条对话会有很多个，不听页面滚动和键盘。
+		if (props.inline) return
+		window.addEventListener('scroll', onWindowScroll, true)
+		window.addEventListener('resize', onWindowResize)
+		window.addEventListener('keydown', onWindowKeydown)
+	})
+
+	onUnmounted(() => {
+		if (props.inline) return
+		window.removeEventListener('scroll', onWindowScroll, true)
+		window.removeEventListener('resize', onWindowResize)
+		window.removeEventListener('keydown', onWindowKeydown)
+	})
+	// #endif
+
+	defineExpose({
+		open,
+		close,
+		toggle,
+		refresh
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 根节点只负责包住触发区。宽度由触发内容决定，气泡的坐标由脚本按触发区算。
+	   App 默认 overflow 是 hidden，会把跟随模式的面板和阴影裁在这层里；
+	   固定模式不受影响，这一层仍然写 visible，退路也能显示。
+	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-bubble-popup {
+		position: relative;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-self: flex-start;
+		overflow: visible;
+	}
+
+	/* inline 和头像排成一行。整行跟着 align 靠左、居中或靠右，不撑满父级。
+	   App 的 max-width 只接受数字和 px，这里不写 100%，宽度交给气泡自己的 max-width。 */
+	.vx-bubble-popup--inline {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.vx-bubble-popup--align-center {
+		align-self: center;
+	}
+
+	.vx-bubble-popup--align-end {
+		align-self: flex-end;
+	}
+
+	/* 1px 见方、不接点击；只用来量 fixed 坐标原点。fixed 会升到页面根上，叶子节点关掉指针。
+	   拍平不支持 pointer-events，这层不要加 flatten。 */
+	.vx-bubble-popup__ruler {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 1px;
+		height: 1px;
+		pointer-events: none;
+	}
+
+	.vx-bubble-popup__trigger {
+		flex-direction: column;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 外部点击层铺满视口，层级写在行内；只压页面和触发区，不压气泡。 */
+	.vx-bubble-popup__catcher {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: transparent;
+	}
+
+	.vx-bubble-popup__catcher--mask {
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 气泡层只负责定位和裁出圆角，底色和阴影在内层面板。
+	   弹出时是 fixed，外层 view 的 overflow: hidden 裁不到它；坐标由脚本量触发区后写进行内样式。
+	   inline 时不脱离文档流，跟着头像走；宽度收在 max-width 里，长文案自己换行。
+	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-bubble-popup__bubble {
+		position: relative;
+		box-sizing: border-box;
+		flex-direction: column;
+		overflow: visible;
+		max-width: var(--vx-bubble-max-width);
+	}
+
+	.vx-bubble-popup__bubble--popover {
+		position: fixed;
+	}
+
+	.vx-bubble-popup__bubble--inline {
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	/* 菜单至少留出 120，两个字的动作也不至于缩成一条。 */
+	.vx-bubble-popup__bubble--menu {
+		min-width: var(--vx-bubble-min-width);
+	}
+
+	/* 聊天气泡比菜单窄一档，一屏里两三条对话不会铺满整行。 */
+	.vx-bubble-popup__bubble--chat {
+		max-width: var(--vx-bubble-chat-max-width);
+	}
+
+	/* 面板用 surface 底、md 圆角和 md 阴影。菜单是紧凑浮层，不用 lg 那档大阴影；
+	   inline 聊天没有遮罩也不是浮层，去阴影。
+	   裁掉溢出才能把按下态收进面板圆角，箭头在面板外面，不受这一层裁切。 */
+	.vx-bubble-popup__panel {
+		position: relative;
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+		box-shadow: var(--vx-shadow-md);
+		overflow: hidden;
+	}
+
+	/* surface 面板加 1px 描边：白底气泡贴在白卡片上，只靠阴影分不开，箭头也需要一条边。
+	   solid 面板是语义实心底，边界由底色本身给出，不加描边。 */
+	.vx-bubble-popup__panel--surface {
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+	}
+
+	/* 实心底和箭头同色：浅色文字配对应语义底，warning 用 on-warning 深色字。 */
+	.vx-bubble-popup__panel--solid-primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-bubble-popup__panel--solid-success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-bubble-popup__panel--solid-info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-bubble-popup__panel--solid-warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-bubble-popup__panel--solid-danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-bubble-popup__panel--solid-default {
+		background-color: var(--vx-color-text);
+	}
+
+	/* inline 写在类型后面：App 按 class 字符串先后盖属性，阴影在这一层清掉。 */
+	.vx-bubble-popup__panel--inline {
+		box-shadow: none;
+	}
+
+	/* 尾巴是一块旋转 45° 的方块，外层窗口必须 hidden 才裁得住。
+	   方块自带 1px 描边，和面板同色同粗；斜面不会因为边框三角而变细。
+	   尾巴不接点击。App 上 none 会连同方块一起关掉，方块本来也不该接。
+	   拍平不支持 pointer-events，这层不要加 flatten。 */
+	.vx-bubble-popup__arrow {
+		position: absolute;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	/* 气泡在锚点下方，尾巴在面板顶部朝上。 */
+	.vx-bubble-popup__arrow--bottom {
+		top: var(--vx-bubble-arrow-out);
+		width: var(--vx-bubble-arrow-base);
+		height: var(--vx-bubble-arrow);
+	}
+
+	/* 气泡在锚点上方，尾巴在面板底部朝下。 */
+	.vx-bubble-popup__arrow--top {
+		bottom: var(--vx-bubble-arrow-out);
+		width: var(--vx-bubble-arrow-base);
+		height: var(--vx-bubble-arrow);
+	}
+
+	/* 气泡在锚点右侧，尾巴在面板左边朝左。 */
+	.vx-bubble-popup__arrow--right {
+		left: var(--vx-bubble-arrow-out);
+		width: var(--vx-bubble-arrow);
+		height: var(--vx-bubble-arrow-base);
+	}
+
+	/* 气泡在锚点左侧，尾巴在面板右边朝右。 */
+	.vx-bubble-popup__arrow--left {
+		right: var(--vx-bubble-arrow-out);
+		width: var(--vx-bubble-arrow);
+		height: var(--vx-bubble-arrow-base);
+	}
+
+	/* 方块旋转 45°，圆心落在面板边上；外面一半留在窗口里，里面一半被裁掉。
+	   1px 描边是真正的 1px：横平竖直，旋转后仍和面板描边一样粗。 */
+	.vx-bubble-popup__arrow-tip {
+		position: absolute;
+		box-sizing: border-box;
+		width: var(--vx-bubble-arrow-tip);
+		height: var(--vx-bubble-arrow-tip);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		background-color: var(--vx-color-surface);
+		transform: translate(-50%, -50%) rotate(45deg);
+		pointer-events: none;
+	}
+
+	.vx-bubble-popup__arrow-tip--bottom {
+		top: 100%;
+		left: 50%;
+	}
+
+	.vx-bubble-popup__arrow-tip--top {
+		top: 0;
+		left: 50%;
+	}
+
+	.vx-bubble-popup__arrow-tip--right {
+		top: 50%;
+		left: 100%;
+	}
+
+	.vx-bubble-popup__arrow-tip--left {
+		top: 50%;
+		left: 0;
+	}
+
+	/* solid 去掉描边，底色和上面的面板同一组语义色。写在方向后面，盖过 surface 底。 */
+	.vx-bubble-popup__arrow-tip--solid-primary {
+		border-width: 0;
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-bubble-popup__arrow-tip--solid-success {
+		border-width: 0;
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-bubble-popup__arrow-tip--solid-info {
+		border-width: 0;
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-bubble-popup__arrow-tip--solid-warning {
+		border-width: 0;
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-bubble-popup__arrow-tip--solid-danger {
+		border-width: 0;
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-bubble-popup__arrow-tip--solid-default {
+		border-width: 0;
+		background-color: var(--vx-color-text);
+	}
+
+	/* 尾巴底部和面板描边交界处补一条同色接缝，把横穿尾巴底部的 1px 描边盖掉。
+	   接缝比尾巴底边少 1px（左右各压 0.5px），把直边和 45° 斜边的亚像素差吃掉；
+	   厚度等于描边；沿边位置由脚本和尾巴共用。
+	   拍平不支持 pointer-events，这层不要加 flatten。 */
+	.vx-bubble-popup__arrow-seam {
+		position: absolute;
+		background-color: var(--vx-color-surface);
+		pointer-events: none;
+	}
+
+	.vx-bubble-popup__arrow-seam--bottom {
+		top: 0;
+		width: var(--vx-bubble-arrow-seam);
+		height: var(--vx-border-width);
+	}
+
+	.vx-bubble-popup__arrow-seam--top {
+		bottom: 0;
+		width: var(--vx-bubble-arrow-seam);
+		height: var(--vx-border-width);
+	}
+
+	.vx-bubble-popup__arrow-seam--right {
+		left: 0;
+		width: var(--vx-border-width);
+		height: var(--vx-bubble-arrow-seam);
+	}
+
+	.vx-bubble-popup__arrow-seam--left {
+		right: 0;
+		width: var(--vx-border-width);
+		height: var(--vx-bubble-arrow-seam);
+	}
+
+	/* 面板四周只留 4，菜单项自己的 44 高和左右 12 承担热区；
+	   菜单项圆角比面板小一档，按下态才像贴在面板里的一个格子。 */
+	.vx-bubble-popup__menu {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-xs);
+	}
+
+	.vx-bubble-popup__item {
+		position: relative;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--vx-list-height-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	/* 浅底菜单按下铺一层 surface-pressed；实心底上不能再铺浅色，改成整行变淡。 */
+	.vx-bubble-popup__item--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.vx-bubble-popup__item--pressed-solid {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-bubble-popup__item--disabled-solid {
+		opacity: var(--vx-opacity-disabled);
+	}
+
+	/* 18 的图标和文案留 8；固定宽度，有没有图标文案都从同一列开始。 */
+	.vx-bubble-popup__icon {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+		margin-right: var(--vx-space-sm);
+	}
+
+	/* 菜单项只放一行，长文案省略；min-width 压成 0，省略号才会在剩余宽度里出现。 */
+	.vx-bubble-popup__text {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* 右侧短值不抢文案宽度。实心且未禁用时再降一档透明度，仍有对比。 */
+	.vx-bubble-popup__value {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-sm);
+		white-space: nowrap;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-bubble-popup__value--tinted {
+		opacity: var(--vx-opacity-loading);
+	}
+
+	/* 宽高写死：没选中时里面没有图标，空位也不能被收成 0，否则切换选中文案还会横跳。 */
+	.vx-bubble-popup__check {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 分割线不占行高，压在菜单项底部，左右各缩进 12，和文案起止对齐。 */
+	.vx-bubble-popup__divider {
+		position: absolute;
+		right: var(--vx-space-md);
+		bottom: 0;
+		left: var(--vx-space-md);
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	.vx-bubble-popup__divider--solid {
+		opacity: var(--vx-opacity-disabled);
+	}
+
+	/* 文本气泡和 extra 内容都按 12 / 16 内边距排；面板本身只留圆角和底色。
+	   App 上多值 padding 会收成同一个方向，四个方向分开写。 */
+	.vx-bubble-popup__content,
+	.vx-bubble-popup__extra {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal，长文案才会按词换行。 */
+	.vx-bubble-popup__content-text {
+		width: 100%;
+		min-width: 0;
+		white-space: normal;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	/* 头像和气泡留 8；箭头向这一侧伸出 6，还剩 2 的空隙，正好不压住头像。 */
+	.vx-bubble-popup__prefix {
+		flex-shrink: 0;
+		flex-direction: column;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-bubble-popup__suffix {
+		flex-shrink: 0;
+		flex-direction: column;
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，进场只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   位移和缩放只加在面板上，气泡层的定位 transform 不受影响。
+	   enter 在量完位置后才挂上，第一帧不会从左上角飞进来。 */
+	/* #ifdef WEB */
+	.vx-bubble-popup__catcher {
+		touch-action: none;
+	}
+
+	.vx-bubble-popup__bubble--enter {
+		animation-name: vx-bubble-popup-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-bubble-popup__panel--enter {
+		animation-name: vx-bubble-popup-pop;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-bubble-popup__item {
+		cursor: pointer;
+	}
+
+	.vx-bubble-popup__item--disabled {
+		cursor: not-allowed;
+	}
+
+	@keyframes vx-bubble-popup-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-bubble-popup-pop {
+		from {
+			transform: scale(0.96);
+		}
+
+		to {
+			transform: scale(1);
+		}
+	}
+	/* #endif */
+</style>

@@ -1,0 +1,399 @@
+<template>
+	<!-- 时间轴只画节点、竖线和文字；标题、状态和操作放在外面的卡片或页面区块。 -->
+	<!-- 有 title 的是阶段，没有 title 的是同一阶段下的事件；事件用圆点，和上一条贴得更近。 -->
+	<view v-if="rows.length > 0" class="vx-time-axis">
+		<view v-for="(row, index) in rows" :key="index" :class="row.itemClass">
+			<!-- 竖线铺在节点列整宽上，内部 1px 线居中；首尾各收在节点中心。 -->
+			<view v-if="row.railClass.length > 0" :class="row.railClass">
+				<view class="vx-time-axis__rail-line" :style="railStyle"></view>
+			</view>
+
+			<!-- 节点列高度等于节点直径。有图标时圆底画在这一列上，不再包一层同尺寸的圆。 -->
+			<view :class="row.markerClass">
+				<vx-icon v-if="row.hasIcon" :name="row.icon" :size="iconSize" :variant="row.iconVariant"
+					:color="row.iconColor" />
+				<view v-else :class="row.dotClass"></view>
+			</view>
+
+			<view class="vx-time-axis__content">
+				<text v-if="row.title.length > 0" :class="titleClass">{{ row.title }}</text>
+				<text v-if="row.description.length > 0" :class="row.descriptionClass">{{ row.description }}</text>
+				<text v-if="row.time.length > 0" :class="row.timeClass">{{ row.time }}</text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxTimeAxisProps, VxTimeAxisItem } from './props'
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import { VxIconVariant } from '../../libs/types/common'
+
+	const props = withDefaults(defineProps<VxTimeAxisProps>(), {
+		items: (): Array<VxTimeAxisItem> => [],
+		size: 'md',
+		lineColor: ''
+	})
+
+	type TimeAxisRow = {
+		itemClass: string
+		railClass: string
+		markerClass: string
+		dotClass: string
+		hasIcon: boolean
+		icon: VxIconName
+		iconVariant: VxIconVariant
+		iconColor: string
+		title: string
+		description: string
+		descriptionClass: string
+		time: string
+		timeClass: string
+	}
+
+	// 自定义线色只作用在 1px 线上；不传时继续用主题的 border。
+	const railStyle = computed((): string => {
+		if (props.lineColor.length === 0) return ''
+		return `background-color: ${props.lineColor};`
+	})
+
+	// 图标比节点小一档：sm / md 用 14，lg 用 18。整列共用，不跟每条记录重算。
+	const iconSize = computed((): 'sm' | 'md' => {
+		return props.size === 'lg' ? 'md' : 'sm'
+	})
+
+	// 标题档位只跟 size 走，循环里不再逐条拼。
+	const titleClass = computed((): string => {
+		if (props.size === 'sm') return 'vx-time-axis__title vx-time-axis__title--sm'
+		if (props.size === 'lg') return 'vx-time-axis__title vx-time-axis__title--lg'
+		return 'vx-time-axis__title'
+	})
+
+	// 尺寸整列相同，循环外算一次；循环里只处理收口、图标和留白。
+	// class 顺序：基础 → 尺寸 → 类型 → 状态，和样式表一致，后写的盖过先写的。
+	const rows = computed((): Array<TimeAxisRow> => {
+		const list: Array<TimeAxisRow> = []
+		const source = props.items
+		const count = source.length
+		const size = props.size
+		const secondaryIcon = 'var(--vx-color-text-secondary)'
+
+		let markerBase = 'vx-time-axis__marker'
+		let dotBase = 'vx-time-axis__dot'
+		let railBase = 'vx-time-axis__rail'
+		let startRail = ' vx-time-axis__rail--start'
+		let endRail = ' vx-time-axis__rail--end'
+		if (size === 'sm') {
+			markerBase += ' vx-time-axis__marker--sm'
+			dotBase += ' vx-time-axis__dot--sm'
+			railBase += ' vx-time-axis__rail--sm'
+			startRail = ' vx-time-axis__rail--start-sm'
+			endRail = ' vx-time-axis__rail--end-sm'
+		} else if (size === 'lg') {
+			markerBase += ' vx-time-axis__marker--lg'
+			dotBase += ' vx-time-axis__dot--lg'
+			railBase += ' vx-time-axis__rail--lg'
+			startRail = ' vx-time-axis__rail--start-lg'
+			endRail = ' vx-time-axis__rail--end-lg'
+		}
+
+		let descBase = 'vx-time-axis__desc'
+		if (size === 'sm') descBase += ' vx-time-axis__desc--sm'
+		const descOffset = descBase + ' vx-time-axis__desc--offset'
+		const timeBase = 'vx-time-axis__time'
+		const timeOffset = 'vx-time-axis__time vx-time-axis__time--offset'
+
+		for (let index = 0; index < count; index++) {
+			const entry = source[index]
+			const title = entry.title != null ? entry.title : ''
+			const description = entry.description != null ? entry.description : ''
+			const time = entry.time != null ? entry.time : ''
+			const type = entry.type != null ? entry.type : 'default'
+			const named = entry.icon
+			const hasIcon = named != null && named.length > 0
+			// 没图标时给一个合法名字，模板只在 hasIcon 时渲染。
+			let icon: VxIconName = 'check'
+			if (hasIcon && named != null) icon = named
+			const iconVariant = entry.iconVariant != null ? entry.iconVariant : 'regular'
+			const next = index + 1 < count ? source[index + 1] : null
+			const tight = next != null && (next.title == null || next.title.length === 0)
+			const last = index === count - 1
+
+			let itemClass = 'vx-time-axis__item'
+			if (last) itemClass += ' vx-time-axis__item--last'
+			else if (tight) itemClass += ' vx-time-axis__item--tight'
+
+			let markerClass = markerBase
+			let dotClass = ''
+			if (hasIcon) {
+				markerClass += ' vx-time-axis__node'
+				if (type !== 'default') markerClass += ` vx-time-axis__node--${type}`
+			} else {
+				dotClass = dotBase
+				if (type !== 'default') dotClass += ` vx-time-axis__dot--${type}`
+			}
+
+			let railClass = ''
+			if (count > 1) {
+				railClass = railBase
+				if (index === 0) railClass += startRail
+				else if (last) railClass += endRail
+				else railClass += ' vx-time-axis__rail--full'
+			}
+
+			// 实心节点的图标用 on-* 前景，浅灰节点用次要灰。
+			let iconColor = secondaryIcon
+			if (hasIcon && type !== 'default') iconColor = `var(--vx-color-on-${type})`
+
+			list.push({
+				itemClass: itemClass,
+				railClass: railClass,
+				markerClass: markerClass,
+				dotClass: dotClass,
+				hasIcon: hasIcon,
+				icon: icon,
+				iconVariant: iconVariant,
+				iconColor: iconColor,
+				title: title,
+				description: description,
+				descriptionClass: title.length > 0 ? descOffset : descBase,
+				time: time,
+				timeClass: title.length > 0 || description.length > 0 ? timeOffset : timeBase
+			})
+		}
+		return list
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 时间轴只占父级宽度，不加外部间距；放进卡片时由卡片内边距收口。
+	   Web 默认 content-box，宽度跟随父级，最小宽度压成 0 才能让长文案换行。 */
+	.vx-time-axis {
+		flex-direction: column;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 每一行是「竖线列 + 节点列 + 内容」。竖线绝对定位在节点列下方，不占宽度。
+	   阶段之间留 24，事件之间留 12；最后一行不留白，避免容器底部多出一截。 */
+	.vx-time-axis__item {
+		position: relative;
+		flex-direction: row;
+		align-items: flex-start;
+		width: 100%;
+		min-width: 0;
+		padding-bottom: var(--vx-space-xl);
+	}
+
+	.vx-time-axis__item--tight {
+		padding-bottom: var(--vx-space-md);
+	}
+
+	.vx-time-axis__item--last {
+		padding-bottom: 0;
+	}
+
+	/* 竖线列和节点列同宽，1px 线靠居中排，不用半像素偏移。
+	   首条从节点中心往下，末条从行顶到节点中心；中间整段铺满。 */
+	.vx-time-axis__rail {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 0;
+		flex-direction: row;
+		justify-content: center;
+		width: var(--vx-time-axis-node-md);
+	}
+
+	.vx-time-axis__rail--sm {
+		width: var(--vx-time-axis-node-sm);
+	}
+
+	.vx-time-axis__rail--lg {
+		width: var(--vx-time-axis-node-lg);
+	}
+
+	.vx-time-axis__rail--full {
+		bottom: 0;
+	}
+
+	.vx-time-axis__rail--start {
+		top: var(--vx-time-axis-node-center-md);
+		bottom: 0;
+	}
+
+	.vx-time-axis__rail--start-sm {
+		top: var(--vx-time-axis-node-center-sm);
+		bottom: 0;
+	}
+
+	.vx-time-axis__rail--start-lg {
+		top: var(--vx-time-axis-node-center-lg);
+		bottom: 0;
+	}
+
+	.vx-time-axis__rail--end {
+		height: var(--vx-time-axis-node-center-md);
+	}
+
+	.vx-time-axis__rail--end-sm {
+		height: var(--vx-time-axis-node-center-sm);
+	}
+
+	.vx-time-axis__rail--end-lg {
+		height: var(--vx-time-axis-node-center-lg);
+	}
+
+	/* 列的高度由 top / bottom 或 height 定，没有文字撑开；线在交叉轴上拉满。 */
+	.vx-time-axis__rail-line {
+		flex-shrink: 0;
+		align-self: stretch;
+		width: var(--vx-border-width);
+		background-color: var(--vx-color-border);
+	}
+
+	/* 节点列固定成节点直径。图标节点的圆底写在同一层，圆点在列里居中。
+	   z-index 让节点压住竖线；右间距跟尺寸，sm / lg 各紧一档或松一档。 */
+	.vx-time-axis__marker {
+		position: relative;
+		z-index: 1;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-time-axis-node-md);
+		height: var(--vx-time-axis-node-md);
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-time-axis__marker--sm {
+		width: var(--vx-time-axis-node-sm);
+		height: var(--vx-time-axis-node-sm);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-time-axis__marker--lg {
+		width: var(--vx-time-axis-node-lg);
+		height: var(--vx-time-axis-node-lg);
+		margin-right: var(--vx-space-lg);
+	}
+
+	/* 有图标时节点列本身是圆底：默认浅灰，语义色在后面的 class 里改成实心。 */
+	.vx-time-axis__node {
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 没有图标的事件用圆点：默认和竖线同色，语义色时用原色。
+	   圆点比节点小，竖线从它上下两侧露出来，读起来是一条连续的线。 */
+	.vx-time-axis__dot {
+		flex-shrink: 0;
+		width: var(--vx-time-axis-dot-md);
+		height: var(--vx-time-axis-dot-md);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-border);
+	}
+
+	.vx-time-axis__dot--sm {
+		width: var(--vx-time-axis-dot-sm);
+		height: var(--vx-time-axis-dot-sm);
+	}
+
+	.vx-time-axis__dot--lg {
+		width: var(--vx-time-axis-dot-lg);
+		height: var(--vx-time-axis-dot-lg);
+	}
+
+	.vx-time-axis__node--primary,
+	.vx-time-axis__dot--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-time-axis__node--success,
+	.vx-time-axis__dot--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-time-axis__node--info,
+	.vx-time-axis__dot--info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-time-axis__node--warning,
+	.vx-time-axis__dot--warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-time-axis__node--danger,
+	.vx-time-axis__dot--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	/* 内容吃掉剩余宽度。最小宽度压成 0，长说明换行，不把节点列挤窄。
+	   Web 默认 visible，超出的词裁在正文里。 */
+	.vx-time-axis__content {
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-time-axis__title,
+	.vx-time-axis__desc,
+	.vx-time-axis__time {
+		flex-shrink: 0;
+		min-width: 0;
+		width: 100%;
+		white-space: normal;
+	}
+
+	/* 标题是阶段名，用正文档加粗；事件行没有标题，直接从说明开始。
+	   时间轴不是控件，标题、说明和时间都沿用正文档位，不借 --vx-font-control-*。 */
+	.vx-time-axis__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-time-axis__title--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-time-axis__title--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 说明固定辅助色；sm 跟标题一起收到 13 / 20，md / lg 都用 15 / 22。 */
+	.vx-time-axis__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-time-axis__desc--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* 时间用辅助说明档，三档尺寸都保持 13 / 20。 */
+	.vx-time-axis__time {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-time-axis__desc--offset,
+	.vx-time-axis__time--offset {
+		margin-top: var(--vx-space-xs);
+	}
+</style>

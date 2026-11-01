@@ -1,0 +1,708 @@
+<template>
+	<!-- 联动选择是底部弹层：遮罩铺满页面，面板贴底。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
+	<!-- 滚轮只改草稿，点确定才写回 v-model；取消、遮罩和 close() 都不动已提交的值。 -->
+	<!-- 触摸只拦遮罩和头部：滚轮本身要接住手势，根节点不能统一 prevent，否则轮子拖不动。 -->
+	<view v-if="show" class="vx-picker" :style="rootStyle">
+		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
+
+		<!-- 外层只负责阴影和滑入；内层裁底色和按下态，避免 overflow 把阴影一起裁掉。 -->
+		<view class="vx-picker__sheet" @click.stop>
+			<view class="vx-picker__panel">
+				<!-- 头部固定 52：取消在左、确定在右。两侧动作等分，标题才在整行正中；没有标题时两个按钮贴着两端。 -->
+				<view class="vx-picker__header" @touchmove.stop.prevent>
+					<view class="vx-picker__action" hover-class="vx-picker__action--pressed"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCancelTap">
+						<text class="vx-picker__action-text">{{ cancelText }}</text>
+					</view>
+					<text v-if="hasHeaderText" :class="titleClass">{{ headerText }}</text>
+					<view :class="confirmActionClass" :hover-class="confirmHoverClass"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onConfirmTap">
+						<text :class="confirmTextClass">{{ confirmText }}</text>
+					</view>
+				</view>
+				<view class="vx-picker__divider"></view>
+
+				<!-- 空树不渲染滚轮，留一块和滚轮等高的空状态；确定同时置灰。 -->
+				<view v-if="empty" class="vx-picker__empty" @touchmove.stop.prevent>
+					<text class="vx-picker__empty-text">{{ emptyText }}</text>
+				</view>
+				<!-- 列数变化时整个换掉滚轮：原生 picker-view 增删列后按旧下标容易停在空行。 -->
+				<picker-view v-else :key="wheelKey" class="vx-picker__wheel" :value="draftIndices"
+					:indicator-style="indicatorStyle" :indicator-class="indicatorClass" mask-class="vx-picker__fade"
+					@change="onColumnChange">
+					<picker-view-column v-for="(column, columnIndex) in columns" :key="column.key">
+						<view v-for="(row, rowIndex) in column.rows" :key="row.key" class="vx-picker__option">
+							<text :class="optionTextClass(columnIndex, rowIndex, row.disabled)">{{ row.text }}</text>
+						</view>
+					</picker-view-column>
+				</picker-view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import {
+		VX_PICKER_ROW,
+		VxPickerOption,
+		VxPickerResult,
+		vxPickerAlign,
+		vxPickerColumns,
+		vxPickerFirstEnabled,
+		vxPickerResult,
+		vxPickerSame,
+		vxPickerTree
+	} from '../../libs/picker'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VxPickerProps } from './props'
+
+	const props = withDefaults(defineProps<VxPickerProps>(), {
+		options: () => [],
+		title: '',
+		cancelText: '取消',
+		confirmText: '确定',
+		separator: ' / ',
+		emptyText: '暂无可选项',
+		invalidText: '该选项不可选',
+		maskClosable: true,
+		maskColor: '',
+		zIndex: 90
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	// v-model 是每一级已经确定的值；value 省略的节点存 text，ThorUI 的文本数组可以直接迁过来。
+	const values = defineModel('modelValue', {
+		type: Array,
+		default: (): Array<string> => []
+	})
+
+	const emit = defineEmits<{
+		confirm: [result: VxPickerResult]
+		change: [result: VxPickerResult]
+		cancel: []
+	}>()
+
+	/** 一行滚轮项。选中态不写进行对象，滚动时才能留着同一批行。 */
+	type PickerRow = {
+		key: string
+		text: string
+		disabled: boolean
+	}
+
+	/** 一列。key 固定按深度生成，列数变化时才换整个滚轮。 */
+	type PickerColumn = {
+		key: string
+		rows: Array<PickerRow>
+	}
+
+	// 树不进响应式：模板只读列和草稿。放进 ref 会把每个节点包成代理，全国数据打开时比复制还贵。
+	let normalizedTree: Array<VxPickerOption> = []
+
+	// 树的最大深度，只用来准备每一列的行版本号。
+	let maxDepth = 0
+
+	// 草稿下标；滚动只改这里，点确定才落到 v-model。下标没变时不换新数组，避免和 picker-view 的 value 来回触发。
+	const draftIndices = ref<Array<number>>([])
+
+	// 每列各有一个行版本号：上级换了分支，下级所有行的 key 都要变，原生列才会换内容。
+	// 只换上级列不碰自己的版本号，滚动位置不会因为无关列重建而跳动。
+	let columnRevisions: Array<number> = []
+
+	const columns = ref<Array<PickerColumn>>([])
+
+	// 上一份列内容的身份，放在响应式外面，避免整层节点再被代理。
+	let columnSources: Array<Array<VxPickerOption>> = []
+	let columnRevisionMarks: Array<number> = []
+
+	// 上一次抛给业务的路径，滚动回来或树重算时不重复抛同一个值。
+	let lastChangeKey = ''
+
+	// prepare 规整过的那份 options。同一拍里 options 的 watch 看到它就跳过，树只复制一次。
+	let normalizedSource: Array<VxPickerOption> | null = null
+
+	const applyOptions = () => {
+		normalizedSource = props.options
+		const tree = vxPickerTree(props.options)
+		normalizedTree = tree.options
+		maxDepth = tree.depth
+		columnSources = []
+		columnRevisionMarks = []
+	}
+
+	const bumpRevisions = (fromDepth: number) => {
+		const next: Array<number> = []
+		for (let depth = 0; depth < maxDepth; depth++) {
+			const current = depth < columnRevisions.length ? columnRevisions[depth] : 0
+			next.push(depth >= fromDepth ? current + 1 : current)
+		}
+		columnRevisions = next
+	}
+
+	const applyDraft = (next: Array<number>) => {
+		const current = draftIndices.value
+		let changed = next.length !== current.length
+		for (let index = 0; index < next.length && !changed; index++) {
+			if (next[index] !== current[index]) changed = true
+		}
+		if (!changed) return
+		draftIndices.value = next
+	}
+
+	// 选项数组和行版本都没变的列留着原来的行对象。叶子滚动只改下标，不重建整列。
+	const syncColumns = () => {
+		const source = vxPickerColumns(normalizedTree, draftIndices.value)
+		const previous = columns.value
+		const next: Array<PickerColumn> = []
+		const sources: Array<Array<VxPickerOption>> = []
+		const revisions: Array<number> = []
+		let same = previous.length === source.length
+		for (let depth = 0; depth < source.length; depth++) {
+			const options = source[depth]
+			const revision = depth < columnRevisions.length ? columnRevisions[depth] : 0
+			sources.push(options)
+			revisions.push(revision)
+			const reusable = depth < previous.length
+				&& depth < columnSources.length
+				&& columnSources[depth] === options
+				&& columnRevisionMarks[depth] === revision
+			if (reusable) {
+				next.push(previous[depth])
+				continue
+			}
+			same = false
+			const rows: Array<PickerRow> = []
+			for (let index = 0; index < options.length; index++) {
+				const option = options[index]
+				rows.push({
+					key: 'picker-' + depth + '-' + revision + '-' + index,
+					text: option.text,
+					disabled: option.disabled === true
+				})
+			}
+			next.push({ key: 'column-' + depth, rows: rows })
+		}
+		columnSources = sources
+		columnRevisionMarks = revisions
+		if (same) return
+		columns.value = next
+	}
+
+	// 四列起列宽只剩屏宽的四分之一，字号收一档；行高 44 不变，上下留白变大。
+	// class 顺序：基础 → 尺寸 → 状态。直接返回整串，滚动时不为每一行再拼接。
+	const optionTextClass = (columnIndex: number, rowIndex: number, disabled: boolean): string => {
+		const selected = columnIndex < draftIndices.value.length && draftIndices.value[columnIndex] === rowIndex
+		const dense = columns.value.length > 3
+		if (dense) {
+			if (disabled) {
+				if (selected) return 'vx-picker__option-text vx-picker__option-text--dense vx-picker__option-text--selected vx-picker__option-text--disabled'
+				return 'vx-picker__option-text vx-picker__option-text--dense vx-picker__option-text--disabled'
+			}
+			if (selected) return 'vx-picker__option-text vx-picker__option-text--dense vx-picker__option-text--selected'
+			return 'vx-picker__option-text vx-picker__option-text--dense'
+		}
+		if (disabled) {
+			if (selected) return 'vx-picker__option-text vx-picker__option-text--selected vx-picker__option-text--disabled'
+			return 'vx-picker__option-text vx-picker__option-text--disabled'
+		}
+		if (selected) return 'vx-picker__option-text vx-picker__option-text--selected'
+		return 'vx-picker__option-text'
+	}
+
+	const wheelKey = computed((): string => 'picker-wheel-' + columns.value.length)
+
+	const empty = computed((): boolean => columns.value.length === 0)
+
+	const selectable = computed((): boolean => {
+		const list = columns.value
+		if (list.length === 0) return false
+		const indices = draftIndices.value
+		for (let depth = 0; depth < list.length; depth++) {
+			const rows = list[depth].rows
+			if (rows.length === 0) return false
+			let position = depth < indices.length ? indices[depth] : 0
+			if (position < 0 || position > rows.length - 1) position = 0
+			if (rows[position].disabled) return false
+		}
+		return true
+	})
+
+	const canConfirm = computed((): boolean => !empty.value && selectable.value)
+
+	const invalid = computed((): boolean => !empty.value && !selectable.value)
+
+	// 不可选时头部换成提示，确定置灰；用户不用猜为什么点不动。
+	const headerText = computed((): string => (invalid.value ? props.invalidText : props.title))
+
+	const hasHeaderText = computed((): boolean => headerText.value.length > 0)
+
+	const titleClass = computed((): string => {
+		if (invalid.value) return 'vx-picker__title vx-picker__title--invalid'
+		return 'vx-picker__title'
+	})
+
+	const confirmActionClass = computed((): string => {
+		let actionClass = 'vx-picker__action vx-picker__action--end'
+		if (!canConfirm.value) actionClass += ' vx-picker__action--disabled'
+		return actionClass
+	})
+
+	const confirmTextClass = computed((): string => {
+		let textClass = 'vx-picker__action-text vx-picker__action-text--confirm'
+		if (!canConfirm.value) textClass += ' vx-picker__action-text--disabled'
+		return textClass
+	})
+
+	const confirmHoverClass = computed((): string => (canConfirm.value ? 'vx-picker__action--pressed' : 'none'))
+
+	const maskClass = computed((): string => {
+		if (props.maskClosable) return 'vx-picker__mask vx-picker__mask--closable'
+		return 'vx-picker__mask'
+	})
+
+	// indicator-style 读不到 CSS 变量。写进 var() 时 App 可能把整段丢掉，行高一起失效。
+	// 细线改挂 class，才能用 --vx-color-border。App 的 indicator-class 不可用，原生指示器自己有线。
+	// box-sizing 锁在行内：class 上的 1px 边框算进行高，选中框不会比行高高出 2px。
+	const indicatorStyle = `height: ${VX_PICKER_ROW}px; box-sizing: border-box;`
+
+	let indicatorClass = ''
+	// #ifndef APP
+	indicatorClass = 'vx-picker__indicator'
+	// #endif
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	const rootStyle = computed((): string => `z-index: ${props.zIndex};`)
+
+	const currentResult = (): VxPickerResult => {
+		return vxPickerResult(normalizedTree, draftIndices.value, props.separator)
+	}
+
+	// values 和 texts 一起比：同名不同值的脏数据也能分清。
+	const resultKey = (result: VxPickerResult): string => {
+		return result.values.join('\u0001') + '\u0002' + result.texts.join('\u0001')
+	}
+
+	// 打开时按已选值定位；读不出、值不可选或路径变短时都收口到有效路径。
+	const prepare = () => {
+		applyOptions()
+		bumpRevisions(0)
+		applyDraft(vxPickerAlign(normalizedTree, values.value))
+		syncColumns()
+		lastChangeKey = resultKey(currentResult())
+	}
+
+	// 不可选的草稿不抛 change：业务拿到的始终是能提交的路径。
+	const emitDraftChange = () => {
+		if (!selectable.value) return
+		const result = currentResult()
+		const key = resultKey(result)
+		if (key === lastChangeKey) return
+		lastChangeKey = key
+		emit('change', result)
+	}
+
+	const onColumnChange = (event: UniPickerViewChangeEvent) => {
+		if (!show.value) return
+		const raw = event.detail.value
+		const currentColumns = vxPickerColumns(normalizedTree, draftIndices.value)
+		if (raw.length !== currentColumns.length) return
+
+		// 只处理第一处变化的列：联动下改一级就要重建下面所有列，多列同时变时下标已经不可信。
+		let changed = -1
+		let changedIndex = 0
+		for (let depth = 0; depth < raw.length; depth++) {
+			let index = Math.round(raw[depth])
+			if (!isFinite(index) || index < 0) index = 0
+			if (index > currentColumns[depth].length - 1) index = currentColumns[depth].length - 1
+			const current = depth < draftIndices.value.length ? draftIndices.value[depth] : -1
+			if (index === current) continue
+			changed = depth
+			changedIndex = index
+			break
+		}
+		if (changed < 0) return
+
+		const next: Array<number> = []
+		for (let depth = 0; depth < changed; depth++) {
+			next.push(depth < draftIndices.value.length ? draftIndices.value[depth] : 0)
+		}
+		next.push(changedIndex)
+
+		// 新分支下面每级先停在第一项可选项；整列不可选也先停第一项，由确认挡住。
+		let level = currentColumns[changed][changedIndex].children
+		while (level != null && level.length > 0) {
+			let position = vxPickerFirstEnabled(level)
+			if (position < 0) position = 0
+			next.push(position)
+			level = level[position].children
+		}
+
+		applyDraft(next)
+		bumpRevisions(changed + 1)
+		syncColumns()
+		emitDraftChange()
+	}
+
+	const onConfirmTap = () => {
+		if (!canConfirm.value) return
+		const result = currentResult()
+		if (!vxPickerSame(values.value, result.values)) values.value = result.values
+		show.value = false
+		emit('confirm', result)
+	}
+
+	const onCancelTap = () => {
+		if (!show.value) return
+		show.value = false
+		emit('cancel')
+	}
+
+	// 遮罩可关闭时按取消处理，和点取消按钮走同一条出口。
+	const onMaskTap = () => {
+		if (!props.maskClosable) return
+		onCancelTap()
+	}
+
+	const open = () => {
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 cancel；cancel 只代表用户取消。
+	const close = () => {
+		if (!show.value) return
+		show.value = false
+	}
+
+	// 打开期间父级换了整棵 options，按当前路径重新对齐，缺的层级用 v-model 补上。
+	// 对齐后补一次 change，业务在触发入口上显示的文本不会停在旧路径。
+	const realignWhileOpen = () => {
+		const previousResult = currentResult()
+		const previousKey = resultKey(previousResult)
+		const draftValues = previousResult.values
+		const modelValues = values.value
+		const targetLength = draftValues.length > modelValues.length ? draftValues.length : modelValues.length
+		const targetValues: Array<string> = []
+		for (let depth = 0; depth < targetLength; depth++) {
+			if (depth < draftValues.length) targetValues.push(draftValues[depth])
+			else targetValues.push(modelValues[depth])
+		}
+
+		applyOptions()
+		bumpRevisions(0)
+		applyDraft(vxPickerAlign(normalizedTree, targetValues))
+		syncColumns()
+		lastChangeKey = previousKey
+		emitDraftChange()
+	}
+
+	// 打开时重新读 options 和 v-model，滚轮挂载时就能停在正确的位置。
+	// 打开期间父级改 modelValue 不跟，避免把正在滚的轮子拽走。
+	// 这个 watch 必须写在 options 前面：同一拍打开时 prepare 先规整，下面看到同一份引用就跳过。
+	watch(show, (visible: boolean) => {
+		if (!visible) return
+		prepare()
+	})
+
+	watch(() => props.options, () => {
+		if (!show.value) return
+		if (props.options === normalizedSource) return
+		realignWhileOpen()
+	})
+
+	// 挂载时已经打开的，先对齐再出第一帧。关着的不复制树，页面上多个实例不会各备一份。
+	if (show.value) prepare()
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 90，和操作菜单、日期时间选择器同档。 */
+	.vx-picker {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	.vx-picker__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
+	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
+	.vx-picker__sheet {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-self: center;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: var(--vx-picker-max-width);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		box-shadow: var(--vx-shadow-lg);
+		overflow: visible;
+	}
+
+	/* 内层裁按压态和底色，圆角与阴影层一致，轮廓才重合。安全区作为内边距，滚轮不压住手势条。 */
+	.vx-picker__panel {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+		overflow: hidden;
+	}
+
+	/* 头部高度沿用列表行 md 的 52：取消和确定都是整块热区，上下不另外留白。 */
+	.vx-picker__header {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-list-height-md);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	/* 左右等分，标题才始终在整行正中；只按文字宽度排时，取消和确定字数不同会把标题挤偏。
+	   左右各 8 的内边距加头部 8，文字离屏幕 16。长文案裁在自己的格子里，不盖住标题。 */
+	.vx-picker__action {
+		flex-direction: row;
+		flex: 1;
+		align-items: center;
+		justify-content: flex-start;
+		box-sizing: border-box;
+		min-width: 0;
+		height: 100%;
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		overflow: hidden;
+	}
+
+	.vx-picker__action--end {
+		justify-content: flex-end;
+	}
+
+	.vx-picker__action--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 标题占两份、左右各一份，文字在整行正中，又留得下六个字；超出用省略号。行高固定，头部不跟着长高。 */
+	.vx-picker__title {
+		flex: 2;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		white-space: nowrap;
+		text-align: center;
+		text-overflow: ellipsis;
+	}
+
+	/* 当前路径含不可选项时，标题位置换成提示；warning-ink 在浅底上可读。 */
+	.vx-picker__title--invalid {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-picker__divider {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	/* 滚轮高度是五行，行高由指示器高度决定；两者都由令牌给定，改行高时一起改。 */
+	.vx-picker__wheel {
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-picker-wheel);
+	}
+
+	/* 每一行是一整条热区，文案居中排；高度和指示器一致，滚动时不会半行半行地停。 */
+	.vx-picker__option {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-picker-row);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+	}
+
+	/* 选中行回到正文色并加粗，一眼能看出停在哪一行；未选中是次要色。
+	   列宽固定，长地名在自己的列里单行省略，不挤压相邻列。min-width 让文字在窄列里能收缩。 */
+	.vx-picker__option-text {
+		flex-shrink: 1;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	/* 四列起再收一档，行政区全称在窄列里也不会被顶到一起。 */
+	.vx-picker__option-text--dense {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-picker__option-text--selected {
+		color: var(--vx-color-text);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	/* 不可选项留在列里，让业务看得出这一项存在；停上去时头部提示、确定置灰。 */
+	.vx-picker__option-text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 空树和滚轮等高，面板高度不跳；提示只占一行，太长在左右 24 内换行。 */
+	.vx-picker__empty {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-picker-wheel);
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+	}
+
+	.vx-picker__empty-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+
+	.vx-picker__action-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		white-space: nowrap;
+	}
+
+	/* 确定是这一层唯一的实心操作，文字取 pressed 档，浅底上对比度更稳。 */
+	.vx-picker__action-text--confirm {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-picker__action-text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* App 不挂这个 class，原生指示器自己有线。Web 和小程序默认没有线，靠这里补。 */
+	/* #ifndef APP */
+	.vx-picker__indicator {
+		box-sizing: border-box;
+		border-top-width: 1px;
+		border-top-style: solid;
+		border-top-color: var(--vx-color-border);
+		border-bottom-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-color-border);
+	}
+	/* #endif */
+
+	/* picker-view 的原生蒙层是写死的白色渐变，暗色主题下会在两端发白。
+	   这里把平台蒙层换成透明，靠选中行的字重和颜色分层。 */
+	.vx-picker__fade {
+		background-color: transparent;
+		background-image: none;
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   定位层的 touch-action 关掉浏览器默认手势，页面在面板打开期间不跟着滚；
+	   滚轮自己用 JS 接手势，不受影响。 */
+	/* #ifdef WEB */
+	.vx-picker {
+		touch-action: none;
+	}
+
+	.vx-picker__mask {
+		animation-name: vx-picker-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-picker__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-picker__action {
+		cursor: pointer;
+	}
+
+	.vx-picker__action--disabled {
+		cursor: default;
+	}
+
+	.vx-picker__sheet {
+		animation-name: vx-picker-up;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-picker-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-picker-up {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
+</style>

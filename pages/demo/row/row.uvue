@@ -1,0 +1,705 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-row · vx-col</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="rows" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">栅格布局</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">行管排列，列管占宽。24 份制，一份是行宽的 4.1667%；列间距一半铺在列两侧，行用等量负外边距抵掉外侧半格。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-row · vx-col</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">三个 span=8 正好占满一行；行本身不画底色和描边。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<vx-row :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">8 + 8 + 8 = 24。列宽向下取到 6 位小数，24 个 1 加起来不会超过 100%，最后一列不会被挤到下一行。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">列间距</text>
+							<text class="demo-section__desc">gutter 0 / 12 / 24。只改列的内边距，列宽不变。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<text class="demo-row-label">gutter=0</text>
+						<vx-row>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">gutter=12</text>
+						<vx-row :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">gutter=24</text>
+						<vx-row :gutter="24">
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">gutter 四舍五入取整，0 和负数不铺，超过 48 按 48；第一列和最后一列的内容仍贴住父级内边距。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">行间距</text>
+							<text class="demo-section__desc">gutter 12 配 lineGutter 12，换行后每一列的上方留一格。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<vx-row :gutter="12" :line-gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">1</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">2</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">3</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">5</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">6</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">行间距落在换行后每一列的上外边距，行抵掉第一行；多行网格要把它和 gutter 一起传。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">水平排列</text>
+							<text class="demo-section__desc">一行只占 8 列时，剩余的 16 列怎么分，由 justify 决定。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<text class="demo-row-label">justify="start" · 默认贴左</text>
+						<vx-row justify="start" :gutter="12">
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">justify="center"</text>
+						<vx-row justify="center" :gutter="12">
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">justify="end"</text>
+						<vx-row justify="end" :gutter="12">
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">justify="between"</text>
+						<vx-row justify="between" :gutter="12">
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">justify="around"</text>
+						<vx-row justify="around" :gutter="12">
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">justify="evenly"</text>
+						<vx-row justify="evenly" :gutter="12">
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+							<vx-col :span="4">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">4</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">列占满 24 份时看不出区别；between 首尾贴边，around 两侧各半格，evenly 连两侧也均分。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">垂直对齐</text>
+							<text class="demo-section__desc">同一行的列高不一致时，按 align 贴顶、居中、贴底或拉平。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<text class="demo-row-label">align="start"</text>
+						<vx-row align="start" :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">一行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--tall">
+									<text class="demo-row-box__text">两行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--taller">
+									<text class="demo-row-box__text">三行</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">align="center"</text>
+						<vx-row align="center" :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">一行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--tall">
+									<text class="demo-row-box__text">两行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--taller">
+									<text class="demo-row-box__text">三行</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">align="end"</text>
+						<vx-row align="end" :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">一行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--tall">
+									<text class="demo-row-box__text">两行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--taller">
+									<text class="demo-row-box__text">三行</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">align="stretch" · 默认，列等高</text>
+						<vx-row align="stretch" :gutter="12">
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--fill">
+									<text class="demo-row-box__text">一行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--tall demo-row-box--fill">
+									<text class="demo-row-box__text">两行</text>
+								</view>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--taller demo-row-box--fill">
+									<text class="demo-row-box__text">三行</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">默认 stretch 让同一行的列等高；列里的卡片要一起撑满还得自己写 flex: 1。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">换行</text>
+							<text class="demo-section__desc">五个 span=6 超过一行；默认换行，关掉后按比例压缩。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<text class="demo-row-label">wrap=true · 默认</text>
+						<vx-row :gutter="12" :line-gutter="12">
+							<vx-col :span="6">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box">
+									<text class="demo-row-box__text">6</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<view class="demo-row-stage demo-row-stage--next">
+						<text class="demo-row-label">wrap=false · 一行压缩</text>
+						<vx-row :wrap="false" :gutter="12">
+							<vx-col :span="6">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">6</text>
+								</view>
+							</vx-col>
+							<vx-col :span="6">
+								<view class="demo-row-box demo-row-box--soft">
+									<text class="demo-row-box__text demo-row-box__text--soft">6</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">关掉换行后，超出的列按比例压缩，不会掉到下一行；五个 6 变成各占 20%。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">嵌套</text>
+							<text class="demo-section__desc">16 + 8 两栏，左栏里再开一行。内层的 24 份按外层列宽算。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<vx-row :gutter="12">
+							<vx-col :span="16">
+								<vx-row :gutter="8">
+									<vx-col :span="12">
+										<view class="demo-row-box demo-row-box--soft">
+											<text class="demo-row-box__text demo-row-box__text--soft">12</text>
+										</view>
+									</vx-col>
+									<vx-col :span="12">
+										<view class="demo-row-box demo-row-box--soft">
+											<text class="demo-row-box__text demo-row-box__text--soft">12</text>
+										</view>
+									</vx-col>
+								</vx-row>
+							</vx-col>
+							<vx-col :span="8">
+								<view class="demo-row-box demo-row-box--fill">
+									<text class="demo-row-box__text">8</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">嵌套只建议一层；行不写宽度，靠 align-self: stretch 撑满纵向容器，放进横向 flex 容器时按内容宽度排。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">四张卡片：手机一列，平板两列，桌面三列和四列。</text>
+						</view>
+					</view>
+					<view class="demo-row-stage">
+						<vx-row :gutter="12" :line-gutter="12">
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-row-card">
+									<text class="demo-row-card__title">积分兑换</text>
+									<text class="demo-row-card__desc">1800 分抵 18 元</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-row-card">
+									<text class="demo-row-card__title">优惠券</text>
+									<text class="demo-row-card__desc">3 张本周到期</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-row-card">
+									<text class="demo-row-card__title">专属客服</text>
+									<text class="demo-row-card__desc">9:00–21:00 在线</text>
+								</view>
+							</vx-col>
+							<vx-col :span="24" :sm="12" :md="8" :lg="6">
+								<view class="demo-row-card">
+									<text class="demo-row-card__title">生日礼遇</text>
+									<text class="demo-row-card__desc">本月可领一份</text>
+								</view>
+							</vx-col>
+						</vx-row>
+					</view>
+					<text class="demo-hint">断点写在列上：span 管最窄的一档，sm / md / lg 分别从 576 / 768 / 992 往上覆盖。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 栅格演示：行管排列，列管宽度；每组的列数都写死在 span 上，一眼能对上。
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/grid/grid'
+	const nextPath: string = '/pages/demo/col/col'
+	const prevName = '宫格'
+	const nextName = '多端适配'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 栅格本身不画底色，演示用描边底板把每一组框出来。 */
+	.demo-row-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-row-stage--next {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-row-label {
+		margin-bottom: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 列不画外观，这块是列里最小的可视内容；圆角和底色都由它自己带。 */
+	.demo-row-box {
+		box-sizing: border-box;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		padding-top: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-row-box--soft {
+		border-color: var(--vx-color-primary-soft);
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.demo-row-box--tall {
+		padding-top: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+	}
+
+	.demo-row-box--taller {
+		padding-top: var(--vx-space-xl);
+		padding-bottom: var(--vx-space-xl);
+	}
+
+	/* 等高演示：列被拉平后，盒子跟着撑满整列。 */
+	.demo-row-box--fill {
+		flex: 1;
+	}
+
+	.demo-row-box__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-row-box__text--soft {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	/* 组合里的卡片：标题在上、说明在下，等高由列的 stretch 负责。 */
+	.demo-row-card {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-row-card__title {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-row-card__desc {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

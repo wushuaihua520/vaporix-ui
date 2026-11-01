@@ -1,0 +1,430 @@
+<template>
+	<view :class="rootClass" :style="rootStyle">
+		<view class="vx-textarea__body">
+			<view v-if="label.length > 0" :class="labelClass" :style="labelStyle">
+				<text v-if="required" :class="requiredClass">*</text>
+				<text :class="labelTextClass">{{ label }}</text>
+			</view>
+
+			<!-- 关掉原生默认内边距，间距只由外层 padding 决定。 -->
+			<textarea v-model="modelValue" :class="controlClass" :style="controlStyle"
+				:placeholder="placeholder" :placeholder-class="placeholderClass" :disabled="disabled"
+				:maxlength="maxlength" :auto-height="autoHeight" :focus="focus" :confirm-type="confirmType"
+				:cursor-spacing="cursorSpacing" :show-confirm-bar="showConfirmBar"
+				:adjust-position="adjustPosition" :hold-keyboard="holdKeyboard" :fixed="fixed"
+				:disable-default-padding="true" @input="onInput" @focus="onFocus"
+				@blur="onBlur" @confirm="onConfirm" @linechange="onLineChange"
+				@keyboardheightchange="onKeyboardHeightChange" />
+		</view>
+
+		<view v-if="counter || $slots['extra'] != null" class="vx-textarea__footer">
+			<view class="vx-textarea__extra">
+				<slot name="extra"></slot>
+			</view>
+			<text v-if="counter" :class="counterClass">{{ counterText }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxTextareaProps } from './props'
+
+	const props = withDefaults(defineProps<VxTextareaProps>(), {
+		size: 'md',
+		variant: 'outline',
+		shape: 'rounded',
+		placeholder: '',
+		disabled: false,
+		invalid: false,
+		maxlength: -1,
+		counter: false,
+		autoHeight: false,
+		height: '',
+		minHeight: '',
+		label: '',
+		labelWidth: '',
+		required: false,
+		borderColor: '',
+		focus: false,
+		confirmType: 'return',
+		cursorSpacing: 0,
+		showConfirmBar: true,
+		adjustPosition: true,
+		holdKeyboard: false,
+		fixed: false
+	})
+
+	const modelValue = defineModel({
+		type: String,
+		default: ''
+	})
+
+	const emit = defineEmits<{
+		input: [value: string]
+		focus: []
+		blur: []
+		confirm: [value: string]
+		linechange: [lineCount: number]
+		keyboardheightchange: [height: number]
+	}>()
+
+	const focused = ref(false)
+
+	// md 不加尺寸 class。state 为空不加状态 class。
+	const partClass = (base: string, size: string, state: string): string => {
+		let name = base
+		if (size !== 'md') name += ` ${base}--${size}`
+		if (state.length > 0) name += ` ${base}--${state}`
+		return name
+	}
+
+	const rootClass = computed((): string => {
+		let name = 'vx-textarea'
+		if (props.size !== 'md') name += ` vx-textarea--${props.size}`
+		if (props.variant === 'plain') name += ' vx-textarea--plain'
+		else if (props.variant === 'line') name += ' vx-textarea--line'
+		// line 只有下边框，圆角没有可作用的对象。
+		if (props.variant !== 'line' && props.shape === 'square') name += ' vx-textarea--square'
+
+		if (props.disabled) {
+			if (props.variant === 'line') name += ' vx-textarea--line-disabled'
+			else if (props.variant === 'plain') name += ' vx-textarea--plain-disabled'
+			else name += ' vx-textarea--disabled'
+		} else {
+			if (focused.value) name += ' vx-textarea--focused'
+			if (props.invalid) name += ' vx-textarea--invalid'
+		}
+		return name
+	})
+
+	// borderColor 只改默认态。focused / invalid / disabled 靠后面的 class 盖过内联描边。
+	const rootStyle = computed((): string => {
+		if (props.borderColor.length === 0) return ''
+		if (props.disabled || props.invalid || focused.value) return ''
+		return `border-color: ${props.borderColor};`
+	})
+
+	const controlClass = computed((): string => {
+		let name = 'vx-textarea__control'
+		if (props.size !== 'md') name += ` vx-textarea__control--${props.size}`
+		// 原生只保证忽略 style.height。class 上的 height 在 autoHeight 时不写，否则内容区被钉死。
+		if (!props.autoHeight && props.height.length === 0) {
+			if (props.size === 'md') name += ' vx-textarea__control--fixed'
+			else name += ` vx-textarea__control--fixed-${props.size}`
+		}
+		if (props.disabled) name += ' vx-textarea__control--disabled'
+		return name
+	})
+
+	const controlStyle = computed((): string => {
+		if (props.autoHeight) {
+			if (props.minHeight.length === 0) return ''
+			return `min-height: ${props.minHeight};`
+		}
+		let style = ''
+		if (props.height.length > 0) style += `height: ${props.height};`
+		if (props.minHeight.length > 0) style += `min-height: ${props.minHeight};`
+		// 自定义 height 时清掉默认 min-height，否则内容区不会变矮。
+		else if (props.height.length > 0) style += 'min-height: 0;'
+		return style
+	})
+
+	const labelClass = computed((): string => {
+		return partClass('vx-textarea__label', props.size, '')
+	})
+
+	const requiredClass = computed((): string => {
+		return partClass('vx-textarea__required', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const labelTextClass = computed((): string => {
+		return partClass('vx-textarea__label-text', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const labelStyle = computed((): string => {
+		if (props.labelWidth.length === 0) return ''
+		return `width: ${props.labelWidth};`
+	})
+
+	const placeholderClass = computed((): string => {
+		return partClass('vx-textarea__placeholder', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const counterText = computed((): string => {
+		const count = modelValue.value.length
+		if (props.maxlength > -1) return `${count}/${props.maxlength}`
+		return `${count}`
+	})
+
+	const counterClass = computed((): string => {
+		if (props.disabled) return 'vx-textarea__counter vx-textarea__counter--disabled'
+		if (props.maxlength > -1 && modelValue.value.length >= props.maxlength) {
+			return 'vx-textarea__counter vx-textarea__counter--full'
+		}
+		return 'vx-textarea__counter'
+	})
+
+	// detail 在原生端是权威值；没有 detail 时退回已经同步的模型值。
+	const onInput = (event: UniInputEvent) => {
+		emit('input', event.detail != null ? event.detail.value : modelValue.value)
+	}
+
+	const onFocus = () => {
+		focused.value = true
+		emit('focus')
+	}
+
+	const onBlur = () => {
+		focused.value = false
+		emit('blur')
+	}
+
+	const onConfirm = (event: UniInputConfirmEvent) => {
+		emit('confirm', event.detail != null ? event.detail.value : modelValue.value)
+	}
+
+	const onLineChange = (event: UniTextareaLineChangeEvent) => {
+		emit('linechange', event.detail != null ? event.detail.lineCount : 0)
+	}
+
+	const onKeyboardHeightChange = (event: UniInputKeyboardHeightChangeEvent) => {
+		emit('keyboardheightchange', event.detail != null ? event.detail.height : 0)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-textarea {
+		flex-direction: column;
+		box-sizing: border-box;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-textarea--lg {
+		padding-top: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+	}
+
+	.vx-textarea--sm {
+		padding-top: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+		padding-left: var(--vx-space-sm);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-textarea--plain {
+		background-color: transparent;
+		border-color: transparent;
+	}
+
+	.vx-textarea--line {
+		background-color: transparent;
+		border-top-width: 0;
+		border-left-width: 0;
+		border-right-width: 0;
+		border-radius: 0;
+	}
+
+	.vx-textarea--square {
+		border-radius: 0;
+	}
+
+	.vx-textarea--focused {
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-textarea--invalid {
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-textarea--disabled {
+		background-color: var(--vx-color-disabled-bg);
+		border-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-textarea--line-disabled {
+		background-color: transparent;
+		border-color: var(--vx-color-border);
+	}
+
+	.vx-textarea--plain-disabled {
+		background-color: transparent;
+		border-color: transparent;
+	}
+
+	/* 标题跟第一行对齐，多行时不垂直居中。 */
+	.vx-textarea__body {
+		flex-direction: row;
+		align-items: flex-start;
+		width: 100%;
+	}
+
+	.vx-textarea__label {
+		flex-direction: row;
+		flex-shrink: 0;
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-textarea__label--lg {
+		margin-right: var(--vx-space-lg);
+	}
+
+	.vx-textarea__label--sm {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-textarea__required,
+	.vx-textarea__label-text,
+	.vx-textarea__control {
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-textarea__required--lg,
+	.vx-textarea__label-text--lg,
+	.vx-textarea__control--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-textarea__required--sm,
+	.vx-textarea__label-text--sm,
+	.vx-textarea__control--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-textarea__required {
+		margin-right: var(--vx-space-xs);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-danger);
+	}
+
+	.vx-textarea__label-text,
+	.vx-textarea__control {
+		color: var(--vx-color-text);
+	}
+
+	/* 标题比内容重一档，多行输入里也保持层级。 */
+	.vx-textarea__label-text {
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-textarea__required--disabled,
+	.vx-textarea__label-text--disabled,
+	.vx-textarea__control--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-textarea__control {
+		flex: 1;
+		align-self: stretch;
+		/* Android 原生 textarea 默认宽 300px，写 0 后由 flex 撑满。 */
+		width: 0;
+		min-width: 0;
+		min-height: var(--vx-height-textarea-md);
+		padding-top: 0;
+		padding-right: 0;
+		padding-bottom: 0;
+		padding-left: 0;
+		border-width: 0;
+		background-color: transparent;
+	}
+
+	.vx-textarea__control--lg {
+		min-height: var(--vx-height-textarea-lg);
+	}
+
+	.vx-textarea__control--sm {
+		min-height: var(--vx-height-textarea-sm);
+	}
+
+	.vx-textarea__control--fixed {
+		height: var(--vx-height-textarea-md);
+	}
+
+	.vx-textarea__control--fixed-lg {
+		height: var(--vx-height-textarea-lg);
+	}
+
+	.vx-textarea__control--fixed-sm {
+		height: var(--vx-height-textarea-sm);
+	}
+
+	.vx-textarea__placeholder {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-control-md);
+	}
+
+	.vx-textarea__placeholder--lg {
+		font-size: var(--vx-font-control-lg);
+	}
+
+	.vx-textarea__placeholder--sm {
+		font-size: var(--vx-font-control-sm);
+	}
+
+	.vx-textarea__placeholder--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-textarea__footer {
+		flex-direction: row;
+		align-items: center;
+		margin-top: var(--vx-space-sm);
+	}
+
+	.vx-textarea__extra {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+		overflow: hidden;
+	}
+
+	.vx-textarea__counter {
+		flex-shrink: 0;
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.vx-textarea__counter--full {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-textarea__counter--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* Web 原生 textarea 会带浏览器字体、焦点框和拖拽手柄 */
+	/* #ifdef WEB */
+	.vx-textarea {
+		cursor: text;
+	}
+
+	.vx-textarea--disabled,
+	.vx-textarea--line-disabled,
+	.vx-textarea--plain-disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-textarea__control {
+		font-family: inherit;
+		outline: none;
+		resize: none;
+	}
+	/* #endif */
+</style>

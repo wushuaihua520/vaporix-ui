@@ -1,0 +1,366 @@
+<template>
+	<!-- 标题栏只提供标题、说明、竖线、分割线和右侧位置；内容和间距由业务组合。 -->
+	<!-- 可点时点击停在标题栏上；静态标题栏不拦点击，交给外层卡片或列表行。 -->
+	<view
+		v-if="title.length > 0 || description.length > 0 || $slots['default'] != null || $slots['prefix'] != null || $slots['extra'] != null || $slots['suffix'] != null"
+		:class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click="onClick($event)">
+		<view class="vx-section__head">
+			<!-- 竖线跟着标题首行居中；标题换行时不跟着拉长。 -->
+			<view v-if="marker" :class="markerClass" :style="markerStyle"></view>
+
+			<!-- prefix 放图标、编号或品牌标记；颜色和尺寸自己带。 -->
+			<view v-if="$slots['prefix'] != null" :class="prefixClass">
+				<slot name="prefix"></slot>
+			</view>
+
+			<view
+				v-if="title.length > 0 || description.length > 0 || $slots['default'] != null || $slots['suffix'] != null"
+				class="vx-section__heading">
+				<view v-if="$slots['default'] != null" class="vx-section__title-slot">
+					<slot></slot>
+				</view>
+				<text v-else-if="title.length > 0" :class="titleClass" :style="titleStyle">{{ title }}</text>
+
+				<!-- suffix 替换 description；说明区可以放标签、时间或自定义富文本。 -->
+				<view v-if="$slots['suffix'] != null" :class="suffixClass">
+					<slot name="suffix"></slot>
+				</view>
+				<text v-else-if="description.length > 0" :class="descriptionClass"
+					:style="descriptionStyle">{{ description }}</text>
+			</view>
+
+			<!-- extra 是独立目标：点击在这里停下，按下也不传到标题栏。 -->
+			<view v-if="$slots['extra'] != null" :class="extraClass" :hover-stop-propagation="true" @click.stop>
+				<slot name="extra"></slot>
+			</view>
+		</view>
+
+		<view v-if="divider" :class="dividerClass" :style="dividerStyle"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxSectionProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxSectionProps>(), {
+		title: '',
+		description: '',
+		size: 'md',
+		variant: 'plain',
+		marker: false,
+		divider: false,
+		clickable: false,
+		titleColor: '',
+		descriptionColor: '',
+		markerColor: '',
+		dividerColor: ''
+	})
+
+	const emit = defineEmits<{
+		click: []
+	}>()
+
+	const slots = useSlots()
+
+	// md 是基础样式，不挂没有规则的修饰 class。
+	const sizedClass = (base: string, size: string): string => {
+		if (size === 'md') return base
+		return `${base} ${base}--${size}`
+	}
+
+	// class 顺序：基础 → 外观 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-section'
+		if (props.variant === 'soft') {
+			name += ' vx-section--soft'
+			if (props.size !== 'md') name += ` vx-section--soft-${props.size}`
+		}
+		if (props.clickable) name += ' vx-section--clickable'
+		return name
+	})
+
+	const markerClass = computed((): string => {
+		return sizedClass('vx-section__marker', props.size)
+	})
+
+	const prefixClass = computed((): string => {
+		return sizedClass('vx-section__prefix', props.size)
+	})
+
+	const extraClass = computed((): string => {
+		return sizedClass('vx-section__extra', props.size)
+	})
+
+	const titleClass = computed((): string => {
+		return sizedClass('vx-section__title', props.size)
+	})
+
+	// 默认插槽替换标题，也算上面有一行。只看 title 会把自定义标题下面的说明顶没间距。
+	const hasTitle = computed((): boolean => {
+		return props.title.length > 0 || slots['default'] != null
+	})
+
+	// 说明 md 和 sm 同档；只有 lg 跟到 15 / 22。soft 浅底上换用专用的说明色，保住 4.5:1。
+	const descriptionClass = computed((): string => {
+		let name = 'vx-section__desc'
+		if (props.size === 'lg') name += ' vx-section__desc--lg'
+		if (props.variant === 'soft') name += ' vx-section__desc--soft'
+		if (hasTitle.value) name += ' vx-section__desc--offset'
+		return name
+	})
+
+	const suffixClass = computed((): string => {
+		if (!hasTitle.value) return 'vx-section__suffix'
+		return 'vx-section__suffix vx-section__suffix--offset'
+	})
+
+	const dividerClass = computed((): string => {
+		if (props.size === 'lg') return 'vx-section__divider vx-section__divider--lg'
+		return 'vx-section__divider'
+	})
+
+	const titleStyle = computed((): string => {
+		if (props.titleColor.length === 0) return ''
+		return `color: ${props.titleColor};`
+	})
+
+	const descriptionStyle = computed((): string => {
+		if (props.descriptionColor.length === 0) return ''
+		return `color: ${props.descriptionColor};`
+	})
+
+	const markerStyle = computed((): string => {
+		if (props.markerColor.length === 0) return ''
+		return `background-color: ${props.markerColor};`
+	})
+
+	const dividerStyle = computed((): string => {
+		if (props.dividerColor.length === 0) return ''
+		return `background-color: ${props.dividerColor};`
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		return props.clickable ? 'vx-section--pressed' : 'none'
+	})
+
+	// 静态不 stop，点击继续冒泡。不另铺绝对层，否则 extra 在 App 上会被盖住。
+	const onClick = (event: UniEvent) => {
+		if (!props.clickable) return
+		event.stopPropagation()
+		emit('click')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 标题栏不铺底、不描边，只留标题和说明；上下各留 4，点击时不贴住邻居。
+	   soft 外观在下面补浅底、圆角和左右内边距。 */
+	.vx-section {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding-top: var(--vx-space-xs);
+		padding-bottom: var(--vx-space-xs);
+	}
+
+	.vx-section--soft {
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-lg);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-section--soft-sm {
+		padding-top: var(--vx-space-sm);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-sm);
+		padding-left: var(--vx-space-md);
+	}
+
+	.vx-section--soft-lg {
+		padding-top: var(--vx-space-lg);
+		padding-right: var(--vx-space-xl);
+		padding-bottom: var(--vx-space-lg);
+		padding-left: var(--vx-space-xl);
+	}
+
+	/* 整条按下只变淡，不给标题栏铺一层状态底色。 */
+	.vx-section--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 可点标题栏补到 44 高，单行标题也有完整的触屏热区。 */
+	.vx-section--clickable {
+		justify-content: center;
+		min-height: 44px;
+	}
+
+	/* 标题、竖线、前缀和右侧操作排一行；标题和说明在中间成列。 */
+	.vx-section__head {
+		flex-direction: row;
+		align-items: flex-start;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 竖线宽固定，高跟档位。三档都是 (行高 - 竖线高) / 2 = 4，共用 space-xs，不按尺寸再写一份。 */
+	.vx-section__marker {
+		flex-shrink: 0;
+		width: var(--vx-section-marker-width);
+		height: var(--vx-section-marker-md);
+		margin-top: var(--vx-space-xs);
+		margin-right: var(--vx-space-sm);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-section__marker--sm {
+		height: var(--vx-section-marker-sm);
+	}
+
+	.vx-section__marker--lg {
+		height: var(--vx-section-marker-lg);
+	}
+
+	/* prefix 和 extra 用标题行高托底，小图标和短链接才和标题首行居中对齐。 */
+	.vx-section__prefix {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		min-height: var(--vx-section-line-md);
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-section__prefix--sm {
+		min-height: var(--vx-section-line-sm);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-section__prefix--lg {
+		min-height: var(--vx-section-line-lg);
+		margin-right: var(--vx-space-lg);
+	}
+
+	/* 中间列吃掉剩余宽度。最小宽度压成 0，长标题和说明才能换行，右侧操作保持自身宽度。
+	   Web 默认 overflow 是 visible，长词裁在标题区里，不盖住右侧。 */
+	.vx-section__heading {
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* 默认插槽替换 title；内容自己带字号和颜色，这里只保证占满标题列。 */
+	.vx-section__title-slot {
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-section__title,
+	.vx-section__desc {
+		flex-shrink: 0;
+		min-width: 0;
+		width: 100%;
+		white-space: normal;
+	}
+
+	.vx-section__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-section-font-md);
+		line-height: var(--vx-section-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-section__title--sm {
+		font-size: var(--vx-section-font-sm);
+		line-height: var(--vx-section-line-sm);
+	}
+
+	.vx-section__title--lg {
+		font-size: var(--vx-section-font-lg);
+		line-height: var(--vx-section-line-lg);
+	}
+
+	/* 说明是辅助信息。sm / md 同档，lg 跟到 15 / 22；和标题留 4，只有说明时不加。 */
+	.vx-section__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-section__desc--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	/* default-soft 上的次要灰不到 4.5:1；soft 说明改用正文色，暗色主题仍用次要灰。 */
+	.vx-section__desc--soft {
+		color: var(--vx-section-soft-desc);
+	}
+
+	.vx-section__desc--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	/* suffix 替换说明；上面有标题时才留 4，标签、时间由插槽自己排。 */
+	.vx-section__suffix {
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.vx-section__suffix--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-section__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: flex-end;
+		min-height: var(--vx-section-line-md);
+		margin-left: var(--vx-space-md);
+	}
+
+	.vx-section__extra--sm {
+		min-height: var(--vx-section-line-sm);
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-section__extra--lg {
+		min-height: var(--vx-section-line-lg);
+		margin-left: var(--vx-space-lg);
+	}
+
+	/* 分割线画在内容下方，和描边同色；它不占标题行，也不压底部留白。 */
+	.vx-section__divider {
+		height: var(--vx-border-width);
+		margin-top: var(--vx-space-sm);
+		background-color: var(--vx-color-border);
+	}
+
+	.vx-section__divider--lg {
+		margin-top: var(--vx-space-md);
+	}
+
+	/* 可点标题栏是触屏入口，Web 上给指针；键盘入口由外层按钮或链接承载。 */
+	/* #ifdef WEB */
+	.vx-section--clickable {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

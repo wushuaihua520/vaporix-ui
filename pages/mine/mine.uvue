@@ -1,0 +1,433 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" :scroll-into-view="demoAnchor"
+			scroll-with-animation>
+			<view id="demo-top" class="demo-shell">
+				<view class="demo-hero demo-mine">
+					<view class="demo-home__head">
+						<view class="demo-brand">
+							<view class="demo-brand__mark">
+								<text class="demo-brand__mark-text">VX</text>
+							</view>
+							<view class="demo-brand__copy">
+								<text class="demo-brand__name">元汽UI</text>
+								<text class="demo-brand__meta">VAPORIX UI</text>
+							</view>
+						</view>
+						<vx-tag type="success" variant="soft" size="sm" text="MIT" />
+					</view>
+
+					<text class="demo-hero__eyebrow demo-mine__eyebrow">ABOUT · SETTINGS</text>
+					<view class="demo-hero__title-wrap">
+						<text class="demo-hero__title">我的</text>
+						<text class="demo-hero__title demo-hero__title--accent">外观与版本</text>
+					</view>
+					<text class="demo-hero__lead">主题记在本地缓存里；原生导航栏和 tabBar 会跟着一起换，组件令牌不读系统深色模式。</text>
+
+					<view class="demo-hero__stats">
+						<view class="demo-stat demo-stat--first">
+							<text class="demo-stat__value">{{ componentCount }}</text>
+							<text class="demo-stat__label">组件</text>
+						</view>
+						<view class="demo-stat">
+							<text class="demo-stat__value">{{ iconCount }}</text>
+							<text class="demo-stat__label">图标</text>
+						</view>
+						<view class="demo-stat">
+							<text class="demo-stat__value">2</text>
+							<text class="demo-stat__label">主题</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">外观</text>
+							<text class="demo-section__desc">亮色与暗色替换同名令牌，字号、间距和圆角不变。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<!-- 两张色卡要同时看到亮色和暗色，主题 class 挂在色卡上。 -->
+						<view class="demo-theme-picker">
+							<view class="demo-theme-picker__item" @click="selectTheme(false)">
+								<view class="demo-theme-preview vx-theme-light">
+									<view class="demo-theme-preview__head">
+										<view class="demo-theme-preview__dot"></view>
+										<view class="demo-theme-preview__bar"></view>
+									</view>
+									<view class="demo-theme-preview__card">
+										<text class="demo-theme-preview__aa">Aa</text>
+										<view class="demo-theme-preview__line"></view>
+										<view class="demo-theme-preview__line demo-theme-preview__line--short"></view>
+									</view>
+									<view class="demo-theme-preview__button"></view>
+								</view>
+								<view class="demo-theme-picker__foot">
+									<text class="demo-theme-picker__name">亮色</text>
+									<view :class="radioClass(!isDark)">
+										<view v-if="!isDark" class="demo-theme-picker__radio-dot"></view>
+									</view>
+								</view>
+							</view>
+
+							<view class="demo-theme-picker__item demo-theme-picker__item--last" @click="selectTheme(true)">
+								<view class="demo-theme-preview vx-theme-dark">
+									<view class="demo-theme-preview__head">
+										<view class="demo-theme-preview__dot"></view>
+										<view class="demo-theme-preview__bar"></view>
+									</view>
+									<view class="demo-theme-preview__card">
+										<text class="demo-theme-preview__aa">Aa</text>
+										<view class="demo-theme-preview__line"></view>
+										<view class="demo-theme-preview__line demo-theme-preview__line--short"></view>
+									</view>
+									<view class="demo-theme-preview__button"></view>
+								</view>
+								<view class="demo-theme-picker__foot">
+									<text class="demo-theme-picker__name">暗色</text>
+									<view :class="radioClass(isDark)">
+										<view v-if="isDark" class="demo-theme-picker__radio-dot"></view>
+									</view>
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">切主题会同时刷新原生导航栏、窗口底色和底部 tabBar；重新打开应用仍然保持上次的选择。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">快捷入口</text>
+							<text class="demo-section__desc">两个 tab 之间直接跳，不用回退。</text>
+						</view>
+					</view>
+					<vx-list-view title="演示">
+						<vx-list-cell title="组件目录" :value="pageCountText" arrow @click="goComponents">
+							<template #prefix>
+								<vx-icon name="grid-2x2" size="lg" type="primary" />
+							</template>
+						</vx-list-cell>
+						<vx-list-cell title="接口实验室" :value="moduleCountText" arrow :divider="false" @click="goApi">
+							<template #prefix>
+								<vx-icon name="file-text" size="lg" type="primary" />
+							</template>
+						</vx-list-cell>
+					</vx-list-view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">文档</text>
+							<text class="demo-section__desc">设计规范与组件 API 随仓库分发，点一下复制路径。</text>
+						</view>
+					</view>
+					<vx-list-view title="本地文件">
+						<vx-list-cell title="设计规范" value="复制路径" arrow @click="copyPath('DESIGN.md')">
+							<template #prefix>
+								<vx-icon name="bookmark" size="lg" color="var(--vx-color-text-secondary)" />
+							</template>
+						</vx-list-cell>
+						<vx-list-cell title="组件 API" value="复制路径" arrow
+							@click="copyPath('uni_modules/vaporix-ui/readme.md')">
+							<template #prefix>
+								<vx-icon name="files" size="lg" color="var(--vx-color-text-secondary)" />
+							</template>
+						</vx-list-cell>
+						<vx-list-cell title="图标许可" value="复制路径" arrow :divider="false"
+							@click="copyPath('uni_modules/vaporix-ui/libs/icons/LICENSE')">
+							<template #prefix>
+								<vx-icon name="shield" size="lg" color="var(--vx-color-text-secondary)" />
+							</template>
+						</vx-list-cell>
+					</vx-list-view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">版本</text>
+							<text class="demo-section__desc">基础组件 MIT，图标来自 Phosphor 2.1.2。</text>
+						</view>
+					</view>
+					<vx-list-view title="元汽UI" variant="plain">
+						<vx-list-cell title="版本" value="0.58.0" :clickable="false" />
+						<vx-list-cell title="组件" :value="componentCountText" :clickable="false" />
+						<vx-list-cell title="图标" value="core 112 + extend 1000" :clickable="false" />
+						<vx-list-cell title="主题" value="亮色 · 暗色" :clickable="false" />
+						<vx-list-cell title="平台" value="Android · iOS · HarmonyOS · Web · 小程序" :clickable="false" />
+						<vx-list-cell title="协议" value="MIT" :clickable="false" :divider="false" />
+					</vx-list-view>
+					<view class="demo-mine__actions">
+						<view class="demo-mine__action">
+							<vx-button block type="default" text="关于元汽UI" @click="showAbout" />
+						</view>
+						<view class="demo-mine__action demo-mine__action--last">
+							<vx-button block type="primary" variant="soft" text="恢复默认外观" @click="resetTheme" />
+						</view>
+					</view>
+				</view>
+
+				<vx-footer :links="footerLinks" copyright="© 2026 Vaporix UI · MIT License."
+					@click="onFooterLink" />
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { DEMO_API_MODULES } from '@/pages/api/shared/modules'
+	import { DEMO_COMPONENT_COUNT, DEMO_ICON_COUNT, DEMO_PAGE_COUNT } from '@/pages/demo/shared/catalog'
+	import { demoIsDark, setDemoTabTheme, syncDemoTabTheme } from '@/pages/demo/shared/theme'
+
+	type DemoFooterLink = {
+		text: string
+		value: string
+	}
+
+	const isDark = demoIsDark
+	const demoAnchor = ref('')
+	const componentCount = DEMO_COMPONENT_COUNT
+	const iconCount = DEMO_ICON_COUNT
+	const pageCountText = DEMO_PAGE_COUNT + ' 个演示页'
+	const moduleCountText = DEMO_API_MODULES.length + ' 个模块'
+	const componentCountText = DEMO_COMPONENT_COUNT + ' 个'
+
+	const footerLinks: DemoFooterLink[] = [
+		{ text: '组件目录', value: 'components' },
+		{ text: '接口实验室', value: 'api' },
+		{ text: '回到顶部', value: 'top' }
+	]
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const radioClass = (selected: boolean): string => {
+		if (selected) return 'demo-theme-picker__radio demo-theme-picker__radio--active'
+		return 'demo-theme-picker__radio'
+	}
+
+	const selectTheme = (dark: boolean) => {
+		setDemoTabTheme(dark)
+	}
+
+	const resetTheme = () => {
+		setDemoTabTheme(false)
+		uni.showToast({ title: '已恢复亮色外观', icon: 'none' })
+	}
+
+	const goComponents = () => {
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goApi = () => {
+		uni.switchTab({ url: '/pages/api/api' })
+	}
+
+	const copyPath = (path: string) => {
+		uni.setClipboardData({
+			data: path,
+			success: () => {
+				uni.showToast({ title: '路径已复制', icon: 'none' })
+			}
+		})
+	}
+
+	const showAbout = () => {
+		uni.showModal({
+			title: '关于元汽UI',
+			content: 'uni-app x 蒸汽模式原生渲染组件库，基础组件使用 MIT。图标来自 Phosphor 2.1.2，core 112 默认加载，extend 1000 按需引入。',
+			showCancel: false,
+			confirmText: '知道了'
+		})
+	}
+
+	const scrollToTop = () => {
+		demoAnchor.value = ''
+		nextTick(() => {
+			demoAnchor.value = 'demo-top'
+		})
+	}
+
+	const onFooterLink = (link: DemoFooterLink) => {
+		if (link.value === 'components') {
+			goComponents()
+			return
+		}
+		if (link.value === 'api') {
+			goApi()
+			return
+		}
+		if (link.value === 'top') {
+			scrollToTop()
+			return
+		}
+	}
+
+	onShow(() => {
+		syncDemoTabTheme()
+	})
+</script>
+
+<style>
+	.demo-mine__eyebrow {
+		margin-top: var(--vx-space-xl);
+	}
+
+	.demo-theme-picker {
+		flex-direction: row;
+	}
+
+	.demo-theme-picker__item {
+		flex: 1;
+		box-sizing: border-box;
+		padding: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-theme-picker__item--last {
+		margin-right: 0;
+	}
+
+	.demo-theme-preview {
+		box-sizing: border-box;
+		height: 108px;
+		padding: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-theme-preview__head {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.demo-theme-preview__dot {
+		width: 10px;
+		height: 10px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-primary);
+		margin-right: var(--vx-space-xs);
+	}
+
+	.demo-theme-preview__bar {
+		flex: 1;
+		height: 6px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-divider);
+	}
+
+	.demo-theme-preview__card {
+		padding: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-theme-preview__aa {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-theme-preview__line {
+		height: 5px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-divider);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-theme-preview__line--short {
+		width: 60%;
+		margin-bottom: 0;
+	}
+
+	.demo-theme-preview__button {
+		width: 54px;
+		height: 18px;
+		margin-top: var(--vx-space-sm);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-primary);
+	}
+
+	.demo-theme-picker__foot {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: var(--vx-space-sm);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+	}
+
+	.demo-theme-picker__name {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.demo-theme-picker__radio {
+		width: 18px;
+		height: 18px;
+		align-items: center;
+		justify-content: center;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-theme-picker__radio--active {
+		border-color: var(--vx-color-primary);
+	}
+
+	.demo-theme-picker__radio-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-primary);
+	}
+
+	.demo-mine__actions {
+		flex-direction: row;
+		margin-top: var(--vx-space-lg);
+	}
+
+	.demo-mine__action {
+		flex: 1;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.demo-mine__action--last {
+		margin-right: 0;
+	}
+</style>

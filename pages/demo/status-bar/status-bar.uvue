@@ -1,0 +1,504 @@
+<template>
+	<view :class="pageClass">
+		<!-- 固定在页面顶部时挂在根节点，和滚动容器平级；默认收起，点下面的按钮再打开。 -->
+		<vx-status-bar v-if="fixedOn" fixed :height="44" bg-color="var(--vx-color-primary-soft)" />
+
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-status-bar</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="app-window" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">状态栏</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">只为系统状态栏留高和铺底色，时间、信号和电池仍由平台绘制。默认取安全区变量，Web 上高度是 0，示例都用 height 画出来。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-status-bar</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">一条只负责留高和底色的带子，默认 surface 底色。</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage">
+						<vx-status-bar :height="44" @ready="onReady" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">状态栏下面是页面内容。实际高度：{{ readyHeight }}px。</text>
+						</view>
+					</view>
+					<text class="demo-hint">默认高度取 --uni-safe-area-inset-top：App 是状态栏加刘海，Web 是 0。ready 回传实测高度，页面自己补间距时用它。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">高度</text>
+							<text class="demo-section__desc">height 是整条高度，不和系统高度相加；超过 200 按 200。</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage">
+						<text class="demo-sb-label">height=24</text>
+						<vx-status-bar :height="24" bg-color="var(--vx-color-border)" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">24px</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage demo-sb-stage--next">
+						<text class="demo-sb-label">height=44</text>
+						<vx-status-bar :height="44" bg-color="var(--vx-color-border)" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">44px</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage demo-sb-stage--next">
+						<text class="demo-sb-label">height=64</text>
+						<vx-status-bar :height="64" bg-color="var(--vx-color-border)" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">64px</text>
+						</view>
+					</view>
+					<text class="demo-hint">0 表示跟随系统；正数按像素排，不跟系统高度相加。需要头图压到屏幕顶时用 transparent，而不是把高度写成 0。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">底色</text>
+							<text class="demo-section__desc">bgColor 收字面值、渐变和主题令牌；不传就用 surface。</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage">
+						<text class="demo-sb-label">默认 surface</text>
+						<vx-status-bar :height="40" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">不传 bgColor</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage demo-sb-stage--next">
+						<text class="demo-sb-label">令牌 primary</text>
+						<vx-status-bar :height="40" bg-color="var(--vx-color-primary)" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">var(--vx-color-primary)</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage demo-sb-stage--next">
+						<text class="demo-sb-label">令牌 primary-soft</text>
+						<vx-status-bar :height="40" bg-color="var(--vx-color-primary-soft)" />
+						<view class="demo-sb-body">
+							<text class="demo-sb-body__text">var(--vx-color-primary-soft)</text>
+						</view>
+					</view>
+					<text class="demo-hint">组件不画分割线和阴影，也不做明暗推导；系统前景色在 pages.json 或系统配置里定，浅底配深字由业务保证。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">沉浸式</text>
+							<text class="demo-section__desc">transparent 只去掉底色，高度照旧，头图能一直铺到屏幕顶。</text>
+						</view>
+					</view>
+					<view class="demo-sb-hero">
+						<vx-status-bar transparent :height="56" />
+						<view class="demo-sb-hero__copy">
+							<text class="demo-sb-hero__eyebrow">VAPORIX TEA</text>
+							<text class="demo-sb-hero__title">山谷里的清晨</text>
+							<text class="demo-sb-hero__lead">明前采摘，冷链直发。</text>
+						</view>
+					</view>
+					<text class="demo-hint">transparent 打开时 fade 和 maxOpacity 都不生效；固定场景再配合 placeholder=false，让条压在头图上。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">滚动渐显</text>
+							<text class="demo-section__desc">fade 按 scrollTop / (条宽 × scrollRatio) 算透明度，跟手不加过渡。</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage">
+						<vx-status-bar fade :height="44" :scroll-top="fadeTop" bg-color="var(--vx-color-primary)" />
+						<scroll-view class="demo-sb-scroller" direction="vertical" @scroll="onFadeScroll">
+							<view v-for="line in fadeLines" :key="line" class="demo-sb-line">
+								<text class="demo-sb-line__text">第 {{ line }} 行 · 往上滚动看上面那条变实</text>
+							</view>
+						</scroll-view>
+					</view>
+					<text class="demo-hint">背景单独一层，插槽内容不跟着淡；scrollTop 直接绑 scroll-view 的 @scroll 里的 detail.scrollTop。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">插槽</text>
+							<text class="demo-section__desc">插槽左右各留 16，横屏再让开安全区；align 决定水平对齐。</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage">
+						<text class="demo-sb-label">align="start"</text>
+						<vx-status-bar :height="40" bg-color="var(--vx-color-primary-soft)" align="start">
+							<text class="demo-sb-slot__text">订单详情</text>
+						</vx-status-bar>
+					</view>
+					<view class="demo-sb-stage demo-sb-stage--next">
+						<text class="demo-sb-label">align="center" · 默认</text>
+						<vx-status-bar :height="40" bg-color="var(--vx-color-primary-soft)">
+							<text class="demo-sb-slot__text">订单详情</text>
+						</vx-status-bar>
+					</view>
+					<view class="demo-sb-stage demo-sb-stage--next">
+						<text class="demo-sb-label">align="end"</text>
+						<vx-status-bar :height="40" bg-color="var(--vx-color-primary-soft)" align="end">
+							<text class="demo-sb-slot__text">订单详情</text>
+						</vx-status-bar>
+					</view>
+					<text class="demo-hint">App 上插槽会被系统状态栏盖住，只适合 Web 和隐藏系统状态栏的页面；主操作和信息不要放在这里。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">固定与占位</text>
+							<text class="demo-section__desc">fixed 挂在页面根节点，默认在文档流补同高；关掉占位就让条压在内容上。</text>
+						</view>
+					</view>
+					<view class="demo-sb-stage">
+						<view class="demo-sb-actions">
+							<vx-button size="sm" :type="fixedOn ? 'primary' : 'default'"
+								:text="fixedOn ? '收起固定状态栏' : '在页面顶部固定一条'" @click="toggleFixed" />
+						</view>
+						<text class="demo-sb-note">{{ fixedNote }}</text>
+					</view>
+					<text class="demo-hint">打开后看页面最上方：条固定在那里，内容整体下移一格。这就是 placeholder 的作用；头图场景传 :placeholder="false"。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">头图起手，状态栏透明留高，正文卡片压在下沿。</text>
+						</view>
+					</view>
+					<view class="demo-sb-scene">
+						<view class="demo-sb-scene__hero">
+							<vx-status-bar transparent :height="48" />
+							<text class="demo-sb-scene__title">明前龙井</text>
+							<text class="demo-sb-scene__sub">限量 200 罐</text>
+						</view>
+						<view class="demo-sb-scene__body">
+							<text class="demo-sb-scene__body-title">海拔 800 米的头采</text>
+							<text class="demo-sb-scene__body-text">状态栏只留高，底色交给头图；正文卡片沿用同一套圆角和描边。</text>
+						</view>
+					</view>
+					<text class="demo-hint">同一屏只放一只状态栏：有 vx-navigation-bar 的页面用它的 status-bar，不要再叠一只。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { VxStatusBarInfo } from '@/uni_modules/vaporix-ui/components/vx-status-bar/props'
+
+	// 状态栏演示：Web 上系统高度是 0，所有示例都用 height 画出来；固定那条挂在页面根节点。
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const readyHeight = ref(0)
+	const fadeTop = ref(0)
+	const fixedOn = ref(false)
+
+	// 渐显演示的滚动内容，行数写死在数组里，key 用行号。
+	const fadeLines: number[] = [1, 2, 3, 4, 5, 6, 7, 8]
+
+	const fixedNote = computed((): string => {
+		return fixedOn.value ? '已固定：内容自动让出一格高度。' : '未固定：状态栏不占位。'
+	})
+
+	const onReady = (info: VxStatusBarInfo) => {
+		readyHeight.value = info.height
+	}
+
+	const onFadeScroll = (event: UniScrollEvent) => {
+		fadeTop.value = event.detail.scrollTop
+	}
+
+	const toggleFixed = () => {
+		fixedOn.value = !fixedOn.value
+	}
+
+	const prevPath: string = '/pages/demo/navigation-bar/navigation-bar'
+	const nextPath: string = '/pages/demo/tabbar/tabbar'
+	const prevName = '导航栏'
+	const nextName = '标签栏'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 状态栏在 Web 上高度是 0，演示用描边底板把条和内容分开看。 */
+	.demo-sb-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-sb-stage--next {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-sb-label {
+		margin-bottom: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-sb-body {
+		padding-top: var(--vx-space-sm);
+	}
+
+	.demo-sb-body__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-sb-slot__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-primary-pressed);
+	}
+
+	/* 头图：状态栏透明留高，底色由这块渐变和色块负责。 */
+	.demo-sb-hero {
+		box-sizing: border-box;
+		width: 100%;
+		padding-bottom: var(--vx-space-xl);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.demo-sb-hero__copy {
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+	}
+
+	.demo-sb-hero__eyebrow {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		letter-spacing: 1px;
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.demo-sb-hero__title {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-xl);
+		line-height: var(--vx-line-xl);
+		font-weight: var(--vx-weight-bold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-sb-hero__lead {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 渐显演示：条在滚动区上方，滚动只改它的背景透明度。 */
+	.demo-sb-scroller {
+		height: 168px;
+	}
+
+	.demo-sb-line {
+		padding-top: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+		border-bottom-width: var(--vx-border-width);
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-color-divider);
+	}
+
+	.demo-sb-line__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-sb-actions {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.demo-sb-note {
+		margin-top: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 组合：头图和正文卡片压在一起，状态栏只留高。 */
+	.demo-sb-scene {
+		box-sizing: border-box;
+		width: 100%;
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-sb-scene__hero {
+		padding-bottom: var(--vx-space-lg);
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.demo-sb-scene__title {
+		padding-right: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+		font-size: var(--vx-font-xl);
+		line-height: var(--vx-line-xl);
+		font-weight: var(--vx-weight-bold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-sb-scene__sub {
+		padding-right: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-sb-scene__body {
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+	}
+
+	.demo-sb-scene__body-title {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-sb-scene__body-text {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

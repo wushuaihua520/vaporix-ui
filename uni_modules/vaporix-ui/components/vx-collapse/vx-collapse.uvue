@@ -1,0 +1,162 @@
+<template>
+	<!-- 容器只管展开名单、手风琴和分组外观；标题、箭头和内容由 vx-collapse-item 提供。 -->
+	<!-- 没有默认插槽时不渲染，避免只剩一圈空描边。 -->
+	<view v-if="$slots['default'] != null" :class="rootClass">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxCollapseProps } from './props'
+	import { VX_COLLAPSE_CONTEXT, VxCollapseContext } from './context'
+	import { VxSize } from '../../libs/types/common'
+
+	const props = withDefaults(defineProps<VxCollapseProps>(), {
+		accordion: false,
+		variant: 'card',
+		size: 'md',
+		divider: true,
+		arrow: true,
+		disabled: false
+	})
+
+	// v-model 是展开面板的 name 数组。没有绑定时 defineModel 自己保存局部值，
+	// 组件仍能点击展开；绑定时由父级维护，手风琴只保留一个 name。
+	const openNames = defineModel('modelValue', {
+		type: Array,
+		default: (): Array<string> => []
+	})
+
+	const emit = defineEmits<{
+		change: [name: string, open: boolean]
+	}>()
+
+	// 面板挂载顺序就是 DOM 顺序。最后一项据此不画分割线，不需要业务手写 index。
+	const ids = ref<Array<string>>([])
+
+	const hasName = (list: Array<string>, name: string): boolean => {
+		for (let index = 0; index < list.length; index++) {
+			if (list[index] === name) return true
+		}
+		return false
+	}
+
+	const removeName = (list: Array<string>, name: string): Array<string> => {
+		const next: Array<string> = []
+		for (let index = 0; index < list.length; index++) {
+			if (list[index] !== name) next.push(list[index])
+		}
+		return next
+	}
+
+	const appendName = (list: Array<string>, name: string): Array<string> => {
+		const next: Array<string> = []
+		for (let index = 0; index < list.length; index++) {
+			next.push(list[index])
+		}
+		next.push(name)
+		return next
+	}
+
+	const register = (id: string) => {
+		if (hasName(ids.value, id)) return
+		ids.value = appendName(ids.value, id)
+	}
+
+	const unregister = (id: string) => {
+		if (!hasName(ids.value, id)) return
+		ids.value = removeName(ids.value, id)
+	}
+
+	const isLast = (id: string): boolean => {
+		const list = ids.value
+		return list.length > 0 && list[list.length - 1] === id
+	}
+
+	// 先写回名单，再抛 change。open() / close() 和方法走同一套出口。
+	const applyNames = (next: Array<string>, name: string, open: boolean) => {
+		openNames.value = next
+		emit('change', name, open)
+	}
+
+	// 空 name 没有确定的展开键，直接忽略；面板内部会用生成的实例 id 兜底。
+	const open = (name: string) => {
+		if (name.length === 0) return
+		const current = openNames.value
+		if (hasName(current, name)) return
+		// 手风琴打开新面板时，其他面板一起收起，名单里只留一个。
+		if (props.accordion) {
+			applyNames([name], name, true)
+			return
+		}
+		applyNames(appendName(current, name), name, true)
+	}
+
+	const close = (name: string) => {
+		if (name.length === 0) return
+		const current = openNames.value
+		if (!hasName(current, name)) return
+		// 手风琴一次只留一个，收起当前项就清空；普通模式只摘掉这一项。
+		const next: Array<string> = props.accordion ? [] : removeName(current, name)
+		applyNames(next, name, false)
+	}
+
+	const toggle = (name: string) => {
+		if (name.length === 0) return
+		if (hasName(openNames.value, name)) close(name)
+		else open(name)
+	}
+
+	// 面板通过 inject 读这里的函数；函数在面板的 computed 里执行时，
+	// 会读到容器自己的 props 和 ref，依赖由面板的 computed 收集。
+	const context: VxCollapseContext = {
+		isOpen: (name: string): boolean => hasName(openNames.value, name),
+		toggle: toggle,
+		isLast: isLast,
+		register: register,
+		unregister: unregister,
+		size: (): VxSize => props.size,
+		arrow: (): boolean => props.arrow,
+		disabled: (): boolean => props.disabled,
+		divider: (): boolean => props.divider
+	}
+
+	provide(VX_COLLAPSE_CONTEXT, context)
+
+	// 平面是这一层本身；卡片再加描边、圆角和裁切。非法值按卡片处理。
+	const rootClass = computed((): string => {
+		if (props.variant === 'plain') return 'vx-collapse'
+		return 'vx-collapse vx-collapse--card'
+	})
+
+	defineExpose({
+		open,
+		close,
+		toggle
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 分组只占父级宽度，不加外部间距。平面只保留 surface 底，页面左右边距由业务控制。
+	   flex-shrink 归零，放进纵向 flex 页面时不被压扁。内容底由面板决定，分割线由面板画。 */
+	.vx-collapse {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 卡片分组裁掉面板的按下底色和四角，外轮廓只由这一层负责。 */
+	.vx-collapse--card {
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+	}
+</style>

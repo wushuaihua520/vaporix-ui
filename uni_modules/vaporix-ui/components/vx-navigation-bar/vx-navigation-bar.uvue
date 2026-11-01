@@ -1,0 +1,533 @@
+<template>
+	<!-- 导航栏默认固定，并在文档流里占同高；头图压在导航栏下面时关掉 placeholder。
+	     页面用 navigationStyle: custom，导航栏放在页面根节点，内容从下面开始。 -->
+	<view class="vx-navigation-bar" :style="rootStyle">
+		<view :class="barClass" :style="barStyle">
+			<!-- 背景单独一层：渐显只改这一层，标题、图标和插槽始终不透明。 -->
+			<view class="vx-navigation-bar__bg" :style="bgStyle"></view>
+
+			<view v-if="statusBar" class="vx-navigation-bar__status"></view>
+
+			<view class="vx-navigation-bar__safe">
+				<view class="vx-navigation-bar__main">
+					<view class="vx-navigation-bar__side" :style="leftStyle">
+						<slot v-if="$slots['prefix'] != null" name="prefix"></slot>
+						<!-- 停在返回键上，外层不会再收到同一次点击。 -->
+						<view v-else-if="back" class="vx-navigation-bar__back"
+							hover-class="vx-navigation-bar__back--pressed" :hover-stay-time="VX_PRESSED_STAY_TIME"
+							@click.stop="onBack">
+							<vx-icon name="chevron-left" size="lg" :color="color" />
+						</view>
+					</view>
+
+					<view class="vx-navigation-bar__center">
+						<slot v-if="$slots['default'] != null"></slot>
+						<text v-else-if="title.length > 0" class="vx-navigation-bar__title" :style="titleStyle">{{ title }}</text>
+					</view>
+
+					<view class="vx-navigation-bar__side vx-navigation-bar__side--right" :style="rightStyle">
+						<slot v-if="$slots['suffix'] != null" name="suffix"></slot>
+					</view>
+				</view>
+
+				<view v-if="$slots['extra'] != null" class="vx-navigation-bar__extra">
+					<slot name="extra"></slot>
+				</view>
+			</view>
+
+			<view v-if="dividerVisible" class="vx-navigation-bar__divider" :style="dividerStyle"></view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxNavigationBarProps, VxNavigationBarInfo } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxNavigationBarProps>(), {
+		title: '',
+		color: '',
+		bgColor: '',
+		divider: false,
+		dividerColor: '',
+		shadow: false,
+		fixed: true,
+		placeholder: true,
+		statusBar: true,
+		back: false,
+		transparent: false,
+		fade: false,
+		scrollTop: 0,
+		scrollRatio: 0.3,
+		maxOpacity: 1,
+		zIndex: 20
+	})
+
+	const emit = defineEmits<{
+		back: []
+		ready: [info: VxNavigationBarInfo]
+		change: [opacity: number]
+	}>()
+
+	const instance = getCurrentInstance()
+
+	// 等待测量时先用令牌同值撑住占位，测完再按实际高度改。
+	// 行高和 --vx-navigation-bar-height 对齐；0.85 与 readme、DESIGN.md 的分割线阈值一致。
+	const VX_NAVIGATION_BAR_HEIGHT = 44
+	const VX_NAVIGATION_BAR_LINE_OPACITY = 0.85
+
+	const windowInfo = uni.getWindowInfo()
+	// 只进 ready，不参与渲染。
+	let windowWidth = windowInfo.windowWidth
+	let windowHeight = windowInfo.windowHeight
+	let measured = false
+	let readySent = false
+	let barTop = 0
+
+	// 占位和渐显距离读这两个值，所以是 ref。
+	const barWidth = ref(windowInfo.windowWidth)
+	const barHeight = ref((props.statusBar && windowInfo.statusBarHeight > 0 ? windowInfo.statusBarHeight : 0) +
+		VX_NAVIGATION_BAR_HEIGHT)
+	// 固定条让出胶囊后，左右最小宽度一起变，标题才仍在正中。
+	const capsuleInset = ref(0)
+
+	let retryTimer = 0
+	let retryCount = 0
+	let capsuleTimer = 0
+	let capsuleTries = 0
+	let measureId = 0
+
+	// 透明直接 0，未开渐显直接 1，这两支不读 scrollTop，滚动时不会跟着算。
+	// 宽度还没量到时按 1 算，滚动 0 仍然是全透明。0、负数和 NaN 收口，避免透明度跑出 0–1。
+	const backgroundOpacity = computed((): number => {
+		if (props.transparent) return 0
+		if (!props.fade) return 1
+		const maxOpacity = props.maxOpacity
+		const capped = !(maxOpacity > 0) ? 0 : (maxOpacity >= 1 ? 1 : maxOpacity)
+		const ratio = props.scrollRatio > 0 ? props.scrollRatio : 0.3
+		const width = barWidth.value > 0 ? barWidth.value : 1
+		const span = width * ratio
+		if (!(span > 0)) return capped
+		const offset = props.scrollTop > 0 ? props.scrollTop : 0
+		const value = offset / span
+		return value >= capped ? capped : value
+	})
+
+	// 透明底上的线和阴影会把头图切一道，等背景够实了再出现。
+	const dividerVisible = computed((): boolean => {
+		if (!props.divider || props.shadow || props.transparent) return false
+		return backgroundOpacity.value >= VX_NAVIGATION_BAR_LINE_OPACITY
+	})
+
+	const shadowVisible = computed((): boolean => {
+		if (!props.shadow || props.transparent) return false
+		return backgroundOpacity.value >= VX_NAVIGATION_BAR_LINE_OPACITY
+	})
+
+	const barClass = computed((): string => {
+		let name = 'vx-navigation-bar__bar'
+		if (props.fixed) name += ' vx-navigation-bar__bar--fixed'
+		if (shadowVisible.value) name += ' vx-navigation-bar__bar--shadow'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (!props.fixed || !props.placeholder) return ''
+		return `height: ${barHeight.value}px;`
+	})
+
+	const barStyle = computed((): string => {
+		if (!props.fixed) return ''
+		const value = props.zIndex >= 0 ? Math.round(props.zIndex) : 20
+		return `z-index: ${value};`
+	})
+
+	const bgStyle = computed((): string => {
+		let style = `opacity: ${backgroundOpacity.value};`
+		if (props.bgColor.length > 0) style += ` background: ${props.bgColor};`
+		return style
+	})
+
+	const titleStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const dividerStyle = computed((): string => {
+		if (props.dividerColor.length === 0) return ''
+		return `background-color: ${props.dividerColor};`
+	})
+
+	// 只在固定时让。非固定多半在卡片里，胶囊并不压在这条上。
+	// 条已经低于胶囊底边时也不让，避免原生导航还在时把标题挤偏。
+	// 右侧 padding 会加宽，左侧用同一外宽把标题撑回屏幕正中；返回键仍靠左。
+	const leftStyle = computed((): string => {
+		if (!props.fixed || capsuleInset.value <= 0) return ''
+		return `min-width: ${VX_NAVIGATION_BAR_HEIGHT + capsuleInset.value}px;`
+	})
+
+	const rightStyle = computed((): string => {
+		if (!props.fixed || capsuleInset.value <= 0) return ''
+		return `min-width: ${VX_NAVIGATION_BAR_HEIGHT + capsuleInset.value}px; padding-right: ${capsuleInset.value}px;`
+	})
+
+	const onBack = () => {
+		emit('back')
+	}
+
+	const clearRetry = () => {
+		if (retryTimer === 0) return
+		clearTimeout(retryTimer)
+		retryTimer = 0
+	}
+
+	const scheduleMeasure = () => {
+		if (retryTimer !== 0) return
+		retryTimer = setTimeout(() => {
+			retryTimer = 0
+			measure()
+		}, 50)
+	}
+
+	// 节点还没排版、宽高为 0 时都走这里；三次仍失败就等 refresh()。
+	const retryMeasure = () => {
+		if (retryCount >= 3) return
+		retryCount++
+		scheduleMeasure()
+	}
+
+	const readWindow = () => {
+		const info = uni.getWindowInfo()
+		if (info.windowWidth > 0) windowWidth = info.windowWidth
+		if (info.windowHeight > 0) windowHeight = info.windowHeight
+		if (!measured && barWidth.value <= 0) barWidth.value = windowWidth
+	}
+
+	// 胶囊矩形首帧经常是 0。返回 false 时由调用方再试；非微信、不固定、或条已在胶囊下面，都算完成。
+	const readCapsule = (): boolean => {
+		if (!props.fixed) return true
+		let found = true
+		// #ifdef MP-WEIXIN
+		found = false
+		const menu = uni.getMenuButtonBoundingClientRect()
+		if (menu.width > 0 && menu.left > 0) {
+			if (menu.bottom > 0 && barTop >= menu.bottom) {
+				capsuleInset.value = 0
+				found = true
+			} else {
+				const width = windowWidth > 0 ? windowWidth : menu.left + menu.width
+				const inset = width - menu.left
+				if (inset > 0) {
+					capsuleInset.value = inset
+					found = true
+				}
+			}
+		}
+		// #endif
+		return found
+	}
+
+	// 不和高度测量共用计时器：盖掉同一次等待，会把还没量到的那次重试弄丢。
+	const clearCapsule = () => {
+		if (capsuleTimer === 0) return
+		clearTimeout(capsuleTimer)
+		capsuleTimer = 0
+	}
+
+	const scheduleCapsule = () => {
+		if (capsuleTries >= 3) return
+		if (capsuleTimer !== 0) return
+		capsuleTries++
+		capsuleTimer = setTimeout(() => {
+			capsuleTimer = 0
+			if (readCapsule()) {
+				capsuleTries = 0
+				return
+			}
+			scheduleCapsule()
+		}, 50)
+	}
+
+	// 量条本身：固定时宽度跟随窗口，非固定时跟随父级。占位高度也取这里。
+	const measure = () => {
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) return
+		// 后发起的测量覆盖先发起的；过期回调不再改结果，也不再排重试。
+		const id = ++measureId
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.vx-navigation-bar__bar')
+			.boundingClientRect()
+			.select('.vx-navigation-bar__status')
+			.boundingClientRect()
+			.exec((result) => {
+				if (id !== measureId) return
+				if (result.length === 0) {
+					retryMeasure()
+					return
+				}
+				const barRect = result[0] as NodeInfo | null
+				// statusBar 关闭时节点不存在，结果里可能是 null，也可能整项被省略。
+				const statusRect = result.length > 1 ? result[1] as NodeInfo | null : null
+				if (barRect == null) {
+					retryMeasure()
+					return
+				}
+
+				const nextWidth = barRect.width
+				const nextHeight = barRect.height
+				const nextTop = barRect.top
+				if (nextWidth == null || nextHeight == null || nextTop == null) {
+					retryMeasure()
+					return
+				}
+
+				// 首帧或插槽内容还没排版时先不落结果，过一帧再量；三次仍为 0 就等 refresh()。
+				if (nextWidth <= 0 || nextHeight <= 0) {
+					retryMeasure()
+					return
+				}
+
+				retryCount = 0
+				const statusHeight = statusRect != null ? statusRect.height : null
+				const statusBarHeight = statusHeight != null && statusHeight > 0 ? statusHeight : 0
+				barWidth.value = nextWidth
+				barHeight.value = nextHeight
+				barTop = nextTop
+				measured = true
+				if (!readCapsule()) scheduleCapsule()
+				else {
+					capsuleTries = 0
+					clearCapsule()
+				}
+
+				if (readySent) return
+				readySent = true
+				emit('ready', {
+					width: barWidth.value,
+					height: barHeight.value,
+					statusBarHeight: statusBarHeight,
+					opacity: backgroundOpacity.value,
+					windowWidth: windowWidth,
+					windowHeight: windowHeight
+				})
+			})
+	}
+
+	const refresh = () => {
+		readWindow()
+		retryCount = 0
+		capsuleTries = 0
+		clearRetry()
+		clearCapsule()
+		measure()
+	}
+
+	onMounted(() => {
+		readWindow()
+		nextTick(() => {
+			measure()
+		})
+	})
+
+	onUnmounted(() => {
+		measureId++
+		clearRetry()
+		clearCapsule()
+	})
+
+	// 占位只改根节点高度，不改条本身。固定会改宽度基准，状态栏会改条高。
+	const layoutKey = computed((): string => {
+		return `${props.fixed}|${props.statusBar}`
+	})
+
+	watch(layoutKey, () => {
+		retryCount = 0
+		capsuleTries = 0
+		clearRetry()
+		clearCapsule()
+		nextTick(() => {
+			measure()
+		})
+	})
+
+	// 只在透明度真的变化时抛；业务据此把标题和图标切成深色或浅色。
+	watch(backgroundOpacity, (value: number) => {
+		emit('change', value)
+	})
+
+	defineExpose({
+		refresh
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 根节点固定时只负责占位，条本身脱离这一层；不占位时高度为 0。
+	   页面是纵向 flex 时不收缩，避免 scroll-view 把占位压扁。
+	   App 默认 overflow 是 hidden，固定条的阴影和插槽伸出会被裁掉。
+	   拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-navigation-bar {
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		overflow: visible;
+	}
+
+	/* 条满宽，状态栏留白、内容行和分割线都在这一层里。高度由内容撑开，不跟着父级收缩。 */
+	.vx-navigation-bar__bar {
+		position: relative;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		overflow: visible;
+	}
+
+	/* left / right 都写 0，宽度交给左右撑开；再写 100% 会多出安全区那一截。 */
+	.vx-navigation-bar__bar--fixed {
+		position: fixed;
+		top: 0;
+		right: 0;
+		left: 0;
+		width: auto;
+	}
+
+	.vx-navigation-bar__bar--shadow {
+		box-shadow: var(--vx-shadow-md);
+	}
+
+	.vx-navigation-bar__bg {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 状态栏留白跟安全区走；Web 上没有状态栏，变量为 0。 */
+	.vx-navigation-bar__status {
+		position: relative;
+		z-index: 1;
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--uni-safe-area-inset-top, 0px);
+	}
+
+	/* 左右安全区只让内容避开，不缩背景，横屏刘海两侧也不会有缺口。 */
+	.vx-navigation-bar__safe {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+	}
+
+	/* 标题行 44：左右各留 8，返回和右侧动作的热区都按行高做。
+	   两侧不伸缩，空着也各留一个热区的宽度，中间 flex: 1 的标题才落在中间；
+	   一侧放两个动作时标题会跟着偏一点，更多动作放进 extra。 */
+	.vx-navigation-bar__main {
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--vx-navigation-bar-height);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	/* border-box 后，胶囊 padding 算进最小宽度，左右外宽才一致。 */
+	.vx-navigation-bar__side {
+		box-sizing: border-box;
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		min-width: var(--vx-navigation-bar-height);
+		height: var(--vx-navigation-bar-height);
+	}
+
+	.vx-navigation-bar__side--right {
+		justify-content: flex-end;
+	}
+
+	/* Web 默认 overflow 是 visible，长标题裁在这一层，不盖住两侧。 */
+	.vx-navigation-bar__center {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		min-width: 0;
+		min-height: var(--vx-navigation-bar-height);
+		overflow: hidden;
+	}
+
+	/* 返回热区等于行高；图标仍用图标三档里的 lg。 */
+	.vx-navigation-bar__back {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-navigation-bar-height);
+		height: var(--vx-navigation-bar-height);
+	}
+
+	.vx-navigation-bar__back--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 先占满中间列再居中省略。只靠 flex 收缩时文字不压缩。
+	   App 默认 keep、Web 默认 pre-line，这里固定单行。 */
+	.vx-navigation-bar__title {
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		text-align: center;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	/* 第二行内容自己带高度，组件只补左右和底部留白。 */
+	.vx-navigation-bar__extra {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding-top: var(--vx-space-xs);
+		padding-bottom: var(--vx-space-sm);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	/* 线绝对定位在条底，不占高度；滚动渐显时由脚本决定出不出现。 */
+	.vx-navigation-bar__divider {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 2;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-border);
+	}
+
+	/* #ifdef WEB */
+	.vx-navigation-bar__back {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

@@ -1,0 +1,493 @@
+<template>
+	<!-- 页签只切换视图，页面内容、路由和埋点由业务处理。 -->
+	<!-- 一屏 2–5 个，等宽排列；不横向滚动，长文案先缩短。 -->
+	<view v-if="items.length > 0" :class="rootClass" :style="rootStyle">
+		<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
+			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
+			<view :class="row.chipClass">
+				<!-- vx-badge 打开 absolute 后 align-self 是 flex-start，直接放进胶囊会在高胶囊里贴顶。
+				     包一层等高容器，胶囊仍按整行居中，角标也还能伸出文字右上角。 -->
+				<view v-if="row.hasBadge" :class="row.badgeClass">
+					<!-- 行高比字号多出的一半约 4px。圆心默认落在行盒角上，上移 4 才压到字形。
+					     offset 只接受数字，不能写负的 var()。 -->
+					<vx-badge absolute :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+						:type="badgeType" :offset-y="-4">
+						<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+					</vx-badge>
+				</view>
+				<text v-else :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+			</view>
+			<view v-if="row.indicatorClass.length > 0" :class="row.indicatorClass"></view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxTabsProps, VxTabItem } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxTabsProps>(), {
+		items: (): Array<VxTabItem> => [],
+		variant: 'line',
+		size: 'md',
+		type: 'primary',
+		divider: true,
+		bgColor: '',
+		color: '',
+		badgeMax: 99,
+		badgeType: 'danger'
+	})
+
+	const modelValue = defineModel({
+		type: Number,
+		default: 0
+	})
+
+	const emit = defineEmits<{
+		change: [index: number]
+	}>()
+
+	type TabsRow = {
+		index: number
+		itemClass: string
+		chipClass: string
+		textClass: string
+		textStyle: string
+		indicatorClass: string
+		badgeClass: string
+		hoverClass: string
+		hasBadge: boolean
+		badge: number
+		dot: boolean
+		text: string
+	}
+
+	// 负数在取整前就判掉，-0.4 才不会被收成 0。超出末项按未选中处理，不硬夹到最后一个页签。
+	const activeIndex = computed((): number => {
+		const count = props.items.length
+		if (count === 0) return -1
+		const raw = modelValue.value
+		if (!(raw >= 0)) return -1
+		const value = Math.round(raw)
+		if (value > count - 1) return -1
+		return value
+	})
+
+	const variant = computed((): string => {
+		return props.variant === 'soft' || props.variant === 'inverse' ? props.variant : 'line'
+	})
+
+	// 不认识的尺寸按 md 处理，class 只拼 sm / lg。
+	const sizeName = computed((): string => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	// 不认识的语义色按 default 处理，文字、下划线和浅底胶囊用同一档。
+	const typeName = computed((): string => {
+		const type = props.type
+		if (type === 'primary' || type === 'success' || type === 'info' || type === 'warning' || type === 'danger') {
+			return type
+		}
+		return 'default'
+	})
+
+	// 下划线、选中文字和浅底胶囊共用同一档语义色。warning 在浅色底上用 ink，和标签、步骤条一致。
+	// soft 的文字落到 *-soft 底上，要换 *-pressed 才够 4.5:1；line / inverse 落在 surface 上，用原色。
+	// default 浅底用正文色：text-secondary 在 default-soft 上不够 4.5:1。
+	const activeTone = computed((): string => {
+		const type = typeName.value
+		if (type === 'warning') return 'warning-ink'
+		return type
+	})
+
+	const softTone = computed((): string => {
+		const type = typeName.value
+		if (type === 'warning') return 'warning-ink'
+		if (type === 'primary') return 'primary-pressed'
+		if (type === 'success') return 'success-pressed'
+		if (type === 'info') return 'info-pressed'
+		if (type === 'danger') return 'danger-pressed'
+		return 'default'
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-tabs'
+		if (sizeName.value !== 'md') name += ` vx-tabs--${sizeName.value}`
+		if (variant.value === 'inverse') name += ' vx-tabs--inverse'
+		// inverse 整条已经是反色底，不再画分割线；其余形态按 divider 开关。
+		if (!props.divider || variant.value === 'inverse') name += ' vx-tabs--no-divider'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	const rows = computed((): Array<TabsRow> => {
+		const list: Array<TabsRow> = []
+		const source = props.items
+		const current = activeIndex.value
+		const style = variant.value
+		const size = sizeName.value
+		const semantic = typeName.value
+		const tone = style === 'soft' ? softTone.value : activeTone.value
+		const count = source.length
+		const customColor = props.color.length > 0 ? `color: ${props.color};` : ''
+
+		// 尺寸和不随行变化的状态先拼好，循环里只挑当前项的状态。
+		let textBase = 'vx-tabs__text'
+		if (size === 'sm') textBase += ' vx-tabs__text--sm'
+		else if (size === 'lg') textBase += ' vx-tabs__text--lg'
+		const textInverse = style === 'inverse' ? textBase + ' vx-tabs__text--inverse' : textBase
+		const textActive = textInverse + ` vx-tabs__text--active-${tone}`
+
+		// line 的选中项只换文字色，不加胶囊；soft / inverse 才需要高度和左右留白。
+		let chipBase = 'vx-tabs__chip'
+		if (style !== 'line') {
+			chipBase += ` vx-tabs__chip--${size}`
+			if (style === 'soft') chipBase += ` vx-tabs__chip--soft-${semantic}`
+			else chipBase += ' vx-tabs__chip--surface'
+		}
+
+		let indicatorBase = 'vx-tabs__indicator'
+		if (size !== 'md') indicatorBase += ` vx-tabs__indicator--${size}`
+		indicatorBase += ` vx-tabs__indicator--${semantic}`
+		// inverse 不画线。有分割线才下移，否则线会伸出组件 1px。
+		if (props.divider && style !== 'inverse') indicatorBase += ' vx-tabs__indicator--on-divider'
+
+		for (let index = 0; index < count; index++) {
+			const entry = source[index]
+			const disabled = entry.disabled === true
+			const active = index === current
+			const text = entry.text != null ? entry.text : ''
+			const badge = entry.badge != null ? entry.badge : 0
+			const dot = entry.dot === true
+			const hasBadge = dot || badge >= 1
+
+			let itemClass = 'vx-tabs__item'
+			if (disabled) itemClass += ' vx-tabs__item--disabled'
+
+			// 胶囊只在选中时加高度和左右留白；未选中保持透明，文字仍在整格中间。
+			let chipClass = chipBase
+			if (!active) chipClass = 'vx-tabs__chip'
+
+			let textClass = textInverse
+			if (active) textClass = textActive
+			// 反色条上的未选中项在深底上靠反色文字；选中后在 surface 胶囊上，用普通禁用色。
+			if (disabled) {
+				textClass += style === 'inverse' && !active
+					? ' vx-tabs__text--inverse-disabled'
+					: ' vx-tabs__text--disabled'
+			}
+
+			// 自定义文字色只盖未选中项，选中态仍跟 type；行 / 浅底形态的禁用项保持自己的灰度。
+			// 反色条的禁用项只降透明度，保留自定义文字色才不会在深底上消失。
+			let textStyle = ''
+			if (!active && customColor.length > 0 && (!disabled || style === 'inverse')) {
+				textStyle = customColor
+			}
+
+			list.push({
+				index: index,
+				itemClass: itemClass,
+				chipClass: chipClass,
+				textClass: textClass,
+				textStyle: textStyle,
+				indicatorClass: active && style === 'line' ? indicatorBase : '',
+				// 透明度写在 vx-badge 的标记上。写在这一层会连文字一起淡，反色禁用再乘一次。
+				badgeClass: disabled ? 'vx-tabs__badge vx-tabs__badge--disabled' : 'vx-tabs__badge',
+				// 空字符串关不掉按下态，要写 none。
+				hoverClass: disabled ? 'none' : 'vx-tabs__item--pressed',
+				hasBadge: hasBadge,
+				badge: badge,
+				dot: dot,
+				text: text
+			})
+		}
+		return list
+	})
+
+	// 停在页签上，外层卡片不会再收到同一次点击。
+	const onClick = (index: number) => {
+		const entry = props.items[index]
+		if (entry == null || entry.disabled === true) return
+		if (index === activeIndex.value) return
+		modelValue.value = index
+		emit('change', index)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 页签是导航行，高度沿用列表行 44 / 52 / 60；选中胶囊用紧凑高度 28 / 32 / 36。
+	   宽度跟随父级，左右各留 12：角标压在首末项上也不会伸出行外。
+	   Web 默认 content-box，不写 border-box 时底边会把高度撑出列表行。
+	   App 默认 overflow 是 hidden，角标伸出会被裁；Android 拍平后 visible 不生效，这层不要加 flatten。 */
+	.vx-tabs {
+		flex-direction: row;
+		align-items: stretch;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-list-height-md);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		border-bottom-width: var(--vx-border-width);
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-color-divider);
+		background-color: var(--vx-color-surface);
+		overflow: visible;
+	}
+
+	.vx-tabs--sm {
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-tabs--lg {
+		height: var(--vx-list-height-lg);
+	}
+
+	/* 反色条用正文色铺满整条，选中项浮一个 surface 胶囊；品牌底色由 bgColor 覆盖。 */
+	.vx-tabs--inverse {
+		background-color: var(--vx-color-text);
+	}
+
+	.vx-tabs--no-divider {
+		border-bottom-width: 0;
+	}
+
+	.vx-tabs__item {
+		position: relative;
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		/* nowrap 文案的最小宽度会撑破 flex: 1，等宽就没了。 */
+		min-width: 0;
+		overflow: visible;
+	}
+
+	.vx-tabs__item--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 未选中时胶囊是透明的，文案直接落在整条底色上；选中后由尺寸 class 撑出胶囊。 */
+	.vx-tabs__chip {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-pill);
+		overflow: visible;
+	}
+
+	.vx-tabs__chip--sm {
+		height: var(--vx-compact-height-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-tabs__chip--md {
+		height: var(--vx-compact-height-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+	}
+
+	.vx-tabs__chip--lg {
+		height: var(--vx-compact-height-lg);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+	}
+
+	.vx-tabs__chip--soft-primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-tabs__chip--soft-success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-tabs__chip--soft-info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-tabs__chip--soft-warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-tabs__chip--soft-danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-tabs__chip--soft-default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-tabs__chip--surface {
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 角标外壳只负责把文字托到居中位置；vx-badge 自己处理定位和裁切。 */
+	.vx-tabs__badge {
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 0;
+		overflow: visible;
+	}
+
+	/* 只改角标透明度。写在这一层的 opacity 上会连文字一起淡，反色禁用再乘一次。
+	   定义变量不能再套 var()，0.5 与 --vx-opacity-disabled 相同。 */
+	.vx-tabs__badge--disabled {
+		--vx-badge-opacity: 0.5;
+	}
+
+	.vx-tabs__text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	.vx-tabs__text--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-tabs__text--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-tabs__text--inverse {
+		color: var(--vx-color-text-inverse);
+	}
+
+	/* 选中态同时换色和字重，不靠颜色单独表达当前项。 */
+	.vx-tabs__text--active-primary {
+		color: var(--vx-color-primary);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-success {
+		color: var(--vx-color-success);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-info {
+		color: var(--vx-color-info);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-warning-ink {
+		color: var(--vx-color-warning-ink);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-danger {
+		color: var(--vx-color-danger);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* soft 胶囊的文字用 pressed 档，落在对应 *-soft 底上才够 4.5:1。 */
+	.vx-tabs__text--active-primary-pressed {
+		color: var(--vx-color-primary-pressed);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-success-pressed {
+		color: var(--vx-color-success-pressed);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-info-pressed {
+		color: var(--vx-color-info-pressed);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-danger-pressed {
+		color: var(--vx-color-danger-pressed);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-tabs__text--active-default {
+		color: var(--vx-color-text);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* 禁用写在选中态后面，选中又被禁用时文字仍转灰。 */
+	.vx-tabs__text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 反色条上的未选中禁用项没有 surface 胶囊，保持反色文字只降透明度。 */
+	.vx-tabs__text--inverse-disabled {
+		color: var(--vx-color-text-inverse);
+		opacity: var(--vx-opacity-disabled);
+	}
+
+	/* 下划线宽度固定，不跟文字长度和屏幕宽度联动。
+	   有分割线时 --on-divider 下移 1px 盖住底边；没有分割线时贴在行内，避免伸出组件。 */
+	.vx-tabs__indicator {
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		z-index: 1;
+		width: var(--vx-tabs-indicator-md);
+		height: var(--vx-border-width-strong);
+		border-radius: var(--vx-radius-pill);
+		transform: translateX(-50%);
+	}
+
+	.vx-tabs__indicator--sm {
+		width: var(--vx-tabs-indicator-sm);
+	}
+
+	.vx-tabs__indicator--lg {
+		width: var(--vx-tabs-indicator-lg);
+	}
+
+	.vx-tabs__indicator--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-tabs__indicator--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-tabs__indicator--info {
+		background-color: var(--vx-color-info);
+	}
+
+	/* 琥珀色在白底上不到 3:1，下划线用 warning-pressed。 */
+	.vx-tabs__indicator--warning {
+		background-color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-tabs__indicator--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-tabs__indicator--default {
+		background-color: var(--vx-color-text);
+	}
+
+	/* 写在类型色后面，只改位置，不把底色盖回去。App 不能写负的 var()。 */
+	.vx-tabs__indicator--on-divider {
+		bottom: var(--vx-tabs-indicator-out);
+	}
+
+	/* #ifdef WEB */
+	.vx-tabs__item {
+		cursor: pointer;
+	}
+
+	.vx-tabs__item--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>

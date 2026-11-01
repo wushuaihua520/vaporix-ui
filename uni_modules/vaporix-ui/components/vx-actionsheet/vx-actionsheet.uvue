@@ -1,0 +1,486 @@
+<template>
+	<!-- 操作菜单是底部弹层：遮罩铺满页面，面板贴底。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
+	<!-- 点遮罩、点取消都收起并抛 cancel；点动作默认收起并抛 select，由业务决定后续跳转。 -->
+	<view v-if="visible" class="vx-actionsheet" :style="rootStyle" @touchmove.stop.prevent>
+		<view :class="maskClass" :style="maskStyle" @click="onMaskTap"></view>
+
+		<!-- 外层只负责阴影和滑入；内层裁按下态，避免 overflow 把阴影一起裁掉。 -->
+		<view class="vx-actionsheet__sheet" @click.stop>
+			<view class="vx-actionsheet__panel">
+				<!-- 头部两块都可选：title 用标题档，description 用次要色；都没有时不渲染。 -->
+				<view v-if="hasHeader" class="vx-actionsheet__header">
+					<text v-if="title.length > 0" class="vx-actionsheet__title" :style="titleStyle">{{ title }}</text>
+					<text v-if="description.length > 0" :class="descClass" :style="descriptionStyle">{{ description }}</text>
+				</view>
+				<view v-if="hasHeader" class="vx-actionsheet__header-divider"></view>
+
+				<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
+					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onSelect(row.index)">
+					<text :class="row.textClass">{{ row.text }}</text>
+					<!-- 选中态用勾和主色一起标出，不只靠颜色。勾不占文案宽度，切换时这一行不横跳。 -->
+					<view v-if="row.selected" class="vx-actionsheet__check">
+						<vx-icon name="check" size="sm" :color="row.checkColor" />
+					</view>
+					<view v-if="row.hasDivider" class="vx-actionsheet__divider"></view>
+				</view>
+
+				<!-- 取消和动作之间留 4px default-soft 间隔带，取消像一块独立的白色按钮；安全区由面板底部内边距兜住。 -->
+				<view v-if="showCancel" class="vx-actionsheet__cancel-wrap">
+					<view class="vx-actionsheet__gap"></view>
+					<view class="vx-actionsheet__cancel" hover-class="vx-actionsheet__cancel--pressed"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCancelTap">
+						<text class="vx-actionsheet__cancel-text">{{ cancelText }}</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxActionSheetItem, VxActionSheetItemType, VxActionSheetProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxActionSheetProps>(), {
+		items: (): Array<VxActionSheetItem> => [],
+		title: '',
+		description: '',
+		showCancel: true,
+		cancelText: '取消',
+		maskClosable: true,
+		closeOnSelect: true,
+		maskColor: '',
+		titleColor: '',
+		descriptionColor: '',
+		zIndex: 90
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		select: [index: number, item: VxActionSheetItem]
+		cancel: []
+	}>()
+
+	// 没有动作时不铺遮罩，避免出现一张只有取消按钮的空面板。
+	const visible = computed((): boolean => {
+		return show.value && props.items.length > 0
+	})
+
+	const hasHeader = computed((): boolean => {
+		return props.title.length > 0 || props.description.length > 0
+	})
+
+	// 只有跟标题同时出现时才补 4px，单独一行说明不加上边距。
+	const descClass = computed((): string => {
+		let name = 'vx-actionsheet__desc'
+		if (props.title.length > 0) name += ' vx-actionsheet__desc--offset'
+		return name
+	})
+
+	const titleStyle = computed((): string => {
+		if (props.titleColor.length === 0) return ''
+		return `color: ${props.titleColor};`
+	})
+
+	const descriptionStyle = computed((): string => {
+		if (props.descriptionColor.length === 0) return ''
+		return `color: ${props.descriptionColor};`
+	})
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	// 不可关闭的遮罩不是按钮，Web 上不给指针。
+	const maskClass = computed((): string => {
+		return props.maskClosable ? 'vx-actionsheet__mask vx-actionsheet__mask--closable' : 'vx-actionsheet__mask'
+	})
+
+	const rootStyle = computed((): string => {
+		return `z-index: ${props.zIndex};`
+	})
+
+	// 勾不继承文字色，选择器写不到 vx-icon 内部的 text。只在选中时调用。
+	// danger 保留危险色；其余选中跟 primary 一样取 pressed 档。
+	const checkColor = (type: VxActionSheetItemType, disabled: boolean): string => {
+		if (disabled) return 'var(--vx-color-disabled-text)'
+		if (type === 'danger') return 'var(--vx-color-danger-pressed)'
+		return 'var(--vx-color-primary-pressed)'
+	}
+
+	type ActionSheetRow = {
+		index: number
+		text: string
+		itemClass: string
+		hoverClass: string
+		textClass: string
+		selected: boolean
+		checkColor: string
+		hasDivider: boolean
+	}
+
+	// class 顺序：基础 → 类型 → 状态。disabled 写在最后，盖过类型色。
+	// 文案色放在 class 里，不给每一行拼 style。
+	const rows = computed((): Array<ActionSheetRow> => {
+		const list: Array<ActionSheetRow> = []
+		const source = props.items
+		const last = source.length - 1
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			const text = entry.text != null ? entry.text : ''
+			const type: VxActionSheetItemType = entry.type != null ? entry.type : 'default'
+			const disabled = entry.disabled === true
+			const selected = entry.selected === true
+
+			let itemClass = 'vx-actionsheet__item'
+			if (disabled) itemClass += ' vx-actionsheet__item--disabled'
+
+			// uni-app 里空字符串关不掉按下态，要写 none。
+			const hoverClass = disabled ? 'none' : 'vx-actionsheet__item--pressed'
+
+			let textClass = 'vx-actionsheet__text'
+			if (type === 'primary') textClass += ' vx-actionsheet__text--primary'
+			else if (type === 'danger') textClass += ' vx-actionsheet__text--danger'
+			else if (selected) textClass += ' vx-actionsheet__text--selected'
+			if (disabled) textClass += ' vx-actionsheet__text--disabled'
+
+			list.push({
+				index: index,
+				text: text,
+				itemClass: itemClass,
+				hoverClass: hoverClass,
+				textClass: textClass,
+				selected: selected,
+				checkColor: selected ? checkColor(type, disabled) : '',
+				hasDivider: index < last
+			})
+		}
+		return list
+	})
+
+	// 点击停在动作上，禁用项不抛事件；默认先收起再抛，父级在事件里改 show 也不会被覆盖。
+	const onSelect = (index: number) => {
+		const item = props.items[index]
+		if (item == null || item.disabled === true) return
+		if (props.closeOnSelect) show.value = false
+		emit('select', index, item)
+	}
+
+	const onCancelTap = () => {
+		if (!show.value) return
+		show.value = false
+		emit('cancel')
+	}
+
+	// 遮罩可关闭时按取消处理，和点取消按钮走同一条出口。
+	const onMaskTap = () => {
+		if (!props.maskClosable) return
+		onCancelTap()
+	}
+
+	const open = () => {
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 cancel；cancel 只代表用户取消。
+	const close = () => {
+		if (!show.value) return
+		show.value = false
+	}
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 90，低于消息提示 100、弹框 110、加载浮层 150 和轻提示 200。 */
+	.vx-actionsheet {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	.vx-actionsheet__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
+	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上行高才不会被挤掉。 */
+	.vx-actionsheet__sheet {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-self: center;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: var(--vx-actionsheet-max-width);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		box-shadow: var(--vx-shadow-lg);
+		overflow: visible;
+	}
+
+	/* 内层裁按下态的四角，底色和安全区都在这一层。圆角和阴影层保持一致，阴影轮廓才跟面板重合。
+	   左右和底部安全区作为内边距，内容不压住刘海和手势条。 */
+	.vx-actionsheet__panel {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+		overflow: hidden;
+	}
+
+	/* 标题和说明都居中，左右留 24；说明和标题之间由 --offset 补 4。
+	   头部不收缩，上下 16 才不会被短屏挤掉。 */
+	.vx-actionsheet__header {
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-lg) var(--vx-space-xl);
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal，长文案才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-actionsheet__title,
+	.vx-actionsheet__desc {
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		white-space: normal;
+		text-align: center;
+	}
+
+	.vx-actionsheet__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-actionsheet__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-actionsheet__desc--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	/* 头部和第一条动作之间的分割线在文档流里，占 1px。 */
+	.vx-actionsheet__header-divider {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	/* 动作行是按钮，不是列表行：文案居中，行高沿用列表 md 的 52。
+	   不写背景色，按下态是这一层唯一的 background-color。
+	   纵向 flex 里这一行不收缩，52 的下限才不会被短屏挤掉。 */
+	.vx-actionsheet__item {
+		position: relative;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-xl);
+	}
+
+	.vx-actionsheet__item--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	/* 文案占满内容区后居中。勾是绝对定位，不参与这一行的宽度，切换选中时文案不横跳。 */
+	.vx-actionsheet__text {
+		flex-shrink: 1;
+		width: 100%;
+		min-width: 0;
+		white-space: normal;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		text-align: center;
+	}
+
+	/* 样式表顺序与 class 字符串一致：类型、选中、disabled。disabled 写在最后，盖过前面的颜色。
+	   primary 和选中都取 pressed 档，浅底上对比度更稳；danger 被选中时不挂选中色。 */
+	.vx-actionsheet__text--primary {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-actionsheet__text--danger {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	.vx-actionsheet__text--selected {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-actionsheet__text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 勾贴在右侧内边距里。宽高写死 14，只写 right、width 为 auto 时会落回静态位置。
+	   top 50% 再上移自身一半，行被长文案撑高时仍垂直居中。
+	   8 + 14 = 22，小于左右 24 的内边距，换行文案不会压到勾。 */
+	.vx-actionsheet__check {
+		position: absolute;
+		top: 50%;
+		right: var(--vx-space-sm);
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+		transform: translateY(-50%);
+	}
+
+	/* 动作之间的分割线通栏，压在行底，不占高度。 */
+	.vx-actionsheet__divider {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	/* 取消和动作之间用一条 default-soft 间隔带分开，不再画 border；
+	   间隔带跟面板底色差一档，取消才像一块独立的按钮。 */
+	.vx-actionsheet__cancel-wrap {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+	}
+
+	.vx-actionsheet__gap {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-space-xs);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 取消按钮和动作同高、同字重，用间隔带和上面的动作分层。这一层不收缩，短屏上仍保持 52。 */
+	.vx-actionsheet__cancel {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-xl);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-actionsheet__cancel--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.vx-actionsheet__cancel-text {
+		flex-shrink: 1;
+		width: 100%;
+		min-width: 0;
+		white-space: normal;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		text-align: center;
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   这一层接住触摸，页面在菜单打开期间不跟着滚。 */
+	/* #ifdef WEB */
+	.vx-actionsheet {
+		touch-action: none;
+	}
+
+	.vx-actionsheet__mask {
+		animation-name: vx-actionsheet-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-actionsheet__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-actionsheet__item {
+		cursor: pointer;
+	}
+
+	.vx-actionsheet__item--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-actionsheet__cancel {
+		cursor: pointer;
+	}
+
+	.vx-actionsheet__sheet {
+		animation-name: vx-actionsheet-up;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-actionsheet-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-actionsheet-up {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
+</style>

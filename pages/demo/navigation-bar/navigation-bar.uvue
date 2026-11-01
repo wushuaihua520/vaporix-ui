@@ -1,0 +1,556 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-navigation-bar</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="compass" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">导航栏</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">标题居中单行省略，右侧动作和标题行下方各留插槽；固定实例自带占位。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-navigation-bar</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础导航栏</text>
+							<text class="demo-section__desc">标题居中，返回和右侧动作各占 44 热区；固定时默认占位。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-device">
+							<vx-navigation-bar :fixed="false" :status-bar="false" title="订单详情" back divider
+								@back="onNavBack" @ready="onNavReady">
+								<template #suffix>
+									<view class="demo-nav-action" hover-class="demo-nav-action--pressed"
+										:hover-stay-time="120" @click="onNavAction('消息')">
+										<vx-icon name="message-square" size="lg" />
+									</view>
+								</template>
+							</vx-navigation-bar>
+							<view class="demo-nav-body">
+								<text class="demo-nav-body__title">订单 20261026001</text>
+								<text class="demo-nav-body__text">已付款，商家正在备货。</text>
+								<view class="demo-nav-body__line"></view>
+								<view class="demo-nav-body__line demo-nav-body__line--short"></view>
+							</view>
+						</view>
+						<view class="demo-tabs-status">
+							<text class="demo-tabs-status__label">ready</text>
+							<text class="demo-tabs-status__text">{{ navReadyText }}</text>
+						</view>
+						<view class="demo-tabs-status">
+							<text class="demo-tabs-status__label">click</text>
+							<text class="demo-tabs-status__text">{{ navActionText }}</text>
+						</view>
+						<text class="demo-hint">示例用 fixed=false 放进画布；页面根节点固定时默认占位。组件只抛 back，跳转留在业务。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">沉浸式与非沉浸式</text>
+							<text class="demo-section__desc">状态栏高度由页面决定；真机打开 statusBar，组件自己留白。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-status">
+							<view class="demo-nav-status__item">
+								<text class="demo-nav-status__label">沉浸式 · 状态栏算在导航栏里</text>
+								<view class="demo-nav-strip">
+									<view class="demo-nav-fake-status">
+										<text class="demo-nav-fake-status__time">9:41</text>
+										<view class="demo-nav-fake-status__marks">
+											<view class="demo-nav-fake-status__dot"></view>
+											<view class="demo-nav-fake-status__dot"></view>
+											<view class="demo-nav-fake-status__dot demo-nav-fake-status__dot--bar"></view>
+										</view>
+									</view>
+									<vx-navigation-bar :fixed="false" :status-bar="false" title="沉浸式"
+										back />
+								</view>
+							</view>
+							<view class="demo-nav-status__item demo-nav-status__item--last">
+								<text class="demo-nav-status__label">非沉浸式 · 导航栏从内容顶部开始</text>
+								<view class="demo-nav-strip">
+									<vx-navigation-bar :fixed="false" :status-bar="false" title="非沉浸式"
+										back />
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">画布上排多出的 24 是模拟状态栏；真机用 statusBar 让出 --uni-safe-area-inset-top。嵌在原生导航下面时关掉。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">透明与渐变</text>
+							<text class="demo-section__desc">transparent 只保留内容；bgColor 接受颜色或渐变。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-art">
+							<vx-navigation-bar :fixed="false" :status-bar="false" transparent title="城市漫游"
+								back color="#ffffff">
+								<template #suffix>
+									<view class="demo-nav-action" hover-class="demo-nav-action--pressed"
+										:hover-stay-time="120" @click="onNavAction('分享')">
+										<vx-icon name="share" size="lg" color="#ffffff" />
+									</view>
+								</template>
+							</vx-navigation-bar>
+							<view class="demo-nav-art__body">
+								<text class="demo-nav-art__title">把导航栏交给头图</text>
+								<text class="demo-nav-art__text">背景和分割线都不画，正文仍保持不透明。</text>
+							</view>
+						</view>
+						<view class="demo-nav-strips">
+							<view class="demo-nav-strip-item">
+								<vx-navigation-bar :fixed="false" :status-bar="false" title="品牌底色" back
+									color="#ffffff" bg-color="#d92d20" />
+							</view>
+							<view class="demo-nav-strip-item demo-nav-strip-item--last">
+								<vx-navigation-bar :fixed="false" :status-bar="false" title="渐变背景" back
+									color="#ffffff" bg-color="linear-gradient(90deg, #f79009, #e11d48)" />
+							</view>
+						</view>
+						<text class="demo-hint">自定义底色是字面值，不跟随主题；标题、返回和插槽图标要一起改成白色，对比度由业务保证。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">滚动渐显</text>
+							<text class="demo-section__desc">fade 让背景从 0 增到 maxOpacity，change 回传透明度。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-fade">
+							<view class="demo-nav-fade__bar">
+								<vx-navigation-bar :fixed="false" :status-bar="false" fade
+									:scroll-top="navFadeScrollTop" :color="navFadeColor" title="商品详情" back
+									divider @change="onNavFadeChange">
+									<template #suffix>
+										<view class="demo-nav-action" hover-class="demo-nav-action--pressed"
+											:hover-stay-time="120" @click="onNavAction('收藏')">
+											<vx-icon name="heart" size="lg" :color="navFadeColor" />
+										</view>
+									</template>
+								</vx-navigation-bar>
+							</view>
+							<scroll-view class="demo-nav-fade__scroll" direction="vertical"
+								@scroll="onNavFadeScroll">
+								<view class="demo-nav-fade__hero">
+									<text class="demo-nav-fade__hero-eyebrow">VAPORIX TEA</text>
+									<text class="demo-nav-fade__hero-title">明前新茶</text>
+									<text class="demo-nav-fade__hero-text">早春采摘 · 当日发货</text>
+								</view>
+								<view class="demo-nav-fade__body">
+									<view v-for="row in navFadeRows" :key="row.title"
+										class="demo-nav-fade__row">
+										<text class="demo-nav-fade__row-title">{{ row.title }}</text>
+										<text class="demo-nav-fade__row-meta">{{ row.meta }}</text>
+									</view>
+								</view>
+							</scroll-view>
+						</view>
+						<view class="demo-tabs-status">
+							<text class="demo-tabs-status__label">opacity</text>
+							<text class="demo-tabs-status__text">{{ navFadeOpacityText }}</text>
+						</view>
+						<text class="demo-hint">标题和图标在 change 过 0.6 后换深色；分割线到 0.85 才出现。背景变化只作用于背景层。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">分割线与阴影</text>
+							<text class="demo-section__desc">divider 画线，shadow 用 --vx-shadow-md 并代替线。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-shadow">
+							<view class="demo-nav-shadow__item">
+								<text class="demo-nav-shadow__label">divider</text>
+								<view class="demo-nav-shadow__panel">
+									<view class="demo-nav-shadow__bar">
+										<vx-navigation-bar :fixed="false" :status-bar="false" title="分割线"
+											back divider />
+									</view>
+									<view class="demo-nav-shadow__body">
+										<text class="demo-nav-shadow__text">1px border，通栏，不抢正文。</text>
+									</view>
+								</view>
+							</view>
+							<view class="demo-nav-shadow__item demo-nav-shadow__item--last">
+								<text class="demo-nav-shadow__label">shadow</text>
+								<view class="demo-nav-shadow__panel">
+									<view class="demo-nav-shadow__bar">
+										<vx-navigation-bar :fixed="false" :status-bar="false" title="阴影"
+											back shadow />
+									</view>
+									<view class="demo-nav-shadow__body">
+										<text class="demo-nav-shadow__text">--vx-shadow-md，透明底上不出现。</text>
+									</view>
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">分割线和阴影只在背景透明度到 0.85 以上时出现；两者同时打开时以 shadow 为准。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">插槽与搜索</text>
+							<text class="demo-section__desc">prefix 换头像，suffix 放通知，extra 再排一行搜索。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-device">
+							<vx-navigation-bar :fixed="false" :status-bar="false" title="消息">
+								<template #prefix>
+									<view class="demo-nav-avatar">
+										<image class="demo-nav-avatar__image"
+											src="/static/demo/card/avatar-cs.png" mode="aspectFill" />
+									</view>
+								</template>
+								<template #suffix>
+									<vx-badge absolute :value="3" :offset-y="-4">
+										<view class="demo-nav-action" hover-class="demo-nav-action--pressed"
+											:hover-stay-time="120" @click="onNavAction('通知')">
+											<vx-icon name="bell" size="lg" />
+										</view>
+									</vx-badge>
+								</template>
+								<template #extra>
+									<view class="demo-nav-search">
+										<vx-input v-model="navSearchKeyword" size="sm" shape="pill"
+											placeholder="搜索消息" clearable @confirm="onNavSearch" />
+									</view>
+								</template>
+							</vx-navigation-bar>
+							<view class="demo-nav-body">
+								<view class="demo-nav-message">
+									<text class="demo-nav-message__title">订单已发货</text>
+									<text class="demo-nav-message__meta">刚刚</text>
+								</view>
+								<view class="demo-nav-message">
+									<text class="demo-nav-message__title">会员权益到账</text>
+									<text class="demo-nav-message__meta">10 分钟前</text>
+								</view>
+								<view class="demo-nav-message demo-nav-message--last">
+									<text class="demo-nav-message__title">优惠券即将过期</text>
+									<text class="demo-nav-message__meta">昨天</text>
+								</view>
+							</view>
+						</view>
+						<view class="demo-tabs-status">
+							<text class="demo-tabs-status__label">confirm</text>
+							<text class="demo-tabs-status__text">{{ navSearchText }}</text>
+						</view>
+						<text class="demo-hint">插槽自己带颜色和字号；小程序上 suffix 要让出胶囊，更多动作放 extra。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">商品页组合</text>
+							<text class="demo-section__desc">透明头图导航、搜索、消息和商品卡片放在同一屏。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nav-compose">
+							<view class="demo-nav-compose__hero">
+								<vx-navigation-bar :fixed="false" :status-bar="false" transparent title="鲜果商城"
+									back color="#ffffff">
+									<template #suffix>
+										<view class="demo-nav-action" hover-class="demo-nav-action--pressed"
+											:hover-stay-time="120" @click="onNavAction('消息')">
+											<vx-icon name="message-square" size="lg" color="#ffffff" />
+										</view>
+									</template>
+									<template #extra>
+										<view class="demo-nav-search">
+											<vx-input v-model="navComposeKeyword" size="sm" shape="pill"
+												placeholder="搜索商品" clearable @confirm="onNavSearch" />
+										</view>
+									</template>
+								</vx-navigation-bar>
+								<text class="demo-nav-compose__eyebrow">今日到货</text>
+								<text class="demo-nav-compose__title">早上摘，晚上到</text>
+								<view class="demo-nav-compose__tags">
+									<vx-tag text="当季" type="warning" variant="soft" />
+									<vx-tag text="包邮" type="success" variant="soft" />
+								</view>
+							</view>
+							<view class="demo-nav-compose__body">
+								<view class="demo-nav-compose__grid">
+									<view v-for="item in navComposeItems" :key="item.name"
+										class="demo-nav-compose__card">
+										<image class="demo-nav-compose__image" :src="item.image" mode="aspectFill" />
+										<view class="demo-nav-compose__copy">
+											<text class="demo-nav-compose__name">{{ item.name }}</text>
+											<text class="demo-nav-compose__meta">{{ item.meta }}</text>
+										</view>
+									</view>
+								</view>
+							</view>
+						</view>
+						<text class="demo-hint">导航栏负责标题、返回、搜索和消息；分类要吸顶时放进 vx-sticky，不要叠第二个导航栏。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">固定与事件</text>
+							<text class="demo-section__desc">打开一个 placeholder=false 的固定实例，ready 回传布局。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block type="primary" text="打开固定导航栏"
+									@click="navFixedVisible = true" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block text="关闭固定导航栏" @click="navFixedVisible = false" />
+							</view>
+						</view>
+						<view class="demo-tabs-status">
+							<text class="demo-tabs-status__label">ready</text>
+							<text class="demo-tabs-status__text">{{ navFixedReadyText }}</text>
+						</view>
+						<text class="demo-hint">fixed 默认打开，占位自动补；这里用 placeholder=false 让导航栏盖在页面上，层级 30 高于吸顶条。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 固定实例挂在页面根上，和滚动容器平级；placeholder=false 时不再占位。 -->
+		<vx-navigation-bar v-if="navFixedVisible" :status-bar="false" title="固定导航栏" back divider
+			:placeholder="false" :z-index="30" @back="onNavFixedBack" @ready="onNavFixedReady">
+			<template #suffix>
+				<view class="demo-nav-action" hover-class="demo-nav-action--pressed" :hover-stay-time="120"
+					@click="navFixedVisible = false">
+					<vx-icon name="close" size="lg" />
+				</view>
+			</template>
+		</vx-navigation-bar>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type NavigationBarDemoInfo = {
+		width: number
+		height: number
+		statusBarHeight: number
+		opacity: number
+		windowWidth: number
+		windowHeight: number
+	}
+
+	const navReadyInfo = ref<NavigationBarDemoInfo | null>(null)
+
+	const navFixedInfo = ref<NavigationBarDemoInfo | null>(null)
+
+	const navActionText = ref('还没有操作')
+
+	const navSearchKeyword = ref('')
+
+	const navComposeKeyword = ref('')
+
+	const navSearchText = ref('还没有确认')
+
+	const navFadeScrollTop = ref(0)
+
+	const navFadeOpacity = ref(0)
+
+	const navFixedVisible = ref(false)
+
+	const navFadeRows = [
+		{ title: '采摘与烘焙', meta: '3 月 12 日' },
+		{ title: '顺丰冷链', meta: '次日达' },
+		{ title: '冲泡建议', meta: '85°C / 3 分钟' },
+		{ title: '售后保障', meta: '7 天无理由' }
+	]
+
+	const navComposeItems = [
+		{ name: '春见耙耙柑', meta: '¥39.9 / 5 斤', image: '/static/demo/card/grid-1.jpg' },
+		{ name: '丹东草莓', meta: '¥59.9 / 2 盒', image: '/static/demo/card/grid-2.jpg' },
+		{ name: '海南小台芒', meta: '¥29.9 / 3 斤', image: '/static/demo/card/grid-3.jpg' },
+		{ name: '赣南脐橙', meta: '¥45.9 / 5 斤', image: '/static/demo/card/grid-4.jpg' }
+	]
+
+	const navInfoText = (info: NavigationBarDemoInfo | null): string => {
+		if (info == null) return '等待 ready'
+		return `${Math.round(info.width)} × ${Math.round(info.height)} · 状态栏 ${Math.round(info.statusBarHeight)}`
+	}
+
+	const navReadyText = computed((): string => {
+		return navInfoText(navReadyInfo.value)
+	})
+
+	const navFixedReadyText = computed((): string => {
+		return navInfoText(navFixedInfo.value)
+	})
+
+	const navFadeOpacityText = computed((): string => {
+		return navFadeOpacity.value.toFixed(2)
+	})
+
+	// 背景够实之后标题和图标才换深色；透明度由 change 回传。
+	const navFadeColor = computed((): string => {
+		return navFadeOpacity.value > 0.6 ? 'var(--vx-color-text)' : '#ffffff'
+	})
+
+	const onNavReady = (info: NavigationBarDemoInfo) => {
+		navReadyInfo.value = info
+	}
+
+	const onNavFixedReady = (info: NavigationBarDemoInfo) => {
+		navFixedInfo.value = info
+	}
+
+	const onNavBack = () => {
+		navActionText.value = 'back · 返回由页面处理'
+	}
+
+	const onNavAction = (label: string) => {
+		navActionText.value = `click · ${label}`
+	}
+
+	const onNavSearch = (value: string) => {
+		navSearchText.value = value.length > 0 ? `搜索「${value}」` : '关键词为空'
+	}
+
+	const onNavFadeScroll = (event: UniScrollEvent) => {
+		navFadeScrollTop.value = event.detail.scrollTop
+	}
+
+	const onNavFadeChange = (opacity: number) => {
+		navFadeOpacity.value = opacity
+	}
+
+	const onNavFixedBack = () => {
+		navFixedVisible.value = false
+		navActionText.value = 'back · 已关闭固定导航栏'
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/sticky/sticky'
+	const nextPath: string = '/pages/demo/status-bar/status-bar'
+	const prevName = '吸顶容器'
+	const nextName = '状态栏'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

@@ -1,0 +1,370 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-textarea</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="file-text" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">多行输入框</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">和输入框共用一套令牌，标题顶端对齐，计数与扩展放在内容区底部。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-textarea</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础与计数</text>
+							<text class="demo-section__desc">默认三行。标题跟首行对齐。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-textarea v-model="introValue" label="简介" label-width="72px" required counter
+								:maxlength="140" placeholder="请输入简介" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-textarea v-model="noteValue" label="备注" label-width="72px"
+								placeholder="选填，补充说明" />
+						</view>
+						<text class="demo-hint">已输入 {{ introValue.length }} 字</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">三档只改字号、内边距、圆角和高度。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-textarea v-model="sizeSmIntroValue" size="sm" placeholder="小号 · 13px" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="sizeMdIntroValue" placeholder="常规 · 14px" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-textarea v-model="sizeLgIntroValue" size="lg" placeholder="大号 · 16px" />
+						</view>
+						<text class="demo-hint">内容区 60 / 66 / 72，加上内边距是 76 / 90 / 104。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">高度</text>
+							<text class="demo-section__desc">height 固定高度，auto-height 随内容增高。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-textarea v-model="shortIntroValue" height="64px" placeholder="内容区高度 64px" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="tallIntroValue" height="132px" placeholder="内容区高度 132px" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-textarea v-model="autoIntroValue" auto-height min-height="66px"
+								placeholder="随内容增高，至少三行" />
+						</view>
+						<text class="demo-hint">要稳住布局用 height，跟着内容用 auto-height。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">形态与轮廓</text>
+							<text class="demo-section__desc">outline 描边，plain 无边框，line 只留底边。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-textarea v-model="outlineIntroValue" placeholder="默认描边 · outline" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="plainIntroValue" variant="plain" placeholder="无边框 · plain" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="lineIntroValue" variant="line" placeholder="底部分割线 · line" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="squareIntroValue" shape="square" placeholder="平角 · square" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-textarea v-model="borderIntroValue" border-color="var(--vx-color-warning)"
+								placeholder="自定义描边颜色 · warning" />
+						</view>
+						<text class="demo-hint">border-color 只改默认态。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">字数与扩展</text>
+							<text class="demo-section__desc">extra 在计数左边。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field demo-field--last">
+							<vx-textarea v-model="counterIntroValue" counter :maxlength="140" placeholder="请输入简介">
+								<template #extra>
+									<text class="demo-hint">最多 140 字</text>
+								</template>
+							</vx-textarea>
+						</view>
+						<text class="demo-hint">到上限后计数变红，输入也被 maxlength 拦住。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">状态</text>
+							<text class="demo-section__desc">invalid 只改描边。disabled 不能输入。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-textarea v-model="invalidIntroValue" invalid placeholder="校验失败状态" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea model-value="这是一段已锁定、不可编辑的简介。" label="简介" label-width="72px"
+								disabled />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-textarea model-value="plain 禁用态" variant="plain" disabled />
+						</view>
+						<text class="demo-hint">后面的盖住前面的：聚焦、错误、禁用。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">反馈表单</text>
+							<text class="demo-section__desc">标题、计数和按钮放在一起。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-textarea v-model="feedbackValue" label="反馈内容" label-width="72px" required counter
+								:maxlength="200" min-height="88px" placeholder="请描述你遇到的问题，便于我们定位" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-button block type="primary" text="提交反馈" :loading="submittingFeedback"
+								@click="onFeedbackSubmit" />
+						</view>
+						<text class="demo-hint">演示，不发请求。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type ToastIcon = 'check-circle' | 'close-circle' | 'alert-circle' | 'info' | 'heart'
+
+	type ToastOptions = {
+		text: string
+		type: ToastSemantic
+		duration?: number
+		icon?: ToastIcon | null
+		image?: string
+		showIcon?: boolean
+		bgColor?: string
+		bgOpacity?: number
+		color?: string
+	}
+
+	const toastText = ref('')
+
+	const toastType = ref<ToastSemantic>('default')
+
+	const toastDuration = ref(2000)
+
+	const toastIcon = ref<ToastIcon | null>(null)
+
+	const toastImage = ref('')
+
+	const toastShowIcon = ref(true)
+
+	const toastBgColor = ref('')
+
+	const toastBgOpacity = ref(0.9)
+
+	const toastColor = ref('')
+
+	const toastRef = ref<VxToastComponentPublicInstance | null>(null)
+
+	const introValue = ref('')
+
+	const noteValue = ref('')
+
+	const sizeSmIntroValue = ref('')
+
+	const sizeMdIntroValue = ref('')
+
+	const sizeLgIntroValue = ref('')
+
+	const shortIntroValue = ref('')
+
+	const tallIntroValue = ref('')
+
+	const autoIntroValue = ref('')
+
+	const outlineIntroValue = ref('')
+
+	const plainIntroValue = ref('')
+
+	const lineIntroValue = ref('')
+
+	const squareIntroValue = ref('')
+
+	const borderIntroValue = ref('')
+
+	const counterIntroValue = ref('')
+
+	const invalidIntroValue = ref('')
+
+	const feedbackValue = ref('')
+
+	const submittingFeedback = ref(false)
+
+	const onFeedbackSubmit = () => {
+		if (submittingFeedback.value) return
+		submittingFeedback.value = true
+		setTimeout(() => {
+			submittingFeedback.value = false
+			uni.showToast({ title: '演示：反馈已提交', icon: 'none' })
+		}, 1200)
+	}
+
+	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
+	const showToast = (options: ToastOptions) => {
+		toastType.value = options.type
+		toastText.value = options.text
+		toastDuration.value = options.duration != null ? options.duration : 2000
+		toastIcon.value = options.icon != null ? options.icon : null
+		toastImage.value = options.image != null ? options.image : ''
+		toastShowIcon.value = options.showIcon != null ? options.showIcon : true
+		toastBgColor.value = options.bgColor != null ? options.bgColor : ''
+		toastBgOpacity.value = options.bgOpacity != null ? options.bgOpacity : 0.9
+		toastColor.value = options.color != null ? options.color : ''
+		toastRef.value?.open?.()
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/input/input'
+	const nextPath: string = '/pages/demo/text/text'
+	const prevName = '输入框'
+	const nextName = '文本'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

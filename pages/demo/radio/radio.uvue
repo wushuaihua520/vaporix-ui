@@ -1,0 +1,358 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-radio · vx-radio-group</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="radio-button" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">单项选择器</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">一组只选一项。分组管排布、标记和语义色，单项管文案、说明和自己那一档颜色。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-radio · vx-radio-group</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">v-model 绑选中项的 value；点已选中项不重复抛 change。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<vx-radio-group v-model="plan" @change="onPlanChange">
+							<vx-radio value="basic" label="基础版" />
+							<vx-radio value="pro" label="专业版" />
+							<vx-radio value="team" label="团队版" />
+						</vx-radio-group>
+					</view>
+					<text class="demo-hint">当前选中：{{ plan }}。整组只认一个值，父级写进来的值不在选项里时不显示任何一项。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">列表与卡片</text>
+							<text class="demo-section__desc">layout="list" 一项一行；配 card 收进描边卡片，divider 画分割线。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<vx-radio-group v-model="channel" layout="list" card>
+							<vx-radio value="sms" label="短信" description="发到 151****2222" />
+							<vx-radio value="wechat" label="微信" description="服务号推送" />
+							<vx-radio value="mail" label="邮件" description="hi@vaporix.dev" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<text class="demo-rd-label">layout="list" · 无卡片 · 无分割线</text>
+						<vx-radio-group v-model="channel" layout="list" :card="false" :divider="false">
+							<vx-radio value="sms" label="短信" />
+							<vx-radio value="wechat" label="微信" />
+							<vx-radio value="mail" label="邮件" />
+						</vx-radio-group>
+					</view>
+					<text class="demo-hint">card 只在 list 下生效；分割线默认打开，最后一项不画。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">标记位置</text>
+							<text class="demo-section__desc">placement="start" 在文案前，end 推到行尾。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<text class="demo-rd-label">placement="start" · 默认</text>
+						<vx-radio-group v-model="plan" layout="list">
+							<vx-radio value="basic" label="基础版" />
+							<vx-radio value="pro" label="专业版" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<text class="demo-rd-label">placement="end"</text>
+						<vx-radio-group v-model="plan" layout="list" placement="end">
+							<vx-radio value="basic" label="基础版" />
+							<vx-radio value="pro" label="专业版" />
+						</vx-radio-group>
+					</view>
+					<text class="demo-hint">行尾标记和文案之间是弹性留白；整行可点，热区不受标记位置影响。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">样式与尺寸</text>
+							<text class="demo-section__desc">variant 切圆圈或只画对号；size 三档 28 / 32 / 36。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<text class="demo-rd-label">variant="circle" · 默认</text>
+						<vx-radio-group v-model="plan">
+							<vx-radio value="basic" label="圆圈" />
+							<vx-radio value="pro" label="加对号" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<text class="demo-rd-label">variant="check" · 只画对号</text>
+						<vx-radio-group v-model="plan" variant="check">
+							<vx-radio value="basic" label="基础版" />
+							<vx-radio value="pro" label="专业版" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<text class="demo-rd-label">size="sm" / "md" / "lg"</text>
+						<vx-radio-group v-model="sizeDemo" size="sm">
+							<vx-radio value="s" label="sm" />
+							<vx-radio value="m" label="sm 组" />
+						</vx-radio-group>
+						<view class="demo-rd-gap">
+							<vx-radio-group v-model="sizeDemo" size="md">
+								<vx-radio value="s" label="md" />
+								<vx-radio value="m" label="md 组" />
+							</vx-radio-group>
+						</view>
+						<view class="demo-rd-gap">
+							<vx-radio-group v-model="sizeDemo" size="lg">
+								<vx-radio value="s" label="lg" />
+								<vx-radio value="m" label="lg 组" />
+							</vx-radio-group>
+						</view>
+					</view>
+					<text class="demo-hint">同一组只用一档尺寸；对号样式没有描边，borderColor 对它不生效。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">type 改选中标记的语义色；warning 用 warning-pressed 填充。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<vx-radio-group v-model="tone" type="primary">
+							<vx-radio value="p" label="primary" />
+							<vx-radio value="s" label="success" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<vx-radio-group v-model="tone" type="success">
+							<vx-radio value="p" label="success 组" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<vx-radio-group v-model="tone" type="warning">
+							<vx-radio value="p" label="warning 组" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<vx-radio-group v-model="tone" type="danger">
+							<vx-radio value="p" label="danger 组" />
+						</vx-radio-group>
+					</view>
+					<text class="demo-hint">语义色表达状态，不用于装饰；普通选项组用 primary 或 default。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">color 改填充，borderColor 改未选中描边，checkColor 改对号。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<vx-radio-group v-model="colorDemo">
+							<vx-radio value="a" label="color · #8a2b33" color="#8a2b33" />
+							<vx-radio value="b" label="borderColor · #2f6f4f" border-color="#2f6f4f" />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<vx-radio-group v-model="colorDemo" variant="check">
+							<vx-radio value="a" label="checkColor · #7a5b13" check-color="#7a5b13" />
+							<vx-radio value="b" label="默认 primary" />
+						</vx-radio-group>
+					</view>
+					<text class="demo-hint">三者都是字面值、不跟随主题；checkColor 优先于 color，禁用时都不生效。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">状态与组合</text>
+							<text class="demo-section__desc">单项禁用不抛 change；整组禁用一起转灰；extra 贴行尾。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<vx-radio-group v-model="plan" layout="list" card>
+							<vx-radio value="basic" label="基础版" description="个人使用，含 45 个基础组件" />
+							<vx-radio value="pro" label="专业版" description="本月限时 8 折">
+								<template #extra>
+									<vx-tag type="warning" variant="soft" size="sm" text="推荐" />
+								</template>
+							</vx-radio>
+							<vx-radio value="team" label="团队版" description="暂未开放" disabled />
+						</vx-radio-group>
+					</view>
+					<view class="demo-rd-stage demo-rd-stage--next">
+						<text class="demo-rd-label">整组禁用</text>
+						<vx-radio-group v-model="plan" disabled>
+							<vx-radio value="basic" label="基础版" />
+							<vx-radio value="pro" label="专业版" />
+						</vx-radio-group>
+					</view>
+					<text class="demo-hint">extra 排在文案后方；标记在行尾时它落在文案与标记之间。禁用原因写在外层说明里。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 单选演示：整组共用一个 v-model，单项只带自己的 value 和文案。
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const plan = ref('pro')
+	const channel = ref('wechat')
+	const sizeDemo = ref('s')
+	const tone = ref('p')
+	const colorDemo = ref('a')
+
+	const onPlanChange = (value: string) => {
+		// value 已经写回 v-model；请求和埋点放这里
+	}
+
+	const prevPath: string = '/pages/demo/number-box/number-box'
+	const nextPath: string = '/pages/demo/checkbox/checkbox'
+	const prevName = '数字框'
+	const nextName = '多项选择器'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 单选组自带外框和分割线，演示用底板给它们一层浅底。 */
+	.demo-rd-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+		padding-left: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-rd-stage--next {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-rd-label {
+		margin-bottom: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-rd-gap {
+		margin-top: var(--vx-space-sm);
+	}
+</style>

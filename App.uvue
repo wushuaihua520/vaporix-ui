@@ -1,0 +1,12 @@
+<script setup>
+	onLaunch(() => {
+		console.log('[Vaporix UI] app launched')
+	})
+</script>
+
+<style>
+	/* #ifndef WEB */
+	@import "@/uni_modules/vaporix-ui/libs/style/variables.css";
+	@import "@/pages/demo/shared/demo.css";
+	/* #endif */
+</style>

@@ -1,0 +1,172 @@
+<template>
+	<!-- 分组只维护选中的 value 和整组外观；标记、文案和点击由 vx-radio 提供。 -->
+	<view v-if="$slots['default'] != null" :class="rootClass">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxRadioGroupProps, VxRadioLayout, VxRadioPlacement, VxRadioVariant } from './props'
+	import { VX_RADIO_CONTEXT, VxRadioContext } from './context'
+	import { VxSemantic, VxSize } from '../../../libs/types/common'
+
+	const props = withDefaults(defineProps<VxRadioGroupProps>(), {
+		size: 'md',
+		type: 'primary',
+		variant: 'circle',
+		placement: 'start',
+		layout: 'inline',
+		divider: true,
+		card: false,
+		disabled: false
+	})
+
+	// v-model 是选中项的 value。空串表示没有选中；没有绑定时 defineModel 自己保存局部值，组件仍能点选。
+	const modelValue = defineModel({
+		type: String,
+		default: ''
+	})
+
+	const emit = defineEmits<{
+		change: [value: string]
+	}>()
+
+	// 项挂载顺序就是 DOM 顺序，最后一项据此不画分割线，业务不用手写 index。
+	const ids = ref<Array<string>>([])
+
+	const hasId = (list: Array<string>, id: string): boolean => {
+		for (let index = 0; index < list.length; index++) {
+			if (list[index] === id) return true
+		}
+		return false
+	}
+
+	const appendId = (list: Array<string>, id: string): Array<string> => {
+		const next: Array<string> = []
+		for (let index = 0; index < list.length; index++) {
+			next.push(list[index])
+		}
+		next.push(id)
+		return next
+	}
+
+	const removeId = (list: Array<string>, id: string): Array<string> => {
+		const next: Array<string> = []
+		for (let index = 0; index < list.length; index++) {
+			if (list[index] !== id) next.push(list[index])
+		}
+		return next
+	}
+
+	const register = (id: string) => {
+		if (hasId(ids.value, id)) return
+		ids.value = appendId(ids.value, id)
+	}
+
+	const unregister = (id: string) => {
+		if (!hasId(ids.value, id)) return
+		ids.value = removeId(ids.value, id)
+	}
+
+	const isLast = (id: string): boolean => {
+		const list = ids.value
+		return list.length > 0 && list[list.length - 1] === id
+	}
+
+	const isChecked = (value: string): boolean => {
+		return value.length > 0 && modelValue.value === value
+	}
+
+	// 空 value 在分组里没有确定的选中键；已经选中再点同一项不重复抛事件。
+	const select = (value: string) => {
+		if (props.disabled) return
+		if (value.length === 0) return
+		if (modelValue.value === value) return
+		modelValue.value = value
+		emit('change', value)
+	}
+
+	// 不认识的尺寸按 md，不认识的语义色按 default；几项共用一个收口函数，class 只拼 sm / lg。
+	const sizeKey = (value: VxSize): VxSize => {
+		if (value === 'sm' || value === 'lg') return value
+		return 'md'
+	}
+
+	const typeKey = (value: VxSemantic): VxSemantic => {
+		if (value === 'primary' || value === 'success' || value === 'info' || value === 'warning' || value === 'danger') {
+			return value
+		}
+		return 'default'
+	}
+
+	const variantKey = (value: VxRadioVariant): VxRadioVariant => {
+		return value === 'check' ? 'check' : 'circle'
+	}
+
+	const placementKey = (value: VxRadioPlacement): VxRadioPlacement => {
+		return value === 'end' ? 'end' : 'start'
+	}
+
+	const layoutKey = (value: VxRadioLayout): VxRadioLayout => {
+		return value === 'list' ? 'list' : 'inline'
+	}
+
+	// 单项通过 inject 读这里的函数；函数在单项的 computed 里执行时，依赖由单项的 computed 收集。
+	const context: VxRadioContext = {
+		isChecked: isChecked,
+		select: select,
+		size: (): VxSize => sizeKey(props.size),
+		type: (): VxSemantic => typeKey(props.type),
+		variant: (): VxRadioVariant => variantKey(props.variant),
+		placement: (): VxRadioPlacement => placementKey(props.placement),
+		layout: (): VxRadioLayout => layoutKey(props.layout),
+		divider: (): boolean => props.divider,
+		disabled: (): boolean => props.disabled,
+		register: register,
+		unregister: unregister,
+		isLast: isLast
+	}
+
+	provide(VX_RADIO_CONTEXT, context)
+
+	// 卡片只给列表用：整组一圈描边和圆角，行自己铺满；inline 仍由外层容器提供边界。
+	const rootClass = computed((): string => {
+		const layout = layoutKey(props.layout)
+		let name = 'vx-radio-group'
+		if (layout === 'list') name += ' vx-radio-group--list'
+		if (props.card && layout === 'list') name += ' vx-radio-group--card'
+		return name
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* inline 横排并自动换行，项之间靠右外边距分开；宽度跟随父级，不加外部间距。
+	   flex-shrink 归零，放进纵向 flex 页面时不会被压扁。 */
+	.vx-radio-group {
+		flex-direction: row;
+		flex-wrap: wrap;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.vx-radio-group--list {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	/* 卡片列表：surface 底、1px 描边、md 圆角，并裁掉行按下态的四角。 */
+	.vx-radio-group--card {
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+</style>

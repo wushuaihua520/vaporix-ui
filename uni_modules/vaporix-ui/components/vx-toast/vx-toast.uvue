@@ -1,0 +1,318 @@
+<template>
+	<!-- 轻提示是全屏浮层：盒子居中，拦住盒子外面的点击，不占布局。
+	     App 上相对页面（导航栏下方）定位，Web 上相对视口。 -->
+	<view v-if="show" class="vx-toast" :style="rootStyle" @click.stop="onTap">
+		<view class="vx-toast__box" :style="boxStyle">
+			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明。 -->
+			<view class="vx-toast__bg" :style="bgStyle"></view>
+			<view v-if="showIcon" class="vx-toast__icon">
+				<!-- 自定义图标地址优先；图片按原样展示，不做圆角裁切。 -->
+				<image v-if="hasImage" class="vx-toast__image" :src="image" mode="aspectFit" />
+				<text v-else :class="glyphClass" :style="foregroundStyle">{{ glyph }}</text>
+			</view>
+			<text class="vx-toast__text" :style="foregroundStyle">{{ text }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxToastProps } from './props'
+	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+
+	const props = withDefaults(defineProps<VxToastProps>(), {
+		text: '',
+		type: 'default',
+		duration: 2000,
+		maxWidth: '240px',
+		image: '',
+		variant: 'regular',
+		showIcon: true,
+		zIndex: 200,
+		bgColor: '',
+		bgOpacity: 0.9,
+		color: ''
+	})
+
+	// 自动关闭和 close() 都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		close: []
+	}>()
+
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let timer = 0
+
+	const stopTimer = () => {
+		if (timer === 0) return
+		clearTimeout(timer)
+		timer = 0
+	}
+
+	const startTimer = () => {
+		stopTimer()
+		if (props.duration <= 0) return
+		timer = setTimeout(() => {
+			timer = 0
+			close()
+		}, props.duration)
+	}
+
+	// 已经开着时 watch 不触发，要在这里重新计时。从关到开交给 watch，避免连开两次表。
+	const open = () => {
+		if (show.value) startTimer()
+		else show.value = true
+	}
+
+	const close = () => {
+		stopTimer()
+		if (!show.value) return
+		show.value = false
+		emit('close')
+	}
+
+	// 父组件把 show 改成 false 时只停表，不再回抛 close。
+	watch(show, (value: boolean) => {
+		if (value) startTimer()
+		else stopTimer()
+	})
+
+	// 同一条提示换了文案、类型、图标或时长就重新计时，业务不用先关再开。
+	const contentKey = computed((): string => {
+		return `${props.type}|${props.text}|${props.duration}|${props.icon}|${props.image}|${props.showIcon}|${props.variant}`
+	})
+
+	watch(contentKey, () => {
+		if (show.value) startTimer()
+	})
+
+	// watch 不立即执行，挂载时已经打开的要在这里计时。
+	if (show.value) startTimer()
+
+	onUnmounted(() => {
+		stopTimer()
+	})
+
+	// 语义只决定默认图标，盒子始终是反相底；结果由图标形状和文案表达。
+	const defaultIcon = (type: string): VxIconName => {
+		if (type === 'success') return 'check-circle'
+		if (type === 'danger') return 'close-circle'
+		if (type === 'warning') return 'alert-circle'
+		if (type === 'default') return 'message-circle'
+		// primary 不表达结果，和 info 共用信息圆。
+		return 'info'
+	}
+
+	const iconName = computed((): VxIconName => {
+		if (props.icon != null && props.icon.length > 0) return props.icon
+		return defaultIcon(props.type)
+	})
+
+	const glyph = computed((): string => {
+		const value = VX_ICON_GLYPHS[iconName.value]
+		return value != null ? value : ''
+	})
+
+	// 图标和文案共用前景色，color 只改这一处；图片不参与着色。
+	const foregroundStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	// extend 图标要业务先引入 icons-extend.css；font-family 仍由组件按 tier 切。
+	const glyphClass = computed((): string => {
+		let name = 'vx-toast__glyph'
+		const tier = VX_ICON_TIER[iconName.value]
+		if (props.variant === 'fill') {
+			name += tier === 'extend' ? ' vx-toast__glyph--extend-fill' : ' vx-toast__glyph--fill'
+		} else if (tier === 'extend') {
+			name += ' vx-toast__glyph--extend'
+		}
+		return name
+	})
+
+	// 外层已经看过 showIcon，这里只分图片和字形。
+	const hasImage = computed((): boolean => {
+		return props.image.length > 0
+	})
+
+	const rootStyle = computed((): string => {
+		return `z-index: ${props.zIndex};`
+	})
+
+	// maxWidth 需要带单位；盒子用 border-box，内边距不会把宽度撑出去。
+	const boxStyle = computed((): string => {
+		let style = ''
+		if (props.maxWidth.length > 0) style += `max-width: ${props.maxWidth};`
+		return style
+	})
+
+	// 透明度只作用在底色上，不把文字和图标一起淡掉。
+	const bgOpacity = computed((): number => {
+		const value = props.bgOpacity
+		if (!(value >= 0)) return 0
+		return value > 1 ? 1 : value
+	})
+
+	const bgStyle = computed((): string => {
+		let style = ''
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		style += `opacity: ${bgOpacity.value};`
+		return style
+	})
+
+	// 浮层挡住页面时，点一下提前收起；常驻提示也不会没有出口。
+	const onTap = () => {
+		close()
+	}
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 全屏定位层只有居中一个位置，盒子外面的点击落在这一层上。
+	   层级写在行内，默认 200。 */
+	.vx-toast {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		box-sizing: border-box;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+	}
+
+	/* 24 上下 + 22 行高 = 70，纯文字也有稳定比例；带图标时 40 + 12 + 22 + 48。
+	   底色放在独立的 bg 层，盒子本身透明，阴影仍画在盒子上。
+	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上 24 的内边距才不会被挤掉。 */
+	.vx-toast__box {
+		position: relative;
+		box-sizing: border-box;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		min-width: var(--vx-toast-min-width);
+		padding: var(--vx-space-xl);
+		border-radius: var(--vx-radius-md);
+		box-shadow: var(--vx-shadow-lg);
+	}
+
+	/* 只让底色带透明度：文字和图标不受影响，默认 0.9，和页面内容有轻微叠影。 */
+	.vx-toast__bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-text);
+	}
+
+	/* 图标和文案压在 bg 层上；没有图标时这一层不渲染，不占高度。
+	   图片和字形共用这一格，两种图标占的高度相同。 */
+	.vx-toast__icon {
+		position: relative;
+		z-index: 1;
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-toast-icon-size);
+		height: var(--vx-toast-icon-size);
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.vx-toast__image {
+		flex-shrink: 0;
+		width: var(--vx-toast-icon-size);
+		height: var(--vx-toast-icon-size);
+	}
+
+	/* 40 的图标不并入 vx-icon 的三档；和评分星形一样，直接用核心字体字形。
+	   宽高和字号同一档，字面宽不会把这一格撑出 40。 */
+	.vx-toast__glyph {
+		flex-shrink: 0;
+		width: var(--vx-toast-icon-size);
+		height: var(--vx-toast-icon-size);
+		font-family: VaporixIcons;
+		font-size: var(--vx-toast-icon-size);
+		line-height: var(--vx-toast-icon-size);
+		font-weight: var(--vx-weight-regular);
+		font-style: normal;
+		letter-spacing: 0;
+		text-align: center;
+		color: var(--vx-color-text-inverse);
+	}
+
+	.vx-toast__glyph--fill {
+		font-family: VaporixIconsFill;
+	}
+
+	.vx-toast__glyph--extend {
+		font-family: VaporixIconsExtend;
+	}
+
+	.vx-toast__glyph--extend-fill {
+		font-family: VaporixIconsExtendFill;
+	}
+
+	/* 文案用正文档，不借控件字号。
+	   这一层在纵向 flex 里，收缩发生在高度上，所以不压缩；换行靠最小宽度压成 0。
+	   App 默认 keep、Web 默认 pre-line，写明 normal，长英文按词换行。 */
+	.vx-toast__text {
+		position: relative;
+		z-index: 1;
+		flex-shrink: 0;
+		min-width: 0;
+		/* #ifdef WEB */
+		max-width: 100%;
+		/* #endif */
+		white-space: normal;
+		color: var(--vx-color-text-inverse);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，淡入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   Web 上这一层要接住点击，同时不要把手势传给下面的页面。 */
+	/* #ifdef WEB */
+	.vx-toast {
+		touch-action: none;
+		user-select: none;
+		cursor: pointer;
+	}
+
+	.vx-toast__box {
+		animation-name: vx-toast-in;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-toast-in {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+	/* #endif */
+</style>

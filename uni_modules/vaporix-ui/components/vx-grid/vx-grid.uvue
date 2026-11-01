@@ -1,0 +1,47 @@
+<template>
+	<!-- 宫格只负责排列和外观，格子由 vx-grid-item 提供。 -->
+	<!-- 列数写在格子上，网格自己不知道有几列；同一组格子用同一个 columns。 -->
+	<!-- 没有格子时不留空外框。 -->
+	<view v-if="$slots['default'] != null" :class="rootClass">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxGridProps } from './props'
+
+	const props = withDefaults(defineProps<VxGridProps>(), {
+		variant: 'card'
+	})
+
+	// 基础态保留 surface 底；card 再补描边、圆角和裁切，平面宫格不再挂 class。
+	const rootClass = computed((): string => {
+		let name = 'vx-grid'
+		if (props.variant === 'card') name += ' vx-grid--card'
+		return name
+	})
+</script>
+
+<style>
+	/* 宫格只占父级宽度，不放外部间距；列宽由格子自己的 columns 决定。
+	   Web 默认 content-box，card 的描边加在 100% 上会撑出父级。
+	   min-width 压成 0，放进横向 flex 时才能跟着父级收缩。 */
+	.vx-grid {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: stretch;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 卡片形态负责外轮廓和四角裁切，格子的分隔线只画内部。 */
+	.vx-grid--card {
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+	}
+</style>

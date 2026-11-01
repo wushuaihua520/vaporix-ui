@@ -1,0 +1,465 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-steps</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="list-checks" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">步骤条</text>
+								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">节点固定正圆，连线 1px；待处理态只换描边和文字色，不提供形状选项。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-steps</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">水平方向</text>
+							<text class="demo-section__desc">当前步骤用勾，之前的步骤用小圆点；当前步骤之前的连线用语义色。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-steps :items="stepsPlainEntries" :active="1" />
+					</view>
+					<text class="demo-hint">active 从 0 开始，-1 表示还没开始；传入越界索引时会收到最后一步。横向每步等宽，适合 2–5 个短步骤。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">数字步骤</text>
+							<text class="demo-section__desc">已完成和待处理都显示序号，当前步骤仍然是勾。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-steps :items="stepsPlainEntries" :active="2" variant="number" />
+					</view>
+					<text class="demo-hint">序号节点用完整圆，待处理态只换描边和文字色；当前步骤实心并换成勾，位置和尺寸不跳。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">垂直方向</text>
+							<text class="demo-section__desc">success 圆点、danger 序号；纵向步骤之间留 24。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-steps-group">
+							<text class="demo-steps-label">success · dot</text>
+							<vx-steps direction="vertical" type="success" :items="stepsVerticalEntries" :active="1" />
+						</view>
+						<view class="demo-steps-group demo-steps-group--spaced">
+							<text class="demo-steps-label">danger · number</text>
+							<vx-steps direction="vertical" variant="number" type="danger"
+								:items="stepsVerticalEntries" :active="1" />
+						</view>
+					</view>
+					<text class="demo-hint">纵向适合文案较长、步骤较多的流程；节点列固定宽度，说明在右侧换行，连线从节点中心接到下一个节点中心。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义图标</text>
+							<text class="demo-section__desc">icon 覆盖圆点和序号；已完成浅底，当前实心，待处理浅灰。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-steps-label">icon · line-style="dashed"</text>
+						<vx-steps :items="stepsIconEntries" :active="2" line-style="dashed" />
+					</view>
+					<text class="demo-hint">图标节点不受 variant 影响。扩展图标要先引入 icons-extend.css；这里用核心图标，图标字重可以在记录里切 fill。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">节点 20 / 24 / 28，圆点 6 / 8 / 10，序号 12 / 13 / 14。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-steps-group">
+							<text class="demo-steps-label">sm · 节点 20</text>
+							<vx-steps size="sm" :items="stepsSizeEntries" :active="1" />
+						</view>
+						<view class="demo-steps-group demo-steps-group--spaced">
+							<text class="demo-steps-label">md · 节点 24</text>
+							<vx-steps :items="stepsSizeEntries" :active="1" />
+						</view>
+						<view class="demo-steps-group demo-steps-group--spaced">
+							<text class="demo-steps-label">lg · 节点 28</text>
+							<vx-steps size="lg" :items="stepsSizeEntries" :active="1" />
+						</view>
+					</view>
+					<text class="demo-hint">尺寸只改节点、圆点、序号、标题、说明和间距；时间固定 13 / 20，不跟着放大。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">语义色</text>
+							<text class="demo-section__desc">type 同时改当前节点、当前标题和已完成连线。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-steps-type">
+							<text class="demo-steps-type__name">primary</text>
+							<view class="demo-steps-type__bar">
+								<vx-steps :items="stepsTypeEntries" :active="1" type="primary" />
+							</view>
+						</view>
+						<view class="demo-steps-type">
+							<text class="demo-steps-type__name">success</text>
+							<view class="demo-steps-type__bar">
+								<vx-steps :items="stepsTypeEntries" :active="1" type="success" />
+							</view>
+						</view>
+						<view class="demo-steps-type">
+							<text class="demo-steps-type__name">info</text>
+							<view class="demo-steps-type__bar">
+								<vx-steps :items="stepsTypeEntries" :active="1" type="info" />
+							</view>
+						</view>
+						<view class="demo-steps-type">
+							<text class="demo-steps-type__name">warning</text>
+							<view class="demo-steps-type__bar">
+								<vx-steps :items="stepsTypeEntries" :active="1" type="warning" />
+							</view>
+						</view>
+						<view class="demo-steps-type">
+							<text class="demo-steps-type__name">danger</text>
+							<view class="demo-steps-type__bar">
+								<vx-steps :items="stepsTypeEntries" :active="1" type="danger" />
+							</view>
+						</view>
+						<view class="demo-steps-type demo-steps-type--last">
+							<text class="demo-steps-type__name">default</text>
+							<view class="demo-steps-type__bar">
+								<vx-steps :items="stepsTypeEntries" :active="1" type="default" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">已完成步骤的标题保持正文色，只有当前步骤用语义色；说明和时间始终是次要灰，状态不靠颜色单独表达。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">线条样式</text>
+							<text class="demo-section__desc">solid 实线、dashed 虚线，只改 1px 连线。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-steps-group">
+							<text class="demo-steps-label">solid</text>
+							<vx-steps :items="stepsPlainEntries" :active="1" />
+						</view>
+						<view class="demo-steps-group demo-steps-group--spaced">
+							<text class="demo-steps-label">dashed</text>
+							<vx-steps :items="stepsPlainEntries" :active="1" line-style="dashed" />
+						</view>
+					</view>
+					<text class="demo-hint">已完成段用当前语义色，未完成段用 border；虚线适合草稿、待确认的流程，同一组只保留一种线型。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">可点击</text>
+							<text class="demo-section__desc">clickable 打开整步热区，click 只抛索引。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-steps :items="stepsPlainEntries" :active="stepsInteractiveActive" clickable
+							@click="onStepsClick" />
+						<view class="demo-steps-status">
+							<text class="demo-steps-status__text">{{ stepsStatusText }}</text>
+							<text class="demo-steps-status__meta">点击任意步骤切换</text>
+						</view>
+						<view class="demo-actions demo-steps-actions">
+							<view class="demo-steps-actions__item">
+								<vx-button block size="sm" text="上一步" @click="stepsPrev" />
+							</view>
+							<view class="demo-steps-actions__item demo-steps-actions__item--last">
+								<vx-button block size="sm" type="primary" text="下一步" @click="stepsNext" />
+							</view>
+						</view>
+						<view class="demo-steps-reset">
+							<vx-button size="sm" variant="link" text="回到未开始" @click="stepsReset" />
+						</view>
+					</view>
+					<text class="demo-hint">clickable 默认关闭；打开后按下整步变淡，点击停在步骤上。组件不维护内部状态，父级用 active 和 click 同步；active=-1 时所有步骤都是待处理。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">标题、单号和操作交给卡片，步骤条只负责进度。</text>
+						</view>
+					</view>
+					<vx-card title="订单进度" meta="订单 20261025">
+						<vx-steps direction="vertical" :items="stepsOrderEntries" :active="stepsCompositionActive" />
+						<template #suffix>
+							<view class="demo-steps-card__foot">
+								<text class="demo-steps-card__meta">预计 10 月 28 日送达</text>
+								<vx-button size="sm" type="primary" text="订阅提醒" @click="onStepsCardAction" />
+							</view>
+						</template>
+					</vx-card>
+					<text class="demo-hint">步骤条不染色卡片，也不承载按钮；进度放卡片正文，标题、单号和操作由卡片头部、底部承担。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type ToastIcon = 'check-circle' | 'close-circle' | 'alert-circle' | 'info' | 'heart'
+
+	type ToastOptions = {
+		text: string
+		type: ToastSemantic
+		duration?: number
+		icon?: ToastIcon | null
+		image?: string
+		showIcon?: boolean
+		bgColor?: string
+		bgOpacity?: number
+		color?: string
+	}
+
+	const toastText = ref('')
+
+	const toastType = ref<ToastSemantic>('default')
+
+	const toastDuration = ref(2000)
+
+	const toastIcon = ref<ToastIcon | null>(null)
+
+	const toastImage = ref('')
+
+	const toastShowIcon = ref(true)
+
+	const toastBgColor = ref('')
+
+	const toastBgOpacity = ref(0.9)
+
+	const toastColor = ref('')
+
+	const toastRef = ref<VxToastComponentPublicInstance | null>(null)
+
+	const iconVariant = ref<'regular' | 'fill'>('regular')
+
+	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
+	const showToast = (options: ToastOptions) => {
+		toastType.value = options.type
+		toastText.value = options.text
+		toastDuration.value = options.duration != null ? options.duration : 2000
+		toastIcon.value = options.icon != null ? options.icon : null
+		toastImage.value = options.image != null ? options.image : ''
+		toastShowIcon.value = options.showIcon != null ? options.showIcon : true
+		toastBgColor.value = options.bgColor != null ? options.bgColor : ''
+		toastBgOpacity.value = options.bgOpacity != null ? options.bgOpacity : 0.9
+		toastColor.value = options.color != null ? options.color : ''
+		toastRef.value?.open?.()
+	}
+
+	// 步骤条演示：active 是当前步骤，-1 表示还没开始；带 icon 的记录用图标节点。
+	type StepsDemoEntry = {
+		title?: string
+		description?: string
+		time?: string
+		icon?: string
+		iconVariant?: 'regular' | 'fill'
+	}
+
+	const stepsOrderEntries: StepsDemoEntry[] = [
+		{ title: '提交订单', description: '订单已创建', time: '10-25 09:12' },
+		{ title: '支付订单', description: '等待支付', time: '10-25 09:20' },
+		{ title: '商家发货', description: '预计 24 小时内', time: '10-26 14:30' },
+		{ title: '确认收货', time: '10-28 18:00' }
+	]
+
+	// 横向演示去掉说明，四列在手机上仍能放下标题和时间。
+	const stepsPlainEntries: StepsDemoEntry[] = [
+		{ title: '提交订单', time: '10-25 09:12' },
+		{ title: '支付订单', time: '10-25 09:20' },
+		{ title: '商家发货', time: '10-26 14:30' },
+		{ title: '确认收货', time: '10-28 18:00' }
+	]
+
+	const stepsVerticalEntries: StepsDemoEntry[] = [
+		{ title: '提交申请', description: '资料已上传', time: '10-25 09:12' },
+		{ title: '平台审核', description: '审核中', time: '10-25 10:05' },
+		{ title: '签署合同', time: '10-26 14:30' },
+		{ title: '开通完成', time: '10-28 18:00' }
+	]
+
+	const stepsIconEntries: StepsDemoEntry[] = [
+		{ title: '需求确认', icon: 'file-text', time: '10-25 09:12' },
+		{ title: '方案设计', icon: 'edit', time: '10-25 10:05' },
+		{ title: '开发实现', icon: 'laptop', time: '10-26 14:30' },
+		{ title: '上线发布', icon: 'upload', time: '10-28 18:00' }
+	]
+
+	const stepsSizeEntries: StepsDemoEntry[] = [
+		{ title: '提交', time: '09:12' },
+		{ title: '审核', time: '10:05' },
+		{ title: '完成', time: '14:30' }
+	]
+
+	const stepsTypeEntries: StepsDemoEntry[] = [
+		{ title: '提交', time: '09:12' },
+		{ title: '审核', time: '10:05' },
+		{ title: '完成', time: '14:30' }
+	]
+
+	const stepsInteractiveActive = ref(1)
+
+	const stepsCompositionActive = ref(2)
+
+	const onStepsClick = (index: number) => {
+		stepsInteractiveActive.value = index
+	}
+
+	const stepsPrev = () => {
+		if (stepsInteractiveActive.value <= 0) return
+		stepsInteractiveActive.value -= 1
+	}
+
+	const stepsNext = () => {
+		if (stepsInteractiveActive.value >= stepsPlainEntries.length - 1) return
+		stepsInteractiveActive.value += 1
+	}
+
+	const stepsReset = () => {
+		stepsInteractiveActive.value = -1
+	}
+
+	const stepsStatusText = computed((): string => {
+		if (stepsInteractiveActive.value < 0) return '还没开始'
+		return `当前第 ${stepsInteractiveActive.value + 1} 步`
+	})
+
+	const onStepsCardAction = () => {
+		showToast({ text: '已订阅物流提醒', type: 'success' })
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/time-axis/time-axis'
+	const nextPath: string = '/pages/demo/progress/progress'
+	const prevName = '时间轴'
+	const nextName = '进度条'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

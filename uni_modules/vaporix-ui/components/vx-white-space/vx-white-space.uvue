@@ -1,0 +1,49 @@
+<template>
+	<!-- 只占高度：没有插槽、事件和按下态；需要左右留白用 vx-wing-blank。 -->
+	<view :class="rootClass" :style="rootStyle"></view>
+</template>
+
+<script setup>
+	import { VxWhiteSpaceProps } from './props'
+
+	const props = withDefaults(defineProps<VxWhiteSpaceProps>(), {
+		size: 'md',
+		height: '',
+		bgColor: ''
+	})
+
+	// md 是基础样式，不挂没有规则的修饰 class。
+	const rootClass = computed((): string => {
+		if (props.size === 'sm') return 'vx-white-space vx-white-space--sm'
+		if (props.size === 'lg') return 'vx-white-space vx-white-space--lg'
+		return 'vx-white-space'
+	})
+
+	// 自定义高度用行内样式盖过档位；值和单位由业务保证。
+	// 单位缺失时这条声明会被丢掉，档位仍然生效。
+	const rootStyle = computed((): string => {
+		let style = ''
+		if (props.height.length > 0) style += `height: ${props.height};`
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		return style
+	})
+</script>
+
+<style>
+	/* 纵向间隔：宽度跟随父级，不描边、不加圆角、不接点击。
+	   flex-shrink 归零，放进纵向 flex 页面时高度不被压扁。
+	   class 字符串里 sm / lg 靠后，App 上盖过基础 height；样式表顺序与此一致。 */
+	.vx-white-space {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-space-md);
+	}
+
+	.vx-white-space--sm {
+		height: var(--vx-space-sm);
+	}
+
+	.vx-white-space--lg {
+		height: var(--vx-space-lg);
+	}
+</style>

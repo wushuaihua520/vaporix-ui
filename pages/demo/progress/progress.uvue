@@ -1,0 +1,401 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-progress</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="battery" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">进度条</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">只画比例和读数；标签、数值和业务状态留在同一行或外面的卡片里。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-progress</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">percent 传 0–100，show-text 在右侧显示百分比。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-progress :percent="0" show-text />
+						<view class="demo-progress-row demo-progress-row--spaced">
+							<vx-progress :percent="60" show-text />
+						</view>
+						<view class="demo-progress-row demo-progress-row--spaced">
+							<vx-progress :percent="80" show-text />
+						</view>
+						<view class="demo-progress-row demo-progress-row--spaced">
+							<vx-progress :percent="100" show-text />
+						</view>
+						<text class="demo-hint demo-progress-hint">越界会收敛到 0–100；默认百分比最多保留一位小数，60 显示 60%，94.5 显示 94.5%。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">标签与数值</text>
+							<text class="demo-section__desc">label 在左，show-text 或 text 在右；数值可换成一行业务文案。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-progress label="上传进度" :percent="64" show-text />
+						<view class="demo-progress-row demo-progress-row--spaced">
+							<vx-progress label="已用空间" :percent="76.5" show-text />
+						</view>
+						<view class="demo-progress-row demo-progress-row--spaced">
+							<vx-progress label="任务完成度" :percent="94.5" show-text />
+						</view>
+						<view class="demo-progress-row demo-progress-row--spaced">
+							<vx-progress label="同步队列" :percent="42" text="处理中" />
+						</view>
+						<text class="demo-hint demo-progress-hint">text 非空时优先于 show-text；标签单行省略，重要说明放在卡片或列表行里。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">type 只改填充；warning 用 warning-pressed，default 用正文色。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-progress-type">
+							<text class="demo-progress-type__name">primary</text>
+							<vx-progress :percent="60" type="primary" show-text />
+						</view>
+						<view class="demo-progress-type">
+							<text class="demo-progress-type__name">success</text>
+							<vx-progress :percent="60" type="success" show-text />
+						</view>
+						<view class="demo-progress-type">
+							<text class="demo-progress-type__name">info</text>
+							<vx-progress :percent="60" type="info" show-text />
+						</view>
+						<view class="demo-progress-type">
+							<text class="demo-progress-type__name">warning</text>
+							<vx-progress :percent="60" type="warning" show-text />
+						</view>
+						<view class="demo-progress-type">
+							<text class="demo-progress-type__name">danger</text>
+							<vx-progress :percent="60" type="danger" show-text />
+						</view>
+						<view class="demo-progress-type demo-progress-type--last">
+							<text class="demo-progress-type__name">default</text>
+							<vx-progress :percent="60" type="default" show-text />
+						</view>
+						<text class="demo-hint demo-progress-hint">标签和数值保持正文层级；状态不能只靠填充色表达，百分比或外面的文案要能独立说明。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">形状</text>
+							<text class="demo-section__desc">square 平角、rounded 小圆角、pill 胶囊；这里把轨道加粗到 14 才看得出差别。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-progress-block">
+							<text class="demo-progress-caption">square · 默认</text>
+							<vx-progress :percent="60" height="14px" show-text />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">rounded · 6px</text>
+							<vx-progress :percent="60" shape="rounded" height="14px" show-text />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">pill · 胶囊</text>
+							<vx-progress :percent="60" shape="pill" height="14px" show-text />
+						</view>
+						<text class="demo-hint demo-progress-hint">圆角同时作用于轨道和填充；细轨道上 rounded 会被夹到半个高度，和 pill 看起来接近。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">轨道 4 / 6 / 8，文字 13 / 15 / 17；height 只覆盖轨道高度。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-progress-size-row">
+							<text class="demo-progress-size-key">sm · 4</text>
+							<view class="demo-progress-size-value">
+								<vx-progress size="sm" :percent="60" show-text />
+							</view>
+						</view>
+						<view class="demo-progress-size-row">
+							<text class="demo-progress-size-key">md · 6</text>
+							<view class="demo-progress-size-value">
+								<vx-progress :percent="60" show-text />
+							</view>
+						</view>
+						<view class="demo-progress-size-row">
+							<text class="demo-progress-size-key">lg · 8</text>
+							<view class="demo-progress-size-value">
+								<vx-progress size="lg" :percent="60" show-text />
+							</view>
+						</view>
+						<view class="demo-progress-size-row demo-progress-size-row--last">
+							<text class="demo-progress-size-key">height 14px</text>
+							<view class="demo-progress-size-value">
+								<vx-progress :percent="60" height="14px" show-text />
+							</view>
+						</view>
+						<text class="demo-hint demo-progress-hint">height 必须带单位，只改轨道高度；标签和数值仍按 size 取 13 / 15 / 17。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">bg-color 改填充、track-color 改轨道、color 改数值，三处各管一处。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-progress-block">
+							<text class="demo-progress-caption">品牌紫 · bg-color / track-color</text>
+							<vx-progress :percent="60" bg-color="#7c3aed" track-color="#ede9fe" show-text />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">warning · 浅底轨道</text>
+							<vx-progress :percent="60" bg-color="var(--vx-color-warning-pressed)"
+								track-color="var(--vx-color-warning-soft)" color="var(--vx-color-warning-ink)"
+								show-text />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">danger · 浅底轨道</text>
+							<vx-progress :percent="60" bg-color="var(--vx-color-danger)"
+								track-color="var(--vx-color-danger-soft)" color="var(--vx-color-danger-pressed)"
+								show-text />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">品牌渐变 · 一屏最多一处</text>
+							<vx-progress :percent="100" bg-color="linear-gradient(90deg, #2b6be0, #0b7c46)" />
+						</view>
+						<text class="demo-hint demo-progress-hint">自定义颜色默认按字面值使用，不跟随主题；要跟主题就传 var(--vx-color-*)。渐变只用于品牌强调，不用来表达成功或失败。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">动画与事件</text>
+							<text class="demo-section__desc">duration 是整段过渡的毫秒数，0 直接落位；end 在落定后抛最终值。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-progress-block">
+							<text class="demo-progress-caption">duration=0 · 直接落位</text>
+							<vx-progress :percent="progressDemoPercent" :duration="0" show-text />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">duration=220 · 默认</text>
+							<vx-progress :percent="progressDemoPercent" show-text @end="onProgressEnd" />
+						</view>
+						<view class="demo-progress-block demo-progress-block--spaced">
+							<text class="demo-progress-caption">duration=800 · 慢速</text>
+							<vx-progress :percent="progressDemoPercent" :duration="800" show-text />
+						</view>
+						<view class="demo-progress-status">
+							<text class="demo-progress-status__text">{{ progressEndText }}</text>
+							<text class="demo-progress-status__meta">end 只取最后一次变化</text>
+						</view>
+						<view class="demo-actions demo-progress-actions">
+							<view class="demo-progress-actions__item">
+								<vx-button block size="sm" text="24%" @click="setProgressDemo(24)" />
+							</view>
+							<view class="demo-progress-actions__item">
+								<vx-button block size="sm" text="78%" @click="setProgressDemo(78)" />
+							</view>
+							<view class="demo-progress-actions__item demo-progress-actions__item--last">
+								<vx-button block size="sm" type="primary" text="100%" @click="setProgressDemo(100)" />
+							</view>
+						</view>
+						<text class="demo-hint demo-progress-hint">连续改值时只按最后一次抛 end；首次渲染不播放入场动画，卸载时清掉计时器。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">进度条只负责比例；文件名、大小、状态和操作交给卡片。</text>
+						</view>
+					</view>
+					<vx-card title="上传队列" meta="2 个文件">
+						<view class="demo-progress-file">
+							<view class="demo-progress-file__icon">
+								<vx-icon name="file-text" size="md" type="primary" />
+							</view>
+							<view class="demo-progress-file__body">
+								<view class="demo-progress-file__top">
+									<text class="demo-progress-file__name">2026 年第三季度报告.pdf</text>
+									<text class="demo-progress-file__meta">6.8 / 10 MB</text>
+								</view>
+								<view class="demo-progress-file__bar">
+									<vx-progress size="sm" :percent="68" show-text />
+								</view>
+							</view>
+						</view>
+						<view class="demo-progress-file demo-progress-file--divided">
+							<view class="demo-progress-file__icon demo-progress-file__icon--done">
+								<vx-icon name="check" size="md" type="success" />
+							</view>
+							<view class="demo-progress-file__body">
+								<view class="demo-progress-file__top">
+									<text class="demo-progress-file__name">品牌素材包.zip</text>
+									<text class="demo-progress-file__meta">24.6 / 24.6 MB</text>
+								</view>
+								<view class="demo-progress-file__bar">
+									<vx-progress size="sm" :percent="100" type="success" text="已完成" />
+								</view>
+							</view>
+						</view>
+						<template #suffix>
+							<view class="demo-progress-card__foot">
+								<text class="demo-progress-card__meta">预计 1 分钟完成</text>
+								<vx-tag size="sm" type="primary" variant="soft" text="上传中" />
+							</view>
+						</template>
+					</vx-card>
+					<text class="demo-hint">进度条不承载点击和按钮；上传、暂停和取消放在卡片底部或外层列表行。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 进度条演示：三档 duration 共用同一个目标值，按钮只改目标，过渡由组件补间。
+	const progressDemoPercent = ref(60)
+
+	const progressEndText = ref('等待动画结束')
+
+	const onProgressEnd = (percent: number) => {
+		progressEndText.value = `end · ${percent}%`
+	}
+
+	const setProgressDemo = (percent: number) => {
+		// 目标没变时组件不会抛 end，状态也保持上一次结果，避免停在「目标」上。
+		if (progressDemoPercent.value === percent) return
+		progressEndText.value = `目标 ${percent}%`
+		progressDemoPercent.value = percent
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/steps/steps'
+	const nextPath: string = '/pages/demo/countdown/countdown'
+	const prevName = '步骤条'
+	const nextName = '倒计时'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

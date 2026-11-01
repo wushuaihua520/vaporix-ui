@@ -1,0 +1,305 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" :scroll-into-view="demoAnchor" scroll-with-animation>
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-footer</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="link" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">页脚</text>
+								<text class="demo-hero__title demo-hero__title--accent">5 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">页脚只做收尾，不放主操作；固定时整块抬到安全区之上，避免盖住最后一段。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-footer</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础版权</text>
+							<text class="demo-section__desc">一行脚注。13px 次要文字，上下留 24。</text>
+						</view>
+					</view>
+					<view class="demo-footer-stage">
+						<vx-footer copyright="© 2026 Vaporix UI · MIT License." />
+					</view>
+					<text class="demo-hint demo-footer-note">页脚默认留在文档流里，不会自己贴底。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">链接导航</text>
+							<text class="demo-section__desc">相邻链接自动加竖线，首尾不加。点击只抛数据。</text>
+						</view>
+					</view>
+					<view class="demo-footer-stage">
+						<vx-footer :links="footerLinks" copyright="© 2026 Vaporix UI · MIT License."
+							@click="onFooterLink" />
+					</view>
+					<text class="demo-hint demo-footer-note">一行建议不超过四个链接；窄屏时整项换行，不把文字挤断。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">底色、版权、链接、分隔线分开覆盖，不随主题推导。</text>
+						</view>
+					</view>
+					<view class="demo-footer-stage demo-footer-stage--dark">
+						<vx-footer bg-color="#142033" color="#c8d3e3" link-color="#8ab4ff" border-color="#2b3b55"
+							:links="footerLinks" copyright="© 2026 Vaporix UI · MIT License." @click="onFooterLink" />
+					</view>
+					<text class="demo-hint demo-footer-note">自定义颜色是字面值；换主题时仍保持这一组颜色，对比度由业务保证。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">默认插槽</text>
+							<text class="demo-section__desc">品牌行放在标准行上方，版权继续用 props。</text>
+						</view>
+					</view>
+					<view class="demo-footer-stage">
+						<vx-footer copyright="© 2026 Vaporix UI · MIT License.">
+							<view class="demo-footer-brand">
+								<view class="demo-footer-brand__mark">
+									<text class="demo-footer-brand__mark-text">VX</text>
+								</view>
+								<view class="demo-footer-brand__copy">
+									<text class="demo-footer-brand__name">元汽UI</text>
+									<text class="demo-footer-brand__meta">原生渲染组件库</text>
+								</view>
+							</view>
+						</vx-footer>
+					</view>
+					<text class="demo-hint demo-footer-note">插槽只放补充内容，不要重复版权和标准链接。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">固定底栏</text>
+							<text class="demo-section__desc">surface 底、顶部描边，自动避让安全区。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-footer-fixed-copy">
+							<text class="demo-footer-fixed-title">把页脚贴到屏幕底部</text>
+							<text class="demo-hint">固定后仍可点“关闭预览”收起。底部要留出页脚高度，再加安全区。</text>
+						</view>
+						<view class="demo-footer-fixed-action">
+							<vx-button :type="fixedFooterVisible ? 'default' : 'primary'"
+								:text="fixedFooterVisible ? '收起固定页脚' : '显示固定页脚'"
+								@click="toggleFixedFooter" />
+						</view>
+					</view>
+					<text class="demo-hint demo-footer-note">安全区用 --uni-safe-area-inset-*，不用阴影做层级。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 底栏跟滚动容器平级，避免被 scroll-view 带走或裁掉。主题 class 在外层，安全区变量还能继承。 -->
+		<vx-footer v-if="fixedFooterVisible" fixed :links="fixedFooterLinks"
+			copyright="© 2026 Vaporix UI · MIT License." @click="onFixedFooterClick" />
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type DemoFooterLink = {
+		text: string
+		value: string
+		color?: string
+	}
+
+	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type ToastIcon = 'check-circle' | 'close-circle' | 'alert-circle' | 'info' | 'heart'
+
+	type ToastOptions = {
+		text: string
+		type: ToastSemantic
+		duration?: number
+		icon?: ToastIcon | null
+		image?: string
+		showIcon?: boolean
+		bgColor?: string
+		bgOpacity?: number
+		color?: string
+	}
+
+	const footerLinks: DemoFooterLink[] = [
+		{ text: '帮助中心', value: 'help' },
+		{ text: '隐私政策', value: 'privacy' },
+		{ text: '服务条款', value: 'terms' }
+	]
+
+	const fixedFooterLinks: DemoFooterLink[] = [
+		{ text: '返回顶部', value: 'top' },
+		{ text: '关闭预览', value: 'close-fixed' }
+	]
+
+	const fixedFooterVisible = ref(false)
+
+	const demoAnchor = ref('')
+
+	const toastText = ref('')
+
+	const toastType = ref<ToastSemantic>('default')
+
+	const toastDuration = ref(2000)
+
+	const toastIcon = ref<ToastIcon | null>(null)
+
+	const toastImage = ref('')
+
+	const toastShowIcon = ref(true)
+
+	const toastBgColor = ref('')
+
+	const toastBgOpacity = ref(0.9)
+
+	const toastColor = ref('')
+
+	const toastRef = ref<VxToastComponentPublicInstance | null>(null)
+
+	const note = ref('')
+
+	const onFooterLink = (link: DemoFooterLink) => {
+		uni.showToast({ title: `演示：打开${link.text}`, icon: 'none' })
+	}
+
+	const toggleFixedFooter = () => {
+		fixedFooterVisible.value = !fixedFooterVisible.value
+	}
+
+	const onFixedFooterClick = (link: DemoFooterLink) => {
+		if (link.value === 'close-fixed') {
+			fixedFooterVisible.value = false
+			return
+		}
+		if (link.value === 'top') {
+			// 页面滚在 scroll-view 上，pageScrollTo 碰不到。同一个 id 再赋一次不会滚。
+			demoAnchor.value = ''
+			nextTick(() => {
+				demoAnchor.value = 'demo-top'
+			})
+			return
+		}
+		onFooterLink(link)
+	}
+
+	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
+	const showToast = (options: ToastOptions) => {
+		toastType.value = options.type
+		toastText.value = options.text
+		toastDuration.value = options.duration != null ? options.duration : 2000
+		toastIcon.value = options.icon != null ? options.icon : null
+		toastImage.value = options.image != null ? options.image : ''
+		toastShowIcon.value = options.showIcon != null ? options.showIcon : true
+		toastBgColor.value = options.bgColor != null ? options.bgColor : ''
+		toastBgOpacity.value = options.bgOpacity != null ? options.bgOpacity : 0.9
+		toastColor.value = options.color != null ? options.color : ''
+		toastRef.value?.open?.()
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/tabbar/tabbar'
+	const nextPath: string = '/pages/demo/swipe-action/swipe-action'
+	const prevName = '标签栏'
+	const nextName = '滑动菜单'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

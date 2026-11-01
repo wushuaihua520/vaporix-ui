@@ -1,0 +1,132 @@
+<template>
+	<!-- 行只负责排列：列宽算在列上，列间距铺到列的两侧，行间距落在列的上边，行再把自己往外拉同样的距离。 -->
+	<!-- 没有列时不留空行，避免行上的负外边距把后面的内容往上拽。 -->
+	<view v-if="$slots['default'] != null" :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxRowProps } from './props'
+	import { VX_ROW_CONTEXT, VxRowContext, readWindowWidth } from './context'
+
+	const props = withDefaults(defineProps<VxRowProps>(), {
+		gutter: 0,
+		lineGutter: 0,
+		justify: 'start',
+		align: 'stretch',
+		wrap: true
+	})
+
+	// 间距上限 48：再大就不像栅格了，负外边距也容易把整行推出父级。
+	const VX_ROW_GUTTER_MAX = 48
+
+	// 间距按整数像素算；读不出数字时按 0，负数和 0 都不铺间距。
+	const toGutter = (value: number): number => {
+		const rounded = Math.round(value)
+		if (!(rounded > 0)) return 0
+		return rounded > VX_ROW_GUTTER_MAX ? VX_ROW_GUTTER_MAX : rounded
+	}
+
+	const gutter = computed((): number => toGutter(props.gutter))
+
+	const lineGutter = computed((): number => toGutter(props.lineGutter))
+
+	// App 把多值 margin 收成同一个方向，左右分开写。间距为 0 时不写声明。
+	const rootStyle = computed((): string => {
+		const inset = gutter.value / 2
+		let style = ''
+		if (inset > 0) style += `margin-right: -${inset}px; margin-left: -${inset}px;`
+		if (lineGutter.value > 0) style += ` margin-top: -${lineGutter.value}px;`
+		return style
+	})
+
+	// class 顺序：基础 → 换行 → 水平排列 → 垂直对齐。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-row'
+		if (!props.wrap) name += ' vx-row--nowrap'
+		if (props.justify === 'center') name += ' vx-row--center'
+		else if (props.justify === 'end') name += ' vx-row--end'
+		else if (props.justify === 'between') name += ' vx-row--between'
+		else if (props.justify === 'around') name += ' vx-row--around'
+		else if (props.justify === 'evenly') name += ' vx-row--evenly'
+		if (props.align === 'start') name += ' vx-row--align-start'
+		else if (props.align === 'center') name += ' vx-row--align-center'
+		else if (props.align === 'end') name += ' vx-row--align-end'
+		return name
+	})
+
+	// 同一行只量一次窗口宽度。列没写断点时不读它，旋转和键盘弹起不会让这些列重排。
+	const windowWidth = ref(readWindowWidth())
+
+	onResize(() => {
+		windowWidth.value = readWindowWidth()
+	})
+
+	const context: VxRowContext = {
+		inset: (): number => gutter.value / 2,
+		lineGutter: (): number => lineGutter.value,
+		windowWidth: (): number => windowWidth.value
+	}
+
+	provide(VX_ROW_CONTEXT, context)
+</script>
+
+<style>
+	/* 不铺内边距、底色、描边和圆角。
+	   宽度不写 100%：负外边距要把行往左右各拉出半格，靠 align-self: stretch
+	   撑满纵向父级时才补得回来；写死 100% 会整行往左错半格。父级把子项居中时，
+	   stretch 仍拉满，不跟着父级的 align-items。
+	   默认靠左写在基础 class 上，切回 start 时才能盖掉之前的 justify-content。
+	   flex-shrink 归零：纵向页面里主轴是高度，行高按内容，不被压扁。
+	   min-width 压成 0：stretch 的宽度才能小于内容最小宽度，长文案换行而不是把行撑出父级。
+	   overflow 可见：列的 push / pull 画出本层，裁切会把位移切掉。 */
+	.vx-row {
+		flex-direction: row;
+		flex-wrap: wrap;
+		flex-shrink: 0;
+		justify-content: flex-start;
+		align-items: stretch;
+		align-self: stretch;
+		box-sizing: border-box;
+		min-width: 0;
+		overflow: visible;
+	}
+
+	/* 不换行：超出的列按比例压缩，不会掉到下一行。 */
+	.vx-row--nowrap {
+		flex-wrap: nowrap;
+	}
+
+	.vx-row--center {
+		justify-content: center;
+	}
+
+	.vx-row--end {
+		justify-content: flex-end;
+	}
+
+	.vx-row--between {
+		justify-content: space-between;
+	}
+
+	.vx-row--around {
+		justify-content: space-around;
+	}
+
+	.vx-row--evenly {
+		justify-content: space-evenly;
+	}
+
+	.vx-row--align-start {
+		align-items: flex-start;
+	}
+
+	.vx-row--align-center {
+		align-items: center;
+	}
+
+	.vx-row--align-end {
+		align-items: flex-end;
+	}
+</style>

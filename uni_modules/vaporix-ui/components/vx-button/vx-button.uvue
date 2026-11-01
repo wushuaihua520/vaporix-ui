@@ -1,0 +1,504 @@
+<template>
+	<!-- 停在组件上，外层不会再收到同一次点击。 -->
+	<view :class="rootClass" :style="rootStyle" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click.stop="onClick">
+		<view v-if="loading" :class="spinnerClass"></view>
+		<text v-if="text.length > 0" :class="textClass">{{ text }}</text>
+		<!-- loading 时不渲染插槽，转圈、文案、图标不叠在一起。 -->
+		<slot v-if="!loading"></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxButtonProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxButtonProps>(), {
+		type: 'default',
+		variant: 'solid',
+		shape: 'rounded',
+		size: 'md',
+		text: '',
+		plain: false,
+		round: false,
+		shadow: false,
+		block: false,
+		width: '',
+		height: '',
+		disabled: false,
+		loading: false
+	})
+
+	const emit = defineEmits<{
+		click: []
+	}>()
+
+	// plain / round 是旧写法。variant 不是 solid 时忽略 plain，shape 不是 rounded 时忽略 round。
+	const resolvedVariant = computed((): string => {
+		if (props.variant !== 'solid') return props.variant
+		return props.plain ? 'plain' : 'solid'
+	})
+
+	const resolvedShape = computed((): string => {
+		if (props.shape !== 'rounded') return props.shape
+		return props.round ? 'pill' : 'rounded'
+	})
+
+	// 实心默认色、浅底中性色和文字基色相同，返回空串，不再挂一层重复 class。
+	// warning 的浅底、描边、纯文字用 ink，黄底上 pressed 色不够深。
+	const textTone = computed((): string => {
+		if (props.disabled) return 'disabled'
+		const variant = resolvedVariant.value
+		const type = props.type
+		if (variant === 'solid') {
+			if (type === 'primary') return 'on-primary'
+			if (type === 'success') return 'on-success'
+			if (type === 'info') return 'on-info'
+			if (type === 'warning') return 'on-warning'
+			if (type === 'danger') return 'on-danger'
+			return ''
+		}
+		if (variant === 'soft' && type === 'default') return ''
+		if (type === 'primary') return 'primary-pressed'
+		if (type === 'success') return 'success-pressed'
+		if (type === 'info') return 'info-pressed'
+		if (type === 'warning') return 'warning-ink'
+		if (type === 'danger') return 'danger-pressed'
+		return 'secondary'
+	})
+
+	const rootClass = computed((): string => {
+		const variant = resolvedVariant.value
+		let name = 'vx-button'
+		if (props.size !== 'md') name += ` vx-button--${props.size}`
+
+		// 禁用不叠语义色，描边和底色走禁用 class。
+		if (props.disabled) {
+			if (variant === 'plain') name += ' vx-button--plain-disabled'
+			else if (variant === 'link') name += ' vx-button--link-disabled'
+			else name += ' vx-button--disabled'
+		} else if (variant !== 'solid' || props.type !== 'default') {
+			if (variant === 'solid') name += ` vx-button--${props.type}`
+			else name += ` vx-button--${variant}-${props.type}`
+		}
+
+		if (resolvedShape.value === 'pill') name += ' vx-button--pill'
+		else if (resolvedShape.value === 'square') name += ' vx-button--square'
+		if (props.block) name += ' vx-button--block'
+		if (props.shadow && !props.disabled && (variant === 'solid' || variant === 'soft')) {
+			name += ' vx-button--shadow'
+		}
+		if (props.loading && !props.disabled) name += ' vx-button--loading'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		let style = ''
+		// block 优先占满整行；自定义宽度只在非 block 时生效。
+		if (!props.block && props.width.length > 0) style += `width: ${props.width};`
+		if (props.height.length > 0) style += `height: ${props.height};`
+		return style
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-button__text'
+		if (props.size !== 'md') name += ` vx-button__text--${props.size}`
+		if (textTone.value.length > 0) name += ` vx-button__text--${textTone.value}`
+		if (props.loading && props.text.length > 0) name += ' vx-button__text--loading'
+		return name
+	})
+
+	const spinnerClass = computed((): string => {
+		let name = 'vx-button__spinner'
+		if (props.size !== 'md') name += ` vx-button__spinner--${props.size}`
+		if (textTone.value.length > 0) name += ` vx-button__spinner--${textTone.value}`
+		return name
+	})
+
+	const hoverClass = computed((): string => {
+		// uni-app 里空字符串关不掉按下态，要写 none。
+		if (props.disabled || props.loading) return 'none'
+		return 'vx-button--pressed'
+	})
+
+	const onClick = () => {
+		if (props.disabled || props.loading) return
+		emit('click')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-button {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		align-self: flex-start;
+		height: var(--vx-control-height-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-control-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-button--lg {
+		height: var(--vx-control-height-lg);
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+		border-radius: var(--vx-control-radius-lg);
+	}
+
+	.vx-button--sm {
+		height: var(--vx-control-height-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		border-radius: var(--vx-control-radius-sm);
+	}
+
+	.vx-button--primary {
+		background-color: var(--vx-color-primary);
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-button--success {
+		background-color: var(--vx-color-success);
+		border-color: var(--vx-color-success);
+	}
+
+	.vx-button--info {
+		background-color: var(--vx-color-info);
+		border-color: var(--vx-color-info);
+	}
+
+	.vx-button--warning {
+		background-color: var(--vx-color-warning);
+		border-color: var(--vx-color-warning);
+	}
+
+	.vx-button--danger {
+		background-color: var(--vx-color-danger);
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-button--plain-primary {
+		background-color: transparent;
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-button--plain-success {
+		background-color: transparent;
+		border-color: var(--vx-color-success);
+	}
+
+	.vx-button--plain-info {
+		background-color: transparent;
+		border-color: var(--vx-color-info);
+	}
+
+	/* 黄描边用 ink。--vx-color-warning 在白底上太浅。 */
+	.vx-button--plain-warning {
+		background-color: transparent;
+		border-color: var(--vx-color-warning-ink);
+	}
+
+	.vx-button--plain-danger {
+		background-color: transparent;
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-button--plain-default {
+		background-color: transparent;
+		border-color: var(--vx-color-border);
+	}
+
+	.vx-button--soft-primary {
+		background-color: var(--vx-color-primary-soft);
+		border-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-button--soft-success {
+		background-color: var(--vx-color-success-soft);
+		border-color: var(--vx-color-success-soft);
+	}
+
+	.vx-button--soft-info {
+		background-color: var(--vx-color-info-soft);
+		border-color: var(--vx-color-info-soft);
+	}
+
+	.vx-button--soft-warning {
+		background-color: var(--vx-color-warning-soft);
+		border-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-button--soft-danger {
+		background-color: var(--vx-color-danger-soft);
+		border-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-button--soft-default {
+		background-color: var(--vx-color-default-soft);
+		border-color: var(--vx-color-default-soft);
+	}
+
+	.vx-button--link-primary,
+	.vx-button--link-success,
+	.vx-button--link-info,
+	.vx-button--link-warning,
+	.vx-button--link-danger,
+	.vx-button--link-default {
+		background-color: transparent;
+		border-color: transparent;
+	}
+
+	.vx-button--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-button--square {
+		border-radius: 0;
+	}
+
+	.vx-button--block {
+		width: 100%;
+		align-self: stretch;
+	}
+
+	.vx-button--shadow {
+		box-shadow: var(--vx-shadow-button);
+	}
+
+	.vx-button--disabled {
+		background-color: var(--vx-color-disabled-bg);
+		border-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-button--plain-disabled {
+		background-color: transparent;
+		border-color: var(--vx-color-border);
+	}
+
+	.vx-button--link-disabled {
+		background-color: transparent;
+		border-color: transparent;
+	}
+
+	.vx-button--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-button--loading {
+		opacity: var(--vx-opacity-loading);
+	}
+
+	.vx-button__text {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-button__text--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-button__text--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-button__text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-button__text--on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-button__text--on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-button__text--on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-button__text--on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-button__text--primary-pressed {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-button__text--success-pressed {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-button__text--info-pressed {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-button__text--warning-ink {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-button__text--danger-pressed {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	.vx-button__text--secondary {
+		color: var(--vx-color-text-secondary);
+	}
+
+	.vx-button__text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-button__text--loading {
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-button__spinner {
+		flex-shrink: 0;
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+		border-radius: var(--vx-radius-pill);
+		border-width: var(--vx-border-width-strong);
+		border-style: solid;
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-text);
+		border-bottom-color: var(--vx-color-text);
+		border-left-color: var(--vx-color-text);
+		animation-name: vx-spin;
+		animation-duration: var(--vx-duration-spin);
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	.vx-button__spinner--lg {
+		width: var(--vx-icon-lg);
+		height: var(--vx-icon-lg);
+	}
+
+	.vx-button__spinner--sm {
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+	}
+
+	.vx-button__spinner--on-primary {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-on-primary);
+		border-bottom-color: var(--vx-color-on-primary);
+		border-left-color: var(--vx-color-on-primary);
+	}
+
+	.vx-button__spinner--on-success {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-on-success);
+		border-bottom-color: var(--vx-color-on-success);
+		border-left-color: var(--vx-color-on-success);
+	}
+
+	.vx-button__spinner--on-info {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-on-info);
+		border-bottom-color: var(--vx-color-on-info);
+		border-left-color: var(--vx-color-on-info);
+	}
+
+	.vx-button__spinner--on-warning {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-on-warning);
+		border-bottom-color: var(--vx-color-on-warning);
+		border-left-color: var(--vx-color-on-warning);
+	}
+
+	.vx-button__spinner--on-danger {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-on-danger);
+		border-bottom-color: var(--vx-color-on-danger);
+		border-left-color: var(--vx-color-on-danger);
+	}
+
+	.vx-button__spinner--primary-pressed {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-primary-pressed);
+		border-bottom-color: var(--vx-color-primary-pressed);
+		border-left-color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-button__spinner--success-pressed {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-success-pressed);
+		border-bottom-color: var(--vx-color-success-pressed);
+		border-left-color: var(--vx-color-success-pressed);
+	}
+
+	.vx-button__spinner--info-pressed {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-info-pressed);
+		border-bottom-color: var(--vx-color-info-pressed);
+		border-left-color: var(--vx-color-info-pressed);
+	}
+
+	.vx-button__spinner--warning-ink {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-warning-ink);
+		border-bottom-color: var(--vx-color-warning-ink);
+		border-left-color: var(--vx-color-warning-ink);
+	}
+
+	.vx-button__spinner--danger-pressed {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-danger-pressed);
+		border-bottom-color: var(--vx-color-danger-pressed);
+		border-left-color: var(--vx-color-danger-pressed);
+	}
+
+	.vx-button__spinner--secondary {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-text-secondary);
+		border-bottom-color: var(--vx-color-text-secondary);
+		border-left-color: var(--vx-color-text-secondary);
+	}
+
+	.vx-button__spinner--disabled {
+		border-top-color: transparent;
+		border-right-color: var(--vx-color-disabled-text);
+		border-bottom-color: var(--vx-color-disabled-text);
+		border-left-color: var(--vx-color-disabled-text);
+	}
+
+	@keyframes vx-spin {
+		from {
+			transform: rotate(0deg);
+		}
+
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	/* #ifdef WEB */
+	.vx-button {
+		cursor: pointer;
+	}
+
+	.vx-button--disabled,
+	.vx-button--plain-disabled,
+	.vx-button--link-disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-button--loading {
+		cursor: progress;
+	}
+	/* #endif */
+</style>

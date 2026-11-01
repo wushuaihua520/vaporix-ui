@@ -1,0 +1,130 @@
+<template>
+	<!-- 分组只负责标题和外观，列表行由 vx-list-cell 提供；两者也可以分开使用。 -->
+	<view v-if="title.length > 0 || description.length > 0 || $slots['extra'] != null || $slots['default'] != null"
+		class="vx-list-view">
+		<view v-if="title.length > 0 || description.length > 0 || $slots['extra'] != null" class="vx-list-view__head">
+			<view class="vx-list-view__heading">
+				<text v-if="title.length > 0" class="vx-list-view__title">{{ title }}</text>
+				<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
+			</view>
+			<!-- 右侧操作放「查看全部」，内容自己带颜色和字号。 -->
+			<view v-if="$slots['extra'] != null" class="vx-list-view__extra">
+				<slot name="extra"></slot>
+			</view>
+		</view>
+		<view v-if="$slots['default'] != null" :class="groupClass">
+			<slot></slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxListViewProps } from './props'
+
+	const props = withDefaults(defineProps<VxListViewProps>(), {
+		title: '',
+		description: '',
+		variant: 'card'
+	})
+
+	// 标题和说明有一段间距，只有说明时不留空档。
+	const descriptionClass = computed((): string => {
+		let name = 'vx-list-view__desc'
+		if (props.title.length > 0) name += ' vx-list-view__desc--offset'
+		return name
+	})
+
+	// card 才描边、收圆角并裁掉行的按下底色；plain 只保留 surface 底。
+	const groupClass = computed((): string => {
+		let name = 'vx-list-view__group'
+		if (props.variant === 'card') name += ' vx-list-view__group--card'
+		return name
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 分组只占父级宽度，不放外部间距；分组之间的距离由页面决定。 */
+	.vx-list-view {
+		flex-direction: column;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 标题在卡片外，左右各缩进 16，和行内容对齐。 */
+	.vx-list-view__head {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	/* 标题和说明上下排。最小宽度压成 0，长标题换行，右侧操作保持自身宽度。
+	   Web 默认 visible，超出的词裁在标题区里。 */
+	.vx-list-view__heading {
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-list-view__title,
+	.vx-list-view__desc {
+		flex-shrink: 0;
+		min-width: 0;
+		white-space: normal;
+	}
+
+	.vx-list-view__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-list-view__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-list-view__desc--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	/* 右侧操作是插槽内容，这里只管对齐和间距。 */
+	.vx-list-view__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-md);
+	}
+
+	/* 平面分组保留 surface 底，只去掉描边和圆角，行不会直接落在页面底色上。 */
+	.vx-list-view__group {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 卡片分组裁掉行的按下底色和最后一条分割线，圆角外不露方角。 */
+	.vx-list-view__group--card {
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+	}
+</style>

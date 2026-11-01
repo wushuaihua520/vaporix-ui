@@ -1,0 +1,58 @@
+<template>
+	<!-- 只加左右内边距：宽度跟随父级，高度由插槽内容撑开；外轮廓交给外层容器。 -->
+	<!-- 没有默认插槽时不留节点，左右内边距没有内容可收。 -->
+	<view v-if="$slots['default'] != null" :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxWingBlankProps } from './props'
+
+	const props = withDefaults(defineProps<VxWingBlankProps>(), {
+		size: 'md',
+		gap: ''
+	})
+
+	// md 是基础样式，不挂没有规则的修饰 class。
+	const rootClass = computed((): string => {
+		if (props.size === 'sm') return 'vx-wing-blank vx-wing-blank--sm'
+		if (props.size === 'lg') return 'vx-wing-blank vx-wing-blank--lg'
+		return 'vx-wing-blank'
+	})
+
+	// 自定义左右内边距用行内样式盖过档位；值和单位由业务保证。
+	// 单位缺失时这条声明会被丢掉，档位仍然生效。
+	// App 上多值 padding 会收成同一个方向，左右分开写。
+	const rootStyle = computed((): string => {
+		if (props.gap.length === 0) return ''
+		return `padding-left: ${props.gap}; padding-right: ${props.gap};`
+	})
+</script>
+
+<style>
+	/* 横向内边距：内容纵向排在左右留白之内；不铺底、不描边、不加圆角、不加外部间距。
+	   Web 默认 content-box，宽度 100% 再算内边距会撑出父级，所以固定 border-box。
+	   flex-shrink 归零，放进纵向 flex 页面时内容不被压扁。
+	   min-width 压成 0，插槽里的长文本才不会把父级撑宽。
+	   class 字符串里 sm / lg 靠后，App 上盖过基础内边距；样式表顺序与此一致。 */
+	.vx-wing-blank {
+		box-sizing: border-box;
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-wing-blank--sm {
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	.vx-wing-blank--lg {
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+	}
+</style>

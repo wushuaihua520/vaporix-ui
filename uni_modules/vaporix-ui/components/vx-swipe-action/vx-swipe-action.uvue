@@ -1,0 +1,743 @@
+<template>
+	<!-- 菜单在前、内容在后：原生端靠绘制顺序让内容盖住菜单。 -->
+	<view class="vx-swipe-action">
+		<view v-if="menuVisible" :class="menuClass" :style="menuStyle" @click.stop>
+			<template v-if="actions.length > 0">
+				<view v-for="row in actionRows" :key="row.index" :class="row.rootClass" :style="row.rootStyle"
+					:hover-class="row.hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+					@click.stop="onAction(row.index)">
+					<view v-if="row.hasIcon" :class="row.iconClass">
+						<!-- 默认 md 就是 18，动作图标不再传 size。 -->
+						<vx-icon :name="row.icon" :variant="row.iconVariant" :color="row.iconColor" />
+					</view>
+					<text v-if="row.text.length > 0" :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+				</view>
+			</template>
+			<view v-else class="vx-swipe-action__extra" @click.stop="onExtraClick">
+				<slot name="extra"></slot>
+			</view>
+		</view>
+
+		<view :class="contentClass" :style="contentStyle" @touchstart="onTouchStart($event as UniTouchEvent)"
+			@touchmove="onTouchMove($event as UniTouchEvent)" @touchend="onTouchEnd($event as UniTouchEvent)"
+			@touchcancel="onTouchCancel($event as UniTouchEvent)" @mousedown="onMouseDown($event as UniMouseEvent)"
+			@mousemove="onMouseMove($event as UniMouseEvent)" @mouseup="onMouseUp">
+			<slot></slot>
+			<!-- 拖动中途才盖上来，所以手势也绑在这一层；点它只收起，不走进下层行的 click。 -->
+			<view v-if="shieldVisible" :class="shieldClass" @click.stop="onShieldClick"
+				@touchstart="onTouchStart($event as UniTouchEvent)"
+				@touchmove="onTouchMove($event as UniTouchEvent)" @touchend="onTouchEnd($event as UniTouchEvent)"
+				@touchcancel="onTouchCancel($event as UniTouchEvent)"
+				@mousedown="onMouseDown($event as UniMouseEvent)"
+				@mousemove="onMouseMove($event as UniMouseEvent)" @mouseup="onMouseUp"></view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxSwipeActionItem, VxSwipeActionProps } from './props'
+	import { VxIconName } from '../../libs/icons/codepoints'
+	import { VxIconVariant } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import {
+		VX_SWIPE_ACTION_ITEM_WIDTH,
+		VX_SWIPE_ACTION_EXTRA_WIDTH,
+		VX_SWIPE_ACTION_DRAG_THRESHOLD,
+		VX_SWIPE_ACTION_FLICK_DISTANCE,
+		VX_SWIPE_ACTION_FLICK_TIME,
+		VX_SWIPE_ACTION_CLICK_GUARD,
+		vxSwipeActionKey,
+		vxRegisterSwipeAction,
+		vxUnregisterSwipeAction,
+		vxSetSwipeActionOpen,
+		vxCloseOtherSwipeActions
+	} from '../../libs/swipe-action'
+
+	const props = withDefaults(defineProps<VxSwipeActionProps>(), {
+		name: '',
+		actions: (): Array<VxSwipeActionItem> => [],
+		swipeable: true,
+		closeOnSelect: true,
+		multiple: false,
+		extraWidth: VX_SWIPE_ACTION_EXTRA_WIDTH
+	})
+
+	// 只传 :open 时组件也自己维护展开状态；绑了 v-model:open 时父级以 update:open 为准。
+	const openModel = defineModel('open', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		select: [index: number, item: VxSwipeActionItem, name: string]
+		change: [open: boolean, name: string]
+	}>()
+
+	type SwipeActionRow = {
+		index: number
+		rootClass: string
+		rootStyle: string
+		textClass: string
+		textStyle: string
+		iconClass: string
+		icon: VxIconName
+		iconVariant: VxIconVariant
+		iconColor: string
+		hoverClass: string
+		hasIcon: boolean
+		text: string
+	}
+
+	const slots = useSlots()
+	const peerKey = vxSwipeActionKey()
+
+	// 小于等于 0、NaN 和缺省都回落到默认宽度，避免动作叠在一起或手势距离算成 0。
+	const readWidth = (value: number | undefined, fallback: number): number => {
+		if (value == null) return fallback
+		if (!(value > 0)) return fallback
+		const rounded = Math.round(value)
+		return rounded > 0 ? rounded : fallback
+	}
+
+	const extraWidthValue = computed((): number => {
+		return readWidth(props.extraWidth, VX_SWIPE_ACTION_EXTRA_WIDTH)
+	})
+
+	const menuVisible = computed((): boolean => {
+		return props.actions.length > 0 || slots['extra'] != null
+	})
+
+	// 没有 actions 也没有 extra 时宽度是 0，手势不把内容滑开露出空白。
+	const revealWidth = computed((): number => {
+		const source = props.actions
+		if (source.length === 0) {
+			if (slots['extra'] == null) return 0
+			return extraWidthValue.value
+		}
+		let total = 0
+		for (let index = 0; index < source.length; index++) {
+			total += readWidth(source[index].width, VX_SWIPE_ACTION_ITEM_WIDTH)
+		}
+		return total
+	})
+
+	const offset = ref(0)
+	const revealed = ref(false)
+	const openState = ref(false)
+	const animated = ref(false)
+	const guarding = ref(false)
+	let guardTimer = 0
+
+	// 坐标和是否横向接管都不进渲染。点按、纵向滚动不改 offset，按下不会把这一行再画一遍。
+	let dragging = false
+	let horizontal = false
+	let startX = 0
+	let startY = 0
+	let startOffset = 0
+	let pressStartedAt = 0
+	let lastX = 0
+	let ignoreMouseUntil = 0
+	let dupReady = false
+	let dupX = 0
+	let dupY = 0
+	// #ifdef WEB
+	let followWindow = false
+	// #endif
+
+	// 初始展开直接落在终点，不挂过渡。菜单还没到时先记住展开，等宽度出现再挪到位。
+	if (openModel.value) {
+		openState.value = true
+		if (revealWidth.value > 0) {
+			offset.value = revealWidth.value
+			revealed.value = true
+		}
+	}
+
+	const contentClass = computed((): string => {
+		if (animated.value) return 'vx-swipe-action__content vx-swipe-action__content--animated'
+		return 'vx-swipe-action__content'
+	})
+
+	// 收起且没有过渡时不写 transform，列表里没滑过的行不额外建一层。
+	const contentStyle = computed((): string => {
+		if (offset.value === 0 && !animated.value) return ''
+		return `transform: translateX(-${offset.value}px);`
+	})
+
+	const menuStyle = computed((): string => {
+		return `width: ${revealWidth.value}px;`
+	})
+
+	// 收起时不参与绘制和 Tab 顺序，但保留 DOM，展开时不用重新创建动作。
+	const menuClass = computed((): string => {
+		if (openState.value || revealed.value) return 'vx-swipe-action__menu'
+		return 'vx-swipe-action__menu vx-swipe-action__menu--closed'
+	})
+
+	const shieldVisible = computed((): boolean => {
+		if (revealWidth.value <= 0) return false
+		return openState.value || revealed.value || guarding.value
+	})
+
+	const shieldClass = computed((): string => {
+		if (openState.value && !guarding.value) return 'vx-swipe-action__shield vx-swipe-action__shield--closable'
+		return 'vx-swipe-action__shield'
+	})
+
+	const toneOf = (value: string | undefined): string => {
+		if (value === 'primary' || value === 'success' || value === 'info' || value === 'warning' || value === 'danger') {
+			return value
+		}
+		return 'default'
+	}
+
+	// 动作是实心底，前景必须用对应的 on-*；default 是浅底，用正文色。
+	const toneForeground = (tone: string): string => {
+		if (tone === 'primary') return 'var(--vx-color-on-primary)'
+		if (tone === 'success') return 'var(--vx-color-on-success)'
+		if (tone === 'info') return 'var(--vx-color-on-info)'
+		if (tone === 'warning') return 'var(--vx-color-on-warning)'
+		if (tone === 'danger') return 'var(--vx-color-on-danger)'
+		return 'var(--vx-color-text)'
+	}
+
+	// 不在这里截成 3 条：截断后 select 的下标会和传入的数组错开。
+	const actionRows = computed((): Array<SwipeActionRow> => {
+		const list: Array<SwipeActionRow> = []
+		const source = props.actions
+		for (let index = 0; index < source.length; index++) {
+			const entry = source[index]
+			const tone = toneOf(entry.type)
+			const disabled = entry.disabled === true
+			const text = entry.text != null ? entry.text : ''
+			const hasIcon = entry.icon != null && entry.icon.length > 0
+			const hasText = text.length > 0
+			const icon = hasIcon ? entry.icon as VxIconName : 'star'
+			const iconVariant: VxIconVariant = entry.iconVariant === 'fill' ? 'fill' : 'regular'
+			const width = readWidth(entry.width, VX_SWIPE_ACTION_ITEM_WIDTH)
+			const customBg = !disabled && entry.bgColor != null ? entry.bgColor : ''
+			const customColor = !disabled && entry.color != null ? entry.color : ''
+
+			let root = `vx-swipe-action__action vx-swipe-action__action--${tone}`
+			let label = `vx-swipe-action__label vx-swipe-action__label--${tone}`
+			let iconClass = 'vx-swipe-action__icon'
+			if (disabled) {
+				root += ' vx-swipe-action__action--disabled'
+				label += ' vx-swipe-action__label--disabled'
+			}
+			if (hasIcon && hasText) iconClass += ' vx-swipe-action__icon--spaced'
+
+			let rootStyle = `width: ${width}px;`
+			if (customBg.length > 0) rootStyle += ` background-color: ${customBg};`
+			const textStyle = customColor.length > 0 ? `color: ${customColor};` : ''
+			const iconColor = disabled
+				? 'var(--vx-color-disabled-text)'
+				: customColor.length > 0 ? customColor : toneForeground(tone)
+
+			list.push({
+				index: index,
+				rootClass: root,
+				rootStyle: rootStyle,
+				textClass: label,
+				textStyle: textStyle,
+				iconClass: iconClass,
+				icon: icon,
+				iconVariant: iconVariant,
+				iconColor: iconColor,
+				hoverClass: disabled ? 'none' : 'vx-swipe-action__action--pressed',
+				hasIcon: hasIcon,
+				text: text
+			})
+		}
+		return list
+	})
+
+	const setOffset = (value: number) => {
+		const limit = revealWidth.value
+		let next = Math.round(value)
+		if (next <= 0 || limit <= 0) next = 0
+		else if (next > limit) next = limit
+		if (next === offset.value) return
+		offset.value = next
+		const showMenu = next > 0
+		if (revealed.value !== showMenu) revealed.value = showMenu
+	}
+
+	// 程序展开和收起都走这里：先写模型，offset 由调用方一起挪；外部改模型不会回抛 change。
+	const applyOpen = (next: boolean) => {
+		vxSetSwipeActionOpen(peerKey, next)
+		if (openState.value === next) return
+		openState.value = next
+		openModel.value = next
+		emit('change', next, props.name)
+	}
+
+	const animateTo = (open: boolean) => {
+		if (!animated.value) animated.value = true
+		setOffset(open ? revealWidth.value : 0)
+	}
+
+	const openMenu = () => {
+		if (revealWidth.value <= 0) return
+		if (!props.multiple) vxCloseOtherSwipeActions(peerKey)
+		animateTo(true)
+		applyOpen(true)
+	}
+
+	const closeMenu = () => {
+		animateTo(false)
+		applyOpen(false)
+	}
+
+	const toggleMenu = () => {
+		if (openState.value) closeMenu()
+		else openMenu()
+	}
+
+	const closeFromPeer = () => {
+		if (openState.value || offset.value > 0) closeMenu()
+	}
+
+	vxRegisterSwipeAction(peerKey, closeFromPeer, openState.value && revealed.value)
+	if (openState.value && revealed.value && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+
+	watch(openModel, (value: boolean) => {
+		if (value === openState.value) return
+		openState.value = value
+		vxSetSwipeActionOpen(peerKey, value)
+		if (value && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+		if (dragging || revealWidth.value <= 0) return
+		animateTo(value)
+	})
+
+	// 动作异步到达或宽度变化时，已展开的行跟着新的总宽度落位；菜单没了就收起。
+	watch(revealWidth, (width: number) => {
+		if (dragging) return
+		if (width <= 0) {
+			setOffset(0)
+			if (openState.value) applyOpen(false)
+			return
+		}
+		if (openState.value) {
+			// 菜单刚出现时直接落位，不从 0 滑出来；已经展开过再改宽度才过渡。
+			if (!revealed.value && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+			if (revealed.value) animateTo(true)
+			else setOffset(width)
+			vxSetSwipeActionOpen(peerKey, true)
+			return
+		}
+		if (offset.value > width) setOffset(width)
+	})
+
+	const holdShield = () => {
+		if (guardTimer !== 0) {
+			clearTimeout(guardTimer)
+			guardTimer = 0
+		}
+		if (!guarding.value) guarding.value = true
+	}
+
+	const releaseShield = () => {
+		if (guardTimer !== 0) clearTimeout(guardTimer)
+		if (!guarding.value) guarding.value = true
+		guardTimer = setTimeout(() => {
+			guardTimer = 0
+			guarding.value = false
+		}, VX_SWIPE_ACTION_CLICK_GUARD)
+	}
+
+	const beginGesture = (pageX: number, pageY: number): boolean => {
+		if (!props.swipeable || revealWidth.value <= 0 || dragging) return false
+		dragging = true
+		horizontal = false
+		startX = pageX
+		startY = pageY
+		startOffset = offset.value
+		pressStartedAt = Date.now()
+		lastX = pageX
+		dupReady = false
+		return true
+	}
+
+	const moveGesture = (pageX: number, pageY: number) => {
+		if (!dragging) return
+		const distance = pageX - startX
+		const vertical = pageY - startY
+
+		// 先等横向位移超过阈值再接管；纵向为主的移动按滚动处理，不改当前展开距离。
+		if (!horizontal) {
+			if (Math.abs(vertical) > Math.abs(distance) && Math.abs(vertical) >= VX_SWIPE_ACTION_DRAG_THRESHOLD) {
+				dragging = false
+				return
+			}
+			if (Math.abs(distance) < VX_SWIPE_ACTION_DRAG_THRESHOLD) return
+			if (Math.abs(distance) <= Math.abs(vertical)) return
+			horizontal = true
+			if (animated.value) animated.value = false
+			holdShield()
+			if (!props.multiple) vxCloseOtherSwipeActions(peerKey)
+		}
+
+		lastX = pageX
+		setOffset(startOffset - distance)
+	}
+
+	const finishGesture = () => {
+		if (!dragging) return
+		const moved = horizontal
+		dragging = false
+		horizontal = false
+		dupReady = false
+		if (!moved) return
+
+		releaseShield()
+		const width = revealWidth.value
+		const distance = lastX - startX
+		const duration = Date.now() - pressStartedAt
+		const flicked = duration <= VX_SWIPE_ACTION_FLICK_TIME && Math.abs(distance) >= VX_SWIPE_ACTION_FLICK_DISTANCE
+		let next = offset.value > width / 2
+		if (flicked) next = distance < 0
+		if (!animated.value) animated.value = true
+		setOffset(next ? width : 0)
+		if (next && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+		applyOpen(next)
+	}
+
+	const cancelGesture = () => {
+		if (!dragging) return
+		const moved = horizontal
+		dragging = false
+		horizontal = false
+		dupReady = false
+		if (!moved) return
+		releaseShield()
+		if (!animated.value) animated.value = true
+		setOffset(openState.value ? revealWidth.value : 0)
+	}
+
+	// 横向接管后这一笔不再交给外层滚动；没接管时不能拦，否则列表滑不动。
+	const stopTouch = (event: UniTouchEvent) => {
+		event.stopPropagation()
+		if (event.cancelable) event.preventDefault()
+	}
+
+	const onTouchStart = (event: UniTouchEvent) => {
+		// 触摸之后 Web 还会补一套 mouse，短时间内不重新起手。
+		ignoreMouseUntil = Date.now() + 1000
+		const touches = event.touches
+		if (touches.length !== 1) return
+		beginGesture(touches[0].pageX, touches[0].pageY)
+	}
+
+	const onTouchMove = (event: UniTouchEvent) => {
+		const touches = event.touches
+		if (touches.length !== 1) {
+			cancelGesture()
+			return
+		}
+		const pageX = touches[0].pageX
+		const pageY = touches[0].pageY
+		// 保护层和内容都绑了同一套事件，冒泡过来的第二次不要再算一遍。
+		if (dupReady && pageX === dupX && pageY === dupY) {
+			if (horizontal) stopTouch(event)
+			return
+		}
+		dupReady = true
+		dupX = pageX
+		dupY = pageY
+		moveGesture(pageX, pageY)
+		if (horizontal) stopTouch(event)
+	}
+
+	const onTouchEnd = (event: UniTouchEvent) => {
+		const moved = horizontal
+		finishGesture()
+		if (moved) stopTouch(event)
+	}
+
+	const onTouchCancel = (event: UniTouchEvent) => {
+		const moved = horizontal
+		cancelGesture()
+		if (moved) stopTouch(event)
+	}
+
+	const onMouseMove = (event: UniMouseEvent) => {
+		// #ifdef WEB
+		if (followWindow) return
+		// #endif
+		moveGesture(event.pageX, event.pageY)
+	}
+
+	const onMouseUp = () => {
+		// #ifdef WEB
+		removeWindowDrag()
+		// #endif
+		finishGesture()
+	}
+
+	// #ifdef WEB
+	// 鼠标移出组件后根节点收不到 mousemove / mouseup，Web 上改在 window 跟到松开。
+	const onWindowMouseMove = (event: UniMouseEvent) => {
+		moveGesture(event.pageX, event.pageY)
+	}
+
+	const onWindowMouseUp = () => {
+		removeWindowDrag()
+		finishGesture()
+	}
+
+	const removeWindowDrag = () => {
+		followWindow = false
+		window.removeEventListener('mousemove', onWindowMouseMove)
+		window.removeEventListener('mouseup', onWindowMouseUp)
+	}
+
+	onUnmounted(() => {
+		removeWindowDrag()
+	})
+	// #endif
+
+	const onMouseDown = (event: UniMouseEvent) => {
+		if (Date.now() < ignoreMouseUntil) return
+		if (!beginGesture(event.pageX, event.pageY)) return
+		// #ifdef WEB
+		followWindow = true
+		window.addEventListener('mousemove', onWindowMouseMove)
+		window.addEventListener('mouseup', onWindowMouseUp)
+		// #endif
+	}
+
+	const onShieldClick = () => {
+		if (guarding.value || horizontal) return
+		if (openState.value || offset.value > 0) closeMenu()
+	}
+
+	const onAction = (index: number) => {
+		const entry = props.actions[index]
+		if (entry == null || entry.disabled === true) return
+		if (props.closeOnSelect) closeMenu()
+		emit('select', index, entry, props.name)
+	}
+
+	// extra 插槽里的点击在 closeOnSelect 下自动收起；需要保持打开时给按钮加 @click.stop。
+	const onExtraClick = () => {
+		if (props.closeOnSelect && openState.value) closeMenu()
+	}
+
+	onUnmounted(() => {
+		if (guardTimer !== 0) clearTimeout(guardTimer)
+		guardTimer = 0
+		vxUnregisterSwipeAction(peerKey)
+	})
+
+	defineExpose({
+		open: openMenu,
+		close: closeMenu,
+		toggle: toggleMenu
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	.vx-swipe-action {
+		position: relative;
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		background-color: var(--vx-color-surface);
+		overflow: hidden;
+	}
+
+	/* 内容整条平移，必须有底色，收起时才盖住下面的菜单。 */
+	.vx-swipe-action__content {
+		position: relative;
+		width: 100%;
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 拖动时不挂过渡，松手才补；不然手指和菜单的落点差半拍。 */
+	.vx-swipe-action__content--animated {
+		transition-property: transform;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	/* 固定在右侧，高度跟行。不能放进被平移的内容：uni-app x Web 的 view 默认 overflow: hidden，放进去展开时会被裁掉。 */
+	.vx-swipe-action__menu {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		flex-direction: row;
+		align-items: stretch;
+		background-color: var(--vx-color-surface);
+		overflow: hidden;
+	}
+
+	/* 动作铺满整行高度，文案和图标居中；宽度写在行内。 */
+	.vx-swipe-action__action {
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		padding: 0 var(--vx-space-sm);
+	}
+
+	.vx-swipe-action__action--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-swipe-action__action--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-swipe-action__action--info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-swipe-action__action--warning {
+		background-color: var(--vx-color-warning);
+	}
+
+	.vx-swipe-action__action--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-swipe-action__action--default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 按下只降整块透明度，自定义底色也不用再配一套 pressed 色。 */
+	.vx-swipe-action__action--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 禁用写在类型之后，底色和文字都转灰，盖过语义色和自定义色。 */
+	.vx-swipe-action__action--disabled {
+		background-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-swipe-action__icon {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.vx-swipe-action__icon--spaced {
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	/* 单行省略：宽度由动作列决定，长文案不把相邻动作挤出去。 */
+	.vx-swipe-action__label {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.vx-swipe-action__label--primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-swipe-action__label--success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-swipe-action__label--info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-swipe-action__label--warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-swipe-action__label--danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-swipe-action__label--default {
+		color: var(--vx-color-text);
+	}
+
+	.vx-swipe-action__label--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* extra 插槽铺满整块菜单并居中，里面的按钮自己排宽度和底色。 */
+	.vx-swipe-action__extra {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 透明保护层只接点击，不画底色；拖动和展开时盖在内容上。 */
+	.vx-swipe-action__shield {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		background-color: transparent;
+	}
+
+	/* Web 上只放行纵向滚动，横向手势留给菜单；触摸屏不会带着页面左右跑。 */
+	/* #ifdef WEB */
+	.vx-swipe-action {
+		user-select: none;
+		touch-action: pan-y;
+	}
+
+	.vx-swipe-action__content {
+		touch-action: pan-y;
+	}
+
+	.vx-swipe-action__shield {
+		touch-action: pan-y;
+	}
+
+	.vx-swipe-action__shield--closable {
+		cursor: pointer;
+	}
+
+	.vx-swipe-action__action {
+		cursor: pointer;
+	}
+
+	.vx-swipe-action__action--disabled {
+		cursor: not-allowed;
+	}
+
+	/* 收起后把菜单从绘制和 Tab 顺序里移走；延迟到内容和菜单的收起动画结束再藏，
+	   否则关闭过程中右侧会先空出一块。只在 Web 挂，原生端保持绘制顺序即可。 */
+	.vx-swipe-action__menu {
+		transition-property: visibility;
+		transition-duration: 0s;
+		transition-delay: 0s;
+	}
+
+	.vx-swipe-action__menu--closed {
+		visibility: hidden;
+		pointer-events: none;
+		transition-delay: var(--vx-duration-normal);
+	}
+	/* #endif */
+</style>

@@ -1,0 +1,325 @@
+<template>
+	<!-- 行本身不画圆角和描边，交给 vx-list-view 或外层卡片收口。 -->
+	<!-- 点击停在行上，外层不会再收到同一次点击。 -->
+	<view :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click.stop="onClick">
+		<view :class="contentClass">
+			<!-- 前缀放图标、头像或选择框，尺寸和颜色由插槽内容自己带。 -->
+			<view v-if="$slots['prefix'] != null" :class="prefixClass">
+				<slot name="prefix"></slot>
+			</view>
+
+			<!-- 默认插槽替换 title / description，值、后缀和箭头仍按 props 渲染。 -->
+			<view class="vx-list-cell__body">
+				<slot>
+					<text v-if="title.length > 0" :class="titleClass">{{ title }}</text>
+					<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
+				</slot>
+			</view>
+
+			<!-- extra 优先于 value：徽章、标签或时间放在这里，内容自己带颜色和字号。 -->
+			<view v-if="$slots['extra'] != null" :class="extraClass">
+				<slot name="extra"></slot>
+			</view>
+			<text v-else-if="value.length > 0" :class="valueClass">{{ value }}</text>
+
+			<view v-if="arrow" class="vx-list-cell__arrow">
+				<vx-icon name="chevron-right" :size="arrowSize" :color="arrowColor" />
+			</view>
+		</view>
+
+		<!-- 分割线在行内，左右让出内边距；最后一行记得关掉。 -->
+		<view v-if="showDivider" :class="dividerClass" :style="dividerStyle"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxListCellProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxListCellProps>(), {
+		title: '',
+		description: '',
+		value: '',
+		size: 'md',
+		arrow: false,
+		clickable: true,
+		disabled: false,
+		divider: true,
+		dividerColor: '',
+		dividerOpacity: 1
+	})
+
+	const emit = defineEmits<{
+		click: []
+	}>()
+
+	// class 顺序：基础 → 尺寸 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-list-cell'
+		if (props.disabled) name += ' vx-list-cell--disabled'
+		else if (props.clickable) name += ' vx-list-cell--clickable'
+		return name
+	})
+
+	const contentClass = computed((): string => {
+		let name = 'vx-list-cell__content'
+		if (props.size !== 'md') name += ` vx-list-cell__content--${props.size}`
+		return name
+	})
+
+	const titleClass = computed((): string => {
+		let name = 'vx-list-cell__title'
+		if (props.size !== 'md') name += ` vx-list-cell__title--${props.size}`
+		if (props.disabled) name += ' vx-list-cell__title--disabled'
+		return name
+	})
+
+	const descriptionClass = computed((): string => {
+		let name = 'vx-list-cell__desc'
+		if (props.title.length > 0) name += ' vx-list-cell__desc--offset'
+		if (props.disabled) name += ' vx-list-cell__desc--disabled'
+		return name
+	})
+
+	const valueClass = computed((): string => {
+		let name = 'vx-list-cell__value'
+		if (props.size === 'lg') name += ' vx-list-cell__value--lg'
+		if (props.disabled) name += ' vx-list-cell__value--disabled'
+		return name
+	})
+
+	// 左右间距只有 sm 更紧，lg 与 md 相同，不挂没有样式的修饰 class。
+	const prefixClass = computed((): string => {
+		if (props.size === 'sm') return 'vx-list-cell__prefix vx-list-cell__prefix--sm'
+		return 'vx-list-cell__prefix'
+	})
+
+	const extraClass = computed((): string => {
+		if (props.size === 'sm') return 'vx-list-cell__extra vx-list-cell__extra--sm'
+		return 'vx-list-cell__extra'
+	})
+
+	const dividerClass = computed((): string => {
+		if (props.size === 'sm') return 'vx-list-cell__divider vx-list-cell__divider--sm'
+		return 'vx-list-cell__divider'
+	})
+
+	// 透明度收敛到 0–1；0 直接不渲染，非法值按 0 处理。
+	const currentDividerOpacity = computed((): number => {
+		const value = props.dividerOpacity
+		if (!(value >= 0)) return 0
+		return value > 1 ? 1 : value
+	})
+
+	const showDivider = computed((): boolean => {
+		return props.divider && currentDividerOpacity.value > 0
+	})
+
+	// 自定义颜色是字面值；透明度只作用在这条线上，不碰行内容。
+	const dividerStyle = computed((): string => {
+		let style = ''
+		if (props.dividerColor.length > 0) style += `background-color: ${props.dividerColor};`
+		if (currentDividerOpacity.value < 1) style += `opacity: ${currentDividerOpacity.value};`
+		return style
+	})
+
+	// 箭头比主文案小一档：sm / md 用 14，lg 用 18。
+	const arrowSize = computed((): 'sm' | 'md' => {
+		return props.size === 'lg' ? 'md' : 'sm'
+	})
+
+	// vx-icon 不继承父级颜色，禁用时单独传灰。
+	const arrowColor = computed((): string => {
+		if (props.disabled) return 'var(--vx-color-disabled-text)'
+		return 'var(--vx-color-text-secondary)'
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		if (props.disabled || !props.clickable) return 'none'
+		return 'vx-list-cell--pressed'
+	})
+
+	// 静态行和禁用行都不抛 click；业务要在行内放单点操作时自己 stop。
+	const onClick = () => {
+		if (props.disabled || !props.clickable) return
+		emit('click')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 行不铺底色，也不加圆角，边界交给分组或外层卡片。
+	   这里不写 background-color：按下态是唯一一份，后面的 class 盖不掉。
+	   分割线绝对定位在行底，不占高度，三档行高才是准的。 */
+	.vx-list-cell {
+		position: relative;
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 按下态是这一层唯一的 background-color。
+	   hover-class 加在 class 字符串哪一头，都不会被透明底盖掉。 */
+	.vx-list-cell--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	/* 行高是下限，双行内容由上下内边距撑高，不写死 height。 */
+	.vx-list-cell__content {
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-lg);
+	}
+
+	.vx-list-cell__content--sm {
+		min-height: var(--vx-list-height-sm);
+		padding: var(--vx-space-sm) var(--vx-space-md);
+	}
+
+	.vx-list-cell__content--lg {
+		min-height: var(--vx-list-height-lg);
+		padding: var(--vx-space-lg) var(--vx-space-lg);
+	}
+
+	.vx-list-cell__prefix {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-list-cell__prefix--sm {
+		margin-right: var(--vx-space-sm);
+	}
+
+	/* 主体吃掉剩余宽度。最小宽度压成 0，长文案才能换行，而不是把箭头挤出去。
+	   不改 align-items，默认 stretch，文案才有一条确定的宽度。
+	   Web 默认 overflow 是 visible，长词裁在正文里，不盖住右侧。 */
+	.vx-list-cell__body {
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-list-cell__title,
+	.vx-list-cell__desc {
+		flex-shrink: 0;
+		min-width: 0;
+		white-space: normal;
+	}
+
+	.vx-list-cell__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-list-cell__title--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-list-cell__title--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-list-cell__title--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 说明始终用辅助说明档；和主文案之间留 4，只有说明时不加。 */
+	.vx-list-cell__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-list-cell__desc--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-list-cell__desc--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 右侧值是短文本，不换行，也不参与压缩。 */
+	.vx-list-cell__value {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-md);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+	}
+
+	.vx-list-cell__value--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-list-cell__value--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 后缀是插槽，可能放徽章或两行时间，这里只管对齐和间距。 */
+	.vx-list-cell__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-md);
+	}
+
+	.vx-list-cell__extra--sm {
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 箭头不改行高，和文字垂直居中；和值之间留 8，不贴在一起。 */
+	.vx-list-cell__arrow {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 默认用比卡片描边浅一档的 divider 色；左右让出内边距，sm 更紧。 */
+	.vx-list-cell__divider {
+		position: absolute;
+		right: var(--vx-space-lg);
+		bottom: 0;
+		left: var(--vx-space-lg);
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	.vx-list-cell__divider--sm {
+		right: var(--vx-space-md);
+		left: var(--vx-space-md);
+	}
+
+	/* 可点行是指针，禁用行是禁止。静态行两个 class 都没有，保持默认指针。 */
+	/* #ifdef WEB */
+	.vx-list-cell--clickable {
+		cursor: pointer;
+	}
+
+	.vx-list-cell--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>

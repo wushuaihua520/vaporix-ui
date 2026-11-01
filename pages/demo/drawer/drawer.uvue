@@ -1,0 +1,668 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-drawer</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="menu" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">抽屉</text>
+								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">贴着屏幕一条边，面板只圆朝向页面的两个角；长内容在面板内部滚动。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-drawer</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">默认从右侧滑出，宽度 280；点遮罩或内容里的按钮收起。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="从右边弹出 Drawer" @click="drawerBasicVisible = true" />
+						<text class="demo-hint">遮罩盖住页面，面板贴右边、只圆左侧两角；内容比面板高时在内部滚动。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">位置</text>
+							<text class="demo-section__desc">left / right / top / bottom，四条边各试一次。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="从左边弹出"
+									@click="onDrawerAt('left')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="从右边弹出"
+									@click="onDrawerAt('right')" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="从顶部弹出"
+									@click="onDrawerAt('top')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="从底部弹出"
+									@click="onDrawerAt('bottom')" />
+							</view>
+						</view>
+						<view class="demo-drawer-status">
+							<text class="demo-drawer-status__text">当前方向：{{ drawerPositionText }}</text>
+							<text class="demo-drawer-status__meta">position</text>
+						</view>
+						<text class="demo-hint">左右抽屉占满高度、改宽度；上下抽屉占满宽度、改高度。同一时刻只开一个，点遮罩收起。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">width / height 覆盖默认宽高，必须带单位。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="右侧默认 280"
+									@click="onDrawerSize('right', '', '', '右侧 · 280px')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="右侧 86%"
+									@click="onDrawerSize('right', '86%', '', '右侧 · 86%')" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="底部默认 45%"
+									@click="onDrawerSize('bottom', '', '', '底部 · 45%')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="底部 30%"
+									@click="onDrawerSize('bottom', '', '30%', '底部 · 30%')" />
+							</view>
+						</view>
+						<view class="demo-drawer-status">
+							<text class="demo-drawer-status__text">当前：{{ drawerSizeLabel }}</text>
+							<text class="demo-drawer-status__meta">width · height</text>
+						</view>
+						<text class="demo-hint">不传时左右用 --vx-drawer-width 280px，上下用 --vx-drawer-height 45%；面板最大不超出整屏。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">头部</text>
+							<text class="demo-section__desc">标题、关闭叉，标题前放图标、后面放标签。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="带标题的抽屉" @click="drawerHeaderVisible = true" />
+						<text class="demo-hint">title 单行省略，closable 在行尾加 44 的关闭叉；prefix 和 extra 插槽不挤占标题宽度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">贴边与底栏</text>
+							<text class="demo-section__desc">正文贴边放列表，suffix 固定在面板底部。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="订单抽屉" @click="drawerOrdersVisible = true" />
+						<text class="demo-hint">body-padded=false 去掉正文内边距；底栏不参与滚动，也带自己的 1px 分割线。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">长内容</text>
+							<text class="demo-section__desc">正文在面板里滚动，头部和底栏保持不动。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="长内容抽屉" @click="drawerScrollVisible = true" />
+						<text class="demo-hint">这里放了 14 条通知；滚到底不会带动页面，底栏的「全部标记已读」一直在。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">遮罩受限</text>
+							<text class="demo-section__desc">maskClosable=false 时点遮罩不关闭，必须留一个出口。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="遮罩不可点击" @click="drawerMaskVisible = true" />
+						<text class="demo-hint">关闭叉和内容里的按钮都能退出；遮罩换成蓝色只影响这一处，字面值不跟随主题。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义颜色</text>
+							<text class="demo-section__desc">bgColor 只改面板底色，面板里的文字色自己带。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="浅色品牌面板" @click="drawerColorVisible = true" />
+						<text class="demo-hint">这里用品牌浅底，标题和正文写死深色；换深色面板时同时换文字色，不要只改底色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法与事件</text>
+							<text class="demo-section__desc">ref 上暴露 open() / close()，close 只在用户收起时抛。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="open() 打开" @click="onDrawerOpen" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="close() 关闭" @click="onDrawerClose" />
+							</view>
+						</view>
+						<view class="demo-drawer-status">
+							<text class="demo-drawer-status__text">最近动作：{{ drawerLastEvent }}</text>
+							<text class="demo-drawer-status__meta">open · close · close()</text>
+						</view>
+						<text class="demo-hint">close() 只收起，不抛 close；父级把 show 改回 false 也只收起，不回抛。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">商品页的筛选入口，重置和应用留在底栏。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-drawer-product">
+							<view class="demo-drawer-product__copy">
+								<text class="demo-drawer-product__title">旅行双肩包</text>
+								<text class="demo-drawer-product__meta">¥329 · 包邮 · 现货</text>
+							</view>
+							<vx-button size="sm" type="default" text="筛选" @click="drawerFilterVisible = true" />
+						</view>
+						<view class="demo-drawer-status">
+							<text class="demo-drawer-status__text">已选 {{ drawerFilterCount }} 个条件</text>
+							<text class="demo-drawer-status__meta">共 {{ drawerFilterResultCount }} 件</text>
+						</view>
+						<text class="demo-hint">入口在页面里，抽屉挂页面根节点；筛选结果和数量由页面状态维护，组件只负责显示和收起。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 抽屉同样挂在页面根上，遮罩才盖得住滚动容器和固定页脚；一个实验室一个实例，同一时刻只开一个。 -->
+		<vx-drawer v-model:show="drawerBasicVisible">
+			<view class="demo-drawer-body">
+				<vx-button block type="danger" shape="pill" text="关闭抽屉"
+					@click="drawerBasicVisible = false" />
+				<text class="demo-drawer-text">导航、筛选、详情和表单都可以放进抽屉；内容比面板高时在内部滚动。</text>
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerPositionVisible" :position="drawerPosition">
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-title">{{ drawerPositionText }}</text>
+				<text class="demo-drawer-text">同一个实例改 position，内容不变；左右占满高度，上下占满宽度。</text>
+				<vx-button block type="primary" text="关闭抽屉" @click="drawerPositionVisible = false" />
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerSizeVisible" :position="drawerSizePosition" :width="drawerSizeWidth"
+			:height="drawerSizeHeight">
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-title">{{ drawerSizeLabel }}</text>
+				<text class="demo-drawer-text">width 只改左右宽度，height 只改上下高度，两者都要带单位。</text>
+				<vx-button block type="primary" text="关闭抽屉" @click="drawerSizeVisible = false" />
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerHeaderVisible" title="筛选" closable>
+			<template #prefix>
+				<vx-icon name="filter" type="primary" />
+			</template>
+			<template #extra>
+				<vx-tag type="primary" variant="soft" text="3 项" />
+			</template>
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-text">标题在左，关闭叉在右；prefix 和 extra 不挤占标题宽度，标题过长时单行省略。</text>
+				<view class="demo-drawer-tags">
+					<view class="demo-drawer-tags__item">
+						<vx-tag type="primary" variant="soft" text="包邮" />
+					</view>
+					<view class="demo-drawer-tags__item">
+						<vx-tag type="default" variant="soft" text="现货" />
+					</view>
+					<view class="demo-drawer-tags__item demo-drawer-tags__item--last">
+						<vx-tag type="warning" variant="soft" text="48 小时发货" />
+					</view>
+				</view>
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerOrdersVisible" title="我的订单" closable :body-padded="false">
+			<view class="demo-drawer-orders">
+				<vx-list-cell :clickable="false" title="待付款" value="2 笔">
+					<template #prefix>
+						<vx-icon name="wallet" size="lg" type="warning" />
+					</template>
+				</vx-list-cell>
+				<vx-list-cell :clickable="false" title="待发货" value="1 笔">
+					<template #prefix>
+						<vx-icon name="package" size="lg" type="primary" />
+					</template>
+				</vx-list-cell>
+				<vx-list-cell :clickable="false" title="待收货" value="3 笔" :divider="false">
+					<template #prefix>
+						<vx-icon name="truck" size="lg" type="success" />
+					</template>
+				</vx-list-cell>
+			</view>
+			<template #suffix>
+				<vx-button block type="primary" text="查看全部订单" @click="onDrawerOrdersAction" />
+			</template>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerScrollVisible" title="通知" closable>
+			<view class="demo-drawer-notices">
+				<view v-for="(notice, index) in drawerNoticeRows" :key="notice" class="demo-drawer-notice">
+					<text class="demo-drawer-notice__text">{{ notice }}</text>
+					<text class="demo-drawer-notice__meta">{{ index + 1 }} 分钟前</text>
+				</view>
+			</view>
+			<template #suffix>
+				<vx-button block type="primary" text="全部标记已读" @click="onDrawerMarkAllRead" />
+			</template>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerMaskVisible" title="提示" closable :mask-closable="false"
+			mask-color="rgba(43, 107, 224, 0.28)">
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-text">遮罩不可点击，点它不会关闭，也不会抛 close。关闭叉和下面的按钮都能退出。</text>
+				<vx-button block type="default" text="关闭抽屉" @click="drawerMaskVisible = false" />
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerColorVisible" bg-color="#eef3ff"
+			mask-color="rgba(43, 107, 224, 0.28)">
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-brand-title">元汽UI 会员</text>
+				<text class="demo-drawer-brand-text">专属折扣、优先发货和每月优惠券。</text>
+				<vx-button block type="primary" shape="pill" text="关闭抽屉"
+					@click="drawerColorVisible = false" />
+			</view>
+		</vx-drawer>
+
+		<vx-drawer ref="drawerRef" v-model:show="drawerMethodsVisible" title="方法" closable
+			@close="onDrawerCloseEvent">
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-text">用页面上的按钮调 open() 和 close()；这里点遮罩或关闭叉会抛 close。</text>
+				<vx-button block type="primary" text="关闭抽屉" @click="drawerMethodsVisible = false" />
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerFilterVisible" title="筛选" closable>
+			<template #prefix>
+				<vx-icon name="filter" type="primary" />
+			</template>
+			<template #extra>
+				<vx-tag type="primary" variant="soft" :text="drawerFilterCountText" />
+			</template>
+			<view class="demo-drawer-filter">
+				<text class="demo-drawer-filter__title">服务</text>
+				<view class="demo-drawer-filter__row">
+					<view v-for="(option, index) in drawerFilterOptions" :key="option"
+						class="demo-drawer-filter__tag" hover-class="demo-drawer-filter__tag--pressed"
+						@click="onDrawerFilterToggle(index)">
+						<vx-tag :type="drawerFilterSelected[index] ? 'primary' : 'default'"
+							:variant="drawerFilterSelected[index] ? 'soft' : 'plain'" :text="option" />
+					</view>
+				</view>
+				<text class="demo-drawer-filter__meta">点标签切换条件；结果数量由页面算，组件只负责显示。</text>
+			</view>
+			<template #suffix>
+				<view class="demo-drawer-foot">
+					<view class="demo-drawer-foot__item">
+						<vx-button block size="sm" type="default" text="重置"
+							@click="onDrawerFilterReset" />
+					</view>
+					<view class="demo-drawer-foot__item demo-drawer-foot__item--last">
+						<vx-button block size="sm" type="primary"
+							:text="`查看 ${drawerFilterResultCount} 件`" @click="onDrawerFilterApply" />
+					</view>
+				</view>
+			</template>
+		</vx-drawer>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type ToastIcon = 'check-circle' | 'close-circle' | 'alert-circle' | 'info' | 'heart'
+
+	type ToastOptions = {
+		text: string
+		type: ToastSemantic
+		duration?: number
+		icon?: ToastIcon | null
+		image?: string
+		showIcon?: boolean
+		bgColor?: string
+		bgOpacity?: number
+		color?: string
+	}
+
+	const toastText = ref('')
+
+	const toastType = ref<ToastSemantic>('default')
+
+	const toastDuration = ref(2000)
+
+	const toastIcon = ref<ToastIcon | null>(null)
+
+	const toastImage = ref('')
+
+	const toastShowIcon = ref(true)
+
+	const toastBgColor = ref('')
+
+	const toastBgOpacity = ref(0.9)
+
+	const toastColor = ref('')
+
+	const toastRef = ref<VxToastComponentPublicInstance | null>(null)
+
+	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
+	const showToast = (options: ToastOptions) => {
+		toastType.value = options.type
+		toastText.value = options.text
+		toastDuration.value = options.duration != null ? options.duration : 2000
+		toastIcon.value = options.icon != null ? options.icon : null
+		toastImage.value = options.image != null ? options.image : ''
+		toastShowIcon.value = options.showIcon != null ? options.showIcon : true
+		toastBgColor.value = options.bgColor != null ? options.bgColor : ''
+		toastBgOpacity.value = options.bgOpacity != null ? options.bgOpacity : 0.9
+		toastColor.value = options.color != null ? options.color : ''
+		toastRef.value?.open?.()
+	}
+
+	// 抽屉演示：方向、尺寸、头部、底栏、遮罩、颜色、方法和筛选组合各用一组状态。
+	type DrawerDemoPosition = 'left' | 'right' | 'top' | 'bottom'
+
+	type DrawerApi = {
+		open?: () => void
+		close?: () => void
+	}
+
+	const drawerBasicVisible = ref(false)
+
+	const drawerPositionVisible = ref(false)
+
+	const drawerPosition = ref<DrawerDemoPosition>('right')
+
+	const drawerSizeVisible = ref(false)
+
+	const drawerSizePosition = ref<DrawerDemoPosition>('right')
+
+	const drawerSizeWidth = ref('')
+
+	const drawerSizeHeight = ref('')
+
+	const drawerSizeLabel = ref('右侧 · 280px')
+
+	const drawerHeaderVisible = ref(false)
+
+	const drawerOrdersVisible = ref(false)
+
+	const drawerScrollVisible = ref(false)
+
+	const drawerMaskVisible = ref(false)
+
+	const drawerColorVisible = ref(false)
+
+	const drawerMethodsVisible = ref(false)
+
+	const drawerRef = ref<DrawerApi | null>(null)
+
+	const drawerLastEvent = ref('还没有操作')
+
+	const drawerFilterVisible = ref(false)
+
+	const drawerFilterOptions: string[] = ['包邮', '现货', '新品', '七天无理由']
+
+	const drawerFilterSelected = ref<boolean[]>([false, false, false, false])
+
+	const drawerNoticeRows: string[] = [
+		'订单 20261026 已发货',
+		'优惠券将在 3 天后过期',
+		'本月会员积分已到账',
+		'您关注的商品降价了',
+		'新的系统版本可以更新',
+		'退款申请已通过审核',
+		'本月账单已生成',
+		'收货地址审核通过',
+		'积分兑换的礼品已发出',
+		'会员等级即将升级',
+		'账户在新设备登录',
+		'本周订单报告已生成',
+		'收藏的商品补货了',
+		'客服回复了您的咨询'
+	]
+
+	const drawerPositionText = computed((): string => {
+		const position = drawerPosition.value
+		if (position === 'left') return '左侧'
+		if (position === 'top') return '顶部'
+		if (position === 'bottom') return '底部'
+		return '右侧'
+	})
+
+	const onDrawerAt = (position: DrawerDemoPosition) => {
+		drawerPosition.value = position
+		drawerPositionVisible.value = true
+	}
+
+	// 方向、宽高和当前组合先写好再开，连点两次时不会沿用上一次的尺寸。
+	const onDrawerSize = (position: DrawerDemoPosition, width: string, height: string, label: string) => {
+		drawerSizePosition.value = position
+		drawerSizeWidth.value = width
+		drawerSizeHeight.value = height
+		drawerSizeLabel.value = label
+		drawerSizeVisible.value = true
+	}
+
+	const onDrawerOrdersAction = () => {
+		drawerOrdersVisible.value = false
+		showToast({ text: '查看全部订单', type: 'success' })
+	}
+
+	const onDrawerMarkAllRead = () => {
+		drawerScrollVisible.value = false
+		showToast({ text: '已全部标记为已读', type: 'success' })
+	}
+
+	const onDrawerOpen = () => {
+		drawerLastEvent.value = 'open()'
+		drawerRef.value?.open?.()
+	}
+
+	const onDrawerClose = () => {
+		drawerLastEvent.value = 'close()'
+		drawerRef.value?.close?.()
+	}
+
+	const onDrawerCloseEvent = () => {
+		drawerLastEvent.value = 'close'
+	}
+
+	const drawerFilterCount = computed((): number => {
+		let count = 0
+		const list = drawerFilterSelected.value
+		for (let index = 0; index < list.length; index++) {
+			if (list[index]) count += 1
+		}
+		return count
+	})
+
+	const drawerFilterCountText = computed((): string => {
+		return `${drawerFilterCount.value} 项`
+	})
+
+	// 只做演示：选中的条件越多，结果越少，不接真实商品数据。
+	const drawerFilterResultCount = computed((): number => {
+		return 128 - drawerFilterCount.value * 18
+	})
+
+	const onDrawerFilterToggle = (index: number) => {
+		drawerFilterSelected.value = drawerFilterSelected.value.map((selected: boolean,
+			rowIndex: number): boolean => {
+			if (rowIndex === index) return !selected
+			return selected
+		})
+	}
+
+	const onDrawerFilterReset = () => {
+		drawerFilterSelected.value = [false, false, false, false]
+	}
+
+	const onDrawerFilterApply = () => {
+		drawerFilterVisible.value = false
+		showToast({ text: `已应用 ${drawerFilterCount.value} 个筛选条件`, type: 'success' })
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/modal/modal'
+	const nextPath: string = '/pages/demo/bubble-popup/bubble-popup'
+	const prevName = '弹框'
+	const nextName = '气泡弹框'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

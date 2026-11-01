@@ -1,0 +1,497 @@
+<template>
+	<!-- 整行点击由组件抛出，不再往外冒。 -->
+	<view :class="rootClass" @click.stop="onClick">
+		<view v-if="label.length > 0" :class="labelClass" :style="labelStyle">
+			<text v-if="required" :class="requiredClass">*</text>
+			<text :class="labelTextClass">{{ label }}</text>
+		</view>
+
+		<view v-if="$slots['prefix'] != null" class="vx-input__prefix">
+			<slot name="prefix"></slot>
+		</view>
+
+		<view v-if="readonly" class="vx-input__display">
+			<text :class="valueClass">{{ displayValue }}</text>
+		</view>
+		<input v-else v-model="modelValue" :class="controlClass" :type="type" :password="password"
+			:placeholder="placeholder" :placeholder-class="placeholderClass" :disabled="disabled"
+			:maxlength="maxlength" :confirm-type="confirmType" @input="onInput" @change="onChange"
+			@confirm="onConfirm" @focus="onFocus" @blur="onBlur" />
+
+		<text v-if="unit.length > 0" :class="unitClass">{{ unit }}</text>
+
+		<view v-if="showClear" :class="clearClass" hover-class="vx-input__clear--pressed"
+			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClear">
+			<view :class="clearMarkClass">
+				<vx-icon name="close" :size="iconSize" color="var(--vx-color-text-secondary)" />
+			</view>
+		</view>
+
+		<view v-if="$slots['suffix'] != null" class="vx-input__suffix">
+			<slot name="suffix"></slot>
+		</view>
+
+		<view v-if="arrow" class="vx-input__arrow">
+			<vx-icon name="chevron-right" :size="iconSize" :color="arrowColor" />
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxInputProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxInputProps>(), {
+		type: 'text',
+		size: 'md',
+		variant: 'outline',
+		shape: 'rounded',
+		placeholder: '',
+		password: false,
+		clearable: false,
+		disabled: false,
+		readonly: false,
+		maxlength: -1,
+		invalid: false,
+		confirmType: 'done',
+		label: '',
+		labelWidth: '',
+		required: false,
+		align: 'left',
+		unit: '',
+		arrow: false
+	})
+
+	const modelValue = defineModel({
+		type: String,
+		default: ''
+	})
+
+	const emit = defineEmits<{
+		input: [value: string]
+		change: [value: string]
+		confirm: [value: string]
+		clear: []
+		focus: []
+		blur: []
+		click: []
+	}>()
+
+	const focused = ref(false)
+
+	// md 不加尺寸 class。state 为空不加状态 class。
+	const partClass = (base: string, size: string, state: string): string => {
+		let name = base
+		if (size !== 'md') name += ` ${base}--${size}`
+		if (state.length > 0) name += ` ${base}--${state}`
+		return name
+	}
+
+	const rootClass = computed((): string => {
+		let name = 'vx-input'
+		if (props.size !== 'md') name += ` vx-input--${props.size}`
+		// line 只有下边框，圆角没有可作用的对象。
+		if (props.variant === 'line') name += ' vx-input--line'
+		else if (props.shape === 'pill') name += ' vx-input--pill'
+		else if (props.shape === 'square') name += ' vx-input--square'
+
+		if (props.disabled) {
+			name += props.variant === 'line' ? ' vx-input--line-disabled' : ' vx-input--disabled'
+		} else {
+			if (focused.value && !props.readonly) name += ' vx-input--focused'
+			if (props.invalid) name += ' vx-input--invalid'
+			if (props.readonly) name += ' vx-input--readonly'
+		}
+		// 箭头图标自带 em 框留白，右侧内边距收紧一档，让视觉边距接近 12px。
+		if (props.arrow) name += ' vx-input--arrow'
+		return name
+	})
+
+	const labelClass = computed((): string => {
+		return partClass('vx-input__label', props.size, '')
+	})
+
+	const requiredClass = computed((): string => {
+		return partClass('vx-input__required', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const labelTextClass = computed((): string => {
+		return partClass('vx-input__label-text', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const controlClass = computed((): string => {
+		let name = partClass('vx-input__control', props.size, props.disabled ? 'disabled' : '')
+		if (props.align === 'right') name += ' vx-input__control--right'
+		return name
+	})
+
+	const valueClass = computed((): string => {
+		let state = ''
+		if (props.disabled) state = 'disabled'
+		else if (modelValue.value.length === 0) state = 'placeholder'
+		let name = partClass('vx-input__value', props.size, state)
+		if (props.align === 'right') name += ' vx-input__value--right'
+		return name
+	})
+
+	const unitClass = computed((): string => {
+		return partClass('vx-input__unit', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const clearClass = computed((): string => {
+		return partClass('vx-input__clear', props.size, '')
+	})
+
+	const clearMarkClass = computed((): string => {
+		return partClass('vx-input__clear-mark', props.size, '')
+	})
+
+	// 清除和选择箭头都比输入框字号小一档，避免图标撑满控件高度。
+	const iconSize = computed((): 'sm' | 'md' => {
+		return props.size === 'lg' ? 'md' : 'sm'
+	})
+
+	const arrowColor = computed((): string => {
+		return props.disabled ? 'var(--vx-color-disabled-text)' : 'var(--vx-color-text-secondary)'
+	})
+
+	const placeholderClass = computed((): string => {
+		return partClass('vx-input__placeholder', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	// 有值就显示，不看焦点。
+	const showClear = computed((): boolean => {
+		if (!props.clearable || props.disabled || props.readonly) return false
+		return modelValue.value.length > 0
+	})
+
+	const labelStyle = computed((): string => {
+		if (props.labelWidth.length === 0) return ''
+		return `width: ${props.labelWidth};`
+	})
+
+	const displayValue = computed((): string => {
+		if (modelValue.value.length === 0) return props.placeholder
+		if (props.password) return '•'.repeat(modelValue.value.length)
+		return modelValue.value
+	})
+
+	// detail 在原生端是权威值；普通 input 没有 detail 时退回已经同步的模型值。
+	const onInput = (event: UniInputEvent) => {
+		emit('input', event.detail != null ? event.detail.value : modelValue.value)
+	}
+
+	const onChange = (event: UniInputChangeEvent) => {
+		emit('change', event.detail != null ? event.detail.value : modelValue.value)
+	}
+
+	const onConfirm = (event: UniInputConfirmEvent) => {
+		emit('confirm', event.detail != null ? event.detail.value : modelValue.value)
+	}
+
+	const onFocus = () => {
+		focused.value = true
+		emit('focus')
+	}
+
+	const onBlur = () => {
+		focused.value = false
+		emit('blur')
+	}
+
+	const onClear = () => {
+		modelValue.value = ''
+		emit('clear')
+	}
+
+	// 禁用不抛 click。只读行仍抛，用来开选择器。
+	const onClick = () => {
+		if (props.disabled) return
+		emit('click')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-input {
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		height: var(--vx-control-height-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-control-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-input--lg {
+		height: var(--vx-control-height-lg);
+		padding-left: var(--vx-space-xl);
+		padding-right: var(--vx-space-xl);
+		border-radius: var(--vx-control-radius-lg);
+	}
+
+	.vx-input--sm {
+		height: var(--vx-control-height-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		border-radius: var(--vx-control-radius-sm);
+	}
+
+	.vx-input--line {
+		border-top-width: 0;
+		border-left-width: 0;
+		border-right-width: 0;
+		border-radius: 0;
+	}
+
+	.vx-input--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-input--square {
+		border-radius: 0;
+	}
+
+	.vx-input--focused {
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-input--invalid {
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-input--disabled {
+		background-color: var(--vx-color-disabled-bg);
+		border-color: var(--vx-color-disabled-bg);
+	}
+
+	.vx-input--line-disabled {
+		background-color: var(--vx-color-surface);
+		border-color: var(--vx-color-border);
+	}
+
+	.vx-input__label {
+		flex-direction: row;
+		align-items: center;
+		flex-shrink: 0;
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-input__label--lg {
+		margin-right: var(--vx-space-lg);
+	}
+
+	.vx-input__label--sm {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-input__required,
+	.vx-input__label-text,
+	.vx-input__control,
+	.vx-input__value,
+	.vx-input__unit {
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-input__required--lg,
+	.vx-input__label-text--lg,
+	.vx-input__control--lg,
+	.vx-input__value--lg,
+	.vx-input__unit--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-input__required--sm,
+	.vx-input__label-text--sm,
+	.vx-input__control--sm,
+	.vx-input__value--sm,
+	.vx-input__unit--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-input__required {
+		margin-right: var(--vx-space-xs);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-danger);
+	}
+
+	.vx-input__label-text,
+	.vx-input__control,
+	.vx-input__value {
+		color: var(--vx-color-text);
+	}
+
+	/* 标题比内容重一档，长表单里更容易扫读。 */
+	.vx-input__label-text {
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-input__value--placeholder,
+	.vx-input__unit {
+		color: var(--vx-color-text-secondary);
+	}
+
+	.vx-input__required--disabled,
+	.vx-input__label-text--disabled,
+	.vx-input__control--disabled,
+	.vx-input__value--disabled,
+	.vx-input__unit--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-input__prefix {
+		flex-shrink: 0;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-input__suffix {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-input__control {
+		flex: 1;
+		/* 盖掉原生 input 的默认宽度，剩下的空间交给 flex。 */
+		width: 0;
+		min-width: 0;
+		height: 100%;
+		padding-top: 0;
+		padding-right: 0;
+		padding-bottom: 0;
+		padding-left: 0;
+		border-width: 0;
+		background-color: transparent;
+	}
+
+	.vx-input__control--right,
+	.vx-input__value--right {
+		text-align: right;
+	}
+
+	.vx-input__display {
+		flex: 1;
+		width: 0;
+		min-width: 0;
+		height: 100%;
+		flex-direction: row;
+		align-items: center;
+		overflow: hidden;
+	}
+
+	.vx-input__value {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.vx-input__unit {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-input__clear {
+		flex-direction: row;
+		flex-shrink: 0;
+		width: var(--vx-control-height-md);
+		align-self: stretch;
+		align-items: center;
+		/* 图标靠右，和箭头、后缀图标落在同一条右侧基线上。 */
+		justify-content: flex-end;
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-input__clear--lg {
+		width: var(--vx-control-height-lg);
+	}
+
+	.vx-input__clear--sm {
+		width: var(--vx-control-height-sm);
+	}
+
+	.vx-input__clear--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-input__clear-mark {
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.vx-input__clear-mark--lg {
+		width: var(--vx-icon-lg);
+		height: var(--vx-icon-lg);
+	}
+
+	.vx-input__clear-mark--sm {
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+	}
+
+	.vx-input--arrow {
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-input__arrow {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		/* 箭头字形自带左侧留白，再补一档，右对齐的值才不会贴住箭头。 */
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-input__placeholder {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-control-md);
+	}
+
+	.vx-input__placeholder--lg {
+		font-size: var(--vx-font-control-lg);
+	}
+
+	.vx-input__placeholder--sm {
+		font-size: var(--vx-font-control-sm);
+	}
+
+	.vx-input__placeholder--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* Web 原生 input 会带浏览器字体和焦点框 */
+	/* #ifdef WEB */
+	.vx-input {
+		cursor: text;
+	}
+
+	.vx-input--readonly {
+		cursor: pointer;
+	}
+
+	.vx-input--disabled,
+	.vx-input--line-disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-input__clear {
+		cursor: pointer;
+	}
+
+	.vx-input__control {
+		font-family: inherit;
+		outline: none;
+	}
+	/* #endif */
+</style>

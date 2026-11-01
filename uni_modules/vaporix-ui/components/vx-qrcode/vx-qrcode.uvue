@@ -1,0 +1,303 @@
+<template>
+	<!-- 二维码只做展示：模块用绝对定位的 view 画，深浅两色跟 props 走，不依赖 canvas。 -->
+	<view :class="rootClass" :style="rootStyle">
+		<view v-if="hasMatrix" class="vx-qrcode__canvas" :style="boardStyle">
+			<view v-for="cell in cells" :key="cell.key" class="vx-qrcode__cell" :style="cell.style"></view>
+			<!-- 中心图标压在模块上，白色内边距替掉下方模块，靠纠错级别补回来。 -->
+			<view v-if="hasLogo" class="vx-qrcode__logo" :style="logoStyle">
+				<image class="vx-qrcode__logo-image" :src="logo" mode="aspectFit" @error="onLogoError" />
+			</view>
+		</view>
+
+		<view v-else class="vx-qrcode__empty">
+			<vx-icon v-if="isEmpty" name="qr-code" size="lg" color="var(--vx-color-disabled-text)" />
+			<vx-icon v-else name="alert-circle" size="lg" type="warning" />
+			<text class="vx-qrcode__empty-text">{{ placeholderText }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxQrcodeProps } from './props'
+	import { VxSize } from '../../libs/types/common'
+	import {
+		VX_QRCODE_LOGO_SCALE_DEFAULT,
+		VX_QRCODE_LOGO_SCALE_MAX,
+		VX_QRCODE_LOGO_SCALE_MIN,
+		VX_QRCODE_MARGIN_DEFAULT,
+		VX_QRCODE_MARGIN_MAX,
+		VX_QRCODE_MARGIN_MIN,
+		VX_QRCODE_SIZE,
+		VxQrcodeRun,
+		vxQrcodeEncode,
+		vxQrcodeRuns
+	} from '../../libs/qrcode'
+
+	const props = withDefaults(defineProps<VxQrcodeProps>(), {
+		text: '',
+		size: 'md',
+		width: '',
+		level: 'M',
+		color: '',
+		bgColor: '',
+		margin: VX_QRCODE_MARGIN_DEFAULT,
+		logo: '',
+		logoSize: VX_QRCODE_LOGO_SCALE_DEFAULT,
+		emptyText: '暂无二维码内容',
+		errorText: '内容超出容量'
+	})
+
+	// 数据和纠错级别变了才要重算模块；色值和尺寸不参与编码。
+	const result = computed(() => {
+		return vxQrcodeEncode(props.text, props.level)
+	})
+
+	const hasMatrix = computed((): boolean => {
+		return result.value.matrix !== null
+	})
+
+	const isEmpty = computed((): boolean => {
+		return result.value.error === 'empty'
+	})
+
+	const placeholderText = computed((): string => {
+		return isEmpty.value ? props.emptyText : props.errorText
+	})
+
+	// 三档之外的 size 按 md 处理；width 只认 px，其他单位回落到档位。
+	const sizeKey = computed((): VxSize => {
+		if (props.size === 'sm') return 'sm'
+		if (props.size === 'lg') return 'lg'
+		return 'md'
+	})
+
+	const customWidth = computed((): number => {
+		// 宽高由模板里的数字直接传进来时也能收住，不因为不是 string 抛错。
+		const raw = `${props.width}`.trim()
+		if (raw.length < 3) return 0
+		if (raw.slice(raw.length - 2) !== 'px') return 0
+		const parsed = parseFloat(raw)
+		if (isNaN(parsed) || parsed <= 0) return 0
+		return Math.round(parsed)
+	})
+
+	const margin = computed((): number => {
+		const value = Math.round(props.margin)
+		if (!(value >= VX_QRCODE_MARGIN_MIN)) return VX_QRCODE_MARGIN_MIN
+		return value > VX_QRCODE_MARGIN_MAX ? VX_QRCODE_MARGIN_MAX : value
+	})
+
+	const logoScale = computed((): number => {
+		const value = props.logoSize
+		if (!(value >= VX_QRCODE_LOGO_SCALE_MIN)) return VX_QRCODE_LOGO_SCALE_MIN
+		return value > VX_QRCODE_LOGO_SCALE_MAX ? VX_QRCODE_LOGO_SCALE_MAX : value
+	})
+
+	// 深色模块和底色的默认值在 --vx-qrcode-dark / --vx-qrcode-light，亮暗两套同值。
+	// 只有传了自定义颜色才写内联样式，没传时交给 class，业务还能整站覆盖令牌。
+	const darkColor = computed((): string => {
+		return props.color.trim()
+	})
+
+	const lightColor = computed((): string => {
+		return props.bgColor.trim()
+	})
+
+	type VxQrcodeGeometry = {
+		box: number
+		cell: number
+		pad: number
+		inner: number
+		logoBox: number
+	}
+
+	// 模块必须落在整数像素上，否则相邻两行之间会透出发丝一样的缝。
+	// 边长不够一格时退成小数，让内容完整留在盒子里，由业务保证可扫的尺寸。
+	const geometry = computed((): VxQrcodeGeometry => {
+		const box = customWidth.value > 0 ? customWidth.value : VX_QRCODE_SIZE[sizeKey.value]
+		const matrix = result.value.matrix
+		if (matrix === null) return { box: box, cell: 0, pad: 0, inner: 0, logoBox: 0 }
+
+		const total = matrix.size + margin.value * 2
+		const fitted = Math.floor(box / total)
+		const cell = fitted >= 1 ? fitted : Math.round((box / total) * 100) / 100
+		const inner = cell * matrix.size
+		const pad = Math.floor((box - inner) / 2)
+		const logoBox = Math.round(inner * logoScale.value)
+		return {
+			box: box,
+			cell: cell,
+			pad: pad > 0 ? pad : 0,
+			inner: inner,
+			logoBox: logoBox
+		}
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-qrcode'
+		if (sizeKey.value === 'sm') name += ' vx-qrcode--sm'
+		else if (sizeKey.value === 'lg') name += ' vx-qrcode--lg'
+		if (!hasMatrix.value) name += ' vx-qrcode--empty'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		if (customWidth.value <= 0) return ''
+		return `width: ${customWidth.value}px; height: ${customWidth.value}px;`
+	})
+
+	const boardStyle = computed((): string => {
+		const box = geometry.value.box
+		const background = lightColor.value.length > 0 ? ` background-color: ${lightColor.value};` : ''
+		return `width: ${box}px; height: ${box}px;${background}`
+	})
+
+	// 图标取不到时收起整层，别让裂图盖住中间的模块；换地址后重新试。
+	const logoFailed = ref(false)
+
+	watch(
+		() => props.logo,
+		() => {
+			logoFailed.value = false
+		}
+	)
+
+	const hasLogo = computed((): boolean => {
+		// 盒子小于 16 时，去掉四周的挖空就放不下图片了，直接不画。
+		return !logoFailed.value && props.logo.length > 0 && geometry.value.logoBox >= 16
+	})
+
+	const onLogoError = () => {
+		logoFailed.value = true
+	}
+
+	const logoStyle = computed((): string => {
+		const grid = geometry.value
+		const left = Math.round((grid.box - grid.logoBox) / 2)
+		const background = lightColor.value.length > 0 ? ` background-color: ${lightColor.value};` : ''
+		return `left: ${left}px; top: ${left}px; width: ${grid.logoBox}px; height: ${grid.logoBox}px;${background}`
+	})
+
+	type VxQrcodeCell = {
+		key: string
+		style: string
+	}
+
+	const roundPixel = (value: number): number => {
+		return Math.round(value * 100) / 100
+	}
+
+	const cellStyle = (left: number, top: number, width: number, height: number, color: string): string => {
+		const background = color.length > 0 ? ` background-color: ${color};` : ''
+		return `left: ${roundPixel(left)}px; top: ${roundPixel(top)}px; width: ${roundPixel(width)}px; height: ${roundPixel(height)}px;${background}`
+	}
+
+	// 块的形状只跟方阵有关。改颜色、边长、边距时不再重走模块。
+	const runs = computed((): Array<VxQrcodeRun> => {
+		const matrix = result.value.matrix
+		if (matrix === null) return []
+		return vxQrcodeRuns(matrix.modules)
+	})
+
+	const cells = computed((): VxQrcodeCell[] => {
+		const runList = runs.value
+		const list: VxQrcodeCell[] = []
+		if (runList.length === 0) return list
+
+		const grid = geometry.value
+		const cell = grid.cell
+		const pad = grid.pad
+		const color = darkColor.value
+		for (let index = 0; index < runList.length; index++) {
+			const run = runList[index]
+			list.push({
+				key: `${run.row}-${run.col}`,
+				style: cellStyle(pad + run.col * cell, pad + run.row * cell, run.cols * cell, run.rows * cell, color)
+			})
+		}
+		return list
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 正方形展示件：宽度取三档令牌，不跟随父级拉伸。
+	   带 center 对齐，空状态和错误提示才有地方落。 */
+	.vx-qrcode {
+		flex-shrink: 0;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: var(--vx-qrcode-size-md);
+		height: var(--vx-qrcode-size-md);
+		overflow: hidden;
+	}
+
+	.vx-qrcode--sm {
+		width: var(--vx-qrcode-size-sm);
+		height: var(--vx-qrcode-size-sm);
+	}
+
+	.vx-qrcode--lg {
+		width: var(--vx-qrcode-size-lg);
+		height: var(--vx-qrcode-size-lg);
+	}
+
+	/* 空状态和错误态没有方阵，用浅灰底占住同样的面积，避免页面跳动。 */
+	.vx-qrcode--empty {
+		padding: var(--vx-space-md);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 方阵底板就是底色本身，模块压在上面；空白边距靠 pad 留出来。
+	   默认颜色走令牌，亮暗两套同值；自定义颜色由内联样式盖过这里。 */
+	.vx-qrcode__canvas {
+		position: relative;
+		flex-shrink: 0;
+		overflow: hidden;
+		background-color: var(--vx-qrcode-light);
+	}
+
+	.vx-qrcode__cell {
+		position: absolute;
+		background-color: var(--vx-qrcode-dark);
+	}
+
+	/* 图标盒子由脚本按比例算，内边距用令牌；底色和底板同色，看起来是挖掉一块。 */
+	.vx-qrcode__logo {
+		position: absolute;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		overflow: hidden;
+		padding: var(--vx-qrcode-logo-pad);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-qrcode-light);
+	}
+
+	.vx-qrcode__logo-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.vx-qrcode__empty {
+		flex: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.vx-qrcode__empty-text {
+		margin-top: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+	}
+</style>

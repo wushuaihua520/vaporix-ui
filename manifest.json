@@ -1,0 +1,27 @@
+{
+	"name": "vaporix-ui",
+	"appid": "__UNI__19854A7",
+	"description": "元汽UI - uni-app x 蒸汽模式 UI 组件库",
+	"versionName": "0.58.0",
+	"versionCode": "5800",
+	"transformPx": false,
+	"uni-app-x": {
+		"vapor": true,
+		"styleIsolationVersion": "2",
+		"vapor-render-target": "bytecode"
+	},
+	"web": {
+		"router": {
+			"mode": ""
+		}
+	},
+	"app-android": {
+		"distribute": {
+			"abiFilters": [
+				"armeabi-v7a",
+				"arm64-v8a",
+				"x86_64"
+			]
+		}
+	}
+}

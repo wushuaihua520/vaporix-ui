@@ -1,0 +1,513 @@
+<template>
+	<!-- 文本样式全部写在内部 text 上：App 的 view 不继承字号和颜色。 -->
+	<!-- type / color 用 class 和行内样式各管一处；disabled 时 class 盖住自定义颜色。 -->
+	<view :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+		@click="onClick" @longpress="onLongPress">
+		<text v-if="hasText" :class="contentClass" :style="contentStyle" :user-select="selectableValue"
+			:selectable="selectableValue" :max-lines="nativeMaxLines">{{ displayText }}</text>
+	</view>
+</template>
+
+<script setup>
+	import { VxTextAlign, VxTextDecoration, VxTextFormat, VxTextProps, VxTextType, VxTextWeight } from './props'
+	import { VxSize } from '../../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+
+	const props = withDefaults(defineProps<VxTextProps>(), {
+		text: '',
+		type: 'default',
+		size: 'md',
+		weight: 'regular',
+		color: '',
+		align: 'left',
+		decoration: 'none',
+		block: false,
+		maxLines: 0,
+		copyable: false,
+		selectable: false,
+		clickable: false,
+		disabled: false,
+		format: 'none',
+		currency: '¥',
+		decimals: 2
+	})
+
+	const emit = defineEmits<{
+		click: [text: string]
+		copy: [text: string]
+	}>()
+
+	// 字面值里的空白不算自定义色，空了就回落到 type。
+	const colorValue = computed((): string => {
+		const color = props.color
+		if (color == null) return ''
+		return color.trim()
+	})
+
+	// 不认识的尺寸按 md，不认识的语义色按 default，避免 class 落空。
+	const sizeKey = computed((): VxSize => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	const typeKey = computed((): VxTextType => {
+		const type = props.type
+		if (type === 'secondary' || type === 'primary' || type === 'success' || type === 'info'
+			|| type === 'warning' || type === 'danger') {
+			return type
+		}
+		return 'default'
+	})
+
+	const weightKey = computed((): VxTextWeight => {
+		if (props.weight === 'medium' || props.weight === 'semibold' || props.weight === 'bold') {
+			return props.weight
+		}
+		return 'regular'
+	})
+
+	const alignKey = computed((): VxTextAlign => {
+		if (props.align === 'center' || props.align === 'right') return props.align
+		return 'left'
+	})
+
+	const decorationKey = computed((): VxTextDecoration => {
+		if (props.decoration === 'underline' || props.decoration === 'line-through') return props.decoration
+		return 'none'
+	})
+
+	const formatKey = computed((): VxTextFormat => {
+		if (props.format === 'phone' || props.format === 'amount' || props.format === 'bank-card'
+			|| props.format === 'id-card') {
+			return props.format
+		}
+		return 'none'
+	})
+
+	// 0 表示不限；读不出来的值和负数按不限处理。行数不设上限，交给布局和内容决定。
+	const maxLinesValue = computed((): number => {
+		const lines = Math.round(props.maxLines)
+		if (!isFinite(lines) || lines <= 0) return 0
+		return lines
+	})
+
+	// text 可能传数字；统一转成字符串后再走格式化。
+	const rawText = computed((): string => {
+		const value = props.text
+		if (value == null) return ''
+		return value.toString()
+	})
+
+	const digitsOnly = (value: string): string => {
+		let digits = ''
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			if (code >= 48 && code <= 57) digits += value.charAt(index)
+		}
+		return digits
+	}
+
+	// 格式化只认纯值：带「手机号：」这类标签时原样返回，避免把说明文字吃掉。
+	const isPhoneValue = (value: string): boolean => {
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			const allowed = (code >= 48 && code <= 57) || code === 32 || code === 43 || code === 45
+				|| code === 40 || code === 41
+			if (!allowed) return false
+		}
+		return true
+	}
+
+	// 只有 1 开头的 11 位做掩码；+86 开头先收掉国家码，其它长度原样返回。
+	const formatPhone = (value: string): string => {
+		if (!isPhoneValue(value)) return value
+		let digits = digitsOnly(value)
+		if (digits.length === 13 && digits.slice(0, 2) === '86') digits = digits.slice(2)
+		if (digits.length !== 11 || digits.charCodeAt(0) !== 49) return value
+		return digits.slice(0, 3) + '****' + digits.slice(7)
+	}
+
+	const isBankCardValue = (value: string): boolean => {
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			const allowed = (code >= 48 && code <= 57) || code === 32 || code === 45
+			if (!allowed) return false
+		}
+		return true
+	}
+
+	// 银行卡每四位留一个空格；少于 8 位不做分组，避免把短号拆碎。
+	const formatBankCard = (value: string): string => {
+		if (!isBankCardValue(value)) return value
+		const digits = digitsOnly(value)
+		if (digits.length < 8) return value
+		let result = ''
+		for (let index = 0; index < digits.length; index += 4) {
+			if (index > 0) result += ' '
+			result += digits.slice(index, index + 4)
+		}
+		return result
+	}
+
+	const isIdCardValue = (value: string): boolean => {
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			const allowed = (code >= 48 && code <= 57) || code === 88 || code === 120
+				|| code === 32 || code === 45
+			if (!allowed) return false
+		}
+		return true
+	}
+
+	// 身份证保留前 6 位和后 4 位，中间 8 位用星号；X 结尾也保留。
+	const formatIdCard = (value: string): string => {
+		if (!isIdCardValue(value)) return value
+		let normalized = ''
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			if ((code >= 48 && code <= 57) || code === 88 || code === 120) {
+				normalized += value.charAt(index)
+			}
+		}
+		if (normalized.length !== 18) return value
+		return normalized.slice(0, 6) + '********' + normalized.slice(14)
+	}
+
+	const bumpDigits = (digits: string): string => {
+		const chars = '0123456789'
+		let carry = 1
+		let result = ''
+		for (let index = digits.length - 1; index >= 0; index--) {
+			const sum = digits.charCodeAt(index) - 48 + carry
+			if (sum >= 10) {
+				result = chars.charAt(0) + result
+				carry = 1
+			} else {
+				result = chars.charAt(sum) + result
+				carry = 0
+			}
+		}
+		if (carry === 1) result = chars.charAt(1) + result
+		return result
+	}
+
+	// 不走 Number：超过 2^53 和 1.005 这类值再 toFixed 会对不齐。按十进制字符串四舍五入。
+	const formatAmount = (value: string): string => {
+		let sign = ''
+		let integer = ''
+		let fraction = ''
+		let seenDigit = false
+		let seenDot = false
+		let seenSign = false
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			if (code >= 48 && code <= 57) {
+				seenDigit = true
+				if (seenDot) fraction += value.charAt(index)
+				else integer += value.charAt(index)
+			} else if (code === 46) {
+				if (seenDot) return value
+				seenDot = true
+			} else if (code === 45 || code === 43) {
+				if (seenDigit || seenDot || seenSign) return value
+				seenSign = true
+				if (code === 45) sign = '-'
+			} else {
+				const separator = code === 44 || code === 32 || code === 9 || code === 10 || code === 13
+					|| code === 165 || code === 65509 || code === 36 || code === 8364 || code === 163
+				if (!separator) return value
+			}
+		}
+		if (!seenDigit) return value
+
+		let places = Math.round(props.decimals)
+		if (!isFinite(places)) places = 2
+		else if (places < 0) places = 0
+		else if (places > 6) places = 6
+
+		let start = 0
+		while (start < integer.length - 1 && integer.charCodeAt(start) === 48) start++
+		if (start > 0) integer = integer.slice(start)
+		if (integer.length === 0) integer = '0'
+
+		if (fraction.length > places) {
+			const roundUp = fraction.charCodeAt(places) >= 53
+			fraction = fraction.slice(0, places)
+			if (roundUp) {
+				if (places === 0) {
+					integer = bumpDigits(integer)
+				} else {
+					const bumped = bumpDigits(fraction)
+					if (bumped.length > places) {
+						integer = bumpDigits(integer)
+						fraction = bumped.slice(1)
+					} else {
+						fraction = bumped
+					}
+				}
+			}
+		} else {
+			while (fraction.length < places) fraction += '0'
+		}
+
+		let roundedZero = true
+		for (let index = 0; index < integer.length; index++) {
+			if (integer.charCodeAt(index) !== 48) {
+				roundedZero = false
+				break
+			}
+		}
+		if (roundedZero) {
+			for (let index = 0; index < fraction.length; index++) {
+				if (fraction.charCodeAt(index) !== 48) {
+					roundedZero = false
+					break
+				}
+			}
+		}
+		if (roundedZero) sign = ''
+
+		let grouped = ''
+		for (let index = 0; index < integer.length; index++) {
+			if (index > 0 && (integer.length - index) % 3 === 0) grouped += ','
+			grouped += integer.charAt(index)
+		}
+		const decimalPart = places > 0 ? '.' + fraction : ''
+		return sign + props.currency + grouped + decimalPart
+	}
+
+	const displayText = computed((): string => {
+		const value = rawText.value
+		if (value.length === 0) return ''
+		const format = formatKey.value
+		if (format === 'phone') return formatPhone(value)
+		if (format === 'amount') return formatAmount(value)
+		if (format === 'bank-card') return formatBankCard(value)
+		if (format === 'id-card') return formatIdCard(value)
+		return value
+	})
+
+	const hasText = computed((): boolean => displayText.value.trim().length > 0)
+
+	// 顺序：基础 → 形状 → 状态。禁用优先于可点、复制和选择。
+	const rootClass = computed((): string => {
+		let name = 'vx-text'
+		if (props.block) name += ' vx-text--block'
+		if (props.disabled) name += ' vx-text--disabled'
+		else if (props.clickable) name += ' vx-text--clickable'
+		else if (props.copyable) name += ' vx-text--copyable'
+		else if (props.selectable) name += ' vx-text--selectable'
+		return name
+	})
+
+	// 顺序：基础 → 尺寸 → 类型 → 形状 → 状态 → 文本。
+	// 禁用色放在类型后面，盖住语义色；单行 nowrap 放在最后，盖住 pre-line。
+	const contentClass = computed((): string => {
+		let name = 'vx-text__content'
+		if (sizeKey.value !== 'md') name += ` vx-text__content--${sizeKey.value}`
+		if (!props.disabled && colorValue.value.length === 0 && typeKey.value !== 'default') {
+			name += ` vx-text__content--${typeKey.value}`
+		}
+		if (props.block) name += ' vx-text__content--block'
+		if (props.disabled) name += ' vx-text__content--disabled'
+		if (weightKey.value !== 'regular') name += ` vx-text__content--${weightKey.value}`
+		if (decorationKey.value !== 'none') name += ` vx-text__content--${decorationKey.value}`
+		if (alignKey.value !== 'left') name += ` vx-text__content--${alignKey.value}`
+		if (maxLinesValue.value === 1) name += ' vx-text__content--single'
+		else if (maxLinesValue.value > 1) name += ' vx-text__content--clamp'
+		return name
+	})
+
+	const contentStyle = computed((): string => {
+		let style = ''
+		if (!props.disabled && colorValue.value.length > 0) style += `color: ${colorValue.value};`
+		// 多行截断：App 靠 max-lines。Web 和微信小程序没有该属性，用行内 -webkit-box。
+		// #ifdef WEB || MP-WEIXIN
+		if (maxLinesValue.value > 1) {
+			style += `display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: ${maxLinesValue.value};`
+		}
+		// #endif
+		return style
+	})
+
+	// 0 不限制时传 -1，这是 text 的默认值。1 行及以上交给 App 的 max-lines。
+	const nativeMaxLines = computed((): number => {
+		if (maxLinesValue.value >= 1) return maxLinesValue.value
+		return -1
+	})
+
+	// copyable 和 selectable 只开一个；同时打开时长按会叠出系统菜单，复制优先。
+	const selectableValue = computed((): boolean => {
+		return props.selectable && !props.copyable && !props.disabled
+	})
+
+	// 空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		if (props.disabled || (!props.clickable && !props.copyable)) return 'none'
+		return 'vx-text--pressed'
+	})
+
+	// 可点时把点击留在文本上；静态文本不拦，点它等同于点外层列表行或卡片。
+	const onClick = (event: UniEvent) => {
+		if (!hasText.value || props.disabled || !props.clickable) return
+		event.stopPropagation()
+		emit('click', displayText.value)
+	}
+
+	// 长按只负责复制，不改普通点击；静态文本的 longpress 继续传给外层。
+	const onLongPress = (event: UniEvent) => {
+		if (props.disabled || !props.copyable || !hasText.value) return
+		event.stopPropagation()
+		const value = displayText.value
+		uni.setClipboardData({
+			data: value,
+			success: () => {
+				emit('copy', value)
+			}
+		})
+	}
+</script>
+
+<style>
+	/* 文本是行内尺寸的内容：默认按内容宽度靠左，block 才铺满一行。
+	   App 的 view 不支持 inline-flex，所以用 flex 加 align-self 模拟行内块。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-text {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		align-self: flex-start;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		max-width: 100%;
+	}
+
+	/* 块级铺满父级。min-width 收成 0，否则 flex 子项的最小宽度是整段文字，省略号出不来。 */
+	.vx-text--block {
+		align-self: stretch;
+		width: 100%;
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	/* 指针只在 Web 有意义；App 不识别 cursor。顺序跟状态 class 一致，禁用在前。 */
+	/* #ifdef WEB */
+	.vx-text--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-text--clickable {
+		cursor: pointer;
+	}
+
+	.vx-text--copyable {
+		cursor: copy;
+	}
+
+	.vx-text--selectable {
+		cursor: text;
+	}
+	/* #endif */
+
+	.vx-text--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 正文默认 15 / 22；尺寸只换字号和行高，不借控件档位。 */
+	.vx-text__content {
+		flex-shrink: 1;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: pre-line;
+	}
+
+	.vx-text__content--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-text__content--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-text__content--secondary {
+		color: var(--vx-color-text-secondary);
+	}
+
+	.vx-text__content--primary {
+		color: var(--vx-color-primary);
+	}
+
+	.vx-text__content--success {
+		color: var(--vx-color-success);
+	}
+
+	.vx-text__content--info {
+		color: var(--vx-color-info);
+	}
+
+	/* 琥珀原色在白底上不到 4.5:1，正文改用 warning-ink。 */
+	.vx-text__content--warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-text__content--danger {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-text__content--block {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.vx-text__content--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	.vx-text__content--medium {
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-text__content--semibold {
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-text__content--bold {
+		font-weight: var(--vx-weight-bold);
+	}
+
+	.vx-text__content--underline {
+		text-decoration-line: underline;
+	}
+
+	.vx-text__content--line-through {
+		text-decoration-line: line-through;
+	}
+
+	.vx-text__content--center {
+		text-align: center;
+	}
+
+	.vx-text__content--right {
+		text-align: right;
+	}
+
+	/* 先占满块级宽度再省略。只靠 flex 收缩时文字不压缩；nowrap 盖住基础的 pre-line。 */
+	.vx-text__content--single {
+		flex-shrink: 0;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	/* 多行把宽度收进父级，避免被整段文字撑开；行数截断在脚本里按平台补。 */
+	.vx-text__content--clamp {
+		flex-shrink: 0;
+		min-width: 0;
+		overflow: hidden;
+	}
+</style>

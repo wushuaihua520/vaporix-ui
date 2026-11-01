@@ -1,0 +1,780 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-bubble-popup</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="message-square" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">气泡弹框</text>
+								<text class="demo-hero__title demo-hero__title--accent">11 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">贴着触发元素打开的轻量菜单，也可以排成行内聊天气泡。打开时量一次触发区位置和面板尺寸，方向和间距由 placement、align 和 offset 落点。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-bubble-popup</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">右上角菜单：气泡挂在触发元素下方，右边缘对齐。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-bubble-bar">
+							<text class="demo-bubble-bar__label">项目主页</text>
+							<vx-bubble-popup v-model:show="menuBasic" placement="bottom" align="end" :items="basicItems"
+								@select="onMenuSelect" @close="onMenuClose">
+								<view class="demo-bubble-icon-btn" hover-class="demo-bubble-icon-btn--pressed"
+									@click="menuBasic = !menuBasic">
+									<vx-icon name="more-horizontal" size="md" />
+								</view>
+							</vx-bubble-popup>
+						</view>
+						<view class="demo-bubble-status">
+							<text class="demo-bubble-status__label">select / close</text>
+							<text class="demo-bubble-status__text">{{ lastAction }}</text>
+						</view>
+						<text class="demo-hint">默认插槽是触发区，气泡贴着它的右边缘展开；点菜单项收起并抛 select，点外部收起并抛 close。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">上方弹出</text>
+							<text class="demo-section__desc">placement="top" 时气泡在触发元素上方，箭头朝下。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-bubble-center">
+							<vx-bubble-popup v-model:show="menuTop" placement="top" align="center" :items="topItems"
+								divider @select="onMenuSelect" @close="onMenuClose">
+								<vx-button type="danger" text="打开菜单" @click="menuTop = !menuTop" />
+							</vx-bubble-popup>
+						</view>
+						<text class="demo-hint demo-bubble-hint">三个动作用 divider 隔开；气泡和触发按钮之间留 8，箭头伸进这段空隙，不压住按钮。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型与图标</text>
+							<text class="demo-section__desc">主操作和危险操作用文字色标出，图标跟着同一份颜色。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-bubble-popup v-model:show="menuTypes" placement="bottom" align="start" :items="typeItems"
+							divider @select="onMenuSelect" @close="onMenuClose">
+							<vx-button text="内容操作" @click="menuTypes = !menuTypes" />
+						</vx-bubble-popup>
+						<text class="demo-hint demo-bubble-hint">surface 下 primary 用 primary-pressed，danger 用 danger-pressed；实心底的气泡不按项染字，统一用 on-* 前景。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">选中与禁用</text>
+							<text class="demo-section__desc">closeOnSelect=false 时保持打开，选中项显示勾。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-bubble-popup v-model:show="menuStates" placement="bottom" align="start"
+							:items="genderItems" :close-on-select="false" @select="onGenderSelect" @close="onMenuClose">
+							<vx-button text="选择性别" @click="menuStates = !menuStates" />
+						</vx-bubble-popup>
+						<view class="demo-bubble-status">
+							<text class="demo-bubble-status__label">当前选择</text>
+							<text class="demo-bubble-status__text">{{ gender }}</text>
+						</view>
+						<text class="demo-hint">组件不保存选中值，在 select 里改数据再传回 items；不公开一项禁用，不响应点击。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">遮罩</text>
+							<text class="demo-section__desc">mask 打开后压暗页面，点遮罩收起；默认只有透明点击层。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-bubble-popup v-model:show="menuMask" placement="bottom" align="start" :items="maskItems"
+							mask @select="onMenuSelect" @close="onMenuClose">
+							<vx-button type="primary" text="带遮罩打开" @click="menuMask = !menuMask" />
+						</vx-bubble-popup>
+						<text class="demo-hint demo-bubble-hint">遮罩用 --vx-color-mask，只压页面，不压气泡；maskColor 可以换成字面色值，字面值不跟随主题。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">聊天气泡</text>
+							<text class="demo-section__desc">inline 模式不渲染触发区，默认插槽或 content 是气泡内容。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-bubble-chat">
+							<view class="demo-bubble-chat__row">
+								<vx-bubble-popup inline placement="right" align="start" variant="solid" type="warning"
+									content="各位下午好">
+									<template #prefix>
+										<view class="demo-bubble-avatar">
+											<text class="demo-bubble-avatar__text">M</text>
+										</view>
+									</template>
+								</vx-bubble-popup>
+							</view>
+							<view class="demo-bubble-chat__row demo-bubble-chat__row--last">
+								<vx-bubble-popup inline placement="left" align="end" variant="solid" type="success"
+									content="各位下午好，欢迎来到...直播间 直播间直播间直播间">
+									<template #suffix>
+										<view class="demo-bubble-avatar">
+											<text class="demo-bubble-avatar__text">J</text>
+										</view>
+									</template>
+								</vx-bubble-popup>
+							</view>
+						</view>
+						<text class="demo-hint demo-bubble-hint">prefix 放左侧头像，suffix 放右侧头像；placement 决定气泡贴哪一边，align 把整行推到左或右。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">气泡颜色</text>
+							<text class="demo-section__desc">variant="solid" 用语义实心底，前景取对应的 on-*。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view v-for="entry in bubbleTones" :key="entry.type"
+							:class="entry.type === 'danger' ? 'demo-bubble-tone demo-bubble-tone--last' : 'demo-bubble-tone'">
+							<text class="demo-bubble-tone__label">{{ entry.type }}</text>
+							<vx-bubble-popup inline variant="solid" :type="entry.type" :content="entry.text"
+								:arrow="false" />
+						</view>
+						<text class="demo-hint demo-bubble-hint">warning 的琥珀底配 on-warning 深色字；实心气泡不加阴影，和页面内容是同一层。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义内容</text>
+							<text class="demo-section__desc">只传 extra 插槽时，气泡就是一块自定义面板。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-bubble-popup v-model:show="menuCustom" placement="bottom" align="start">
+							<vx-button text="账户信息" @click="menuCustom = !menuCustom" />
+							<template #extra>
+								<view class="demo-bubble-profile">
+									<view class="demo-bubble-avatar demo-bubble-avatar--md demo-bubble-profile__avatar">
+										<text class="demo-bubble-avatar__text">J</text>
+									</view>
+									<view class="demo-bubble-profile__copy">
+										<text class="demo-bubble-profile__name">Jerry</text>
+										<text class="demo-bubble-profile__meta">jerry@vaporix.dev</text>
+									</view>
+								</view>
+								<view class="demo-bubble-profile__foot">
+									<text class="demo-bubble-profile__hint">插槽内容自己带颜色和字号</text>
+									<text class="demo-bubble-profile__link">查看资料</text>
+								</view>
+							</template>
+						</vx-bubble-popup>
+						<text class="demo-hint demo-bubble-hint">extra 排在 items 和 content 之后；气泡只提供面板、圆角和内边距，内容不继承前景色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方向与对齐</text>
+							<text class="demo-section__desc">placement 四向，align 三档，offset 和 arrowOffset 做微调。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-bubble-left">
+							<vx-bubble-popup v-model:show="menuSide" placement="right" align="center"
+								:items="sideItems" width="132px" @select="onMenuSelect" @close="onMenuClose">
+								<vx-button text="右侧菜单" @click="menuSide = !menuSide" />
+							</vx-bubble-popup>
+						</view>
+						<text class="demo-hint demo-bubble-hint">气泡在触发元素右侧、纵向居中；固定宽度 132px，箭头离气泡上边 16。放在屏幕边缘时，记得给气泡留出展开空间。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法</text>
+							<text class="demo-section__desc">ref 拿实例，open() / close() / toggle() 控制显隐。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-bubble-methods">
+							<vx-bubble-popup ref="methodsRef" v-model:show="menuMethods" placement="bottom"
+								align="start" :items="methodsItems" :outside-closable="false"
+								@select="onMenuSelect">
+								<vx-button text="菜单入口" @click="menuMethods = !menuMethods" />
+							</vx-bubble-popup>
+						</view>
+						<view class="demo-bubble-actions">
+							<view class="demo-bubble-actions__item">
+								<vx-button block size="sm" type="primary" text="open()" @click="onBubbleOpen" />
+							</view>
+							<view class="demo-bubble-actions__item">
+								<vx-button block size="sm" text="close()" @click="onBubbleClose" />
+							</view>
+							<view class="demo-bubble-actions__item demo-bubble-actions__item--last">
+								<vx-button block size="sm" text="toggle()" @click="onBubbleToggle" />
+							</view>
+						</view>
+						<text class="demo-hint">这一组关掉了 outsideClosable，点页面其他位置不会收起，方便反复调用方法；close() 只收起，不抛 close。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">11</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">卡片头部的更多按钮打开账户菜单，选中后由页面处理。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-bubble-account">
+							<view class="demo-bubble-account__head">
+								<view class="demo-bubble-avatar demo-bubble-avatar--md demo-bubble-account__avatar">
+									<text class="demo-bubble-avatar__text">J</text>
+								</view>
+								<view class="demo-bubble-account__copy">
+									<text class="demo-bubble-account__name">Jerry Jiang</text>
+									<text class="demo-bubble-account__meta">个人版 · 已登录</text>
+								</view>
+								<vx-bubble-popup v-model:show="menuComposition" placement="bottom" align="end"
+									:items="accountItems" divider @select="onMenuSelect" @close="onMenuClose">
+									<view class="demo-bubble-icon-btn" hover-class="demo-bubble-icon-btn--pressed"
+										@click="menuComposition = !menuComposition">
+										<vx-icon name="more-horizontal" size="md" />
+									</view>
+								</vx-bubble-popup>
+							</view>
+							<text class="demo-bubble-account__text">退出登录会清除本机登录信息，重新进入需要再次验证；危险动作在菜单里单独标色。</text>
+						</view>
+						<view class="demo-bubble-status">
+							<text class="demo-bubble-status__label">最近操作</text>
+							<text class="demo-bubble-status__text">{{ lastAction }}</text>
+						</view>
+						<text class="demo-hint">弹出层用 fixed 定位，外层 overflow: hidden 不会裁掉面板；inline 聊天跟着文档流走，边界仍由外层卡片决定。祖先节点带 transform 时，fixed 的参考系会变，气泡要避开这类容器。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { VxBubblePopupItem } from '@/uni_modules/vaporix-ui/components/vx-bubble-popup/props'
+
+	type BubblePopupApi = {
+		open?: () => void
+		close?: () => void
+		toggle?: () => void
+	}
+
+	type BubbleTone = {
+		type: 'default' | 'primary' | 'success' | 'warning' | 'danger'
+		text: string
+	}
+
+	const menuBasic = ref(false)
+	const menuTop = ref(false)
+	const menuTypes = ref(false)
+	const menuStates = ref(false)
+	const menuMask = ref(false)
+	const menuCustom = ref(false)
+	const menuSide = ref(false)
+	const menuMethods = ref(false)
+	const menuComposition = ref(false)
+
+	const lastAction = ref('还没有选择')
+	const gender = ref('男')
+	const methodsRef = ref<BubblePopupApi | null>(null)
+
+	// 静态菜单只改文案和图标，不在模板里拼数组，翻页时不会重新建一份。
+	const basicItems: VxBubblePopupItem[] = [
+		{ text: '首页', icon: 'home' },
+		{ text: '收藏', icon: 'star' },
+		{ text: '分享', icon: 'share' }
+	]
+
+	const topItems: VxBubblePopupItem[] = [
+		{ text: '菜单一' },
+		{ text: '菜单二' },
+		{ text: '菜单三' }
+	]
+
+	const typeItems: VxBubblePopupItem[] = [
+		{ text: '发布', icon: 'upload', type: 'primary', value: '⌘K' },
+		{ text: '收藏', icon: 'star' },
+		{ text: '分享', icon: 'share' },
+		{ text: '删除', icon: 'trash', type: 'danger' }
+	]
+
+	const maskItems: VxBubblePopupItem[] = [{ text: '知道了' }]
+
+	const sideItems: VxBubblePopupItem[] = [
+		{ text: '复制', icon: 'copy' },
+		{ text: '转发', icon: 'share' },
+		{ text: '收藏', icon: 'star' }
+	]
+
+	const methodsItems: VxBubblePopupItem[] = [
+		{ text: '编辑', icon: 'edit' },
+		{ text: '删除', icon: 'trash', type: 'danger' }
+	]
+
+	const accountItems: VxBubblePopupItem[] = [
+		{ text: '编辑资料', icon: 'edit' },
+		{ text: '更换头像', icon: 'camera' },
+		{ text: '退出登录', icon: 'log-out', type: 'danger' }
+	]
+
+	const bubbleTones: BubbleTone[] = [
+		{ type: 'default', text: '系统消息用正文色反相底，适合提示和系统事件。' },
+		{ type: 'primary', text: '普通消息用主色，适合强调当前会话。' },
+		{ type: 'success', text: '成功结果用绿色，和页面里的标签、按钮同一套语义色。' },
+		{ type: 'warning', text: '提醒用琥珀底，字色是 on-warning，深色字在黄底上才够对比。' },
+		{ type: 'danger', text: '失败或风险用红色，不用于装饰。' }
+	]
+
+	// 选中态由业务维护，组件只按 selected 画勾。
+	const genderItems = computed((): VxBubblePopupItem[] => {
+		return [
+			{ text: '男', selected: gender.value === '男' },
+			{ text: '女', selected: gender.value === '女' },
+			{ text: '不公开', disabled: true }
+		]
+	})
+
+	const onMenuSelect = (index: number, item: VxBubblePopupItem) => {
+		lastAction.value = item.text
+	}
+
+	const onMenuClose = () => {
+		lastAction.value = '点了外部'
+	}
+
+	const onGenderSelect = (index: number, item: VxBubblePopupItem) => {
+		lastAction.value = item.text
+		if (item.disabled === true) return
+		gender.value = item.text
+	}
+
+	const onBubbleOpen = () => {
+		methodsRef.value?.open?.()
+	}
+
+	const onBubbleClose = () => {
+		methodsRef.value?.close?.()
+	}
+
+	const onBubbleToggle = () => {
+		methodsRef.value?.toggle?.()
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/drawer/drawer'
+	const nextPath: string = '/pages/demo/list-view/list-view'
+	const prevName = '抽屉'
+	const nextName = '列表'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 演示页只摆触发区和舞台；气泡的位置和尺寸都由组件自己负责。 */
+	.demo-bubble-bar {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		box-sizing: border-box;
+		width: 100%;
+		padding-bottom: var(--vx-space-sm);
+		border-bottom-width: var(--vx-border-width);
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-color-divider);
+	}
+
+	.demo-bubble-bar__label {
+		flex: 1;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* 40 的图标按钮补足热区，底色只在按下时出现。 */
+	.demo-bubble-icon-btn {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: var(--vx-radius-md);
+	}
+
+	.demo-bubble-icon-btn--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.demo-bubble-center {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.demo-bubble-left {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+	}
+
+	.demo-bubble-hint {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-bubble-status {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		margin-top: var(--vx-space-md);
+		padding-top: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+	}
+
+	.demo-bubble-status__label {
+		flex-shrink: 0;
+		margin-right: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-bubble-status__text {
+		flex: 1;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* 头像 36 是聊天气泡的常用档，和气泡内边距 12 一起排；圆形只表示人物。
+	   用首字占位，不依赖人物照片；底色跟主题走，文字统一用正文色。 */
+	.demo-bubble-avatar {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.demo-bubble-avatar--md {
+		width: 40px;
+		height: 40px;
+	}
+
+	.demo-bubble-avatar__text {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.demo-bubble-chat {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.demo-bubble-chat__row {
+		flex-direction: column;
+		width: 100%;
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-bubble-chat__row--last {
+		margin-bottom: 0;
+	}
+
+	.demo-bubble-tone {
+		flex-direction: column;
+		width: 100%;
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.demo-bubble-tone--last {
+		margin-bottom: 0;
+	}
+
+	.demo-bubble-tone__label {
+		margin-bottom: var(--vx-space-xs);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* extra 插槽内容自己带颜色和字号；面板只给 12 / 16 的内边距。 */
+	.demo-bubble-profile {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+	}
+
+	.demo-bubble-profile__avatar {
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-bubble-profile__copy {
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+	}
+
+	.demo-bubble-profile__name {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.demo-bubble-profile__meta {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-bubble-profile__foot {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: var(--vx-space-md);
+		padding-top: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+	}
+
+	.demo-bubble-profile__hint {
+		flex: 1;
+		min-width: 0;
+		margin-right: var(--vx-space-md);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-bubble-profile__link {
+		flex-shrink: 0;
+		color: var(--vx-color-primary-pressed);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.demo-bubble-methods {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+	}
+
+	/* 菜单从触发区下方展开，动作放在菜单高度之外，open() / close() 仍然点得到。 */
+	.demo-bubble-actions {
+		flex-direction: row;
+		margin-top: 120px;
+	}
+
+	.demo-bubble-actions__item {
+		flex: 1;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.demo-bubble-actions__item--last {
+		margin-right: 0;
+	}
+
+	/* 组合示例用一块不裁切的账户区块，气泡才能伸出头部。 */
+	.demo-bubble-account {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-bg);
+		overflow: visible;
+	}
+
+	.demo-bubble-account__head {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+	}
+
+	.demo-bubble-account__avatar {
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-bubble-account__copy {
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+	}
+
+	.demo-bubble-account__name {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.demo-bubble-account__meta {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-bubble-account__text {
+		margin-top: var(--vx-space-md);
+		padding-top: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+</style>

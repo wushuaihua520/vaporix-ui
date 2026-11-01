@@ -1,0 +1,730 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-modal</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="message-square" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">弹框</text>
+								<text class="demo-hero__title demo-hero__title--accent">13 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">居中对话框，动作取紧凑高度；确认可异步、可禁用，遮罩和关闭方式都能配。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-modal</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">默认两个按钮，标题和正文居中，点确定收起并抛 confirm。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="默认弹框" @click="onModalBasic" />
+						<view class="demo-modal-status">
+							<text class="demo-modal-status__text">最近动作：{{ modalLastAction }}</text>
+							<text class="demo-modal-status__meta">confirm / cancel</text>
+						</view>
+						<text class="demo-hint">点取消或遮罩收起并抛 cancel；点确定收起并抛 confirm。closeOnAction=false 时确定保持打开，适合异步提交。需要右上角关闭叉时传 closable，见下方「关闭按钮」。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">提示文本样式</text>
+							<text class="demo-section__desc">正文换成危险色，只改 content 一处，标题和按钮不变。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="危险提示文本" @click="onModalTinted" />
+						<text class="demo-hint">contentColor 只作用于 content，不影响标题和默认插槽；传 var(--vx-color-*) 时跟随亮暗主题。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">危险确认</text>
+							<text class="demo-section__desc">删除不可逆，取消和确定都标危险色，按钮仍是一实一空。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="danger" variant="soft" text="删除项目" @click="onModalDanger" />
+						<text class="demo-hint">危险色只表达删除、退出这类不可逆操作；文案写清后果，不只靠颜色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">单个按钮</text>
+							<text class="demo-section__desc">showCancel=false 只留一个按钮；状态图标放在标题上方。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="提交成功的反馈" @click="onModalSingle" />
+						<text class="demo-hint">icon 是可选状态图标，iconType=success 时圆用 success-soft，图标用 success-pressed；不传 icon 时头部只剩标题。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">多个按钮</text>
+							<text class="demo-section__desc">三个以上动作纵向排列，role="cancel" 仍然收起并抛 cancel。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="未保存的修改" @click="onModalMultiple" />
+						<view class="demo-modal-status">
+							<text class="demo-modal-status__text">最近动作：{{ modalLastAction }}</text>
+							<text class="demo-modal-status__meta">actions</text>
+						</view>
+						<text class="demo-hint">前两个动作没有 role，点击收起并抛 action(index, action)；取消动作带 role=cancel，走 cancel 出口。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">圆角按钮</text>
+							<text class="demo-section__desc">actionShape="pill" 让整组动作变胶囊，面板圆角不变。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="胶囊按钮" @click="onModalPill" />
+						<text class="demo-hint">形状只作用于动作，同一个弹框里保持一致；面板仍用 lg 圆角。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">按钮颜色</text>
+							<text class="demo-section__desc">自定义 actions 用三种语义色，三个动作自动改成纵向。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="选择支付方式" @click="onModalColors" />
+						<view class="demo-modal-status">
+							<text class="demo-modal-status__text">最近动作：{{ modalLastAction }}</text>
+							<text class="demo-modal-status__meta">type / variant</text>
+						</view>
+						<text class="demo-hint">每项各自 type 和 variant；动作超过两个时纵向排列，不挤在半行里。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">size 只改面板最大宽度，字号和动作高度都不变。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" text="sm" @click="onModalSize('sm')" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" text="md" @click="onModalSize('md')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="lg" @click="onModalSize('lg')" />
+							</view>
+						</view>
+						<text class="demo-hint">面板最大宽度 280 / 320 / 400；手机上仍由左右 24 的定位层内边距收窄。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">遮罩不可点</text>
+							<text class="demo-section__desc">maskClosable=false，点遮罩不关闭也不抛 cancel。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="遮罩不可点击" @click="onModalMaskLocked" />
+						<text class="demo-hint">强制确认时至少留一个动作出口；不要同时关掉遮罩和全部按钮。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">关闭按钮</text>
+							<text class="demo-section__desc">closable=true 后右上角显示关闭叉，点击直接收起并抛 cancel。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="带关闭叉的弹框" @click="onModalClosable" />
+						<view class="demo-modal-status">
+							<text class="demo-modal-status__text">最近动作：{{ modalLastAction }}</text>
+							<text class="demo-modal-status__meta">closable</text>
+						</view>
+						<text class="demo-hint">关闭叉热区 44、图标 18；有标题时标题左右各让 24，没有标题时正文右侧让 24。关闭叉和取消共用 cancel；本例遮罩锁住，用来验证关闭叉不受 maskClosable 影响。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">11</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义内容</text>
+							<text class="demo-section__desc">默认插槽放输入框和提交按钮，showActions=false 关掉内置动作。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="输入邮箱" @click="onModalEmailOpen" />
+						<text class="demo-hint">自定义正文不继承正文色和字号；弹框仍只负责面板、遮罩和标题，提交逻辑由内容自己处理。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">12</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">异步确认</text>
+							<text class="demo-section__desc">closeOnAction=false + confirmLoading，提交完成后再 close()。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="primary" text="提交审核" @click="onModalAsync" />
+						<text class="demo-hint">提交期间确定按钮转圈且不响应点击；遮罩锁住，取消和右上角关闭叉仍可退出，都会停表。完成后由业务收起。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">13</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法</text>
+							<text class="demo-section__desc">ref 拿实例，open() 打开，close() 只收起。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="open() 打开" @click="onModalOpen" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="close() 关闭" @click="onModalClose" />
+							</view>
+						</view>
+						<text class="demo-hint">open() 打开弹框；close() 只收起，不抛 cancel。自动收起和手动关闭都会同步 v-model:show。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 弹框同样挂在页面根上，层级高于操作菜单和消息提示，低于加载浮层和轻提示。 -->
+		<vx-modal ref="modalRef" v-model:show="modalVisible" :title="modalTitle" :content="modalContent"
+			:size="modalSize" :icon="modalIcon" :icon-type="modalIconType" :actions="modalActions"
+			:show-actions="modalShowActions" :show-cancel="modalShowCancel" :cancel-text="modalCancelText"
+			:confirm-text="modalConfirmText" :cancel-type="modalCancelType" :confirm-type="modalConfirmType"
+			:confirm-loading="modalConfirmLoading" :confirm-disabled="modalConfirmDisabled"
+			:action-shape="modalActionShape" :mask-closable="modalMaskClosable" :closable="modalClosable"
+			:close-on-action="modalCloseOnAction" :content-color="modalContentColor"
+			@confirm="onModalConfirm" @cancel="onModalCancel" @action="onModalAction" />
+
+		<!-- 自定义正文用独立实例，默认插槽不会被主实例的动态配置影响。 -->
+		<vx-modal v-model:show="customModalVisible" title="邮箱" :show-actions="false"
+			@cancel="onModalEmailCancel">
+			<view class="demo-modal-form">
+				<vx-input v-model="modalEmail" placeholder="请输入邮箱" />
+				<view class="demo-modal-form__submit">
+					<vx-button block type="primary" shape="pill" text="立即提交" @click="onModalEmailSubmit" />
+				</view>
+			</view>
+		</vx-modal>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type ToastIcon = 'check-circle' | 'close-circle' | 'alert-circle' | 'info' | 'heart'
+
+	type ToastOptions = {
+		text: string
+		type: ToastSemantic
+		duration?: number
+		icon?: ToastIcon | null
+		image?: string
+		showIcon?: boolean
+		bgColor?: string
+		bgOpacity?: number
+		color?: string
+	}
+
+	const toastText = ref('')
+
+	const toastType = ref<ToastSemantic>('default')
+
+	const toastDuration = ref(2000)
+
+	const toastIcon = ref<ToastIcon | null>(null)
+
+	const toastImage = ref('')
+
+	const toastShowIcon = ref(true)
+
+	const toastBgColor = ref('')
+
+	const toastBgOpacity = ref(0.9)
+
+	const toastColor = ref('')
+
+	const toastRef = ref<VxToastComponentPublicInstance | null>(null)
+
+	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
+	const showToast = (options: ToastOptions) => {
+		toastType.value = options.type
+		toastText.value = options.text
+		toastDuration.value = options.duration != null ? options.duration : 2000
+		toastIcon.value = options.icon != null ? options.icon : null
+		toastImage.value = options.image != null ? options.image : ''
+		toastShowIcon.value = options.showIcon != null ? options.showIcon : true
+		toastBgColor.value = options.bgColor != null ? options.bgColor : ''
+		toastBgOpacity.value = options.bgOpacity != null ? options.bgOpacity : 0.9
+		toastColor.value = options.color != null ? options.color : ''
+		toastRef.value?.open?.()
+	}
+
+	// 弹框演示：主实例切换全部内置配置，自定义输入表单单独一个实例。
+	type ModalSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type ModalVariant = 'solid' | 'plain' | 'soft' | 'link'
+
+	type ModalRole = 'cancel' | 'confirm'
+
+	type ModalShape = 'rounded' | 'pill' | 'square'
+
+	type ModalIcon = 'check-circle' | 'alert-circle' | 'info' | 'close-circle'
+
+	type ModalDemoAction = {
+		text: string
+		type?: ModalSemantic
+		variant?: ModalVariant
+		role?: ModalRole
+		disabled?: boolean
+		loading?: boolean
+	}
+
+	type ModalDemoConfig = {
+		title?: string
+		content?: string
+		size?: 'sm' | 'md' | 'lg'
+		icon?: ModalIcon
+		iconType?: ModalSemantic
+		actions?: ModalDemoAction[]
+		showActions?: boolean
+		showCancel?: boolean
+		cancelText?: string
+		confirmText?: string
+		cancelType?: ModalSemantic
+		confirmType?: ModalSemantic
+		confirmLoading?: boolean
+		confirmDisabled?: boolean
+		actionShape?: ModalShape
+		maskClosable?: boolean
+		closable?: boolean
+		closeOnAction?: boolean
+		contentColor?: string
+		asyncDemo?: boolean
+	}
+
+	type ModalApi = {
+		open?: () => void
+		close?: () => void
+	}
+
+	const modalVisible = ref(false)
+
+	const modalTitle = ref('')
+
+	const modalContent = ref('')
+
+	const modalSize = ref<'sm' | 'md' | 'lg'>('md')
+
+	const modalIcon = ref<ModalIcon | null>(null)
+
+	const modalIconType = ref<ModalSemantic>('primary')
+
+	const modalActions = ref<ModalDemoAction[]>([])
+
+	const modalShowActions = ref(true)
+
+	const modalShowCancel = ref(true)
+
+	const modalCancelText = ref('取消')
+
+	const modalConfirmText = ref('确定')
+
+	const modalCancelType = ref<ModalSemantic>('default')
+
+	const modalConfirmType = ref<ModalSemantic>('primary')
+
+	const modalConfirmLoading = ref(false)
+
+	const modalConfirmDisabled = ref(false)
+
+	const modalActionShape = ref<ModalShape>('rounded')
+
+	const modalMaskClosable = ref(true)
+
+	const modalClosable = ref(false)
+
+	const modalCloseOnAction = ref(true)
+
+	const modalContentColor = ref('')
+
+	const modalLastAction = ref('还没有操作')
+
+	const modalAsyncDemo = ref(false)
+
+	const modalRef = ref<ModalApi | null>(null)
+
+	const customModalVisible = ref(false)
+
+	const modalEmail = ref('')
+
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let modalAsyncTimer = 0
+
+	// 先清掉上一轮异步计时，再写配置；连开两次时加载态不会串到下一张弹框。
+	const applyModalConfig = (config: ModalDemoConfig) => {
+		if (modalAsyncTimer !== 0) {
+			clearTimeout(modalAsyncTimer)
+			modalAsyncTimer = 0
+		}
+		modalTitle.value = config.title != null ? config.title : ''
+		modalContent.value = config.content != null ? config.content : ''
+		modalSize.value = config.size != null ? config.size : 'md'
+		modalIcon.value = config.icon != null ? config.icon : null
+		modalIconType.value = config.iconType != null ? config.iconType : 'primary'
+		modalActions.value = config.actions != null ? config.actions : []
+		modalShowActions.value = config.showActions !== false
+		modalShowCancel.value = config.showCancel !== false
+		modalCancelText.value = config.cancelText != null ? config.cancelText : '取消'
+		modalConfirmText.value = config.confirmText != null ? config.confirmText : '确定'
+		modalCancelType.value = config.cancelType != null ? config.cancelType : 'default'
+		modalConfirmType.value = config.confirmType != null ? config.confirmType : 'primary'
+		modalConfirmLoading.value = config.confirmLoading === true
+		modalConfirmDisabled.value = config.confirmDisabled === true
+		modalActionShape.value = config.actionShape != null ? config.actionShape : 'rounded'
+		modalMaskClosable.value = config.maskClosable !== false
+		modalClosable.value = config.closable === true
+		modalCloseOnAction.value = config.closeOnAction !== false
+		modalContentColor.value = config.contentColor != null ? config.contentColor : ''
+		modalAsyncDemo.value = config.asyncDemo === true
+	}
+
+	const openModal = (config: ModalDemoConfig) => {
+		applyModalConfig(config)
+		modalVisible.value = true
+	}
+
+	const onModalBasic = () => {
+		openModal({
+			title: '提示',
+			content: '确认提交本次修改吗？',
+			confirmText: '提交'
+		})
+	}
+
+	const onModalTinted = () => {
+		openModal({
+			title: '提示',
+			content: '退出登录会清除您的登录信息，确认退出吗？',
+			contentColor: 'var(--vx-color-danger)',
+			confirmText: '退出登录',
+			confirmType: 'danger'
+		})
+	}
+
+	const onModalDanger = () => {
+		openModal({
+			title: '删除项目',
+			content: '删除后无法恢复，确认删除吗？',
+			confirmText: '删除',
+			confirmType: 'danger',
+			cancelType: 'danger'
+		})
+	}
+
+	const onModalSingle = () => {
+		openModal({
+			title: '提交成功',
+			content: '申请已提交，我们会在 2 个工作日内联系你。',
+			icon: 'check-circle',
+			iconType: 'success',
+			showCancel: false,
+			confirmText: '知道了'
+		})
+	}
+
+	const onModalMultiple = () => {
+		openModal({
+			title: '未保存的修改',
+			content: '离开前要保存草稿吗？',
+			actions: [
+				{ text: '保存草稿', type: 'primary', variant: 'soft' },
+				{ text: '不保存', type: 'danger', variant: 'plain' },
+				{ text: '取消', role: 'cancel' }
+			]
+		})
+	}
+
+	const onModalPill = () => {
+		openModal({
+			title: '删除确认',
+			content: '删除后无法恢复。',
+			confirmText: '删除',
+			confirmType: 'danger',
+			actionShape: 'pill'
+		})
+	}
+
+	const onModalColors = () => {
+		openModal({
+			content: '请选择支付方式',
+			actions: [
+				{ text: '微信', type: 'success', variant: 'plain' },
+				{ text: '支付宝', type: 'primary', variant: 'plain' },
+				{ text: '银行卡', type: 'danger', variant: 'plain' }
+			]
+		})
+	}
+
+	const onModalSize = (size: 'sm' | 'md' | 'lg') => {
+		openModal({
+			title: '尺寸',
+			content: `size="${size}" 只改面板最大宽度，字号不变。`,
+			size: size,
+			confirmText: '知道了'
+		})
+	}
+
+	const onModalMaskLocked = () => {
+		openModal({
+			title: '强制确认',
+			content: '遮罩不可点击，请用取消或确定退出。',
+			maskClosable: false,
+			confirmText: '确定'
+		})
+	}
+
+	const onModalClosable = () => {
+		openModal({
+			title: '提示',
+			content: '点右上角关闭叉直接收起，并抛 cancel。',
+			closable: true,
+			maskClosable: false,
+			confirmText: '知道了'
+		})
+	}
+
+	const onModalEmailOpen = () => {
+		modalEmail.value = ''
+		customModalVisible.value = true
+	}
+
+	const onModalEmailSubmit = () => {
+		if (modalEmail.value.length === 0) {
+			showToast({ text: '请输入邮箱', type: 'warning' })
+			return
+		}
+		customModalVisible.value = false
+		modalLastAction.value = '提交邮箱'
+		showToast({ text: '邮箱已提交', type: 'success' })
+	}
+
+	const onModalEmailCancel = () => {
+		modalLastAction.value = '取消输入'
+	}
+
+	const onModalAsync = () => {
+		openModal({
+			title: '提交审核',
+			content: '提交后将进入审核队列，约 1 个工作日完成。',
+			confirmText: '提交审核',
+			maskClosable: false,
+			closable: true,
+			closeOnAction: false,
+			asyncDemo: true
+		})
+	}
+
+	const onModalConfirm = () => {
+		if (modalAsyncDemo.value) {
+			if (modalConfirmLoading.value) return
+			modalConfirmLoading.value = true
+			modalAsyncTimer = setTimeout(() => {
+				modalAsyncTimer = 0
+				modalConfirmLoading.value = false
+				modalVisible.value = false
+				modalLastAction.value = '提交审核'
+				showToast({ text: '已提交审核', type: 'success' })
+			}, 1200)
+			return
+		}
+		modalLastAction.value = modalConfirmText.value
+	}
+
+	const onModalCancel = () => {
+		// 等待中的取消要停表，避免请求结束后再收一次弹框。
+		if (modalAsyncTimer !== 0) {
+			clearTimeout(modalAsyncTimer)
+			modalAsyncTimer = 0
+			modalConfirmLoading.value = false
+		}
+		modalLastAction.value = '取消'
+	}
+
+	const onModalAction = (_index: number, action: ModalDemoAction) => {
+		modalLastAction.value = action.text
+	}
+
+	const onModalOpen = () => {
+		applyModalConfig({
+			title: '方法',
+			content: '用 ref 调用 open() 和 close()。',
+			confirmText: '知道了'
+		})
+		modalRef.value?.open?.()
+	}
+
+	const onModalClose = () => {
+		modalRef.value?.close?.()
+	}
+
+	onUnmounted(() => {
+		if (modalAsyncTimer === 0) return
+		clearTimeout(modalAsyncTimer)
+		modalAsyncTimer = 0
+	})
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/actionsheet/actionsheet'
+	const nextPath: string = '/pages/demo/drawer/drawer'
+	const prevName = '操作菜单'
+	const nextName = '抽屉'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

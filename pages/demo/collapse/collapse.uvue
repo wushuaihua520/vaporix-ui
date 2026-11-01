@@ -1,0 +1,541 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-collapse · vx-collapse-item</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="chevron-down" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">折叠面板</text>
+								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">标题行沿用列表行高度，展开用 220ms 过渡；默认展开的面板不会滑进来。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-collapse · vx-collapse-item</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础折叠</text>
+							<text class="demo-section__desc">v-model 是展开面板的 name 数组，第一项默认展开。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-collapse v-model="collapseBasicOpen">
+							<vx-collapse-item v-for="item in collapseFaq" :key="item.name" :name="item.name"
+								:title="item.title">
+								<text class="demo-collapse__body">{{ item.body }}</text>
+							</vx-collapse-item>
+						</vx-collapse>
+					</view>
+					<text class="demo-hint">name 在同一组里唯一；最后一项自动不画分割线。容器不铺内边距，页面左右边距由外层控制。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">手风琴</text>
+							<text class="demo-section__desc">accordion 打开后同一时间只展开一项。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-collapse v-model="collapseAccordionOpen" accordion @change="onCollapseChange">
+							<vx-collapse-item v-for="item in collapseAccount" :key="item.name" :name="item.name"
+								:title="item.title">
+								<text class="demo-collapse__body">{{ item.body }}</text>
+							</vx-collapse-item>
+						</vx-collapse>
+						<view class="demo-collapse-status">
+							<text class="demo-collapse-status__text">{{ collapseLastChange }}</text>
+							<text class="demo-collapse-status__meta">change(name, open)</text>
+						</view>
+					</view>
+					<text class="demo-hint">打开新项会收起上一项；收起当前项时数组清空。父级不要主动给手风琴写多个 name。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">卡片与平面</text>
+							<text class="demo-section__desc">card 带描边和圆角，plain 只保留 surface 底。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<view class="demo-collapse__group">
+							<text class="demo-collapse__label">card</text>
+							<vx-collapse v-model="collapseCardOpen">
+								<vx-collapse-item v-for="item in collapseFaq" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+						<view class="demo-collapse__group demo-collapse__group--divided">
+							<text class="demo-collapse__label">plain</text>
+							<vx-collapse v-model="collapsePlainOpen" variant="plain">
+								<vx-collapse-item v-for="item in collapseAccount" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+					</view>
+					<text class="demo-hint">放进卡片时用 plain，避免卡片里再套一张卡片；两种形态都不加阴影。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">标题行 44 / 52 / 60，标题 13 / 15 / 17，箭头 14 / 18 / 22。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<view class="demo-collapse__group">
+							<text class="demo-collapse__label">sm · 44</text>
+							<vx-collapse v-model="collapseSizeSmOpen" size="sm">
+								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+						<view class="demo-collapse__group demo-collapse__group--divided">
+							<text class="demo-collapse__label">md · 52</text>
+							<vx-collapse v-model="collapseSizeMdOpen">
+								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+						<view class="demo-collapse__group demo-collapse__group--divided">
+							<text class="demo-collapse__label">lg · 60</text>
+							<vx-collapse v-model="collapseSizeLgOpen" size="lg">
+								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+					</view>
+					<text class="demo-hint">标题行高是下限，双行标题由内容撑高；同一组保持一个尺寸，分割线和箭头才在同一条基线上。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">禁用与无箭头</text>
+							<text class="demo-section__desc">disabled 只挡点击，arrow=false 只去掉箭头。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<view class="demo-collapse__group">
+							<text class="demo-collapse__label">disabled</text>
+							<vx-collapse v-model="collapseDisabledOpen">
+								<vx-collapse-item v-for="item in collapseDisabledItems" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+								<vx-collapse-item name="disabled" title="禁用项" description="这一项暂时不可展开" disabled>
+									<text class="demo-collapse__body">禁用状态下不会响应点击。</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+						<view class="demo-collapse__group demo-collapse__group--divided">
+							<text class="demo-collapse__label">arrow=false</text>
+							<vx-collapse v-model="collapseNoArrowOpen" :arrow="false">
+								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+									:title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+					</view>
+					<text class="demo-hint">禁用时标题、说明和箭头一起转灰，按下态停下；无箭头时标题行仍整行可点，展开状态由内容是否可见表达。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">固定内容高度</text>
+							<text class="demo-section__desc">contentHeight 固定内容区，超出部分在内部滚动。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-collapse v-model="collapseHeightOpen">
+							<vx-collapse-item name="terms" title="服务条款" content-height="96px">
+								<view class="demo-collapse__scroll">
+									<text v-for="line in collapseScrollLines" :key="line" class="demo-collapse__line">
+										{{ line }}
+									</text>
+								</view>
+							</vx-collapse-item>
+							<vx-collapse-item name="invoice" title="发票说明">
+								<text class="demo-collapse__body">{{ collapseFaq[2].body }}</text>
+							</vx-collapse-item>
+						</vx-collapse>
+					</view>
+					<text class="demo-hint">固定高度必须带单位，Web 和真机都在内容区里滚动；不传时由内容自然撑高，最多 2000px。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">前缀与角标</text>
+							<text class="demo-section__desc">prefix 放图标，extra 放标签、徽章或状态。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-collapse v-model="collapseSlotsOpen">
+							<vx-collapse-item name="notice" title="消息通知">
+								<template #prefix>
+									<view class="demo-collapse__icon">
+										<vx-icon name="bell" size="sm" color="var(--vx-color-text-secondary)" />
+									</view>
+								</template>
+								<template #extra>
+									<vx-tag size="sm" type="success" variant="soft" text="已开启" />
+								</template>
+								<text class="demo-collapse__body">订单、物流和售后进度会通过推送提醒；营销消息仍按渠道单独控制。</text>
+							</vx-collapse-item>
+							<vx-collapse-item name="coupon" title="优惠券">
+								<template #prefix>
+									<view class="demo-collapse__icon">
+										<vx-icon name="gift" size="sm" color="var(--vx-color-text-secondary)" />
+									</view>
+								</template>
+								<template #extra>
+									<vx-badge :value="3" type="danger" />
+								</template>
+								<text class="demo-collapse__body">当前有 3 张可用优惠券，其中 2 张将在 7 天后过期。</text>
+							</vx-collapse-item>
+						</vx-collapse>
+					</view>
+					<text class="demo-hint">图标外层用 flex 包住并垂直居中，颜色单独传；extra 里的按钮和开关需要自己 @click.stop，避免同时切换面板。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">卡片组合</text>
+							<text class="demo-section__desc">卡片负责标题、状态和底部，plain 折叠面板只负责展开。</text>
+						</view>
+					</view>
+					<vx-card title="账号设置" meta="仅保存在本机" :body-padded="false">
+						<vx-collapse v-model="collapseComposeOpen" variant="plain">
+							<vx-collapse-item name="notice" title="消息通知">
+								<template #prefix>
+									<view class="demo-collapse__icon">
+										<vx-icon name="bell" size="md" color="var(--vx-color-text-secondary)" />
+									</view>
+								</template>
+								<template #extra>
+									<vx-tag size="sm" type="success" variant="soft" text="已开启" />
+								</template>
+								<text class="demo-collapse__body">订单、物流和售后进度会通过推送提醒；营销消息仍按渠道单独控制。</text>
+							</vx-collapse-item>
+							<vx-collapse-item name="coupon" title="优惠券">
+								<template #prefix>
+									<view class="demo-collapse__icon">
+										<vx-icon name="gift" size="md" color="var(--vx-color-text-secondary)" />
+									</view>
+								</template>
+								<template #extra>
+									<vx-badge :value="3" type="danger" />
+								</template>
+								<text class="demo-collapse__body">当前有 3 张可用优惠券，其中 2 张将在 7 天后过期。</text>
+							</vx-collapse-item>
+						</vx-collapse>
+						<template #suffix>
+							<text class="demo-collapse__foot">设置只影响当前设备，换设备后需要重新配置。</text>
+						</template>
+					</vx-card>
+					<text class="demo-hint">卡片关闭 bodyPadded，面板标题行和卡片头部同一档内边距；底部说明放卡片 suffix，不塞进面板内容。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">容器方法与事件</text>
+							<text class="demo-section__desc">ref 调 open / close / toggle，change 带 name 和 open。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-collapse ref="collapseMethodRef" v-model="collapseMethodOpen" @change="onCollapseChange">
+							<vx-collapse-item v-for="item in collapseFaq" :key="item.name" :name="item.name"
+								:title="item.title">
+								<text class="demo-collapse__body">{{ item.body }}</text>
+							</vx-collapse-item>
+						</vx-collapse>
+						<view class="demo-collapse-status">
+							<text class="demo-collapse-status__text">{{ collapseStatusText }}</text>
+							<text class="demo-collapse-status__meta">{{ collapseLastChange }}</text>
+						</view>
+						<view class="demo-actions demo-collapse-actions">
+							<view class="demo-collapse-actions__item">
+								<vx-button block size="sm" type="primary" text="open('ship')" @click="onCollapseOpen" />
+							</view>
+							<view class="demo-collapse-actions__item">
+								<vx-button block size="sm" text="close('ship')" @click="onCollapseClose" />
+							</view>
+							<view class="demo-collapse-actions__item demo-collapse-actions__item--last">
+								<vx-button block size="sm" text="toggle('return')" @click="onCollapseToggle" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">方法只改 v-model 并抛 change，不受 disabled 限制；父级也可以只用 v-model 维护展开名单。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type CollapseDemoItem = {
+		name: string
+		title: string
+		body: string
+	}
+
+	type CollapseDemoApi = {
+		open?: (name: string) => void
+		close?: (name: string) => void
+		toggle?: (name: string) => void
+	}
+
+	// 折叠面板演示：name 是展开键，容器用数组维护展开名单。
+	const collapseFaq: CollapseDemoItem[] = [
+		{
+			name: 'ship',
+			title: '配送与运费',
+			body: '满 99 元包邮，偏远地区加收 10 元运费；现货商品会在 24 小时内发出，节假日顺延。'
+		},
+		{
+			name: 'return',
+			title: '退换货政策',
+			body: '签收后 7 天内支持无理由退货，商品需保持吊牌完整、不影响二次销售；质量问题由我们承担来回运费。'
+		},
+		{
+			name: 'invoice',
+			title: '发票说明',
+			body: '支持电子普通发票和增值税专用发票，下单时填写抬头，发货后 3 个工作日内开出并发送到邮箱。'
+		}
+	]
+
+	const collapseAccount: CollapseDemoItem[] = [
+		{
+			name: 'security',
+			title: '账户安全',
+			body: '建议开启登录保护并绑定常用手机号；发现异常登录时，修改密码会立即让其他设备退出。'
+		},
+		{
+			name: 'device',
+			title: '登录设备',
+			body: '当前有 3 台设备保持登录：iPhone、Mac 和 Windows。移除非本人设备后需要重新验证。'
+		},
+		{
+			name: 'privacy',
+			title: '隐私设置',
+			body: '个性化推荐默认开启，关闭后不影响基础功能；浏览记录只保存在本机，可随时清空。'
+		}
+	]
+
+	const collapseShort: CollapseDemoItem[] = [
+		{ name: 'profile', title: '个人信息', body: '修改昵称、头像和性别会立即生效，昵称每 30 天可以改一次。' },
+		{ name: 'notice', title: '消息通知', body: '订单、物流和售后通知不可关闭；营销消息可以按渠道单独关闭。' },
+		{ name: 'binding', title: '账号绑定', body: '已绑定手机号和邮箱，解绑前需要先绑定新的联系方式。' }
+	]
+
+	const collapseDisabledItems: CollapseDemoItem[] = [collapseFaq[0], collapseFaq[1]]
+
+	const collapseScrollLines: string[] = [
+		'一、本服务仅供个人使用，请勿转售或用于商业分发。',
+		'二、账号仅限本人使用，请妥善保管登录信息。',
+		'三、我们会在必要范围内收集设备信息，用于安全风控。',
+		'四、内容版权归原作者所有，转载前请取得授权。',
+		'五、如对服务有异议，可在 30 天内申请注销账号。',
+		'六、条款更新会在应用内提示，继续使用视为同意新版本。'
+	]
+
+	const collapseBasicOpen = ref<Array<string>>(['ship'])
+
+	const collapseAccordionOpen = ref<Array<string>>(['security'])
+
+	const collapseCardOpen = ref<Array<string>>(['ship'])
+
+	const collapsePlainOpen = ref<Array<string>>(['security'])
+
+	const collapseSizeSmOpen = ref<Array<string>>(['profile'])
+
+	const collapseSizeMdOpen = ref<Array<string>>(['profile'])
+
+	const collapseSizeLgOpen = ref<Array<string>>(['profile'])
+
+	const collapseDisabledOpen = ref<Array<string>>(['ship'])
+
+	const collapseNoArrowOpen = ref<Array<string>>(['profile'])
+
+	const collapseHeightOpen = ref<Array<string>>(['terms'])
+
+	const collapseSlotsOpen = ref<Array<string>>(['notice'])
+
+	const collapseComposeOpen = ref<Array<string>>(['notice'])
+
+	const collapseMethodOpen = ref<Array<string>>(['ship'])
+
+	const collapseMethodRef = ref<CollapseDemoApi | null>(null)
+
+	const collapseLastChange = ref('还没有操作')
+
+	const collapseTitleOf = (name: string): string => {
+		for (let index = 0; index < collapseFaq.length; index++) {
+			if (collapseFaq[index].name === name) return collapseFaq[index].title
+		}
+		for (let index = 0; index < collapseAccount.length; index++) {
+			if (collapseAccount[index].name === name) return collapseAccount[index].title
+		}
+		for (let index = 0; index < collapseShort.length; index++) {
+			if (collapseShort[index].name === name) return collapseShort[index].title
+		}
+		return name
+	}
+
+	const onCollapseChange = (name: string, open: boolean) => {
+		collapseLastChange.value = `${collapseTitleOf(name)}${open ? '展开' : '收起'}`
+	}
+
+	const collapseStatusText = computed((): string => {
+		const names = collapseMethodOpen.value
+		if (names.length === 0) return '全部收起'
+		let text = ''
+		for (let index = 0; index < names.length; index++) {
+			if (text.length > 0) text += '、'
+			text += collapseTitleOf(names[index])
+		}
+		return `展开：${text}`
+	})
+
+	const onCollapseOpen = () => {
+		collapseMethodRef.value?.open?.('ship')
+	}
+
+	const onCollapseClose = () => {
+		collapseMethodRef.value?.close?.('ship')
+	}
+
+	const onCollapseToggle = () => {
+		collapseMethodRef.value?.toggle?.('return')
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/qrcode/qrcode'
+	const nextPath: string = '/pages/demo/tabs/tabs'
+	const prevName = '二维码'
+	const nextName = '标签页'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

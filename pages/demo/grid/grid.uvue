@@ -1,0 +1,437 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-grid · vx-grid-item</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="grid-2x2" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">宫格</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">按列数均分宽度，格子高度三档；图片用 32 / 40 / 48 的方框按比例展示。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-grid · vx-grid-item</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">宫格基础</text>
+							<text class="demo-section__desc">三列入口，图标在上、文案在下；第一行和第一列不画内部线。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<vx-grid>
+							<vx-grid-item v-for="(entry, index) in gridEntries" :key="entry.title" :columns="3"
+								:index="index" :icon="entry.icon" :title="entry.title"
+								@click="onGridAction(entry.title)" />
+						</vx-grid>
+					</view>
+					<text class="demo-hint demo-grid-hint">列数写在格子上，同一组用同一个 columns；点击停在格子上，不会冒到外层。最近点击：{{ gridLastAction }}。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">列数</text>
+							<text class="demo-section__desc">两列、四列和五列。列数越多，文案越短。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">两列</text>
+							<vx-grid>
+								<vx-grid-item v-for="(entry, index) in gridWideEntries" :key="entry.title" :columns="2"
+									:index="index" :icon="entry.icon" :title="entry.title" :description="entry.description"
+								 @click="onGridAction(entry.title)" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">四列</text>
+							<vx-grid>
+								<vx-grid-item v-for="(entry, index) in gridFourEntries" :key="entry.title" :columns="4"
+									:index="index" :icon="entry.icon" :title="entry.title"
+									@click="onGridAction(entry.title)" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item demo-grid-lab__item--last">
+							<text class="demo-grid-label">五列</text>
+							<vx-grid>
+								<vx-grid-item v-for="(entry, index) in gridFiveEntries" :key="entry.title" :columns="5"
+									:index="index" size="sm" :icon="entry.icon" :title="entry.title"
+									@click="onGridAction(entry.title)" />
+							</vx-grid>
+						</view>
+					</view>
+					<text class="demo-hint demo-grid-hint">2 / 3 / 4 / 5 列分别占 50% / 33.33% / 25% / 20%；五列建议配 size="sm"，文案控制在两三个字。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">分隔线与形态</text>
+							<text class="demo-section__desc">内部线默认打开；card 有外框，plain 只保留 surface 底。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">card · 有内部线</text>
+							<vx-grid>
+								<vx-grid-item v-for="(entry, index) in gridEntries" :key="entry.title" :columns="3"
+									:index="index" :icon="entry.icon" :title="entry.title" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">card · divider=false</text>
+							<vx-grid>
+								<vx-grid-item v-for="(entry, index) in gridFiveEntries" :key="entry.title" :columns="3"
+									:index="index" :icon="entry.icon" :title="entry.title"
+									:divider="false" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item demo-grid-lab__item--last">
+							<text class="demo-grid-label">plain · 放在浅色底上</text>
+							<view class="demo-grid-stage">
+								<vx-grid variant="plain">
+									<vx-grid-item v-for="(entry, index) in gridEntries" :key="entry.title" :columns="3"
+										:index="index" :icon="entry.icon" :title="entry.title" />
+								</vx-grid>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-grid-hint">内部线只画上、左两条，外框仍由 grid 负责；plain 没有外框，适合放进已有的卡片或区块。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">三档最小高度 72 / 88 / 104，图标 18 / 22，方框和图片 32 / 40 / 48。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">sm · 72px</text>
+							<vx-grid>
+								<vx-grid-item :columns="3" :index="0" size="sm" icon="camera" title="相机" />
+								<vx-grid-item :columns="3" :index="1" size="sm" icon="image" title="相册" />
+								<vx-grid-item :columns="3" :index="2" size="sm" icon="mic" title="录音" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">md · 88px</text>
+							<vx-grid>
+								<vx-grid-item :columns="3" :index="0" icon="wallet" title="钱包" description="余额与账单" />
+								<vx-grid-item :columns="3" :index="1" icon="receipt" title="订单" description="待付款和售后" />
+								<vx-grid-item :columns="3" :index="2" icon="headphones" title="客服" description="在线咨询" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item demo-grid-lab__item--last">
+							<text class="demo-grid-label">lg · 104px</text>
+							<vx-grid>
+								<vx-grid-item :columns="3" :index="0" size="lg" icon="grid-2x2" title="工作台" description="审批、日程和待办" />
+								<vx-grid-item :columns="3" :index="1" size="lg" icon="users" title="通讯录" description="同事和外部联系人" />
+								<vx-grid-item :columns="3" :index="2" size="lg" icon="map" title="差旅" description="机票、酒店和报销" />
+							</vx-grid>
+						</view>
+					</view>
+					<text class="demo-hint demo-grid-hint">高度是下限，说明和长文案让格子自然长高；同一组只用一档尺寸。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">图标与角标</text>
+							<text class="demo-section__desc">字体图标、图片和 icon 插槽三选一；extra 贴右上角。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<vx-grid>
+							<vx-grid-item :columns="4" :index="0" icon="alert-triangle" title="待处理" type="warning"
+								icon-variant="fill" />
+							<vx-grid-item :columns="4" :index="1" icon="receipt" title="订单" />
+							<vx-grid-item :columns="4" :index="2" icon="truck" title="物流" />
+							<vx-grid-item :columns="4" :index="3" icon="heart" title="收藏" icon-variant="fill" />
+							<vx-grid-item :columns="4" :index="4" image="/static/demo/card/grid-1.jpg" title="相册" />
+							<vx-grid-item :columns="4" :index="5" title="会员">
+								<template #icon>
+									<view class="demo-grid-tile">
+										<vx-icon name="star" size="lg" type="primary" />
+									</view>
+								</template>
+							</vx-grid-item>
+							<vx-grid-item :columns="4" :index="6" image="/static/demo/card/grid-4.jpg" title="图片" />
+							<vx-grid-item :columns="4" :index="7" icon="bell" title="消息">
+								<template #extra>
+									<vx-badge :value="8" />
+								</template>
+							</vx-grid-item>
+						</vx-grid>
+					</view>
+					<text class="demo-hint demo-grid-hint">优先级是 icon 插槽 > image > icon；type 只在表达状态时用，这里只有“待处理”是 warning；实心图标用 iconVariant="fill"。角标会盖在右上角，不占格子高度。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">格子状态</text>
+							<text class="demo-section__desc">可点击、静态和禁用。静态格没有按下态，禁用格不抛 click。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<vx-grid>
+							<vx-grid-item :columns="3" :index="0" icon="check-circle" title="可点击" @click="onGridAction('可点击格子')" />
+							<vx-grid-item :columns="3" :index="1" icon="eye" title="静态格" :clickable="false" />
+							<vx-grid-item :columns="3" :index="2" icon="lock" title="禁用格" disabled />
+						</vx-grid>
+					</view>
+					<text class="demo-hint demo-grid-hint">clickable 默认打开；静态展示格关掉 clickable，不可用格用 disabled。演示为了对照才放在一行，实际一组只留一种交互。最近点击：{{ gridLastAction }}。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">宫格组合</text>
+							<text class="demo-section__desc">四列服务入口配角标，两列宽格子放一句说明。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<view class="demo-grid-block">
+							<text class="demo-grid-block__title">常用服务</text>
+							<vx-grid>
+								<vx-grid-item :columns="4" :index="0" icon="smartphone" title="手机充值" />
+								<vx-grid-item :columns="4" :index="1" icon="bell" title="生活缴费" />
+								<vx-grid-item :columns="4" :index="2" icon="package" title="快递查询" />
+								<vx-grid-item :columns="4" :index="3" icon="map-pin" title="出行" />
+								<vx-grid-item :columns="4" :index="4" icon="gift" title="福利">
+									<template #extra>
+										<vx-badge dot />
+									</template>
+								</vx-grid-item>
+								<vx-grid-item :columns="4" :index="5" icon="credit-card" title="银行卡" />
+								<vx-grid-item :columns="4" :index="6" icon="star" title="收藏" />
+								<vx-grid-item :columns="4" :index="7" icon="more-horizontal" title="更多" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item demo-grid-lab__item--last">
+							<text class="demo-grid-label">两列 · 带说明</text>
+							<vx-grid>
+								<vx-grid-item v-for="(entry, index) in gridWideEntries" :key="entry.title" :columns="2"
+									:index="index" size="lg" :icon="entry.icon" :title="entry.title"
+									:description="entry.description" />
+							</vx-grid>
+						</view>
+					</view>
+					<text class="demo-hint demo-grid-hint">宫格负责排列和边界，角标、说明和自定义图标都由格子和插槽承担；整组保持一致。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">色底与无边框</text>
+							<text class="demo-section__desc">bgColor 铺色底，plain + divider=false 去掉所有边框。</text>
+						</view>
+					</view>
+					<view class="demo-grid-lab">
+						<view class="demo-grid-lab__item">
+							<text class="demo-grid-label">5 列 · 色底</text>
+							<vx-grid variant="plain">
+								<vx-grid-item :columns="5" :index="0" size="sm" icon="camera" title="拍照" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="1" size="sm" icon="image" title="相册" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="2" size="sm" icon="video" title="视频" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="3" size="sm" icon="mic" title="录音" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="4" size="sm" icon="file" title="文件" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="5" size="sm" icon="star" title="收藏" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="6" size="sm" icon="bell" title="消息" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="7" size="sm" icon="gift" title="会员" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="8" size="sm" icon="credit-card" title="银行卡" color="#8a2b33"
+									icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+								<vx-grid-item :columns="5" :index="9" size="sm" icon="more-horizontal" title="更多"
+								 color="#8a2b33" icon-variant="fill" bg-color="#fdeaea" :divider="false" />
+							</vx-grid>
+						</view>
+						<view class="demo-grid-lab__item demo-grid-lab__item--last">
+							<text class="demo-grid-label">3 列 · 无边框</text>
+							<vx-grid variant="plain">
+								<vx-grid-item v-for="(entry, index) in gridEntries" :key="entry.title" :columns="3"
+									:index="index" :icon="entry.icon" :title="entry.title"
+									:divider="false" :clickable="false" />
+							</vx-grid>
+						</view>
+					</view>
+					<text class="demo-hint demo-grid-hint">色底是字面值，不跟主题；有底色时按下改用整体透明度。无边框用 plain 去掉外框，再在每个格子关掉 divider。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 宫格演示：一组入口数据，列数写在格子上，index 按行优先递增。
+	type GridDemoEntry = {
+		icon: string
+		title: string
+		description?: string
+	}
+
+	const gridEntries: GridDemoEntry[] = [
+		{ icon: 'wallet', title: '钱包' },
+		{ icon: 'receipt', title: '订单' },
+		{ icon: 'truck', title: '物流' },
+		{ icon: 'headphones', title: '客服' },
+		{ icon: 'heart', title: '收藏' },
+		{ icon: 'settings', title: '设置' }
+	]
+
+	const gridWideEntries: GridDemoEntry[] = [
+		{ icon: 'grid-2x2', title: '工作台', description: '审批、日程和待办' },
+		{ icon: 'users', title: '通讯录', description: '同事和外部联系人' },
+		{ icon: 'phone', title: '会议', description: '发起或加入会议' },
+		{ icon: 'map', title: '差旅', description: '机票、酒店和报销' }
+	]
+
+	const gridFourEntries: GridDemoEntry[] = [
+		{ icon: 'smartphone', title: '充值' },
+		{ icon: 'bell', title: '缴费' },
+		{ icon: 'package', title: '快递' },
+		{ icon: 'map-pin', title: '出行' },
+		{ icon: 'star', title: '收藏' },
+		{ icon: 'gift', title: '福利' },
+		{ icon: 'credit-card', title: '银行卡' },
+		{ icon: 'more-horizontal', title: '更多' }
+	]
+
+	const gridFiveEntries: GridDemoEntry[] = [
+		{ icon: 'camera', title: '拍照' },
+		{ icon: 'image', title: '相册' },
+		{ icon: 'video', title: '视频' },
+		{ icon: 'mic', title: '录音' },
+		{ icon: 'file', title: '文件' }
+	]
+
+	const gridLastAction = ref('还没有点击')
+
+	const onGridAction = (label: string) => {
+		gridLastAction.value = label
+	}
+
+	const phone = ref('')
+
+	const iconVariant = ref<'regular' | 'fill'>('regular')
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/wing-blank/wing-blank'
+	const nextPath: string = '/pages/demo/row/row'
+	const prevName = '左右留白'
+	const nextName = '栅格布局'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

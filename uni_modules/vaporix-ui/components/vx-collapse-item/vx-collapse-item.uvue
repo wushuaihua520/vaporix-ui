@@ -1,0 +1,485 @@
+<template>
+	<!-- 面板只画标题行、内容和分割线；外框、圆角和手风琴由 vx-collapse 统一处理。 -->
+	<!-- 点击停在面板上，不冒泡到外层卡片；只有标题行切换展开，内容区不接管。 -->
+	<view class="vx-collapse-item" @click.stop>
+		<view :class="headClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+			@click="onToggle">
+			<!-- 前缀放图标或头像，颜色和尺寸由插槽内容自己带。 -->
+			<view v-if="$slots['prefix'] != null" :class="prefixClass">
+				<slot name="prefix"></slot>
+			</view>
+
+			<view class="vx-collapse-item__heading">
+				<text v-if="title.length > 0" :class="titleClass">{{ title }}</text>
+				<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
+			</view>
+
+			<!-- 角标、标签和时间放这里，位于标题和箭头之间；内容自己带颜色和字号。 -->
+			<view v-if="$slots['extra'] != null" :class="extraClass">
+				<slot name="extra"></slot>
+			</view>
+
+			<!-- 箭头包一层 view 再旋转，样式隔离下不会改到 vx-icon 内部的 text。 -->
+			<view v-if="showArrow" :class="arrowClass">
+				<vx-icon name="chevron-down" :size="size" :color="arrowColor" />
+			</view>
+		</view>
+
+		<!-- 自动高度用 max-height 过渡；固定高度用 height 过渡，内容在 scroll-view 里滚动。 -->
+		<view :class="bodyClass" :style="bodyStyle">
+			<scroll-view v-if="fixedHeight" class="vx-collapse-item__scroll" :style="scrollStyle"
+				direction="vertical">
+				<view :class="contentClass">
+					<slot></slot>
+				</view>
+			</scroll-view>
+			<view v-else :class="contentClass">
+				<slot></slot>
+			</view>
+		</view>
+
+		<!-- 最后一项不画，避免和卡片底边叠成两条；左右与标题内边距对齐。 -->
+		<view v-if="showDivider" :class="dividerClass"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxCollapseItemProps } from './props'
+	import { VX_COLLAPSE_CONTEXT, VxCollapseContext } from '../vx-collapse/context'
+	import { VxSize } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxCollapseItemProps>(), {
+		name: '',
+		title: '',
+		description: '',
+		disabled: false,
+		arrow: true,
+		contentHeight: ''
+	})
+
+	const emit = defineEmits<{
+		change: [open: boolean]
+	}>()
+
+	// 没有容器时面板仍能点开，状态落在组件内部；放进容器后由容器统一维护。
+	const collapse = inject(VX_COLLAPSE_CONTEXT, null) as VxCollapseContext | null
+
+	// 分割线认实例而不是 name：name 可以重复，两条面板仍要各算各的位置。
+	const uid = 'vx-collapse-item-' + Math.floor(Math.random() * 1000000000)
+	const localOpen = ref(false)
+
+	// 容器优先；没有 name 时退回实例 id，单独使用时也能记录展开状态。
+	const openKey = computed((): string => {
+		return props.name.length > 0 ? props.name : uid
+	})
+
+	const size = computed((): VxSize => {
+		return collapse != null ? collapse.size() : 'md'
+	})
+
+	const isDisabled = computed((): boolean => {
+		if (props.disabled) return true
+		return collapse != null && collapse.disabled()
+	})
+
+	const isOpen = computed((): boolean => {
+		if (collapse != null) return collapse.isOpen(openKey.value)
+		return localOpen.value
+	})
+
+	const fixedHeight = computed((): boolean => {
+		return props.contentHeight.length > 0
+	})
+
+	// 第一帧不画分割线：等登记完实例 id 再判断最后一项，避免最后一项闪一条线。
+	const registered = ref(false)
+
+	// 第一帧不加过渡：默认展开的面板不要从 0 高或 0 透明滑进来。
+	const animated = ref(false)
+	let animatedTimer = 0
+
+	onMounted(() => {
+		if (collapse != null) collapse.register(uid)
+		registered.value = true
+		nextTick(() => {
+			animatedTimer = setTimeout(() => {
+				animatedTimer = 0
+				animated.value = true
+			}, 16)
+		})
+	})
+
+	onUnmounted(() => {
+		if (animatedTimer !== 0) {
+			clearTimeout(animatedTimer)
+			animatedTimer = 0
+		}
+		if (collapse != null) collapse.unregister(uid)
+	})
+
+	const showArrow = computed((): boolean => {
+		if (!props.arrow) return false
+		return collapse == null || collapse.arrow()
+	})
+
+	const isLast = computed((): boolean => {
+		return collapse != null && collapse.isLast(uid)
+	})
+
+	const showDivider = computed((): boolean => {
+		if (collapse == null || !registered.value) return false
+		return collapse.divider() && !isLast.value
+	})
+
+	// class 顺序：基础 → 尺寸 → 状态。和样式表一致，后写的盖过先写的。
+	const headClass = computed((): string => {
+		let name = 'vx-collapse-item__head'
+		if (size.value === 'sm') name += ' vx-collapse-item__head--sm'
+		else if (size.value === 'lg') name += ' vx-collapse-item__head--lg'
+		if (isDisabled.value) name += ' vx-collapse-item__head--disabled'
+		return name
+	})
+
+	const prefixClass = computed((): string => {
+		if (size.value === 'sm') return 'vx-collapse-item__prefix vx-collapse-item__prefix--sm'
+		return 'vx-collapse-item__prefix'
+	})
+
+	const extraClass = computed((): string => {
+		if (size.value === 'sm') return 'vx-collapse-item__extra vx-collapse-item__extra--sm'
+		return 'vx-collapse-item__extra'
+	})
+
+	const titleClass = computed((): string => {
+		let name = 'vx-collapse-item__title'
+		if (size.value === 'sm') name += ' vx-collapse-item__title--sm'
+		else if (size.value === 'lg') name += ' vx-collapse-item__title--lg'
+		if (isDisabled.value) name += ' vx-collapse-item__title--disabled'
+		return name
+	})
+
+	const descriptionClass = computed((): string => {
+		let name = 'vx-collapse-item__desc'
+		if (props.title.length > 0) name += ' vx-collapse-item__desc--offset'
+		if (isDisabled.value) name += ' vx-collapse-item__desc--disabled'
+		return name
+	})
+
+	const arrowClass = computed((): string => {
+		let name = 'vx-collapse-item__arrow'
+		if (size.value === 'sm') name += ' vx-collapse-item__arrow--sm'
+		else if (size.value === 'lg') name += ' vx-collapse-item__arrow--lg'
+		if (animated.value) name += ' vx-collapse-item__arrow--animated'
+		if (isOpen.value) name += ' vx-collapse-item__arrow--open'
+		return name
+	})
+
+	const bodyClass = computed((): string => {
+		let name = 'vx-collapse-item__body'
+		if (fixedHeight.value) {
+			if (animated.value) name += ' vx-collapse-item__body--fixed-animated'
+			return name
+		}
+		name += ' vx-collapse-item__body--auto'
+		if (isOpen.value) name += ' vx-collapse-item__body--auto-open'
+		if (animated.value) name += ' vx-collapse-item__body--auto-animated'
+		return name
+	})
+
+	// 固定高度由业务给，必须带单位；贴成 inline 高度，0 → 指定高度才能过渡。
+	const bodyStyle = computed((): string => {
+		if (!fixedHeight.value) return ''
+		return `height: ${isOpen.value ? props.contentHeight : '0px'};`
+	})
+
+	// scroll-view 在 App 上要有明确高度；父级 body 同时过渡，百分比兜底仍然保留。
+	const scrollStyle = computed((): string => {
+		if (!fixedHeight.value) return ''
+		return `height: ${props.contentHeight};`
+	})
+
+	const contentClass = computed((): string => {
+		let name = 'vx-collapse-item__content'
+		if (size.value === 'sm') name += ' vx-collapse-item__content--sm'
+		else if (size.value === 'lg') name += ' vx-collapse-item__content--lg'
+		if (animated.value) name += ' vx-collapse-item__content--animated'
+		if (isOpen.value) name += ' vx-collapse-item__content--open'
+		return name
+	})
+
+	const dividerClass = computed((): string => {
+		if (size.value === 'sm') return 'vx-collapse-item__divider vx-collapse-item__divider--sm'
+		return 'vx-collapse-item__divider'
+	})
+
+	const arrowColor = computed((): string => {
+		if (isDisabled.value) return 'var(--vx-color-disabled-text)'
+		return 'var(--vx-color-text-secondary)'
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		if (isDisabled.value) return 'none'
+		return 'vx-collapse-item__head--pressed'
+	})
+
+	// 只有标题行切换展开。根节点把点击停住，内容区里的按钮自己再 stop。
+	const onToggle = () => {
+		if (isDisabled.value) return
+		const next = !isOpen.value
+		if (collapse != null) collapse.toggle(openKey.value)
+		else localOpen.value = next
+		emit('change', next)
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 面板不画外框和圆角，边界交给 vx-collapse；高度由标题行和内容自然撑开。
+	   相对定位给底部分割线当参照，线不占高度。 */
+	.vx-collapse-item {
+		position: relative;
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 标题行是唯一热区；行高沿用列表行 52，双行标题由上下内边距撑高。
+	   不铺底色，按下态是这一层唯一的 background-color。 */
+	.vx-collapse-item__head {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		min-height: var(--vx-list-height-md);
+		padding: var(--vx-space-md) var(--vx-space-lg);
+	}
+
+	.vx-collapse-item__head--sm {
+		min-height: var(--vx-list-height-sm);
+		padding: var(--vx-space-sm) var(--vx-space-md);
+	}
+
+	.vx-collapse-item__head--lg {
+		min-height: var(--vx-list-height-lg);
+		padding: var(--vx-space-lg);
+	}
+
+	.vx-collapse-item__head--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	/* 前缀、角标和箭头都不参与压缩；标题区吃掉剩余宽度。 */
+	.vx-collapse-item__prefix {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-md);
+	}
+
+	.vx-collapse-item__prefix--sm {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-collapse-item__heading {
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。
+	   text 不会被 stretch 拉满，写上宽度才按标题区换行。 */
+	.vx-collapse-item__title,
+	.vx-collapse-item__desc {
+		flex-shrink: 0;
+		min-width: 0;
+		width: 100%;
+		white-space: normal;
+	}
+
+	/* 标题按 13 / 15 / 17（20 / 22 / 24、500）；折叠面板不是控件，不借控件字号。 */
+	.vx-collapse-item__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.vx-collapse-item__title--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-collapse-item__title--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-collapse-item__title--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 说明固定 13 / 20，和标题之间留 4；只有说明时不加。 */
+	.vx-collapse-item__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-collapse-item__desc--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-collapse-item__desc--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 角标是插槽，可能放徽章、标签或两行时间，这里只管对齐和间距。 */
+	.vx-collapse-item__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-md);
+	}
+
+	.vx-collapse-item__extra--sm {
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 正方形，旋转不改变占位。尺寸跟图标三档 14 / 18 / 22。
+	   class 顺序：基础 → 尺寸 → 过渡 → 展开。 */
+	.vx-collapse-item__arrow {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
+		margin-left: var(--vx-space-md);
+		transform: rotate(0deg);
+		transform-origin: center center;
+	}
+
+	.vx-collapse-item__arrow--sm {
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
+		margin-left: var(--vx-space-sm);
+	}
+
+	.vx-collapse-item__arrow--lg {
+		width: var(--vx-icon-lg);
+		height: var(--vx-icon-lg);
+	}
+
+	/* 过渡关掉时直接换角度。 */
+	.vx-collapse-item__arrow--animated {
+		transition-property: transform;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-collapse-item__arrow--open {
+		transform: rotate(180deg);
+	}
+
+	/* 收起时高度为 0，内容被裁掉；固定高度模式改由 inline height 控制。 */
+	.vx-collapse-item__body {
+		box-sizing: border-box;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.vx-collapse-item__body--auto {
+		max-height: 0px;
+	}
+
+	/* 超过 2000px 请改用 contentHeight，在内部滚动。 */
+	.vx-collapse-item__body--auto-open {
+		max-height: 2000px;
+	}
+
+	/* 只在第一帧之后挂过渡：默认展开的面板不要从 0 高滑进来。
+	   max-height 不在 App 的 transition-property 表里，5.26 上高度直接切换，透明度和位移仍然过渡。
+	   鸿蒙蒸汽模式过渡属性不生效，展开直接切换。 */
+	.vx-collapse-item__body--auto-animated {
+		transition-property: max-height;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-collapse-item__body--fixed-animated {
+		transition-property: height;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	/* 内容区四边内边距跟标题档位走；左右 12 / 16，上 8 / 12 / 16，下 12 / 16。 */
+	.vx-collapse-item__content {
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-md) var(--vx-space-lg) var(--vx-space-lg);
+		opacity: 0;
+		/* 与 --vx-space-sm 同值；App 不能对 var() 取负，负值单独写字面量。 */
+		transform: translateY(-8px);
+	}
+
+	.vx-collapse-item__content--sm {
+		padding: var(--vx-space-sm) var(--vx-space-md) var(--vx-space-md);
+	}
+
+	.vx-collapse-item__content--lg {
+		padding: var(--vx-space-lg);
+	}
+
+	.vx-collapse-item__content--animated {
+		transition-property: opacity, transform;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-collapse-item__content--open {
+		opacity: 1;
+		transform: translateY(0px);
+	}
+
+	/* 固定高度时内容放进 scroll-view；高度由外层 body 过渡，滚动区跟着撑满。 */
+	.vx-collapse-item__scroll {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 分割线绝对定位在面板底部，不占高度；左右让出标题内边距。 */
+	.vx-collapse-item__divider {
+		position: absolute;
+		right: var(--vx-space-lg);
+		bottom: 0;
+		left: var(--vx-space-lg);
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	.vx-collapse-item__divider--sm {
+		right: var(--vx-space-md);
+		left: var(--vx-space-md);
+	}
+
+	/* 可点的标题行是指针，禁用行是禁止；原生端忽略 cursor。 */
+	/* #ifdef WEB */
+	.vx-collapse-item__head {
+		cursor: pointer;
+	}
+
+	.vx-collapse-item__head--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>

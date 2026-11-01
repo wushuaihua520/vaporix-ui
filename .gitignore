@@ -114,3 +114,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# uni-app x
+unpackage/
+.hbuilderx/
+# 图标构建产物（预览图，不随仓库发布）
+tools/icons/out/

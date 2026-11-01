@@ -1,0 +1,535 @@
+<template>
+	<!-- 抽屉是贴边浮层：遮罩铺满页面，面板从一条边滑出。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
+	<!-- 点遮罩、点关闭叉都收起并抛 close；open() / close() 只改 show。 -->
+	<!-- 触摸只拦遮罩、头部和底栏：正文的 scroll-view 要接住手势，面板不能监听 touchmove。 -->
+	<view v-if="show" :class="rootClass" :style="rootStyle">
+		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
+
+		<!-- 外层只留阴影和圆角，内层裁出四角；App 默认 hidden 会把画出盒子的阴影裁掉。 -->
+		<view :class="sheetClass" :style="sheetStyle" @click.stop>
+			<view :class="panelClass" :style="panelStyle">
+				<!-- 标题、关闭叉、prefix、extra 都没有时不渲染头部，正文直接从圆角内侧开始。 -->
+				<view v-if="title.length > 0 || closable || $slots['prefix'] != null || $slots['extra'] != null"
+					class="vx-drawer__head" @touchmove.stop.prevent>
+					<view :class="headerClass">
+						<view class="vx-drawer__heading">
+							<view v-if="$slots['prefix'] != null" class="vx-drawer__prefix">
+								<slot name="prefix"></slot>
+							</view>
+							<text v-if="title.length > 0" class="vx-drawer__title">{{ title }}</text>
+						</view>
+						<view v-if="$slots['extra'] != null" class="vx-drawer__extra">
+							<slot name="extra"></slot>
+						</view>
+						<!-- 关闭叉是独立出口：热区 44，图标 18，和遮罩走同一个 close。 -->
+						<view v-if="closable" class="vx-drawer__close" hover-class="vx-drawer__close--pressed"
+							:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCloseTap">
+							<vx-icon name="close" color="var(--vx-color-text-secondary)" />
+						</view>
+					</view>
+					<view class="vx-drawer__rule"></view>
+				</view>
+
+				<!-- 不监听 touchmove：这一层接住监听后，App 上的 scroll-view 不再滚动。 -->
+				<scroll-view class="vx-drawer__body" direction="vertical">
+					<view :class="contentClass">
+						<slot></slot>
+					</view>
+				</scroll-view>
+
+				<!-- 底栏固定，正文滚动时不跟着走；放 1–2 个动作，不做主导航。 -->
+				<view v-if="$slots['suffix'] != null" class="vx-drawer__foot" @touchmove.stop.prevent>
+					<view class="vx-drawer__rule"></view>
+					<view class="vx-drawer__footer">
+						<slot name="suffix"></slot>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxDrawerPosition, VxDrawerProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxDrawerProps>(), {
+		position: 'right',
+		width: '',
+		height: '',
+		title: '',
+		closable: false,
+		bodyPadded: true,
+		maskClosable: true,
+		maskColor: '',
+		bgColor: '',
+		zIndex: 90
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		close: []
+	}>()
+
+	// 传进来不认识的方向落回 right，class 拼出来才是合法的。
+	const placement = computed((): VxDrawerPosition => {
+		const value = props.position
+		if (value === 'left' || value === 'top' || value === 'bottom') return value
+		return 'right'
+	})
+
+	// class 顺序：基础 → 方向。样式表顺序与此一致。
+	const rootClass = computed((): string => {
+		return `vx-drawer vx-drawer--${placement.value}`
+	})
+
+	const sheetClass = computed((): string => {
+		return `vx-drawer__sheet vx-drawer__sheet--${placement.value}`
+	})
+
+	const panelClass = computed((): string => {
+		return `vx-drawer__panel vx-drawer__panel--${placement.value}`
+	})
+
+	// 有关闭叉时右侧只留 4，44 的热区贴住面板右边；没有时回到正常内边距。
+	const headerClass = computed((): string => {
+		if (props.closable) return 'vx-drawer__header'
+		return 'vx-drawer__header vx-drawer__header--plain'
+	})
+
+	const contentClass = computed((): string => {
+		if (props.bodyPadded) return 'vx-drawer__content'
+		return 'vx-drawer__content vx-drawer__content--flush'
+	})
+
+	// 不可关闭的遮罩不是按钮，Web 上不给指针。
+	const maskClass = computed((): string => {
+		return props.maskClosable ? 'vx-drawer__mask vx-drawer__mask--closable' : 'vx-drawer__mask'
+	})
+
+	const rootStyle = computed((): string => {
+		return `z-index: ${props.zIndex};`
+	})
+
+	// 只覆盖当前方向那一条边；另一条边的默认尺寸在样式表里。
+	const sheetStyle = computed((): string => {
+		if ((placement.value === 'left' || placement.value === 'right') && props.width.length > 0) {
+			return `width: ${props.width};`
+		}
+		if ((placement.value === 'top' || placement.value === 'bottom') && props.height.length > 0) {
+			return `height: ${props.height};`
+		}
+		return ''
+	})
+
+	const panelStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	const maskStyle = computed((): string => {
+		if (props.maskColor.length === 0) return ''
+		return `background-color: ${props.maskColor};`
+	})
+
+	const hide = () => {
+		if (!show.value) return
+		show.value = false
+	}
+
+	// 点遮罩和点关闭叉走同一个出口：先收起再抛 close，父级在事件里改 show 也不会被覆盖。
+	const onMaskTap = () => {
+		if (!props.maskClosable || !show.value) return
+		hide()
+		emit('close')
+	}
+
+	const onCloseTap = () => {
+		if (!props.closable || !show.value) return
+		hide()
+		emit('close')
+	}
+
+	const open = () => {
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 close；close 只代表用户关闭。
+	const close = () => {
+		hide()
+	}
+
+	defineExpose({
+		open,
+		close
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层铺满页面，主轴上端贴边或下端贴边。层级写在行内，默认 90。
+	   宽高再写一遍：只靠四边定位时，子项百分比高度在 App 上会落成 auto。
+	   App 默认 overflow 是 hidden，面板阴影画出这层会被裁掉，需要 visible。
+	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-drawer {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	/* 左右抽屉横排贴边，上下抽屉纵排贴边。交叉轴的 100% 写在 sheet 上。 */
+	.vx-drawer--left {
+		flex-direction: row;
+		justify-content: flex-start;
+	}
+
+	.vx-drawer--right {
+		flex-direction: row;
+		justify-content: flex-end;
+	}
+
+	.vx-drawer--top {
+		flex-direction: column;
+		justify-content: flex-start;
+	}
+
+	.vx-drawer--bottom {
+		flex-direction: column;
+		justify-content: flex-end;
+	}
+
+	/* 遮罩垫在面板下面，只压页面，不压面板。 */
+	.vx-drawer__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+	}
+
+	/* 外层只负责尺寸、阴影和内侧圆角；内层裁底色，避免 overflow 把阴影一起裁掉。
+	   交叉轴写 100%，正文的 scroll-view 才有确定高度。
+	   overflow 是 visible，最小尺寸默认跟内容走；压成 0，长文才不会把面板撑出屏幕。
+	   主轴保留压缩：App 的 max-width 不支持百分比，宽或高大于屏幕时靠压缩收到这一层里。
+	   和操作菜单不同，这里不能写 flex-shrink: 0，否则传入的 120% 不会缩回屏幕。
+	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-drawer__sheet {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 1;
+		align-self: stretch;
+		box-sizing: border-box;
+		min-width: 0;
+		min-height: 0;
+		box-shadow: var(--vx-shadow-lg);
+		overflow: visible;
+	}
+
+	/* 贴住屏幕的一侧不圆角，朝向页面的两角用 lg；宽度和高度分别取令牌。 */
+	.vx-drawer__sheet--left {
+		width: var(--vx-drawer-width);
+		height: 100%;
+		border-top-right-radius: var(--vx-radius-lg);
+		border-bottom-right-radius: var(--vx-radius-lg);
+	}
+
+	.vx-drawer__sheet--right {
+		width: var(--vx-drawer-width);
+		height: 100%;
+		border-top-left-radius: var(--vx-radius-lg);
+		border-bottom-left-radius: var(--vx-radius-lg);
+	}
+
+	.vx-drawer__sheet--top {
+		width: 100%;
+		height: var(--vx-drawer-height);
+		border-bottom-left-radius: var(--vx-radius-lg);
+		border-bottom-right-radius: var(--vx-radius-lg);
+	}
+
+	.vx-drawer__sheet--bottom {
+		width: 100%;
+		height: var(--vx-drawer-height);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+	}
+
+	/* 内层填满外层，四角和阴影层一致，轮廓才重合；底色和安全区都在这一层。
+	   最小高度写 0：App 不按 overflow 把最小高度收成 0，正文超高会把这一层撑开。 */
+	.vx-drawer__panel {
+		flex-direction: column;
+		flex: 1;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		min-width: 0;
+		min-height: 0;
+		background-color: var(--vx-color-surface);
+		overflow: hidden;
+	}
+
+	.vx-drawer__panel--left {
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		border-top-right-radius: var(--vx-radius-lg);
+		border-bottom-right-radius: var(--vx-radius-lg);
+	}
+
+	.vx-drawer__panel--right {
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-bottom-left-radius: var(--vx-radius-lg);
+	}
+
+	.vx-drawer__panel--top {
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		border-bottom-left-radius: var(--vx-radius-lg);
+		border-bottom-right-radius: var(--vx-radius-lg);
+	}
+
+	.vx-drawer__panel--bottom {
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		border-top-left-radius: var(--vx-radius-lg);
+		border-top-right-radius: var(--vx-radius-lg);
+	}
+
+	/* 头部和底栏整块不收缩，分割线跟着自己那一行；正文滚动不带动它们。 */
+	.vx-drawer__head,
+	.vx-drawer__foot {
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 100%;
+	}
+
+	/* 头部沿用列表行 md 的 52：标题单行省略，右侧留 4 给 44 的关闭叉。 */
+	.vx-drawer__header {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--vx-list-height-md);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-xs);
+	}
+
+	.vx-drawer__header--plain {
+		padding-right: var(--vx-space-lg);
+	}
+
+	/* 标题占满中间，右侧的 extra 和关闭叉都压到行尾；没有标题时这层只负责把右侧推过去。
+	   Web 默认 overflow 是 visible，长标题裁在这一层，不盖住右侧。 */
+	.vx-drawer__heading {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.vx-drawer__prefix {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	/* 占满 prefix 剩下的宽度后再省略。不能写 width: 100%，否则会盖住前面的 prefix。
+	   App 默认 keep、Web 默认 pre-line，标题固定单行；换行交给正文。 */
+	.vx-drawer__title {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.vx-drawer__extra {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		margin-left: var(--vx-space-sm);
+	}
+
+	/* 关闭叉 44×44，和列表行的最小热区同高；图标 18 居中。 */
+	.vx-drawer__close {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-list-height-sm);
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-drawer__close--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 头部和底栏各用一条 1px divider；线在文档流里，占 1px。 */
+	.vx-drawer__rule {
+		flex-shrink: 0;
+		width: 100%;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	/* 正文是唯一的滚动区：剩余高度都给 body，头部和底栏保持不动。
+	   height: 0 先把 flex 基准压成 0，App 的 scroll-view 才会按分配到的空间滚。 */
+	.vx-drawer__body {
+		flex: 1;
+		width: 100%;
+		height: 0;
+		min-height: 0;
+	}
+
+	/* 默认四边 16；列表、图片要贴边时传 bodyPadded=false，内容自己补左右留白。 */
+	.vx-drawer__content {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-lg);
+	}
+
+	.vx-drawer__content--flush {
+		padding: 0;
+	}
+
+	/* 底栏固定在面板底部，上 12、左右 16；动作由业务排，组件只给一条边界。 */
+	.vx-drawer__footer {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-md) var(--vx-space-lg);
+	}
+
+	/* 5.26 的 App 端没有 CSS 关键帧，淡入和滑入只在 Web 生效；
+	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   定位层关掉浏览器默认手势，页面在抽屉打开期间不跟着滚；正文改回纵向滑动。 */
+	/* #ifdef WEB */
+	.vx-drawer {
+		touch-action: none;
+	}
+
+	.vx-drawer__mask {
+		animation-name: vx-drawer-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-drawer__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-drawer__close {
+		cursor: pointer;
+	}
+
+	/* pan-y 盖过定位层继承来的 none，正文才能滚。滚到底不把页面一起带走。 */
+	.vx-drawer__body {
+		overscroll-behavior: contain;
+		touch-action: pan-y;
+	}
+
+	.vx-drawer__sheet--left {
+		animation-name: vx-drawer-in-left;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-drawer__sheet--right {
+		animation-name: vx-drawer-in-right;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-drawer__sheet--top {
+		animation-name: vx-drawer-in-top;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-drawer__sheet--bottom {
+		animation-name: vx-drawer-in-bottom;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-drawer-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-drawer-in-left {
+		from {
+			transform: translateX(-100%);
+		}
+
+		to {
+			transform: translateX(0);
+		}
+	}
+
+	@keyframes vx-drawer-in-right {
+		from {
+			transform: translateX(100%);
+		}
+
+		to {
+			transform: translateX(0);
+		}
+	}
+
+	@keyframes vx-drawer-in-top {
+		from {
+			transform: translateY(-100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes vx-drawer-in-bottom {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
+</style>

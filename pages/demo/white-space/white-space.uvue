@@ -1,0 +1,590 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-white-space</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="arrow-down" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">上下留白</text>
+								<text class="demo-hero__title demo-hero__title--accent">6 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">只做纵向间隔：三档间距、自定义高度，和页面节奏一起排。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-white-space</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">默认 md 留出 12，页面上只剩一段空白。</text>
+						</view>
+					</view>
+					<view class="demo-ws-stage">
+						<view class="demo-ws-panel">
+							<text class="demo-ws-panel__eyebrow">SECTION 01</text>
+							<text class="demo-ws-panel__title">上一段内容</text>
+							<text class="demo-ws-panel__body">留白没有底色、描边和阴影，看起来就是页面本身。</text>
+						</view>
+						<vx-white-space />
+						<view class="demo-ws-panel demo-ws-panel--soft">
+							<text class="demo-ws-panel__eyebrow">SECTION 02</text>
+							<text class="demo-ws-panel__title">下一段内容</text>
+							<text class="demo-ws-panel__body">两段之间只留 12，标题和正文的层级不变。</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-ws-hint">宽度跟随父级，纵向不收缩；放在纵向布局里，不要夹在并排元素之间。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">三档尺寸</text>
+							<text class="demo-section__desc">sm / md / lg 对应 8 / 12 / 16，直接取间距令牌。</text>
+						</view>
+					</view>
+					<view class="demo-ws-scale">
+						<view class="demo-ws-scale__row">
+							<view class="demo-ws-scale__copy">
+								<text class="demo-ws-scale__name">sm</text>
+								<text class="demo-ws-scale__meta">8px</text>
+							</view>
+							<view class="demo-ws-scale__track">
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">上一段</text>
+								</view>
+								<vx-white-space size="sm" />
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">下一段</text>
+								</view>
+							</view>
+						</view>
+						<view class="demo-ws-scale__row">
+							<view class="demo-ws-scale__copy">
+								<text class="demo-ws-scale__name">md</text>
+								<text class="demo-ws-scale__meta">12px</text>
+							</view>
+							<view class="demo-ws-scale__track">
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">上一段</text>
+								</view>
+								<vx-white-space />
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">下一段</text>
+								</view>
+							</view>
+						</view>
+						<view class="demo-ws-scale__row demo-ws-scale__row--last">
+							<view class="demo-ws-scale__copy">
+								<text class="demo-ws-scale__name">lg</text>
+								<text class="demo-ws-scale__meta">16px</text>
+							</view>
+							<view class="demo-ws-scale__track">
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">上一段</text>
+								</view>
+								<vx-white-space size="lg" />
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">下一段</text>
+								</view>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-ws-hint">同一层级用同一档；需要 24 时不要叠两个 md，直接用自定义高度。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义高度</text>
+							<text class="demo-section__desc">height 传带单位的值时盖过 size，px、rpx 和 var() 都可以。</text>
+						</view>
+					</view>
+					<view class="demo-ws-scale">
+						<view class="demo-ws-scale__row">
+							<view class="demo-ws-scale__copy">
+								<text class="demo-ws-scale__name">24px</text>
+								<text class="demo-ws-scale__meta">区块</text>
+							</view>
+							<view class="demo-ws-scale__track">
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">区块 A</text>
+								</view>
+								<vx-white-space height="24px" />
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">区块 B</text>
+								</view>
+							</view>
+						</view>
+						<view class="demo-ws-scale__row">
+							<view class="demo-ws-scale__copy">
+								<text class="demo-ws-scale__name">32px</text>
+								<text class="demo-ws-scale__meta">章节</text>
+							</view>
+							<view class="demo-ws-scale__track">
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">章节 A</text>
+								</view>
+								<vx-white-space size="sm" height="32px" />
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">章节 B</text>
+								</view>
+							</view>
+						</view>
+						<view class="demo-ws-scale__row demo-ws-scale__row--last">
+							<view class="demo-ws-scale__copy">
+								<text class="demo-ws-scale__name">64rpx</text>
+								<text class="demo-ws-scale__meta">随屏宽</text>
+							</view>
+							<view class="demo-ws-scale__track">
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">屏宽留白 A</text>
+								</view>
+								<vx-white-space height="64rpx" />
+								<view class="demo-ws-bar">
+									<text class="demo-ws-bar__text">屏宽留白 B</text>
+								</view>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-ws-hint">固定间距用 px；只有确实要随屏宽变化时才用 rpx。不写单位时回落到 size 档位。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">页面节奏</text>
+							<text class="demo-section__desc">标题、正文、标签和操作之间用 8 / 12 / 16 / 24 排。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-ws-article">
+						<text class="demo-ws-article__eyebrow">PRODUCT NOTE</text>
+						<vx-white-space size="sm" />
+						<text class="demo-ws-article__title">把留白写进页面节奏</text>
+						<vx-white-space size="sm" />
+						<text class="demo-ws-article__body">标题和正文之间留 8，正文和标签之间留 12，标签和操作之间留 16。区块之间再由 24 接管，页面就不会忽松忽紧。</text>
+						<vx-white-space />
+						<view class="demo-ws-article__tags">
+							<view class="demo-ws-article__tag">
+								<vx-tag size="sm" type="primary" variant="soft" text="布局" />
+							</view>
+							<view class="demo-ws-article__tag demo-ws-article__tag--last">
+								<vx-tag size="sm" type="default" variant="soft" text="间距" />
+							</view>
+						</view>
+						<vx-white-space size="lg" />
+						<vx-button type="primary" text="查看全部" />
+						<vx-white-space height="24px" />
+						<view class="demo-ws-article__footer">
+							<text class="demo-ws-article__footer-text">下一块内容从 24 之后开始。</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-ws-hint">留白负责间距，标题和正文负责层级；不要让每个块都靠 margin 自己排。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">背景</text>
+							<text class="demo-section__desc">bgColor 只给留白本身铺色；要分割线时仍用 border 或 divider。</text>
+						</view>
+					</view>
+					<view class="demo-ws-stage">
+						<view class="demo-ws-band">
+							<view class="demo-ws-band__head">
+								<text class="demo-ws-band__name">primary-soft</text>
+								<text class="demo-ws-band__meta">height 8px</text>
+							</view>
+							<vx-white-space height="8px" bg-color="var(--vx-color-primary-soft)" />
+						</view>
+						<view class="demo-ws-band">
+							<view class="demo-ws-band__head">
+								<text class="demo-ws-band__name">default-soft</text>
+								<text class="demo-ws-band__meta">height 12px</text>
+							</view>
+							<vx-white-space height="12px" bg-color="var(--vx-color-default-soft)" />
+						</view>
+						<view class="demo-ws-band demo-ws-band--last">
+							<view class="demo-ws-band__head">
+								<text class="demo-ws-band__name">#ede7ff</text>
+								<text class="demo-ws-band__meta">height 16px</text>
+							</view>
+							<vx-white-space height="16px" bg-color="#ede7ff" />
+						</view>
+					</view>
+					<text class="demo-hint demo-ws-hint">自定义颜色是字面值；跟主题时传 var(--vx-color-*)。不要拿它表达状态，也不要代替分割线。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">左右交给 wing-blank，上下交给 white-space，同一个方向只留一次。</text>
+						</view>
+					</view>
+					<vx-section title="页面区块" description="标题栏不包内容，间距由下面的留白排。" marker />
+					<vx-white-space size="md" />
+					<vx-wing-blank size="lg">
+						<vx-card title="组合卡片" meta="0.36.0"
+							content="左右由 wing-blank 收进，上下由 white-space 分开。"
+							footer="同一个方向只留一次，嵌套时数清楚边距。" />
+					</vx-wing-blank>
+					<vx-white-space height="24px" />
+					<view class="demo-ws-compose">
+						<text class="demo-ws-compose__title">什么时候用哪一个</text>
+						<vx-white-space size="sm" />
+						<text class="demo-ws-compose__body">只差纵向用 white-space；只差横向用 wing-blank；两个方向都要收时先放 wing-blank，再在内容里放 white-space。</text>
+					</view>
+					<text class="demo-hint demo-ws-hint">两个组件都不画外框、不加外部间距；卡片、描边和底色仍由 vx-card 或页面容器提供。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/section/section'
+	const nextPath: string = '/pages/demo/wing-blank/wing-blank'
+	const prevName = '标题栏'
+	const nextName = '左右留白'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 留白本身透明，演示用带描边的底板把间距框出来。 */
+	.demo-ws-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-ws-panel {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-lg);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-ws-panel--soft {
+		border-color: transparent;
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.demo-ws-panel__eyebrow {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		letter-spacing: 1px;
+		color: var(--vx-color-primary);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-ws-panel__title {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-ws-panel__body {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 三档和自定义高度共用一套刻度：左标签、右轨道。 */
+	.demo-ws-scale {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.demo-ws-scale__row {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.demo-ws-scale__row--last {
+		margin-bottom: 0;
+	}
+
+	.demo-ws-scale__copy {
+		flex-direction: column;
+		flex-shrink: 0;
+		width: 64px;
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-ws-scale__name {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-ws-scale__meta {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* flex 基准是 0，内边距要算进这一份宽度；content-box 会把轨道撑出这一行。 */
+	.demo-ws-scale__track {
+		box-sizing: border-box;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-bg);
+	}
+
+	/* 宽度 100% 再加描边，content-box 会溢出轨道。不写死高度，行高 20 加描边才裁不到字。 */
+	.demo-ws-bar {
+		box-sizing: border-box;
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+		padding-left: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-ws-bar__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 页面节奏：一张真实卡片内部的纵向排布。 */
+	.demo-ws-article {
+		width: 100%;
+	}
+
+	.demo-ws-article__eyebrow {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		letter-spacing: 1px;
+		color: var(--vx-color-primary);
+	}
+
+	.demo-ws-article__title {
+		font-size: var(--vx-font-xl);
+		line-height: var(--vx-line-xl);
+		font-weight: var(--vx-weight-bold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-ws-article__body {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-ws-article__tags {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 标签自带 align-self: flex-start，外面包一层对齐行高并留 8。 */
+	.demo-ws-article__tag {
+		flex-direction: row;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.demo-ws-article__tag--last {
+		margin-right: 0;
+	}
+
+	.demo-ws-article__footer {
+		padding-top: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-border);
+	}
+
+	.demo-ws-article__footer-text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 背景色带：留白本身透明，传 bgColor 后才成为一条平的色块。 */
+	.demo-ws-band {
+		width: 100%;
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-ws-band--last {
+		margin-bottom: 0;
+	}
+
+	.demo-ws-band__head {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-ws-band__name {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-ws-band__meta {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-ws-compose {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.demo-ws-compose__title {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-ws-compose__body {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-ws-hint {
+		margin-top: var(--vx-space-sm);
+	}
+</style>

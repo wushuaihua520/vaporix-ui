@@ -1,0 +1,339 @@
+<template>
+	<!-- 格子只负责内容、宽高和点击，外框和四角裁切交给 vx-grid。 -->
+	<!-- 点击停在格子上，外层不会再收到同一次点击。 -->
+	<view :class="rootClass" :style="rootStyle" :hover-class="hoverClass"
+		:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick">
+		<slot>
+			<!-- icon 插槽优先，图片次之，最后才是字体图标。 -->
+			<view v-if="$slots['icon'] != null" :class="mediaClass">
+				<slot name="icon"></slot>
+			</view>
+			<view v-else-if="image.length > 0" :class="imageClass">
+				<image class="vx-grid-item__image" :src="image" mode="aspectFit" />
+			</view>
+			<view v-else-if="hasIcon" :class="mediaClass">
+				<vx-icon :name="glyphName" :size="iconSize" :type="type" :variant="iconVariant"
+					:color="iconColor" />
+			</view>
+
+			<text v-if="title.length > 0" :class="titleClass" :style="titleStyle">{{ title }}</text>
+			<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
+		</slot>
+
+		<!-- 角标叠在右上角，不占内容高度；放徽章、短标签或状态。 -->
+		<view v-if="$slots['extra'] != null" class="vx-grid-item__extra">
+			<slot name="extra"></slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxGridItemProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VxIconName } from '../../libs/icons/codepoints'
+
+	const props = withDefaults(defineProps<VxGridItemProps>(), {
+		columns: 3,
+		index: 0,
+		title: '',
+		description: '',
+		image: '',
+		iconVariant: 'regular',
+		type: 'default',
+		size: 'md',
+		divider: true,
+		clickable: true,
+		disabled: false,
+		bgColor: '',
+		color: ''
+	})
+
+	const emit = defineEmits<{
+		click: []
+	}>()
+
+	const hasIcon = computed((): boolean => props.icon != null && props.icon.length > 0)
+
+	// 图标没传时给一个合法名字，模板只在 hasIcon 时渲染。
+	const glyphName = computed((): VxIconName => {
+		return props.icon != null ? props.icon : 'grid-2x2'
+	})
+
+	// 列数只接受 2–5，其它值按默认 3；序号小于 0 按 0。
+	// class 顺序：基础 → 尺寸 → 列数 → 分隔线 → 状态。默认三列不挂列数 class。
+	// 和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		const roundedColumns = Math.round(props.columns)
+		const columns = roundedColumns >= 2 && roundedColumns <= 5 ? roundedColumns : 3
+		const roundedIndex = Math.round(props.index)
+		const index = roundedIndex > 0 ? roundedIndex : 0
+		const row = Math.floor(index / columns)
+		const column = index % columns
+
+		let name = 'vx-grid-item'
+		if (props.size !== 'md') name += ` vx-grid-item--${props.size}`
+		if (columns !== 3) name += ` vx-grid-item--cols-${columns}`
+		if (props.divider && row > 0) name += ' vx-grid-item--lined-top'
+		if (props.divider && column > 0) name += ' vx-grid-item--lined-left'
+		if (props.disabled) name += ' vx-grid-item--disabled'
+		else if (props.clickable) name += ' vx-grid-item--clickable'
+		return name
+	})
+
+	// 自定义底色是字面值，只放在这一层；不提供明暗推导。
+	const rootStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	// 图标和文案都有时才留间距；纯图标格子保持居中。
+	const mediaClass = computed((): string => {
+		let name = 'vx-grid-item__media'
+		if (props.title.length === 0 && props.description.length === 0) return name
+		name += props.size === 'lg' ? ' vx-grid-item__media--offset-lg' : ' vx-grid-item__media--offset'
+		return name
+	})
+
+	// 方框和间距挂在同一层，避免再套一层 view。class 顺序跟样式表一致。
+	const imageClass = computed((): string => {
+		let name = `${mediaClass.value} vx-grid-item__frame`
+		if (props.size !== 'md') name += ` vx-grid-item__frame--${props.size}`
+		if (props.disabled) name += ' vx-grid-item__frame--disabled'
+		return name
+	})
+
+	const titleClass = computed((): string => {
+		let name = 'vx-grid-item__title'
+		if (props.size !== 'md') name += ` vx-grid-item__title--${props.size}`
+		if (props.disabled) name += ' vx-grid-item__title--disabled'
+		return name
+	})
+
+	const descriptionClass = computed((): string => {
+		let name = 'vx-grid-item__desc'
+		if (props.title.length > 0) name += ' vx-grid-item__desc--offset'
+		if (props.disabled) name += ' vx-grid-item__desc--disabled'
+		return name
+	})
+
+	// 图标比格子小一档：sm 用 18，md / lg 用 22。
+	const iconSize = computed((): 'md' | 'lg' => {
+		return props.size === 'sm' ? 'md' : 'lg'
+	})
+
+	// vx-icon 不继承父级颜色；自定义色优先，默认图标用次要灰，语义色交给 type，禁用单独传灰。
+	const iconColor = computed((): string => {
+		if (props.disabled) return 'var(--vx-color-disabled-text)'
+		if (props.color.length > 0) return props.color
+		if (props.type === 'default') return 'var(--vx-color-text-secondary)'
+		return ''
+	})
+
+	// 自定义前景只改主文案；禁用时清空内联色，让禁用 class 生效。
+	const titleStyle = computed((): string => {
+		if (props.disabled || props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	// 自定义底色用整体透明度，避免 surface-pressed 和内联底色互相盖。
+	const hoverClass = computed((): string => {
+		if (props.disabled || !props.clickable) return 'none'
+		if (props.bgColor.length > 0) return 'vx-grid-item--pressed-fade'
+		return 'vx-grid-item--pressed'
+	})
+
+	const onClick = () => {
+		if (props.disabled || !props.clickable) return
+		emit('click')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 默认三列，其它列数靠后面的 class 盖掉宽度。外沿和圆角交给 vx-grid。
+	   上、左两条边留给分隔线；第一行、第一列不加边框宽度，避免和外框叠成两条。
+	   Web 默认 content-box，1px 内部线要算进百分比，否则列宽相加会把最后一格挤到下一行。
+	   min-width 压成 0：单行标题不可断行，不压会把格子撑过列宽。flex-shrink 保持 0，末行不缩也不拉。
+	   最小高度是下限。overflow 只裁超出列宽的内容。 */
+	.vx-grid-item {
+		position: relative;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		overflow: hidden;
+		width: 33.3333%;
+		min-width: 0;
+		min-height: var(--vx-grid-height-md);
+		padding: var(--vx-space-md);
+		border-width: 0;
+		border-style: solid;
+		border-color: var(--vx-color-divider);
+	}
+
+	.vx-grid-item--sm {
+		min-height: var(--vx-grid-height-sm);
+		padding: var(--vx-space-sm);
+	}
+
+	.vx-grid-item--lg {
+		min-height: var(--vx-grid-height-lg);
+		padding: var(--vx-space-lg);
+	}
+
+	.vx-grid-item--cols-2 {
+		width: 50%;
+	}
+
+	.vx-grid-item--cols-4 {
+		width: 25%;
+	}
+
+	.vx-grid-item--cols-5 {
+		width: 20%;
+	}
+
+	/* 只加上、左两条内部线；外框由网格自己画。 */
+	.vx-grid-item--lined-top {
+		border-top-width: var(--vx-border-width);
+	}
+
+	.vx-grid-item--lined-left {
+		border-left-width: var(--vx-border-width);
+	}
+
+	/* 按下态是这一层唯一的 background-color，不会被透明底盖掉。 */
+	.vx-grid-item--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	/* 自定义底色不能换 surface-pressed，改用整体透明度给按下反馈。 */
+	.vx-grid-item--pressed-fade {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 图标和 icon 插槽用这一层；图片再加方框。和文案的间距写在这里。 */
+	.vx-grid-item__media {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.vx-grid-item__media--offset {
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.vx-grid-item__media--offset-lg {
+		margin-bottom: var(--vx-space-md);
+	}
+
+	/* 圆角写在方框上，图片铺满。App 上图片自己的圆角裁不住。
+	   sm 用 sm 圆角，md / lg 保持 md。
+	   align-items 盖过 media 的居中，图片才按方框铺满。 */
+	.vx-grid-item__frame {
+		flex-shrink: 0;
+		align-items: stretch;
+		overflow: hidden;
+		width: var(--vx-grid-media-md);
+		height: var(--vx-grid-media-md);
+		border-radius: var(--vx-radius-md);
+	}
+
+	.vx-grid-item__frame--sm {
+		width: var(--vx-grid-media-sm);
+		height: var(--vx-grid-media-sm);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-grid-item__frame--lg {
+		width: var(--vx-grid-media-lg);
+		height: var(--vx-grid-media-lg);
+	}
+
+	/* 图片不能改色，禁用时压暗。 */
+	.vx-grid-item__frame--disabled {
+		opacity: 0.4;
+	}
+
+	.vx-grid-item__image {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 格子居中，文案单独拉满宽度，省略和换行才有边界。
+	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
+	.vx-grid-item__title,
+	.vx-grid-item__desc {
+		flex-shrink: 0;
+		align-self: stretch;
+		width: 100%;
+		min-width: 0;
+		text-align: center;
+	}
+
+	.vx-grid-item__title {
+		overflow: hidden;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.vx-grid-item__title--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-grid-item__title--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-grid-item__title--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 说明固定 13 / 20。App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。 */
+	.vx-grid-item__desc {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: normal;
+	}
+
+	.vx-grid-item__desc--offset {
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-grid-item__desc--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
+	/* 角标贴右上角，不改变内容高度；插槽内容自己带颜色和字号。 */
+	.vx-grid-item__extra {
+		position: absolute;
+		top: var(--vx-space-sm);
+		right: var(--vx-space-sm);
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* #ifdef WEB */
+	.vx-grid-item--clickable {
+		cursor: pointer;
+	}
+
+	.vx-grid-item--disabled {
+		cursor: not-allowed;
+	}
+	/* #endif */
+</style>
+

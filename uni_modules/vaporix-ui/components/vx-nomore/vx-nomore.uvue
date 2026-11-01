@@ -1,0 +1,119 @@
+<template>
+	<view :class="rootClass">
+		<view v-if="line" class="vx-nomore__line" :style="lineStyle"></view>
+		<view v-if="hasMarker" :class="markerClass">
+			<view v-if="dot" class="vx-nomore__dot" :style="dotStyle"></view>
+			<text v-else :class="textClass" :style="textStyle">{{ text }}</text>
+		</view>
+		<view v-if="line" class="vx-nomore__line" :style="lineStyle"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxNomoreProps } from './props'
+
+	const props = withDefaults(defineProps<VxNomoreProps>(), {
+		text: '没有更多了',
+		dot: false,
+		size: 'md',
+		line: true,
+		color: '',
+		lineColor: ''
+	})
+
+	const hasMarker = computed((): boolean => {
+		return props.dot || props.text.length > 0
+	})
+
+	// 没有文案、圆点和线时不留上下空白，避免误传成一条占位。
+	const rootClass = computed((): string => {
+		return !props.line && !hasMarker.value ? 'vx-nomore vx-nomore--empty' : 'vx-nomore'
+	})
+
+	// sm 与 md 都是 13 / 20，只有 lg 跟到 15 / 22。和同尺寸的 vx-loadmore 才能同高。
+	const markerClass = computed((): string => {
+		return props.size === 'lg' ? 'vx-nomore__marker vx-nomore__marker--lg' : 'vx-nomore__marker'
+	})
+
+	const textClass = computed((): string => {
+		return props.size === 'lg' ? 'vx-nomore__text vx-nomore__text--lg' : 'vx-nomore__text'
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const dotStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `background-color: ${props.color};`
+	})
+
+	const lineStyle = computed((): string => {
+		if (props.lineColor.length === 0) return ''
+		return `background-color: ${props.lineColor};`
+	})
+</script>
+
+<style>
+	/* 和 vx-loadmore 同一套上下留白；文案、圆点都落在一条水平线上。 */
+	.vx-nomore {
+		box-sizing: border-box;
+		width: 100%;
+		align-self: stretch;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding-top: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+	}
+
+	.vx-nomore--empty {
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+
+	/* 两侧细线各占一半，中间让给文案或圆点；没有文案时两条线自然接成一条。 */
+	.vx-nomore__line {
+		flex: 1;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-divider);
+	}
+
+	.vx-nomore__marker {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		/* 圆点比文案矮，撑到一行文案的高度，带圆点和带文案的收尾才一样高。 */
+		min-height: var(--vx-line-sm);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-nomore__marker--lg {
+		min-height: var(--vx-line-md);
+	}
+
+	.vx-nomore__text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+		/* 收尾文案保持单行，长文案请换短句；折行会把两侧细线挤没。 */
+		white-space: nowrap;
+	}
+
+	.vx-nomore__text--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-nomore__dot {
+		width: var(--vx-nomore-dot);
+		height: var(--vx-nomore-dot);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-disabled-text);
+	}
+</style>

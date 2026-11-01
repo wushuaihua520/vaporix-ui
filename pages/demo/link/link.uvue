@@ -1,0 +1,361 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">基础</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-link</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="link" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">超链接</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">正文里的文字入口：Web 新开标签页，App 和小程序复制链接并提示；电话和邮箱按平台交给系统。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">基础</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-link</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">href 是目标地址；不传 text 时显示 href 本身。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="查看开源仓库" @click="onClick" />
+						<view class="demo-lk-gap">
+							<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link href="" text="空 href 只展示，不响应点按" />
+						</view>
+					</view>
+					<text class="demo-hint">链接是正文级元素：不加内外边距、底色、描边和圆角；空地址只展示，不挂指针，也不抛 click。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">默认 primary；secondary 用于正文里不该抢眼的内联入口。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" text="primary · 品牌色入口" @click="onClick" />
+						<view class="demo-lk-gap">
+							<vx-link block type="secondary" href="https://gitee.com/DonkeySmall/vaporix-ui" text="secondary · 次要内联入口" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block type="success" href="https://gitee.com/DonkeySmall/vaporix-ui" text="success · 已完成" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block type="info" href="https://gitee.com/DonkeySmall/vaporix-ui" text="info · 中性说明" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block type="warning" href="https://gitee.com/DonkeySmall/vaporix-ui" text="warning · 需要留意" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block type="danger" href="https://gitee.com/DonkeySmall/vaporix-ui" text="danger · 风险操作" @click="onClick" />
+						</view>
+					</view>
+					<text class="demo-hint">type 只在链接本身表达状态时用；正文里的普通入口保持 primary 或 secondary。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸与字重</text>
+							<text class="demo-section__desc">三档 13 / 15 / 17，四档字重，默认 medium。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<vx-link block size="sm" href="https://gitee.com/DonkeySmall/vaporix-ui" text="sm · 13 / 20" @click="onClick" />
+						<view class="demo-lk-gap">
+							<vx-link block size="md" href="https://gitee.com/DonkeySmall/vaporix-ui" text="md · 15 / 22，默认档位" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block size="lg" href="https://gitee.com/DonkeySmall/vaporix-ui" text="lg · 17 / 24" @click="onClick" />
+						</view>
+						<view class="demo-lk-divider"></view>
+						<vx-link block weight="regular" href="https://gitee.com/DonkeySmall/vaporix-ui" text="regular 400" @click="onClick" />
+						<view class="demo-lk-gap">
+							<vx-link block weight="medium" href="https://gitee.com/DonkeySmall/vaporix-ui" text="medium 500 · 默认" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block weight="semibold" href="https://gitee.com/DonkeySmall/vaporix-ui" text="semibold 600" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block weight="bold" href="https://gitee.com/DonkeySmall/vaporix-ui" text="bold 700" @click="onClick" />
+						</view>
+					</view>
+					<text class="demo-hint">链接是正文，不借 --vx-font-control-*；同一行的多段链接放进父级 flex 容器，间距由父级给。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">下划线</text>
+							<text class="demo-section__desc">underline 跟随文字色；默认关闭，同一段文字只加一种装饰线。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="不加下划线 · 默认" @click="onClick" />
+						<view class="demo-lk-gap">
+							<vx-link underline href="https://gitee.com/DonkeySmall/vaporix-ui" text="加下划线 · underline" @click="onClick" />
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link underline type="secondary" href="https://gitee.com/DonkeySmall/vaporix-ui" text="次要色加下划线" @click="onClick" />
+						</view>
+					</view>
+					<text class="demo-hint">下划线跟随文字色；改 color 时它一起变，不需要另外传线色。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">打开方式</text>
+							<text class="demo-section__desc">auto 按平台处理，copy 只复制，none 只抛 click 交给业务。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<text class="demo-lk-label">action="auto" · 默认</text>
+						<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" text="Web 新开标签页，App 复制链接" @click="onClick" />
+						<view class="demo-lk-gap">
+							<text class="demo-lk-label">action="copy" · 只复制</text>
+							<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" text="点按复制这个链接" action="copy" @copy="onCopy" />
+						</view>
+						<view class="demo-lk-gap">
+							<text class="demo-lk-label">action="none" · 只抛事件</text>
+							<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" text="交给业务处理，组件不打开也不复制" action="none" @click="onClick" />
+						</view>
+						<view class="demo-lk-divider"></view>
+						<text class="demo-lk-label">tel: 与 mailto:</text>
+						<vx-link href="tel:10086" text="拨号 10086" @click="onClick" />
+						<view class="demo-lk-gap">
+							<vx-link href="mailto:hi@vaporix.dev" text="发邮件 hi@vaporix.dev" @click="onClick" />
+						</view>
+					</view>
+					<text class="demo-hint">App 和小程序不能直接打开外部网页，默认复制并提示；要打开浏览器就 action="none" 接 openSchema 插件。最近一次：{{ lastAction }}。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">插槽</text>
+							<text class="demo-section__desc">默认插槽替换整段文案，prefix / suffix 各放一个图标，和文案留 4px。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" @click="onClick">
+							<template #prefix>
+								<vx-icon name="link-simple" size="sm" color="var(--vx-color-primary)" />
+							</template>
+							<text>前缀图标 · prefix</text>
+						</vx-link>
+						<view class="demo-lk-gap">
+							<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" @click="onClick">
+								<template #suffix>
+									<vx-icon name="external-link" size="sm" color="var(--vx-color-primary)" />
+								</template>
+								<text>外链暗示 · suffix</text>
+							</vx-link>
+						</view>
+						<view class="demo-lk-gap">
+							<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" @click="onClick">
+								<text>默认插槽替换 text 和 href</text>
+							</vx-link>
+						</view>
+					</view>
+					<text class="demo-hint">插槽内容自己带颜色和尺寸，不继承禁用色；需要外链暗示时用 external-link。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">状态与组合</text>
+							<text class="demo-section__desc">禁用转 disabled-text 且不抛事件；下面是一段夹着链接的协议文案。</text>
+						</view>
+					</view>
+					<view class="demo-lk-stage">
+						<vx-link block disabled href="https://gitee.com/DonkeySmall/vaporix-ui" text="已停用 · 不响应点按" @click="onClick" />
+						<view class="demo-lk-divider"></view>
+						<view class="demo-lk-flow">
+							<text class="demo-lk-flow__text">提交即表示同意</text>
+							<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="《服务协议》" @click="onClick" />
+							<text class="demo-lk-flow__text">和</text>
+							<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="《隐私政策》" @click="onClick" />
+							<text class="demo-lk-flow__text">，并授权我们处理订单信息。</text>
+						</view>
+					</view>
+					<text class="demo-hint">可点时点按停在链接上，不触发外层列表行或卡片；静态和禁用链接不拦点击。Web 端不进入 Tab 顺序，键盘入口由外层提供。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 链接演示：点击只记录，打开和复制由组件按平台处理。
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const lastAction = ref('还没有操作')
+
+	const onClick = (href: string) => {
+		lastAction.value = '点击了「' + href + '」'
+	}
+
+	const onCopy = (value: string) => {
+		lastAction.value = '复制了「' + value + '」'
+	}
+
+	const prevPath: string = '/pages/demo/text/text'
+	const nextPath: string = '/pages/demo/number-box/number-box'
+	const prevName = '文本'
+	const nextName = '数字框'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 链接本身不加底色，演示用底板把每一组框出来。 */
+	.demo-lk-stage {
+		box-sizing: border-box;
+		width: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-lk-gap {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-lk-divider {
+		width: 100%;
+		height: 1px;
+		margin-top: var(--vx-space-md);
+		margin-bottom: var(--vx-space-md);
+		background-color: var(--vx-color-divider);
+	}
+
+	.demo-lk-label {
+		margin-bottom: 6px;
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 协议文案：链接和正文在同一行里按基线排。 */
+	.demo-lk-flow {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: baseline;
+	}
+
+	.demo-lk-flow__text {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

@@ -1,0 +1,937 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goApi">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">接口</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">{{ currentModule.name }}</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · JS API</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon :name="currentModule.icon" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">{{ currentModule.name }}</text>
+								<text class="demo-hero__title demo-hero__title--accent">{{ currentModule.en }}</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">{{ currentModule.summary }}</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">{{ currentModule.path }}</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">{{ currentModule.exports.length }} 个重点接口</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">导出</text>
+							<text class="demo-section__desc">从 libs 里直接 import，不需要挂组件。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view v-for="(name, index) in currentModule.exports" :key="name" :class="apiRowClass(index, currentModule.exports.length)">
+							<text class="demo-api-row__value demo-api-row__value--mono">{{ name }}</text>
+							<vx-tag size="sm" variant="soft" type="default" text="export" />
+						</view>
+					</view>
+				</view>
+
+				<!-- 主题 -->
+				<view v-if="moduleKey === 'theme'" class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">原生取值</text>
+							<text class="demo-section__desc">导航栏和窗口背景不读 CSS 变量，这里给出对应色值。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-api-code-card">
+						<view class="demo-code">
+							<text class="demo-code__line demo-code__line--muted">// 和 variables.css 手工对齐</text>
+							<text class="demo-code__line">import { vxNavTheme } from '@/uni_modules/vaporix-ui/libs/theme'</text>
+							<text class="demo-code__line"></text>
+							<text class="demo-code__line">const light = vxNavTheme(false)</text>
+							<text class="demo-code__line">const dark = vxNavTheme(true)</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-api-subtitle">亮色</text>
+						<view class="demo-api-row">
+							<text class="demo-api-row__label">front</text>
+							<view class="demo-api-inline">
+								<view class="demo-api-swatch" :style="swatchStyle(lightTheme.front)"></view>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ lightTheme.front }}</text>
+							</view>
+						</view>
+						<view class="demo-api-row">
+							<text class="demo-api-row__label">navBackground</text>
+							<view class="demo-api-inline">
+								<view class="demo-api-swatch" :style="swatchStyle(lightTheme.navBackground)"></view>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ lightTheme.navBackground }}</text>
+							</view>
+						</view>
+						<view class="demo-api-row demo-api-row--last">
+							<text class="demo-api-row__label">windowBackground</text>
+							<view class="demo-api-inline">
+								<view class="demo-api-swatch" :style="swatchStyle(lightTheme.windowBackground)"></view>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ lightTheme.windowBackground }}</text>
+							</view>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-api-subtitle">暗色</text>
+						<view class="demo-api-row">
+							<text class="demo-api-row__label">front</text>
+							<view class="demo-api-inline">
+								<view class="demo-api-swatch" :style="swatchStyle(darkTheme.front)"></view>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ darkTheme.front }}</text>
+							</view>
+						</view>
+						<view class="demo-api-row">
+							<text class="demo-api-row__label">navBackground</text>
+							<view class="demo-api-inline">
+								<view class="demo-api-swatch" :style="swatchStyle(darkTheme.navBackground)"></view>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ darkTheme.navBackground }}</text>
+							</view>
+						</view>
+						<view class="demo-api-row demo-api-row--last">
+							<text class="demo-api-row__label">windowBackground</text>
+							<view class="demo-api-inline">
+								<view class="demo-api-swatch" :style="swatchStyle(darkTheme.windowBackground)"></view>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ darkTheme.windowBackground }}</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">front 只能是 #000000 或 #ffffff；setNavigationBarColor 不接受其它前景色。</text>
+				</view>
+
+				<!-- 图标 -->
+				<view v-if="moduleKey === 'icons'" class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">搜索与预览</text>
+							<text class="demo-section__desc">core 默认可用；点一个名字复制到剪贴板。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-input v-model="iconKeyword" placeholder="搜索图标名，例如 heart" clearable />
+						<view class="demo-api-chips">
+							<view :class="chipClass(iconVariant === 'regular')" hover-class="demo-catalog-chip--pressed"
+								@click="iconVariant = 'regular'">
+								<text :class="chipTextClass(iconVariant === 'regular')">线性</text>
+							</view>
+							<view :class="chipClass(iconVariant === 'fill')" hover-class="demo-catalog-chip--pressed"
+								@click="iconVariant = 'fill'">
+								<text :class="chipTextClass(iconVariant === 'fill')">实心</text>
+							</view>
+							<view :class="chipClass(showExtend)" hover-class="demo-catalog-chip--pressed"
+								@click="showExtend = !showExtend">
+								<text :class="chipTextClass(showExtend)">{{ extendChipText }}</text>
+							</view>
+						</view>
+						<view v-if="coreIconResults.length > 0" class="demo-api-icon-grid">
+							<view v-for="(name, index) in coreIconResults" :key="name" class="demo-api-icon-cell"
+								hover-class="demo-api-icon-cell--pressed" :hover-stay-time="120"
+								@click="copyIconName(name)">
+								<vx-icon :name="name" :variant="iconVariant" size="lg" />
+								<text class="demo-api-icon-cell__name">{{ name }}</text>
+							</view>
+						</view>
+						<vx-no-data v-else size="sm" icon="search" text="没有匹配的图标" description="换个关键词试试。" />
+						<text class="demo-hint">显示 {{ coreIconResults.length }} / {{ coreIconMatchCount }} 个 core 图标。输入关键词再缩小范围。</text>
+					</view>
+					<view v-if="showExtend" class="demo-card">
+						<text class="demo-api-subtitle">extend 名称 · {{ extendIconResults.length }} 个</text>
+						<view class="demo-api-name-chips">
+							<view v-for="(name, index) in extendIconResults" :key="name" class="demo-api-name-chip">
+								<text class="demo-api-name-chip__text">{{ name }}</text>
+							</view>
+						</view>
+						<text class="demo-hint">extend 字形需要先引入 libs/style/icons-extend.css；这里只列名字，不渲染字形。</text>
+					</view>
+				</view>
+
+				<!-- 日期时间 -->
+				<view v-if="moduleKey === 'datetime'" class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">解析与格式化</text>
+							<text class="demo-section__desc">格式串只认 YYYY / MM / DD / HH / mm / ss，其余字符原样保留。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-api-chips">
+							<view :class="chipClass(dtMode === 'datetime')" hover-class="demo-catalog-chip--pressed"
+								@click="dtMode = 'datetime'">
+								<text :class="chipTextClass(dtMode === 'datetime')">日期时间</text>
+							</view>
+							<view :class="chipClass(dtMode === 'date')" hover-class="demo-catalog-chip--pressed"
+								@click="dtMode = 'date'">
+								<text :class="chipTextClass(dtMode === 'date')">日期</text>
+							</view>
+						</view>
+						<view class="demo-field">
+							<vx-input v-model="dtText" label="日期文本" label-width="72px" clearable />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-input v-model="dtPattern" label="格式串" label-width="72px" clearable />
+						</view>
+						<view class="demo-api-rows">
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">年 / 月 / 日</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ dtParsed.year }} / {{ dtParsed.month }} / {{ dtParsed.day }}</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">时 / 分 / 秒</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ dtParsed.hour }} / {{ dtParsed.minute }} / {{ dtParsed.second }}</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">读出的数字</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ dtNumbersText }}</text>
+							</view>
+							<view class="demo-api-row demo-api-row--last">
+								<text class="demo-api-row__label">格式化</text>
+								<text class="demo-api-row__value">{{ dtFormatted }}</text>
+							</view>
+						</view>
+						<text class="demo-hint">缺的字段用 fallback 补齐；演示里固定为 2026-10-26 00:00:00。</text>
+					</view>
+					<view class="demo-card">
+						<text class="demo-api-subtitle">闰年与二月</text>
+						<view v-for="(row, index) in leapRows" :key="row.year" :class="apiRowClass(index, leapRows.length)">
+							<text class="demo-api-row__label">{{ row.year }} 年</text>
+							<text class="demo-api-row__value">{{ row.text }}</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-api-subtitle">步长与年份</text>
+						<view class="demo-api-step-row">
+							<text class="demo-api-row__label">step</text>
+							<vx-number-box v-model="dtStep" :min="1" :max="30" size="sm" />
+						</view>
+						<text class="demo-api-mono-text">vxDatetimeSteps({{ dtStep }}) → {{ dtStepsText }}</text>
+						<text class="demo-api-mono-text">vxDatetimeYears(2024, 2028) → {{ dtYearsText }}</text>
+						<text class="demo-hint">步长会先收成 1–30 的整数；年份列表会夹进 1000–2999。</text>
+					</view>
+				</view>
+
+				<!-- 日历 -->
+				<view v-if="moduleKey === 'calendar'" class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">月份网格</text>
+							<text class="demo-section__desc">42 格固定给满，周日排第一列；点一天写回输入框。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-cal-head">
+							<view class="demo-cal-arrow" hover-class="demo-cal-arrow--pressed" @click="shiftCalendar(-1)">
+								<vx-icon name="chevron-left" size="md" />
+							</view>
+							<text class="demo-cal-title">{{ calTitle }}</text>
+							<view class="demo-cal-arrow" hover-class="demo-cal-arrow--pressed" @click="shiftCalendar(1)">
+								<vx-icon name="chevron-right" size="md" />
+							</view>
+						</view>
+						<view class="demo-cal-week">
+							<view v-for="(label, index) in weekLabels" :key="label" class="demo-cal-week__cell">
+								<text class="demo-cal-week__text">{{ label }}</text>
+							</view>
+						</view>
+						<view class="demo-cal-grid">
+							<view v-for="(cell, index) in calCells" :key="index" class="demo-cal-cell">
+								<view v-if="cell.day > 0" :class="calDayClass(cell.date)"
+									hover-class="demo-cal-day--pressed" :hover-stay-time="120"
+									@click="selectCalendarDay(cell.date)">
+									<text
+										:class="calDayTextClass(cell.date)">{{ cell.day }}</text>
+								</view>
+							</view>
+						</view>
+						<view class="demo-field">
+							<vx-input v-model="calDateText" label="日期" label-width="72px" placeholder="YYYY-MM-DD" clearable />
+						</view>
+						<view class="demo-api-row demo-api-row--last">
+							<text class="demo-api-row__label">解析结果</text>
+							<text class="demo-api-row__value">{{ calParseText }}</text>
+						</view>
+						<text class="demo-hint">vxCalendarParse 读不出三个数或日期越界时返回 null，不猜。</text>
+					</view>
+				</view>
+
+				<!-- 农历 -->
+				<view v-if="moduleKey === 'lunar'" class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">公历转农历</text>
+							<text class="demo-section__desc">只换年月日与日子写法，不算节气、干支和宜忌。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-input v-model="lunarDateText" label="公历日期" label-width="88px" placeholder="YYYY-MM-DD"
+							clearable />
+						<view class="demo-api-chips">
+							<view v-for="(preset, index) in lunarPresets" :key="preset.value" class="demo-catalog-chip"
+								hover-class="demo-catalog-chip--pressed" @click="lunarDateText = preset.value">
+								<text class="demo-catalog-chip__text">{{ preset.label }}</text>
+							</view>
+						</view>
+						<view class="demo-lunar">
+							<text class="demo-lunar__value">{{ lunarText }}</text>
+							<text class="demo-lunar__meta">{{ lunarMeta }}</text>
+						</view>
+						<view class="demo-api-rows">
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">monthText</text>
+								<text class="demo-api-row__value">{{ lunarMonthText }}</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">dayText</text>
+								<text class="demo-api-row__value">{{ lunarDayText }}</text>
+							</view>
+							<view class="demo-api-row demo-api-row--last">
+								<text class="demo-api-row__label">leap</text>
+								<text class="demo-api-row__value">{{ lunarLeapText }}</text>
+							</view>
+						</view>
+						<text class="demo-hint">超出 1900-01-31 到 2100-12-31 返回 null；设备时区不影响结果。</text>
+					</view>
+				</view>
+
+				<!-- 动效与手势 -->
+				<view v-if="moduleKey === 'gesture'" class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">常量与演示</text>
+							<text class="demo-section__desc">组件读不到 CSS 变量，这些像素值与 variables.css 手工保持一致。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-loading size="lg" text="加载旋转 700ms 一圈" />
+						<view class="demo-api-rows">
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">VX_PRESSED_STAY_TIME</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ pressedStayTime }} ms</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">VX_SPIN_DURATION</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ spinDuration }} ms</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">VX_RATE_SIZE</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ rateSizeText }}</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">VX_RATE_GAP</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ rateGap }} px</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">VX_RATE_DRAG_THRESHOLD</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ rateDrag }} px</text>
+							</view>
+							<view class="demo-api-row demo-api-row--last">
+								<text class="demo-api-row__label">VX_RATE_CLICK_GUARD</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ rateGuard }} ms</text>
+							</view>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-api-subtitle">滑动菜单</text>
+						<view class="demo-api-rows">
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">动作默认宽</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ swipeItemWidth }} px</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">extra 默认宽</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ swipeExtraWidth }} px</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">横向接管阈值</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ swipeDrag }} px</text>
+							</view>
+							<view class="demo-api-row">
+								<text class="demo-api-row__label">快速轻扫</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ swipeFlickDistance }} px / {{ swipeFlickTime }} ms</text>
+							</view>
+							<view class="demo-api-row demo-api-row--last">
+								<text class="demo-api-row__label">点击保护</text>
+								<text class="demo-api-row__value demo-api-row__value--mono">{{ swipeGuard }} ms</text>
+							</view>
+						</view>
+						<view class="demo-api-swipe">
+							<vx-swipe-action :actions="gestureSwipeActions" :name="'gesture-demo'"
+								@select="onGestureSwipeSelect">
+								<vx-list-cell title="向左滑，试试 72px 动作" :divider="false" />
+							</vx-swipe-action>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-api-back">
+					<vx-button block type="primary" text="返回接口目录" @click="goApi" />
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">MIT · Vaporix UI</text>
+					<text class="demo-footer__meta">libs · 无页面副作用 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { DEMO_API_MODULES } from '@/pages/api/shared/modules'
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { vxNavTheme } from '@/uni_modules/vaporix-ui/libs/theme'
+	import {
+		VX_ICON_CORE_NAMES,
+		VX_ICON_EXTEND_NAMES
+	} from '@/uni_modules/vaporix-ui/libs/icons/codepoints'
+	import {
+		vxDatetimeParse,
+		vxDatetimeFormat,
+		vxDatetimeDaysInMonth,
+		vxDatetimeIsLeapYear,
+		vxDatetimeNumbers,
+		vxDatetimeSteps,
+		vxDatetimeYears
+	} from '@/uni_modules/vaporix-ui/libs/datetime'
+	import {
+		VX_CALENDAR_WEEK_LABELS,
+		vxCalendarFormat,
+		vxCalendarGrid,
+		vxCalendarMonthText,
+		vxCalendarParse,
+		vxCalendarShiftMonth,
+		vxCalendarWeekText
+	} from '@/uni_modules/vaporix-ui/libs/calendar'
+	import { vxLunarFromSolar } from '@/uni_modules/vaporix-ui/libs/lunar'
+	import { VX_PRESSED_STAY_TIME, VX_SPIN_DURATION } from '@/uni_modules/vaporix-ui/libs/motion'
+	import {
+		VX_RATE_SIZE,
+		VX_RATE_GAP,
+		VX_RATE_DRAG_THRESHOLD,
+		VX_RATE_CLICK_GUARD
+	} from '@/uni_modules/vaporix-ui/libs/rate'
+	import {
+		VX_SWIPE_ACTION_ITEM_WIDTH,
+		VX_SWIPE_ACTION_EXTRA_WIDTH,
+		VX_SWIPE_ACTION_DRAG_THRESHOLD,
+		VX_SWIPE_ACTION_FLICK_DISTANCE,
+		VX_SWIPE_ACTION_FLICK_TIME,
+		VX_SWIPE_ACTION_CLICK_GUARD
+	} from '@/uni_modules/vaporix-ui/libs/swipe-action'
+
+	type ApiModule = {
+		key: string
+		name: string
+		en: string
+		icon: string
+		path: string
+		summary: string
+		exports: string[]
+	}
+
+	type LeapRow = {
+		year: number
+		text: string
+	}
+
+	type LunarPreset = {
+		label: string
+		value: string
+	}
+
+	type DemoDatetimeParts = {
+		year: number
+		month: number
+		day: number
+		hour: number
+		minute: number
+		second: number
+	}
+
+	type GestureSwipeAction = {
+		text: string
+		type: 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+		icon?: string
+	}
+
+	const isDark = demoIsDark
+	const moduleKey = ref('theme')
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const currentModule = computed((): ApiModule => {
+		for (let index = 0; index < DEMO_API_MODULES.length; index++) {
+			if (DEMO_API_MODULES[index].key === moduleKey.value) return DEMO_API_MODULES[index]
+		}
+		return DEMO_API_MODULES[0]
+	})
+
+	const goApi = () => {
+		uni.switchTab({ url: '/pages/api/api' })
+	}
+
+	const apiRowClass = (index: number, total: number): string => {
+		if (index === total - 1) return 'demo-api-row demo-api-row--last'
+		return 'demo-api-row'
+	}
+
+	const swatchStyle = (color: string): string => {
+		return 'background-color:' + color
+	}
+
+	const chipClass = (active: boolean): string => {
+		if (active) return 'demo-catalog-chip demo-catalog-chip--active'
+		return 'demo-catalog-chip'
+	}
+
+	const chipTextClass = (active: boolean): string => {
+		if (active) return 'demo-catalog-chip__text demo-catalog-chip__text--active'
+		return 'demo-catalog-chip__text'
+	}
+
+	/* 主题 */
+	const lightTheme = vxNavTheme(false)
+	const darkTheme = vxNavTheme(true)
+
+	/* 图标 */
+	const iconKeyword = ref('')
+	const iconVariant = ref<'regular' | 'fill'>('regular')
+	const showExtend = ref(false)
+
+	const extendChipText = computed((): string => {
+		if (showExtend.value) return '隐藏 extend'
+		return '显示 extend'
+	})
+
+	const coreIconMatched = computed((): string[] => {
+		const query = iconKeyword.value.trim().toLowerCase()
+		if (query === '') return VX_ICON_CORE_NAMES
+		const matched: string[] = []
+		for (let index = 0; index < VX_ICON_CORE_NAMES.length; index++) {
+			const name = VX_ICON_CORE_NAMES[index]
+			if (name.toLowerCase().indexOf(query) >= 0) matched.push(name)
+		}
+		return matched
+	})
+
+	const coreIconMatchCount = computed((): number => {
+		return coreIconMatched.value.length
+	})
+
+	// 接口页只预览一屏，112 个字形留在图标演示页。
+	const coreIconResults = computed((): string[] => {
+		const matched = coreIconMatched.value
+		const preview: string[] = []
+		const limit = matched.length < 24 ? matched.length : 24
+		for (let index = 0; index < limit; index++) {
+			preview.push(matched[index])
+		}
+		return preview
+	})
+
+	const extendIconResults = computed(() => {
+		const query = iconKeyword.value.trim().toLowerCase()
+		if (query === '') return VX_ICON_EXTEND_NAMES.slice(0, 48)
+		return VX_ICON_EXTEND_NAMES.filter((name) => name.toLowerCase().indexOf(query) >= 0).slice(0, 48)
+	})
+
+	const copyIconName = (name: string) => {
+		uni.setClipboardData({
+			data: name,
+			success: () => {
+				uni.showToast({ title: `已复制 ${name}`, icon: 'none' })
+			}
+		})
+	}
+
+	/* 日期时间 */
+	const dtText = ref('2026-10-26 11:30')
+	const dtPattern = ref('YYYY年MM月DD日 HH:mm')
+	const dtMode = ref<'date' | 'datetime'>('datetime')
+	const dtStep = ref(5)
+	// 缺的字段用这份草稿补齐，演示输出不跟着打开时间变。
+	const dtFallback: DemoDatetimeParts = { year: 2026, month: 10, day: 26, hour: 0, minute: 0, second: 0 }
+
+	const dtParsed = computed(() => {
+		return vxDatetimeParse(dtText.value, dtMode.value, dtFallback)
+	})
+
+	const dtFormatted = computed((): string => {
+		return vxDatetimeFormat(dtParsed.value, dtPattern.value)
+	})
+
+	const dtNumbersText = computed((): string => {
+		const numbers = vxDatetimeNumbers(dtText.value)
+		return numbers.join(' / ')
+	})
+
+	const leapRows: LeapRow[] = [2024, 2025, 2026, 2027].map((year): LeapRow => {
+		const leap = vxDatetimeIsLeapYear(year)
+		const days = vxDatetimeDaysInMonth(year, 2)
+		return { year: year, text: (leap ? '闰年' : '平年') + ' · 二月 ' + days + ' 天' }
+	})
+
+	const dtStepsText = computed((): string => {
+		return vxDatetimeSteps(dtStep.value).join('、')
+	})
+
+	const dtYearsText = computed((): string => {
+		return vxDatetimeYears(2024, 2028).join('、')
+	})
+
+	/* 日历 */
+	const weekLabels = VX_CALENDAR_WEEK_LABELS
+	const calYear = ref(2026)
+	const calMonth = ref(10)
+	const calDateText = ref('2026-10-26')
+
+	const calDayClass = (date: string): string => {
+		if (date === calDateText.value) return 'demo-cal-day demo-cal-day--active'
+		return 'demo-cal-day'
+	}
+
+	const calDayTextClass = (date: string): string => {
+		if (date === calDateText.value) return 'demo-cal-day__text demo-cal-day__text--active'
+		return 'demo-cal-day__text'
+	}
+
+	const calCells = computed(() => {
+		return vxCalendarGrid(calYear.value, calMonth.value)
+	})
+
+	const calTitle = computed((): string => {
+		return vxCalendarMonthText(calYear.value, calMonth.value)
+	})
+
+	const calParseText = computed((): string => {
+		const date = vxCalendarParse(calDateText.value)
+		if (date == null) return '读不出来'
+		const formatted = vxCalendarFormat(date.year, date.month, date.day)
+		const week = vxCalendarWeekText(date.year, date.month, date.day)
+		return formatted + ' · ' + week
+	})
+
+	const shiftCalendar = (delta: number) => {
+		const next = vxCalendarShiftMonth(calYear.value, calMonth.value, delta)
+		calYear.value = next.year
+		calMonth.value = next.month
+	}
+
+	const selectCalendarDay = (date: string) => {
+		if (date === '') return
+		calDateText.value = date
+	}
+
+	/* 农历 */
+	const lunarDateText = ref('2026-10-26')
+	const lunarPresets: LunarPreset[] = [
+		{ label: '起始日', value: '1900-01-31' },
+		{ label: '示例日', value: '2026-10-26' },
+		{ label: '边界日', value: '2100-12-31' }
+	]
+
+	const lunarText = computed((): string => {
+		const date = vxCalendarParse(lunarDateText.value)
+		if (date == null) return '日期格式不对'
+		const lunar = vxLunarFromSolar(date.year, date.month, date.day)
+		if (lunar == null) return '超出可换算范围'
+		return lunar.year + '年 ' + lunar.monthText + lunar.dayText
+	})
+
+	const lunarMeta = computed((): string => {
+		const date = vxCalendarParse(lunarDateText.value)
+		if (date == null) return ''
+		const lunar = vxLunarFromSolar(date.year, date.month, date.day)
+		if (lunar == null) return '1900-01-31 至 2100-12-31'
+		return '农历 ' + lunar.month + ' 月 ' + lunar.day + ' 日' + (lunar.leap ? ' · 闰月' : '')
+	})
+
+	const lunarMonthText = computed((): string => {
+		const date = vxCalendarParse(lunarDateText.value)
+		if (date == null) return '—'
+		const lunar = vxLunarFromSolar(date.year, date.month, date.day)
+		if (lunar == null) return '—'
+		return lunar.monthText
+	})
+
+	const lunarDayText = computed((): string => {
+		const date = vxCalendarParse(lunarDateText.value)
+		if (date == null) return '—'
+		const lunar = vxLunarFromSolar(date.year, date.month, date.day)
+		if (lunar == null) return '—'
+		return lunar.dayText
+	})
+
+	const lunarLeapText = computed((): string => {
+		const date = vxCalendarParse(lunarDateText.value)
+		if (date == null) return '—'
+		const lunar = vxLunarFromSolar(date.year, date.month, date.day)
+		if (lunar == null) return '—'
+		return lunar.leap ? 'true' : 'false'
+	})
+
+	/* 动效与手势 */
+	const pressedStayTime = VX_PRESSED_STAY_TIME
+	const spinDuration = VX_SPIN_DURATION
+	const rateGap = VX_RATE_GAP
+	const rateDrag = VX_RATE_DRAG_THRESHOLD
+	const rateGuard = VX_RATE_CLICK_GUARD
+	const swipeItemWidth = VX_SWIPE_ACTION_ITEM_WIDTH
+	const swipeExtraWidth = VX_SWIPE_ACTION_EXTRA_WIDTH
+	const swipeDrag = VX_SWIPE_ACTION_DRAG_THRESHOLD
+	const swipeFlickDistance = VX_SWIPE_ACTION_FLICK_DISTANCE
+	const swipeFlickTime = VX_SWIPE_ACTION_FLICK_TIME
+	const swipeGuard = VX_SWIPE_ACTION_CLICK_GUARD
+
+	const rateSizeText = VX_RATE_SIZE.sm + ' / ' + VX_RATE_SIZE.md + ' / ' + VX_RATE_SIZE.lg + ' px'
+
+	const gestureSwipeActions: GestureSwipeAction[] = [
+		{ text: '收藏', type: 'primary', icon: 'star' },
+		{ text: '删除', type: 'danger', icon: 'trash' }
+	]
+
+	const onGestureSwipeSelect = (index: number, item: GestureSwipeAction, name: string) => {
+		uni.showToast({ title: '滑动菜单：' + item.text, icon: 'none' })
+	}
+
+	onLoad((options) => {
+		const key = options.getString('module')
+		if (key != null) {
+			let matched = false
+			for (let index = 0; index < DEMO_API_MODULES.length; index++) {
+				if (DEMO_API_MODULES[index].key === key) matched = true
+			}
+			moduleKey.value = matched ? key : 'theme'
+		}
+		uni.setNavigationBarTitle({ title: currentModule.value.name + '接口' })
+	})
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	.demo-api-chips {
+		flex-direction: row;
+		flex-wrap: wrap;
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-api-subtitle {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-api-rows {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-api-step-row {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-bottom: var(--vx-space-sm);
+	}
+
+	.demo-api-mono-text {
+		margin-top: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-family: monospace;
+		font-size: 12px;
+		line-height: 20px;
+	}
+
+	.demo-api-back {
+		margin-top: var(--vx-space-xl);
+	}
+
+	.demo-api-icon-cell--pressed {
+		background-color: var(--vx-color-surface-pressed);
+		border-radius: var(--vx-radius-md);
+	}
+
+	.demo-api-name-chips {
+		flex-direction: row;
+		flex-wrap: wrap;
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-api-name-chip {
+		padding-top: 2px;
+		padding-bottom: 2px;
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-default-soft);
+		margin-right: var(--vx-space-xs);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-api-name-chip__text {
+		color: var(--vx-color-text-secondary);
+		font-family: monospace;
+		font-size: 11px;
+		line-height: 18px;
+	}
+
+	.demo-cal-head {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.demo-cal-arrow {
+		width: 40px;
+		height: 40px;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.demo-cal-arrow--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.demo-cal-title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.demo-cal-week {
+		flex-direction: row;
+	}
+
+	.demo-cal-week__cell {
+		width: 14.28%;
+		height: 32px;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.demo-cal-week__text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-cal-grid {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.demo-cal-cell {
+		width: 14.28%;
+		height: 42px;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.demo-cal-day {
+		width: 36px;
+		height: 36px;
+		align-items: center;
+		justify-content: center;
+		border-radius: 10px;
+	}
+
+	.demo-cal-day--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.demo-cal-day--active {
+		background-color: var(--vx-color-primary);
+	}
+
+	.demo-cal-day__text {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: 20px;
+	}
+
+	.demo-cal-day__text--active {
+		color: var(--vx-color-on-primary);
+	}
+
+	.demo-lunar {
+		align-items: center;
+		padding-top: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-lg);
+	}
+
+	.demo-lunar__value {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-xl);
+		line-height: var(--vx-line-xl);
+		font-weight: var(--vx-weight-bold);
+	}
+
+	.demo-lunar__meta {
+		margin-top: var(--vx-space-xs);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-api-swipe {
+		margin-top: var(--vx-space-md);
+		overflow: hidden;
+		border-radius: var(--vx-radius-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+	}
+</style>

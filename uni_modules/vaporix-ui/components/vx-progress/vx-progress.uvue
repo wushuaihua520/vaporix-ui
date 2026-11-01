@@ -1,0 +1,298 @@
+<template>
+	<!-- 进度条只按 percent 画比例；标签、数值和业务状态放在同一行或外面的卡片里。 -->
+	<view class="vx-progress">
+		<text v-if="hasLabel" :class="labelClass">{{ label }}</text>
+		<view :class="trackClass" :style="trackStyle">
+			<view :class="fillClass" :style="fillStyle"></view>
+		</view>
+		<text v-if="hasText" :class="valueClass" :style="valueStyle">{{ valueText }}</text>
+	</view>
+</template>
+
+<script setup>
+	import { VxProgressProps } from './props'
+	import { VX_PROGRESS_DURATION } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxProgressProps>(), {
+		percent: 0,
+		type: 'primary',
+		size: 'md',
+		shape: 'square',
+		showText: false,
+		label: '',
+		text: '',
+		color: '',
+		bgColor: '',
+		trackColor: '',
+		height: '',
+		duration: VX_PROGRESS_DURATION
+	})
+
+	const emit = defineEmits<{
+		end: [percent: number]
+	}>()
+
+	// 非数字、负数和 0 都按未开始；超过 100 按完成。先判 > 0，NaN 不会被当成 0 之前的合法值。
+	// 未写冒号的 percent="60" 在模板里是字符串，先转成数字，end 也才不会抛字符串。
+	const percentValue = computed((): number => {
+		const raw = Number(props.percent)
+		if (!(raw > 0) || !isFinite(raw)) return 0
+		if (raw >= 100) return 100
+		return raw
+	})
+
+	const hasLabel = computed((): boolean => {
+		return props.label.length > 0
+	})
+
+	// text 是显式文案，传了就算 showText 关闭也要显示。
+	const hasText = computed((): boolean => {
+		return props.showText || props.text.length > 0
+	})
+
+	const valueText = computed((): string => {
+		if (props.text.length > 0) return props.text
+		// 94.5 显示 94.5%，60 显示 60%，不补 .0。
+		const shown = Math.round(percentValue.value * 10) / 10
+		return `${shown}%`
+	})
+
+	// 不认识的尺寸按 md，class 只拼 sm / lg。
+	const sizeName = computed((): 'sm' | 'md' | 'lg' => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	// 不认识的形状按 square，class 只拼 rounded / pill。
+	const shapeName = computed((): 'square' | 'rounded' | 'pill' => {
+		if (props.shape === 'rounded' || props.shape === 'pill') return props.shape
+		return 'square'
+	})
+
+	const typeName = computed((): 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default' => {
+		const type = props.type
+		if (type === 'primary' || type === 'success' || type === 'info' || type === 'warning' || type === 'danger') {
+			return type
+		}
+		return 'default'
+	})
+
+	const trackClass = computed((): string => {
+		let name = 'vx-progress__track'
+		if (sizeName.value !== 'md') name += ` vx-progress__track--${sizeName.value}`
+		if (shapeName.value !== 'square') name += ` vx-progress__track--${shapeName.value}`
+		return name
+	})
+
+	// 类型 class 始终挂上；业务传 bgColor 时由行内 background 盖过，颜色不合法时仍回落到语义色。
+	// class 顺序按基础 → 类型 → 形状，形状写在类型后面。
+	const fillClass = computed((): string => {
+		let name = 'vx-progress__fill'
+		name += ` vx-progress__fill--${typeName.value}`
+		if (shapeName.value !== 'square') name += ` vx-progress__fill--${shapeName.value}`
+		return name
+	})
+
+	const labelClass = computed((): string => {
+		if (sizeName.value === 'md') return 'vx-progress__label'
+		return `vx-progress__label vx-progress__label--${sizeName.value}`
+	})
+
+	const valueClass = computed((): string => {
+		if (sizeName.value === 'md') return 'vx-progress__value'
+		return `vx-progress__value vx-progress__value--${sizeName.value}`
+	})
+
+	// 读不出时长时回到默认；0 是合法值，表示直接落位。
+	const durationValue = computed((): number => {
+		const raw = Number(props.duration)
+		if (!isFinite(raw) || raw < 0) return VX_PROGRESS_DURATION
+		return Math.round(raw)
+	})
+
+	const trackStyle = computed((): string => {
+		let style = ''
+		// 单位缺失时这条声明会被丢掉，轨道高度仍走 size 档位。
+		if (props.height.length > 0) style += `height: ${props.height};`
+		if (props.trackColor.length > 0) style += `background-color: ${props.trackColor};`
+		return style
+	})
+
+	const fillStyle = computed((): string => {
+		// 宽度只留三位小数，避免长浮点尾巴写进样式。
+		const width = Math.round(percentValue.value * 1000) / 1000
+		let style = `width: ${width}%; transition-duration: ${durationValue.value}ms;`
+		// 自定义背景可能带渐变，所以用 background 简写；纯色同样有效。
+		if (props.bgColor.length > 0) style += ` background: ${props.bgColor};`
+		return style
+	})
+
+	const valueStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	// App 和小程序没有统一的过渡结束事件，按 duration 自己排一个定时器。
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let endTimer = 0
+	// 连续改值和卸载把序号往前拨，对不上的回调直接丢掉。
+	let endSerial = 0
+
+	const stopEnd = () => {
+		endSerial += 1
+		if (endTimer === 0) return
+		clearTimeout(endTimer)
+		endTimer = 0
+	}
+
+	watch(percentValue, (value: number) => {
+		stopEnd()
+		const serial = endSerial
+		endTimer = setTimeout(() => {
+			if (serial !== endSerial) return
+			endTimer = 0
+			emit('end', value)
+		}, durationValue.value)
+	})
+
+	onUnmounted(() => {
+		stopEnd()
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 进度条只占父级宽度，不加外部间距；标签、轨道和数值在同一行垂直居中。 */
+	.vx-progress {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 标签是辅助信息，单行省略；压成 min-width: 0 才能在剩余宽度里出现省略号。 */
+	.vx-progress__label {
+		flex-shrink: 1;
+		min-width: 0;
+		margin-right: var(--vx-space-md);
+		overflow: hidden;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.vx-progress__label--sm {
+		margin-right: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-progress__label--lg {
+		margin-right: var(--vx-space-lg);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 轨道只负责底色和裁切；高度三档，自定义 height 由行内样式盖过。
+	   App 默认裁掉溢出，Web 上要写明，填充的右端才不会伸出轨道。 */
+	.vx-progress__track {
+		position: relative;
+		flex: 1;
+		min-width: 0;
+		height: var(--vx-progress-height-md);
+		overflow: hidden;
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-progress__track--sm {
+		height: var(--vx-progress-height-sm);
+	}
+
+	.vx-progress__track--lg {
+		height: var(--vx-progress-height-lg);
+	}
+
+	/* 填充用 width 过渡，不用 translate：渐变和两端圆角都跟着可见宽度走。
+	   App 的 transition-property 支持 width；不支持过渡的端直接落位，end 由计时器补上。
+	   空节点没有内容高度，用 top / bottom 撑满；App 上 height:100% 会落成 auto。 */
+	.vx-progress__fill {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		transition-property: width;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	/* 语义色只改填充。warning 的琥珀原色在浅底上不够 3:1，填充用 pressed。
+	   标签和数值保持正文层级，状态不靠颜色单独表达。 */
+	.vx-progress__fill--primary {
+		background-color: var(--vx-color-primary);
+	}
+
+	.vx-progress__fill--success {
+		background-color: var(--vx-color-success);
+	}
+
+	.vx-progress__fill--info {
+		background-color: var(--vx-color-info);
+	}
+
+	.vx-progress__fill--warning {
+		background-color: var(--vx-color-warning-pressed);
+	}
+
+	.vx-progress__fill--danger {
+		background-color: var(--vx-color-danger);
+	}
+
+	.vx-progress__fill--default {
+		background-color: var(--vx-color-text);
+	}
+
+	/* 圆角同时写在轨道和填充上：轨道裁掉左端，填充的右端自己收圆。
+	   细轨道上 rounded 会被圆角半径夹到半个高度，和 pill 看起来接近。
+	   类型 class 之后写形状，和 class 字符串的顺序一致。 */
+	.vx-progress__track--rounded,
+	.vx-progress__fill--rounded {
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-progress__track--pill,
+	.vx-progress__fill--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	/* 数值是这一行的主要读数，用正文色和 medium。
+	   最小宽度按字号分开：一位小数在 15 / 17 上比 40 宽，共用一个数时轨道终点对不齐。 */
+	.vx-progress__value {
+		flex-shrink: 0;
+		min-width: var(--vx-progress-value-min-md);
+		margin-left: var(--vx-space-md);
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.vx-progress__value--sm {
+		min-width: var(--vx-progress-value-min-sm);
+		margin-left: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-progress__value--lg {
+		min-width: var(--vx-progress-value-min-lg);
+		margin-left: var(--vx-space-lg);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+	}
+</style>

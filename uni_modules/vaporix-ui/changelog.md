@@ -1,0 +1,642 @@
+## 0.58.0（2026-11-01）
+
+- 迁入 `vx-radio` / `vx-radio-group` 单项选择器：整组只选一项，`v-model` 绑字符串；横排或列表两种排布、圆圈或只画对号、三档尺寸、六种语义色、行尾标记、分割线、卡片和整组禁用。
+- 迁入 `vx-checkbox` / `vx-checkbox-group` 多项选择器：`v-model` 绑字符串数组；方框或只画对号、可选上限 `max` 与 `exceed` 事件、部分选中 `indeterminate`、全选由父级算。
+- 迁入 `vx-switch` 开关选择器：`v-model` 绑布尔值；单行或整行、轨道位置、`loading` 加载圈、禁用和四个自定义颜色。
+- 五个组件从 `vaporix-ui-pro` 迁出，免费库的组件数从 50 增到 53，付费库从 14 减到 11；`vaporix-ui-pro` 1.20.0 起不再提供这五个组件。
+- 演示工程新增单项选择器、多项选择器和开关选择器三个演示页，组件目录、路由翻页链和页脚版本一起更新。
+- readme 新增五节（两个分组与三个单项）的用法、属性、事件、插槽和从 ThorUI `tui-radio` / `tui-checkbox` / `tui-switch` 的迁移说明。
+- 版本号统一到 0.58.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+## 0.57.0（2026-11-01）
+
+- 迁入 `vx-text` 文本：正文、说明、金额和证件统一字号、字重和语义色；支持 `block`、三档尺寸、四种字重、对齐、装饰、单行 / 多行截断、手机号 / 金额 / 银行卡 / 身份证格式化、可选中、长按复制、可点击和禁用。
+- 迁入 `vx-link` 超链接：Web 新开标签页，App 和小程序复制并提示；支持 `tel:` / `mailto:`、七种文字色、三档尺寸、四种字重、下划线、三种打开方式、`prefix` / `suffix` 插槽和禁用。
+- 两个组件从 `vaporix-ui-pro` 迁出，免费库的组件数从 48 增到 50，付费库从 16 减到 14；`vaporix-ui-pro` 1.19.0 起不再提供这两个组件。
+- 演示工程新增文本和超链接两个演示页，组件目录、路由翻页链和页脚版本一起更新。
+- readme 新增两节的用法、属性、事件、插槽、方法和从 ThorUI `tui-text` / `tui-link` 的迁移说明。
+- 版本号统一到 0.57.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+## 0.56.0（2026-11-01）
+
+- 迁入 `vx-row` / `vx-col` 栅格布局与多端适配：24 栅格跨度、偏移、位移、四档断点、列间距、行间距、水平排列、垂直对齐和换行。`vx-row` 不新增令牌，`vx-col` 的列宽按百分比算。
+- 迁入 `vx-status-bar` 状态栏：为系统状态栏留高并铺底色，支持 `height` 覆盖、透明、固定占位、滚动渐显、横屏安全区、默认插槽、`ready` 和 `refresh()`。不新增令牌，用 0.55.0 起的安全区变量和已有底色、间距令牌。
+- 三个组件从 `vaporix-ui-pro` 迁出，免费库的组件数从 45 增到 48，付费库从 19 减到 16；`vaporix-ui-pro` 1.18.0 起不再提供这三个组件，升级时把 `uni_modules/vaporix-ui` 一起换到 0.56.0。
+- 演示工程新增栅格布局、多端适配和状态栏三个演示页，组件目录、路由翻页链和页脚版本一起更新。
+- readme 新增三节的用法、属性、事件、插槽、方法和从 ThorUI `tui-row` / `tui-col` / `tui-status-bar` 的迁移说明。
+- 版本号统一到 0.56.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+## 0.55.0（2026-10-30）
+
+- 新增状态栏 `vx-status-bar` 的设计规则：默认取 `--uni-safe-area-inset-top` 留高并铺 `surface` 底色，系统时间、信号和电池由平台绘制；支持 `height` 覆盖、透明、固定占位、滚动渐显、横屏安全区、默认插槽和 `ready` 高度回传。
+- Colors 补充状态栏的底色与系统前景边界；Typography 补充插槽没有文案档位；Layout 补充高度、占位、左右留白和渐显距离；Elevation、Shapes 和 Motion 补充无圆角、无阴影、无动画；Components 补充固定、透明、渐显、插槽和 `ready` / `refresh()` 的规则。
+- Do's / Don'ts 补充状态栏只做系统状态栏区域，不代替导航栏、不叠导航栏、不放主操作和信息。
+- 免费组件和令牌没有改动；`vx-status-bar` 在 `vaporix-ui-pro` 1.17.0，不新增令牌，升级时两个模块一起换。
+- 版本号统一到 0.55.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.54.0（2026-10-30）
+
+- 新增验证码输入框令牌 `--vx-code-cell-sm/md/lg`（40 / 48 / 56）、`--vx-code-font-sm/md/lg`（18 / 22 / 26）、`--vx-code-dot-sm/md/lg`（6 / 8 / 10）和 `--vx-code-caret-sm/md/lg`（20 / 24 / 28），亮色、暗色各一份。
+- 格子默认正方形，宽度不够时只收窄；数字、密码圆点和光标高度不并入图标、控件和徽章三档。分隔符字号取正文档位，不另开令牌。
+- DESIGN.md 补充验证码输入框的配色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-code-input` 在 `vaporix-ui-pro` 1.16.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.54.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.53.0（2026-10-30）
+
+- 新增数据选择器 `vx-data-checkbox` 的设计规则：一组数据排成可换行的胶囊，单选用 `v-model` 字符串，多选用 `multiple` + `v-model:values` 数组；支持三档尺寸、六种语义色、三种未选中外观、固定宽度、可选上限、图标和自定义颜色。
+- Components 补充数据选择器的选中配色、控件文案档位、换行与固定宽度、三种未选中外观、三种轮廓、按下态和禁用；选项结构、单选 / 多选模型、`max`、`clearable`、图标、自定义颜色和平台约束也一并写入。
+- Do's / Don'ts 补充只承载短选项，不承载导航、开关、标题和校验。
+- 免费组件和令牌没有改动；`vx-data-checkbox` 在 `vaporix-ui-pro` 1.15.0，不新增令牌，升级时两个模块一起换。
+- 版本号统一到 0.53.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.52.0（2026-10-30）
+
+- 新增链接 `vx-link` 的设计规则：正文级文字入口、默认 primary、secondary 用于次要内联入口、下划线、三档正文字号和四种字重、`tel:` / `mailto:`、复制提示、App 与 Web 的打开差异。
+- Colors 补充链接的语义色与 warning-ink；Typography 补充链接沿用正文档位、默认 medium；Layout 补充内联宽度、不加内外边距和 App 的 `max-width` 限制；Shapes、Elevation、Motion 和 Components 补充链接的无轮廓、无浮层、按下态、平台打开方式和交互规则。
+- Do's / Don'ts 补充链接只做文字入口，不承载主操作、路由和埋点；长地址用短文案，不截断链接本体。
+- 免费组件和令牌没有改动；`vx-link` 在 `vaporix-ui-pro` 1.14.0，不新增令牌，升级时两个模块一起换。
+- 版本号统一到 0.52.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.51.0（2026-10-30）
+
+- 新增文本 `vx-text` 的设计规则：正文 13 / 15 / 17（20 / 22 / 24）、字重 400 / 500 / 600 / 700、default / secondary 与五种语义色、内联与块级、对齐与装饰、单行 / 多行截断、手机号 / 金额 / 银行卡 / 身份证格式化、可选中和长按复制。
+- Typography 补充正文三档、四种字重和页面级展示标题的边界；Colors 补充文本语义色与 warning-ink；Layout 补充内联 / 块级、截断和金额格式化；Shapes、Elevation、Motion 和 Components 补充文本的无轮廓、无浮层、按下态和交互规则。
+- Do's / Don'ts 补充文本只做正文和说明，不承载标签、徽章、标题、富文本和任意字号；格式化只接数值本身，关键信息不截断。
+- 免费组件和令牌没有改动；`vx-text` 在 `vaporix-ui-pro` 1.13.0，不新增令牌，升级时两个模块一起换。
+- 版本号统一到 0.51.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.50.0（2026-10-30）
+
+- 新增选择框令牌 `--vx-select-max-width`（480px）和 `--vx-select-media-sm/md/lg`（28 / 32 / 36），亮色、暗色各一份。
+- 选择框行高沿用列表行 44 / 52 / 60，标记沿用 `--vx-radio-size-*` / `--vx-checkbox-*`，面板宽度取新令牌；媒体尺寸只用于选项图片，不并入图标三档。
+- DESIGN.md 补充选择框的配色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-select` 在 `vaporix-ui-pro` 1.12.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.50.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.49.0（2026-10-30）
+
+- 新增分隔列表令牌 `--vx-divide-value-sm/md/lg`（17 / 20 / 24）、`--vx-divide-value-line-sm/md/lg`（22 / 26 / 30）、`--vx-divide-label-sm/md/lg`（12 / 13 / 14）、`--vx-divide-label-line-sm/md/lg`（16 / 18 / 20）、`--vx-divide-media-sm/md/lg`（32 / 40 / 48）、`--vx-divide-height-sm/md/lg`（56 / 70 / 84）和 `--vx-divide-gap`（2px），亮色、暗色各一份。
+- 行高等于上下内边距加数值行、2px 间距和说明行，不并入控件、列表行和宫格三档；媒体尺寸只用于图片，不并入图标三档。分隔线长度不另开令牌，由组件按档位行高的百分比算。
+- DESIGN.md 补充分隔列表的配色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-divide-list` 在 `vaporix-ui-pro` 1.11.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.49.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.48.0（2026-10-30）
+
+- 新增分段器 `vx-segmented-control` 的设计规则：2–5 段等宽、选中段填充语义色、未选中文字跟随同一色、选中加 `medium` 字重、可选 `divider` 段间竖线，分隔线跟外框同色并画在未选中段内侧。
+- Layout 补充分段器沿用控件三档高度 32 / 40 / 48、段内左右内边距 8 / 12 / 16 和圆角 6 / 8 / 10；Typography 补充文案 13 / 14 / 16；Shapes 补充 `rounded` / `pill` / `square`；Colors、Elevation、Motion 和 Components 补充分段器的配色、分割线、层级、切换和边界。
+- Do's / Don'ts 补充分段器的使用边界：只做互斥视图切换，不承载导航、多选、长文案和业务请求；分割线只帮助分界，不用来分隔内容块或替代选中态。
+- 免费组件和令牌没有改动；`vx-segmented-control` 在 `vaporix-ui-pro` 1.10.0，不新增令牌，升级时两个模块一起换。
+- 版本号统一到 0.48.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.47.0（2026-10-30）
+
+- 新增栅格布局 `vx-row` 和多端适配 `vx-col` 的设计规则：24 份制、列间距和行间距的负外边距抵消、断点 576 / 768 / 992 / 1200。
+- Layout 补充栅格的 24 份制、列宽取整、间距机制和断点取值；Components 补充排列层和占宽层的分工、间距与断点的实现规则；Do's / Don'ts 补充栅格的使用边界。
+- 免费组件和令牌没有改动；`vx-row` / `vx-col` 在 `vaporix-ui-pro` 1.9.0，间距由 props 以 px 传入，断点写在组件里，不新增令牌，升级时两个模块一起换。
+- 版本号统一到 0.47.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.46.0（2026-10-30）
+
+- 新增滑动选择器令牌 `--vx-slider-track-sm/md/lg`（4 / 6 / 8）、`--vx-slider-thumb-sm/md/lg`（20 / 24 / 28）、`--vx-slider-inset-sm/md/lg`（10 / 12 / 14）和 `--vx-slider-height-sm/md/lg`（32 / 36 / 40），亮色、暗色各一份。
+- 内缩等于圆盘直径的一半，圆盘走到 0% 和 100% 时边缘正好和根节点对齐；行高是圆盘直径加 12，按下光晕向四周各伸 4px（`--vx-slider-halo-out`），上下各留 2。这组尺寸不并入控件、开关和进度条三档。
+- DESIGN.md 补充滑动选择器的配色、排版、尺寸、形状、按下态、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-slider` 在 `vaporix-ui-pro` 1.8.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.46.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.45.0（2026-10-29）
+
+- 新增提示页令牌 `--vx-msg-disc-sm/md/lg`（56 / 72 / 88）、`--vx-msg-glyph-sm/md/lg`（28 / 36 / 44）、`--vx-msg-title-sm/md/lg`（17 / 20 / 26）、`--vx-msg-title-line-sm/md/lg`（24 / 28 / 34）和 `--vx-msg-copy-max` / `--vx-msg-actions-max`（360 / 320），亮色、暗色各一份。
+- 提示页的图标圆、字形和标题不并入图标、控件和暂无数据三档；标题 20 / 26 是页面级结果的中间两档，动作高度仍取控件三档里的 40 / 48。
+- DESIGN.md 补充提示页的配色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-msg` 在 `vaporix-ui-pro` 1.7.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.45.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.44.0（2026-10-29）
+
+- 新增环形进度令牌 `--vx-circular-progress-size-sm/md/lg`（64 / 80 / 100）和 `--vx-circular-progress-stroke-sm/md/lg`（6 / 8 / 10），亮色、暗色各一份；半圆高度在组件里按直径 / 2 + 线宽 / 2 算，不另开令牌。
+- DESIGN.md 补充环形进度的配色、排版、尺寸、形状、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-circular-progress` 在 `vaporix-ui-pro` 1.6.0，尺寸与本版新增的令牌同值；升级时两个模块一起换。
+- 版本号统一到 0.44.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.43.0（2026-10-29）
+
+- 新增 vx-tabbar 标签栏：自定义底部导航，`items` 等宽排列，`v-model` 当前索引；字体图标跟选中色，图片图标成对传 `activeImage`。
+- 新增 `raised` 凸起圆钮和 `action` 按钮项：圆钮浮在栏顶，`action` 项只抛 `click`、不写 `v-model`；一栏最多一个凸起项。
+- 新增 `fixed` / `placeholder` / `safeArea`：固定时贴住屏幕底部，占位补出栏高和安全区，栏底色铺到屏幕底边；`divider`、`bgColor`、`color`、`badgeMax`、`badgeType`、`iconVariant` / `activeIconVariant`、`zIndex` 可调。
+- 新增令牌 `--vx-tabbar-height-*`（48 / 56 / 64）、`--vx-tabbar-row-raised-*`（70 / 80 / 90）、`--vx-tabbar-media-*`（20 / 24 / 28）、`--vx-tabbar-raise-size-*`（44 / 52 / 60）、`--vx-tabbar-raise-lift-*`（22 / 24 / 26）、`--vx-tabbar-font-*`（13 / 13 / 14）和 `--vx-tabbar-line-*`（20 / 20 / 22），亮色、暗色各一份；行高是栏高加伸出段，App 不能 calc，单独维护。
+- DESIGN.md 补充标签栏的配色、排版、尺寸、层级、动效、组件和 Do / Don't 规则。
+- 演示页新增标签栏实验室，含基础、字体与图片图标、凸起按钮、角标、尺寸、语义色、禁用、分割线、自定义颜色、固定与安全区、内容组合 11 组示例；同时把固定标签栏做成可开关的真机演示。
+- 文档站新增标签栏页，中英文含基础、凸起按钮、尺寸、图标、角标、状态、分割线、固定与安全区、自定义颜色、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入。
+- 组件目录、路由、前后翻页和组件库 readme 登记；版本号统一到 0.43.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.42.0（2026-10-29）
+
+- 新增索引列表令牌 `--vx-index-header-sm/md/lg`（28 / 32 / 36）、`--vx-index-avatar-sm/md/lg`（32 / 40 / 48）、`--vx-index-key-sm/md/lg`（16 / 18 / 20）、`--vx-index-bar-sm/md/lg`（28 / 32 / 36）和 `--vx-index-indicator-sm/md/lg`（56 / 64 / 72），亮色、暗色各一份。
+- 索引条字母槽高等于字母圆直径；条宽只放宽触摸区，不改变字母圆。指示器字号 24 / 28 / 32 和行、标题字号在组件里按档位写死，不新增令牌。
+- DESIGN.md 补充索引列表的配色、排版、尺寸、层级、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-index-list` 在 `vaporix-ui-pro` 1.5.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.42.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.41.0（2026-10-29）
+
+- 新增开关令牌 `--vx-switch-width-sm/md/lg`（36 / 44 / 52）、`--vx-switch-height-sm/md/lg`（20 / 24 / 28）、`--vx-switch-thumb-sm/md/lg`（16 / 20 / 24）和 `--vx-switch-spinner-sm/md/lg`（8 / 10 / 12），亮色、暗色各一份；滑块位移 = 轨道宽 - 滑块 - 4，不另开令牌。
+- 新增 `--vx-switch-inset`（2px），滑块四周统一留白；这组尺寸不并入控件、图标和单选三档。
+- DESIGN.md 补充开关的配色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则；滑块位移和加载圈描边宽度在组件里按档位写死，不新增令牌。
+- 免费组件没有改动；`vx-switch` 在 `vaporix-ui-pro` 1.4.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.41.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.40.0（2026-10-29）
+
+- 新增复选框令牌 `--vx-checkbox-size-sm/md/lg`（14 / 16 / 18）和 `--vx-checkbox-radius-sm/md/lg`（4 / 5 / 6），亮色、暗色各一份；方框不并入图标、徽章和单选三档，圆角按档位递进。单选 `--vx-radio-size-*` 从 18 / 22 / 26 收到同一档，标记比文案大 1–2px。
+- DESIGN.md 补充复选框的配色、排版、尺寸、圆角、按下态、组件和 Do / Don't 规则；对号和横线的宽高在组件里按档位写死，不新增令牌。
+- 免费组件没有改动；`vx-checkbox` / `vx-checkbox-group` 在 `vaporix-ui-pro` 1.3.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.40.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.39.0（2026-10-29）
+
+- 新增单选令牌 `--vx-radio-size-sm/md/lg`（18 / 22 / 26），亮色、暗色各一份；圆圈不并入图标、徽章和星形三档。
+- DESIGN.md 补充单选的配色、排版、尺寸、形状、按下态、组件和 Do / Don't 规则；对号宽度和横排 / 列表行高在组件里按档位写死，不新增令牌。
+- 免费组件没有改动；`vx-radio` / `vx-radio-group` 在 `vaporix-ui-pro` 1.2.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.39.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.38.0（2026-10-28）
+
+- 新增加载动画令牌 `--vx-loader-size-sm/md/lg`（20 / 28 / 40）和 `--vx-loader-dot-sm/md/lg`（6 / 8 / 10），亮色、暗色各一份；动画画布不并入图标和控件高度。
+- 新增 `--vx-loader-panel-min` / `--vx-loader-panel-max`（120 / 240）和 `--vx-loader-panel` / `--vx-loader-fg` / `--vx-loader-muted` / `--vx-loader-track`，亮色、暗色同值：深色面板固定白字，不跟主题反色。
+- 新增 `--vx-loader-duration-bar` / `--vx-loader-duration-dot` / `--vx-loader-duration-wave` / `--vx-loader-duration-wave-alt`（900ms / 960ms / 2800ms / 3200ms），亮色、暗色同值。
+- DESIGN.md 补充 `vx-loader` 的颜色、排版、尺寸、圆角、层级、动效、组件和 Do / Don't 规则。
+- 免费组件没有改动；`vx-loader` 在 `vaporix-ui-pro` 1.1.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.38.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.37.1（2026-10-28）
+
+- 新增图片预览令牌 `--vx-gallery-bar` / `--vx-gallery-control` / `--vx-gallery-foot`，亮色、暗色各一份；顶部工具行 44、关闭和删除热区 44、底部工具行 60，不并入控件三档。
+- 新增 `--vx-color-viewer-bg` / `--vx-color-viewer-fg` / `--vx-color-viewer-muted` / `--vx-color-viewer-line` / `--vx-color-viewer-control` / `--vx-color-viewer-danger`，亮色、暗色同值：预览层固定黑底白字，不跟主题反色。
+- DESIGN.md 补充图片预览的颜色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则；浮层层级增加图片预览 105，高于消息提示 100，低于弹框 110、加载浮层 150 和轻提示 200。
+- 免费组件没有改动；`vx-gallery` 在 `vaporix-ui-pro` 1.0.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.37.1：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
+## 0.37.0（2026-10-28）
+
+- 新增 vx-progress 进度条：`percent` 传 0–100，负数和 0 按未开始，超过 100 按完成，非数字按 0；组件不维护内部状态，也没有 `v-model`。
+- 一行三段：可选 `label`、轨道、可选数值。`showText` 显示默认百分比，`text` 覆盖默认文案；默认百分比最多保留一位小数，`60` 显示 `60%`，`94.5` 显示 `94.5%`。
+- 新增 `type` 六种语义色，只改填充；`warning` 用 `warning-pressed`，`default` 用正文色。标签保持次要色，数值保持正文色，状态不能只靠填充色表达。
+- 新增 `size` 三档：轨道 4 / 6 / 8（`--vx-progress-height-*`），标签和数值 13 / 15 / 17（20 / 22 / 24），间距 8 / 12 / 16。新增 `height` 自定义轨道高度，必须带单位，只改轨道，文字仍按 `size`。
+- 新增 `shape` 三档：`square` 平角（默认）、`rounded` 小圆角 6、`pill` 胶囊。圆角同时作用于轨道和填充，轨道用 `overflow: hidden` 裁切；细轨道上 `rounded` 和 `pill` 看起来接近。
+- 新增 `bgColor` / `trackColor` / `color`，分别只改填充、轨道和数值，都是字面值，不跟随主题；跟主题时传 `var(--vx-color-*)`。`bgColor` 可以接渐变，但只用于品牌强调，一屏最多一处。
+- 填充用 `width` 过渡，默认 220ms（`--vx-duration-normal`），`duration=0` 直接落位；不用 `transform`，渐变和两端圆角才会跟着可见宽度走。首次渲染不播放入场动画。
+- 新增 `end` 事件：在 percent 变化后的过渡计时结束时抛最终值，连续改值只按最后一次，卸载不补抛；不依赖 `transitionend`，App 和小程序行为一致。
+- 新增令牌 `--vx-progress-height-sm/md/lg` 和 `--vx-progress-value-min-sm/md/lg`（40 / 44 / 52），亮色、暗色各一份；一位小数在 md / lg 上比 40 宽，按档位分开，多行百分比才右对齐。
+- DESIGN.md 补充进度条的颜色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则；readme 新增 API、用法和 ThorUI `tui-progress` 迁移说明。
+- 演示页新增进度条实验室，含基础、标签与数值、类型、形状、尺寸、自定义颜色、动画与事件、组合八组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增进度条页，中英文含基础、类型、形状、尺寸、自定义颜色、动画、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入。
+- 从 ThorUI `tui-progress` 迁移：`showInfo` → `showText`，`activeColor` → `bgColor`，`backgroundColor` → `trackColor`，`width` → `size` / `height`，`radius` → `shape`；`duration` 从「每 1% 毫秒」改为「整段毫秒」，`activeend` → `end`。`percentWidth` 由 `--vx-progress-value-min-*` 接管，`size` / `color` 保留但分别改为文字档位和数值颜色。
+- 版本号统一到 0.37.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+- `vx-wing-blank` 纵向 `flex-shrink` 归零，放进纵向 flex 时内容不被压扁；没有默认插槽时不留节点。左右留白演示的通栏去掉 `width: 100%`，负外边距才能左右同时贴边。
+
+## 0.36.0（2026-10-28）
+
+- 新增 vx-white-space 上下留白：只占纵向高度，不放内容、不接点击、不画外框；`size` 三档直接取间距令牌 8 / 12 / 16，`height` 传带单位的值时盖过档位。
+- 新增 `height` 自定义值：接受 px、rpx、百分比和 `var()`；单位缺失时声明失效，回落到 `size` 档位。固定间距用 px，只有确实随屏宽变化时才用 rpx。
+- 新增 `bgColor` 色带：默认透明，字面值不跟随主题；跟主题时传 `var(--vx-color-*)`。它不表达状态，不代替分割线、骨架屏和可点击区域。
+- 新增 vx-wing-blank 左右留白：给默认插槽加左右内边距，宽度跟随父级、高度由内容撑开；`size` 同样取 8 / 12 / 16，`gap` 传带单位的值时盖过档位。
+- `vx-wing-blank` 默认透明、无描边、无圆角、无外部间距；底色、圆角和描边交给外层容器或 `vx-card`。`gap` 是左右内边距，不是子项间距；百分比按父级宽度算。
+- 两个组件都不承载点击、状态和动效；按钮、列表行和链接由插槽内容或外层容器提供。页面左右边距只留一次，通栏区块用 `vx-wing-blank` 把内容拉回页面边距。
+- 与 ThorUI 的差异：`size` 的 `small` / `default` / `large` 换成 `sm` / `md` / `lg`；`height` / `gap` 必须带单位（`64` 写成 `64rpx`）；`tui-white-space` 的 `background` 换成 `bgColor`，默认插槽和 `click` 不再提供；`tui-wing-blank` 的 `background` / `radius` / `marginTop` / `marginBottom` / `click` 分别交给外层容器、`vx-white-space`、页面布局和插槽内容。
+- DESIGN.md 补充两个组件的间距映射、单位规则、色带约束、页面边距、无点击和可访问性规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增上下留白和左右留白实验室：上下留白六组、左右留白五组，含基础、三档尺寸、自定义值、背景、页面节奏或页面边距、组合；组件目录、路由和前后翻页一起接入。
+- 文档站新增上下留白与左右留白页，中英文逐节对应，含基础、尺寸、自定义值、页面节奏 / 页面边距、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入。
+
+## 0.35.0（2026-10-27）
+
+- 新增 vx-qrcode 二维码：`text` 按 UTF-8 字节编码，自动选版本 1–40 和最优掩码；只做字节模式，一个汉字 3 字节、一个 emoji 4 字节，40 版上限 L 2953 / M 2331 / Q 1663 / H 1273 字节。
+- 模块用 `view` 绘制，同一行的连续深色模块合成一条，上下同宽的再叠成一块，不依赖 canvas：App 上不新增原生层，Web、小程序和各类卡片、滚动区里的层级一致。普通验证码大约 80–300 条 `view`。
+- 新增 `size` 三档 120 / 160 / 200（`--vx-qrcode-size-*`），新增 `width` 自定义边长，只认 px；模块边长向下取整到整数像素，多出来的收进空白边距，相邻行之间不透缝。
+- 新增 `level` 四档 `L | M | Q | H`，默认 M；`margin` 空白边距按模块数算，默认 2，收敛到 0–8，印刷场景传 4 和标准一致。
+- 新增 `color` / `bgColor`，默认 `#1a1d26` / `#ffffff`，都是字面值、不跟随亮色 / 暗色主题：二维码必须深码浅底，反色后很多扫码器认不出来。
+- 新增 `logo` / `logoSize`：中心图标占内容宽度默认 0.22，收敛到 0.12–0.3，四周用 `--vx-qrcode-logo-pad` 挖空，垫色取 `bgColor`；带图标时建议 `level="H"`。图标加载失败时隐藏整层，方阵保持完整。
+- 新增 `emptyText` / `errorText`：内容为空显示空状态，超出 40 版容量显示错误提示，两种情况都不渲染空白方阵，也不抛事件。
+- 新增 `libs/qrcode.ts`：GF(256) 计算纠错码字、标准分块和交错、BCH 格式 / 版本信息、八种掩码按四条罚分规则选优；三档边长常量 `VX_QRCODE_SIZE` 和 `variables.css` 的 `--vx-qrcode-size-*` 手工对齐。
+- 新增令牌 `--vx-qrcode-size-sm/md/lg`、`--vx-qrcode-logo-pad` 和 `--vx-qrcode-dark/light`，亮色、暗色各一份；深码浅底两枚颜色亮暗同值，不跟主题反色。
+- DESIGN.md 补充二维码的渲染方式、尺寸、颜色、空白边距、中心图标、容量、主题和可访问性规则；readme 新增 API、用法和 ThorUI `tui-qrcode` 迁移说明。
+- 演示页新增二维码实验室，含基础、尺寸、纠错级别、自定义颜色、中心图标、内容与边界、优惠券组合七组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增二维码页，中英文含基础、尺寸、纠错级别、自定义颜色、中心图标、内容与边界、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入。
+- 编码器用 jsQR 对 102 组内容（ASCII、中文、emoji、随机长串）做解码回读，版本选择和 qrcode-generator 对照一致；40 版容量边界逐级校验。
+
+## 0.34.0（2026-10-27）
+
+- 新增 vx-bubble-popup 气泡弹框：默认插槽是触发区，`items` 是菜单，`content` 是单段文案，`extra` 放自定义面板；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()` / `toggle()` / `refresh()`。
+- 打开时用 `createSelectorQuery` 量触发区和面板，按 `placement`（top / bottom / left / right）、`align`（start / center / end）和 `offset` 算落点；气泡用 `position: fixed` 挂到页面层，卡片和 `scroll-view` 的 `overflow: hidden` 不会裁掉它。
+- 一侧放不下、对面放得下时自动翻到对面；两侧都放不下时夹在屏幕内，离边 8；箭头跟着触发区中心走，面板被挤到屏幕边时在气泡范围内收口。
+- 新增 `variant` 的 `surface` / `solid`：`surface` 用 `surface` 底、1px `border` 描边、`md` 圆角和 `--vx-shadow-md`，尾巴用旋转方块加 1px 描边；`solid` 用语义实心底配 `on-*`，不加描边，inline 聊天气泡去阴影。
+- 新增 `items` 菜单：`text` / `value` / `icon` / `type` / `disabled` / `selected`。菜单项 44 高、左右内边距 12，图标 18、文案 15 / 22 / 500、右侧短值 13 / 20 次要色、勾 14；面板四周留 4；`divider` 画 1px 分割线。
+- 新增 `selected` 和 `disabled`：选中显示勾和主色，禁用不响应点击；`closeOnSelect=false` 时保持打开，选中值由业务在 `select` 里维护。
+- 新增 `mask` / `maskColor` / `outsideClosable` 和 `close` 事件：默认只有透明点击层，点外部收起并抛 `close`；页面滚动、Web 上的 Esc 也收起并抛 `close`；`close()` 只收起，不抛事件。
+- 新增 `inline` 行内聊天气泡：不渲染触发区，默认插槽或 `content` 是内容，`prefix` / `suffix` 放头像，`align` 把整行推到左、中、右，`placement` 决定箭头贴哪条边；inline 不响应 `show` 和方法，要隐藏整条用 `v-if`。
+- 新增 `width` / `maxWidth` / `arrow` / `arrowOffset` / `zIndex`；尾巴高 7、底边 14、旋转方块 9.9、离触发区默认 8、离屏幕至少 8；`surface` 面板在尾巴底部补 13×1 同色接缝（左右各压 0.5px），面板描边不会从尾巴底下横穿出来；层级默认 90，和操作菜单、抽屉同档。
+- 新增令牌 `--vx-bubble-arrow` / `--vx-bubble-arrow-base` / `--vx-bubble-arrow-seam` / `--vx-bubble-arrow-tip` / `--vx-bubble-arrow-out` / `--vx-bubble-min-width` / `--vx-bubble-max-width` / `--vx-bubble-chat-max-width`，亮色、暗色各一份。App 没有 calc，正负值和尺寸各用一个令牌，改一处要一起改。
+- 面板打开时先量尺寸再显示，第一帧不会落在左上角；Web 上量完位置后淡入、面板从 0.96 放大到 1，5.26 的 App 直接出现，关闭即移除。异步内容落定后调 `refresh()` 重测。
+- DESIGN.md 补充气泡弹框的尺寸、颜色、层级、圆角、箭头、动效、fixed 坐标和可访问性规则；readme 新增 API、用法和 ThorUI `tui-bubble-popup` 迁移说明。
+- 演示页新增气泡弹框实验室，含右上角菜单、上方弹出、类型与图标、选中与禁用、遮罩、聊天气泡、气泡颜色、自定义内容、方向与对齐、方法和组合十一组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增气泡弹框页，中英文含基础、上方弹出、类型与图标、选中与禁用、遮罩与关闭、聊天气泡、气泡颜色、自定义内容、方向与对齐、方法、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入，文档站补一份只给预览用的 `uni.createSelectorQuery` shim。
+- 打磨 vx-notice-bar 和 vx-rolling-news：单行省略改为定宽截断；滚动轨道、轮播层和点击热区改用行高或内容区令牌，不用百分比高度。可点时点击停在组件上，两侧插槽不冒泡。新增 `--vx-rolling-news-inner-*`（30 / 38 / 46），滚动消息默认间隔收进 `VX_ROLLING_NEWS_INTERVAL`。
+
+## 0.33.0（2026-10-27）
+
+- 新增 vx-notice-bar 通告栏：`text` 显示一条公告，单行默认省略；`wrap` 打开后自然换行，高度由内容撑开。`scrollable` 在文字超出视口时横向匀速滚动，文字放得下就停在原位。多条消息轮播仍用 `vx-rolling-news`，两者不混用。
+- 新增 `type` 六种语义色，默认 `warning`；`variant` 三档 `soft | solid | plain`：`soft` 用 `*-soft` 浅底，`solid` 用实心底配 `on-*`，`plain` 透明且不收左右内边距。默认 `warning` 是琥珀浅底配 `warning-ink`，普通公告换 `info`，中性说明换 `default`。
+- 新增 `shape` 三档 `rounded | pill | square`，默认 `square` 通栏；新增 `size` 三档：高度 32 / 40 / 48（`--vx-notice-bar-height-*`），文案 13 / 15 / 17，图标 14 / 18 / 22，左右内边距 12 / 16。关闭热区宽度等于行高。
+- 新增 `icon` / `iconColor` / `bgColor` / `color`：图标和关闭叉默认跟随文案前景，`iconColor` 只改图标；自定义颜色是字面值，跟主题时传 `var(--vx-color-*)`，对比度由业务保证。
+- 新增 `wrap` 和 `scrollable`：`scrollable` 优先于 `wrap`，滚动固定单行；滚动只读 `text`，默认插槽内容保持静态。`speed` 默认 100 px/s，0 和负数回到 100，其余收在 20–600；`activeMode` 的 `backwards` 从右侧入场，`forwards` 只让第一轮跳过入场、从左侧起点开始。
+- 滚动用 `transition` 的 `transform` 匀速位移，时长按文字宽度、视口宽度和速度计算，5.26 的 App 端不依赖关键帧。文字宽度用 `createSelectorQuery` 测量，失败重试三次后按静态展示；视口宽度变化、字体异步落定后调 `refresh()` 重测。改文案、尺寸、图标或关闭叉会从第一轮重来。
+- 新增 `closable`、`v-model:show` 和 `close` 事件；组件关闭时只收起并抛 `close`，父级改回 `show` 不回抛。新增 `open()` / `close()` / `refresh()` 方法。
+- 新增 `prefix` / `suffix` 插槽：`prefix` 替换内置图标，`suffix` 排在关闭前；两者都是独立目标，点它们不触发整条 `click`。`clickable` 默认打开，`clickable=false` 时按下不变淡，点击继续落到外层卡片或列表行。
+- 新增令牌 `--vx-notice-bar-height-sm/md/lg`，亮色、暗色各一份；新增 `libs/motion.ts` 的 `VX_NOTICE_BAR_SPEED` / `VX_NOTICE_BAR_SPEED_MIN` / `VX_NOTICE_BAR_SPEED_MAX` / `VX_NOTICE_BAR_SETTLE` / `VX_NOTICE_BAR_MEASURE_DELAY`。
+- DESIGN.md 补充通告栏的语义色、尺寸、换行、滚动、速度、起点、关闭、插槽、动效和可访问性规则；readme 新增 API、用法和 ThorUI `tui-notice-bar` 迁移说明。
+- 演示页新增通告栏实验室，含基础、多行、类型、视觉变体、尺寸、自定义颜色、滚动、速度与起点、关闭、图标与插槽、组合十一组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增通告栏页，中英文含基础、多行、类型、视觉变体、尺寸、自定义颜色、滚动、速度与起点、关闭、图标与插槽、组合、设计规范、可访问性和 API；示意卡片、滚动预览、预览页和真实组件接入。
+
+## 0.32.0（2026-10-27）
+
+- 新增 vx-rolling-news 滚动消息：`items` 按顺序轮播新闻、热词和通告，一条一条走；点击整条抛 `click(index, item)`，不做详情、路由和请求。空数组不渲染，只有一条时不轮播，也不铺第二层。
+- 两层叠放换条：当前条滑出、下一条滑入，落位后两层在视口外对调，走到头从第一条接着走，不往回滚。两层都用 `transform` 百分比位移，不测量高度和宽度；过渡 220ms，和 `--vx-duration-normal` 对齐，5.26 的 App 端没有关键帧也能用。
+- 新增 `direction` 的 `vertical` / `horizontal`；换方向从第一条重来，不会停在半格上。新增 `interval`（两次切换的间隔，默认 3000ms）和 `autoplay`（关掉后停在第一条）。按下整条时暂停，松手后重新计时；Web 上的鼠标点按不影响节奏。
+- 新增 `variant` 三档 `card | soft | plain`：`card` 用 `surface` 底加 1px 描边，`soft` 用 `default-soft` 浅底，`plain` 透明且不收左右内边距。新增 `shape` 三档 `rounded | pill | square`，三档都保留 1px 透明描边，换外观时内容不上下跳。
+- 新增 `size` 三档：行高 32 / 40 / 48，文案 13 / 15 / 17，图标 14 / 18 / 22，左右内边距 12 / 16；字号直接取正文档位，不借 `--vx-font-control-*`。
+- 新增 `icon` / `iconColor` / `arrow` / `bgColor` / `color`：图标默认取 `primary` 作唯一强调色，`iconColor` 只改这一处；扩展图标要先引入 `icons-extend.css`。自定义颜色都是字面值，跟主题时传 `var(--vx-color-*)`。
+- 新增 `prefix` / `suffix` 插槽：`prefix` 替换内置图标，`suffix` 替换箭头，两者都是独立目标，点它们不触发整条 `click`。`clickable=false` 时既不按下变淡，也不铺点击热区，点击继续落到外层卡片或列表行。
+- 新增令牌 `--vx-rolling-news-height-sm/md/lg`，亮色、暗色各一份；新增 `libs/motion.ts` 的 `VX_ROLLING_NEWS_DURATION` / `VX_ROLLING_NEWS_SETTLE`，和 `--vx-duration-normal` 手工对齐。
+- DESIGN.md 补充滚动消息的行高、字号、方向、外观、形状、图标、插槽、间隔、动效、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-roll-news` 迁移说明。
+- 演示页新增滚动消息实验室，含基础、方向、外观、尺寸、图标与插槽、间隔与暂停、消息数据和组合八组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增滚动消息页，中英文含基础、轮播方向、视觉变体、形状、尺寸、图标、插槽、间隔与暂停、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入。
+
+## 0.31.0（2026-10-27）
+
+- 新增 vx-section 区块标题栏：一个区块的标题层，承载标题、说明、竖线、分割线和右侧短操作。组件不包内容，内容紧跟其后，入口和间距由页面组合。
+- 新增 `size` 三档 `sm | md | lg`：标题 15 / 17 / 20，行高 22 / 24 / 28，字重 600；说明 `sm` / `md` 用 13 / 20，`lg` 用 15 / 22；`md` 是默认档。
+- 新增 `variant` 的 `plain` / `soft`：`plain` 透明底、上下各留 4；`soft` 用 `default-soft` 浅底、`md` 圆角，内边距 8 / 12、12 / 16、16 / 24（上下 / 左右）。同一层级只用一种。
+- 新增 `marker` 竖线：3px 宽，高 14 / 16 / 20，固定胶囊圆头，和标题首行居中；`markerColor` 只改竖线。竖线只作区块标记，不表达状态。
+- 新增 `divider` 和 `dividerColor`：在标题内容下方 8 / 8 / 12 处画一条 1px 线，默认 `border`；分割线不替代区块之间的 24 留白。
+- 新增 `clickable` + `click`：整条按下用 `--vx-opacity-pressed`，高度下限 44，单行标题也有完整热区；点击停在标题栏上，`extra` 是独立目标，不冒泡到整条。静态标题栏不拦点击，点击继续落到外层卡片或列表行。
+- 新增 `prefix` / `extra` / `suffix` 插槽和默认插槽：`prefix` 放标题左侧图标、编号或品牌标记，`extra` 放「查看全部」这类短操作，`suffix` 替换说明，默认插槽替换标题；插槽内容自己带字号和颜色。
+- 新增 `titleColor` / `descriptionColor` / `markerColor` / `dividerColor`：分别只覆盖标题、说明、竖线和分割线，字面值不跟随主题；要跟主题就传 `var(--vx-color-*)`。
+- 新增令牌 `--vx-section-font-*` / `--vx-section-line-*` / `--vx-section-marker-*`，亮色、暗色各一份；竖线宽 3px，高度 14 / 16 / 20。新增 `--vx-section-soft-desc`：`soft` 浅底上的说明亮色用正文色、暗色用次要灰，避免 #6b7280 落在 `default-soft` 上只有 4.2:1；`plain` 说明仍用次要灰。
+- DESIGN.md 补充标题栏的字号、竖线、分割线、浅底、圆角、按下态、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-section` 迁移说明。
+- 演示页新增标题栏实验室，含基础、竖线、视觉变体、尺寸、插槽、分割线、可点击和组合八组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增标题栏页，中英文含基础、竖线、视觉变体、尺寸、插槽、分割线、可点击、组合、设计规范、可访问性和 API；示意卡片、预览页和真实组件接入。
+
+## 0.30.0（2026-10-26）
+
+- 新增 vx-picker 联动选择：底部弹层里的多列滚轮，`options` 用 `text` / `value` / `children` / `disabled` 的树形节点表达层级，列数由当前路径的 `children` 深度决定，不写死级数。分支提前结束时少一列，不补空列。
+- `v-model` 是每一级已确定的值数组，打开时按 value 逐级定位；`value` 省略的节点按 `text` 匹配和回传，ThorUI 的文本数组可以直接继续用。滚动只改草稿，点确定才写回并抛 `confirm`；取消、可关闭的遮罩和 `close()` 都不动已提交的值。
+- `confirm` / `change` 回传 `VxPickerResult`：`values` / `texts` / `indices` 逐级对应，`text` 按 `separator`（默认 `' / '`）拼好。新增 `vxPickerText(options, values, separator)`，业务在触发入口上显示完整路径时不用自己再遍历树。
+- 新增 `change` 语义：只在滚动停下、整条路径可选且真的变化时抛一次；停在不可选项上的草稿不抛，`options` 异步补下一级时按当前路径重新对齐，必要时补抛一次。
+- 新增 `disabled` 节点：不可选项仍留在滚轮里转灰，停上去时头部换成 `invalidText`（默认「该选项不可选」）、确定置灰，取消和遮罩仍可退出；整列不可选同样处理。初始值落在不可选项上时，打开前挪到最近的可选项。
+- 新增空数据状态：`options` 为空时用和滚轮等高的 `emptyText` 占位，面板高度不跳，确定置灰；异步先打开、后补 `options` 也能长出下一列。
+- 新增 `title` / `cancelText` / `confirmText` / `separator` / `emptyText` / `invalidText` / `maskClosable` / `maskColor` / `zIndex`；头部高 52，滚轮 220、每行 44，面板最大宽度 480，层级默认 90，和操作菜单、日期时间选择器同档。
+- 滚轮行文字 15 / 22：未选中 `text-secondary` 400，选中 `text` 600，不可选 `disabled-text`；四列起收一档到 13 / 20。列按当前路径等分，长地名在自己的列里单行省略；不画列分隔线和渐变蒙层。
+- 行 key 用「深度 + 行版本号 + 行号」，换上级分支时只递增下级版本号；列数变化时重挂 `picker-view`。原生列会真正换掉内容，滚动不会停在旧行，也不会因为无关列重建而跳动。
+- 指示器行高只写在 `indicator-style` 里，和 `VX_PICKER_ROW` 对齐。App 读不到这里的 CSS 变量，细线改挂 `indicator-class`，用 `--vx-color-border`；App 仍用原生指示器自己的线。
+- 滚轮选中态直接返回整段 class，不再逐行拼接；叶子滚动留着原来的行对象，不重建没换内容的列。树不进响应式，关着的实例不预先复制；同一拍打开只规整一次，深度和节点同一次遍历。
+- 新增 `libs/picker.ts`：规整树、最大层级、第一项 / 最近可选项、按值定位、按路径取列、可提交判断、结果拼装和值数组比较。行高同时写在 `VX_PICKER_ROW` 里，和 `--vx-picker-row` 保持一致。
+- 新增令牌 `--vx-picker-row` 44px、`--vx-picker-wheel` 220px、`--vx-picker-max-width` 480px，亮色、暗色各一份；`picker-view` 的原生白色渐变用 `mask-class` 换成透明。
+- DESIGN.md 补充联动选择的层级、默认值、禁用选项、空状态、结果、分隔符、尺寸、字号、层级、动效和可访问性规则；readme 新增 API、用法和 ThorUI `tui-picker` 迁移说明。
+- 演示页新增联动选择实验室，含三级联动、数据层级、默认值、禁用选项、禁用状态、空数据、标题与遮罩、方法与事件、分隔符与结果、表单组合十组示例；组件目录、路由和前后翻页一起接入。
+- 文档站新增联动选择页，中英文含基础、数据层级、默认值与结果、禁用选项、空数据、标题与遮罩、方法、组合、设计规范、可访问性和 API；示意卡片、预览页和地区示例数据接入真实组件。
+
+## 0.29.0（2026-10-26）
+
+- 新增 vx-image-group 图片组合：用 `items` 按顺序排缩略图，每项只有 `src` 和可选的 `id`；空数组不渲染。方框三档 40 / 64 / 88，固定正方形，不跟父级宽度缩放。
+- 新增 `shape` 三档 `rounded` / `circle` / `square`：`sm` 用 `sm` 圆角，`md` / `lg` 用 `md` 圆角；`circle` 用于头像，`square` 用于连续图块。新增 `mode` 的 `aspectFill` / `aspectFit` / `scaleToFill`，默认裁剪填满。
+- 新增 `direction` 的 `row` / `column` 和 `offset`（px）：负值重叠、正值留缝、0 贴边，行内只加后侧外边距，纵向只加上方外边距。`wrap` 在 row 下多行，横向和纵向留缝都取 `offset`；负值按 0 处理，column 忽略 `wrap`。
+- 新增 `ring` / `ringColor`：每张图加 2px 方框内描边，用 `surface` 把重叠的相邻图分开，`ringColor` 是字面值；圆环不改变方框边长。
+- 图片加载失败或 `src` 为空时换成 `default-soft` 底色加 `image` 占位图标，并抛 `error(index, item)`；换地址重新加载成功会撤掉占位，同一个地址失败只抛一次。`clickable` 默认打开，点击抛 `click(index, item)` 并停在单张图上。
+- 新增令牌 `--vx-image-group-size-sm/md/lg` 40 / 64 / 88，亮色、暗色各一份；圆环复用 `--vx-border-width-strong`，按下复用 `--vx-opacity-pressed`。
+- DESIGN.md 补充图片组合的形状、尺寸、偏移、多行、纵向、圆环、占位、点击和可访问性规则；readme 新增 API、用法和 ThorUI `tui-image-group` 迁移说明。
+- 演示页新增图片组合实验室，含基础、形状、尺寸、偏移、多行、纵向、圆环与填充、组合八组示例；组件目录、路由和翻页一起接入。
+- 文档站新增图片组合页，中英文含基础、形状、尺寸、偏移、多行、纵向、圆环、填充方式、组合、设计规范、可访问性和 API；预览层和示意卡片接入真实组件。
+- 演示工程改为三 tab 示例：组件目录、JS 接口、我的。原 234 组示例拆到 30 个组件演示页，`pages/index/index.uvue` 只保留目录；公共演示样式提到全局，主题状态、原生导航栏、窗口底色和原生 tabBar 一起同步，tabBar 提供亮 / 暗两套图标。
+- 新增 JS 接口目录和详情页，覆盖 `libs/theme.ts`、图标表、日期时间、日历、农历以及动效 / 手势常量，附可运行示例。
+- 清理 App 端编译警告：去掉 `vx-no-data` 的 `aria-hidden`、`@font-face` 不支持的 `font-weight` / `font-style` / `font-display`；`vx-steps` 的 `cursor` 和 `vx-countdown` / `vx-toast` 的百分比 `max-width` 改为仅 Web 生效；`vx-navigation-bar` 的状态栏高度类型收口。剩余 `animation-*` / `@keyframes` 提示是 HBuilderX 5.26 的 App 关键帧限制，升级到 5.31+ 后消失。
+- 打磨 vx-swipe-action：点按和纵向滚动不再改写展开距离，长列表只收起已经展开的行。横向接管后拦住这一笔外层滚动；没有 actions 也没有 extra 时不露出空白。`v-model:open` 写成 true 和 `open()` 一样会收起其他行。保护层接住同一套手势，避免拖动中途插入后跟手中断。
+
+## 0.28.0（2026-10-26）
+
+- 新增 vx-navigation-bar 自定义导航栏：标题居中、内置返回、左右插槽和第二行 `extra`；页面用 `navigationStyle: custom`，组件挂在页面根节点。
+- 固定模式默认打开，并在文档流里补一个等高占位，页面不需要自己算高度；头图场景关掉 `placeholder`，内容从屏幕顶部开始，导航栏压在头图上。
+- 新增 `statusBar`（默认打开，按 `--uni-safe-area-inset-top` 为状态栏留白）和左右安全区；非沉浸式或嵌在原生导航下面时关掉。
+- 新增 `transparent`、`bgColor`（颜色或渐变）和 `color`；背景单独一层，渐显只改背景，标题、图标和插槽始终不透明。
+- 新增 `fade` + `scrollTop` + `scrollRatio` + `maxOpacity`：背景透明度从 0 增到上限，`change` 回传 0–1，业务据此切换标题颜色。
+- 新增 `divider` / `dividerColor` / `shadow`：分割线和阴影只在背景透明度到 0.85 以上时出现，`shadow` 用 `--vx-shadow-md` 并代替分割线。
+- 新增 `back` / `prefix` / `suffix` / `extra` / 默认插槽：`prefix` 替换返回区，默认插槽替换标题，`extra` 在标题行下再排一行搜索或筛选；内置返回只抛 `back`，不做路由。
+- 新增 `ready`（首次测量完成，回传宽度、高度、状态栏高度、透明度和窗口尺寸）和 `refresh()`（`extra` 异步变高后重新占位）。
+- 新增令牌 `--vx-navigation-bar-height` 44px，亮色、暗色各一份；内置返回和右侧动作按 44 行高排，返回热区由组件补足，层级默认 20，高于吸顶条、低于消息提示。
+- 小程序自动让出右上角胶囊；`suffix` 可用宽度会变窄，更多动作放 `extra`。
+- DESIGN.md 补充导航栏的尺寸、状态栏、透明与渐变、滚动渐显、分割线与阴影、固定占位、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-navigation-bar` 迁移说明。
+- 演示页新增导航栏实验室，含基础、状态栏、透明与渐变、滚动渐显、阴影、插槽与搜索、商品页组合、固定与事件八组示例。
+- 文档站新增导航栏页，中英文含基础、状态栏、透明与背景、滚动渐显、阴影、插槽、组合、设计规范、可访问性和 API；预览层接入近似场景，可滚动看渐显。
+
+## 0.27.0（2026-10-26）
+
+- 新增 vx-swipe-action 滑动菜单：列表行向左滑，右侧露出 1–3 条动作；内容由默认插槽决定，`actions` 为空时改用 `extra` 插槽。`ref` 上暴露 `open()` / `close()` / `toggle()`，`open` 支持 `v-model:open`。
+- 新增 `name`：这一行的业务标识，原样带回 `select(index, item, name)` 和 `change(open, name)`；列表里不用再按下标猜行。
+- 拖动跟手、松手过渡：向左滑过动作总宽的一半，或 24px / 250ms 内的快速轻扫展开；向右滑回或不到一半收起。拖动期间不挂 CSS 过渡，松手用 `--vx-duration-normal`。
+- 菜单固定在右侧、压在内容下面，内容单独平移。uni-app x Web 给每个 view 默认加了 `overflow: hidden`，菜单不能放进被平移的内容容器，否则展开时会被裁掉、动作也点不到。
+- 默认只展开一行：展开另一行时上一行自动收起并抛 `change(false, name)`。`multiple=true` 允许多行同时展开；不再提供 ThorUI 的全屏透明遮罩，点页面其他位置不会误收起。
+- 展开后内容上盖一层透明保护层，点内容只收起，不触发下层行的 `click`；滑动结束补 300ms 点击保护，Web 的后续 click 不会走进详情。
+- 新增 `swipeable`（`false` 只停手势，`v-model:open` 和 `open()` 仍可用）、`closeOnSelect`（`false` 时点动作只抛 `select`，菜单保持展开）、`extraWidth`（`extra` 插槽宽度，默认 80px）。
+- 动作项支持 `text` / `type` / `icon` / `iconVariant` / `width` / `disabled` / `bgColor` / `color`。语义色用实心底配对应的 `on-*` 前景，`default` 用 `default-soft` 浅底和正文色，warning 用 `on-warning` 深色字；禁用时底色、文字和图标一起转灰，忽略自定义色。
+- 动作宽度默认 72px，文案 15 / 22 / 500，图标 18 排在文案上方，单行省略；`extra` 插槽默认宽 80px。行高由内容决定，低于 44px 时不宜放图标。
+- 新增 `libs/swipe-action.ts`：动作和插槽默认宽度、横向接管阈值（8px）、快速轻扫判定、点击保护时长，以及跨实例的展开登记表；阈值和 `DESIGN.md` 同步。
+- Web 端收起后延迟 220ms 把菜单设为 `visibility: hidden`，键盘 Tab 不会进入已收起的自定义菜单；收起动画期间保持动作可见，关闭后也不再响应点击。
+- 不新增 CSS 令牌：底色、文字、图标、圆角和动效都复用现有 `--vx-*`；滑块不画外框、圆角和阴影，边界交给外层列表或卡片。
+- DESIGN.md 补充滑动菜单的动作、宽度、图标、颜色、禁用、展开策略、手势、点击保护、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-swipe-action` 迁移说明（`@click` → `@select`，`name` → `text`，`closable` → `closeOnSelect`，`forbid` → `swipeable`，`showMask=false` → `multiple`）。
+- 演示页新增滑动菜单实验室，含基础、动作类型、图标与宽度、点击不关闭、禁止滑动、变量控制与方法、多行展开、自定义菜单和订单列表组合九组示例；删除确认交给 `vx-modal`。
+- 文档站新增滑动菜单页，中英文含基础、动作项、点击不关闭、禁止滑动、变量控制、同时打开多行、自定义菜单、组合、设计规范、可访问性和 API；预览层接入真实组件，鼠标拖动也能操作。
+
+## 0.26.0（2026-10-26）
+
+- 打磨 vx-calendar：点选不再重算整月农历和标记；范围外的日子去掉选中底色，只留禁用色；起止写反时箭头全部停住，区间两端填反时浅底仍按先后铺开。`ref` 增加 `confirm()`，关掉底部按钮后用它提交。平铺模式的 `open()` / `close()` 不再改 `show`。弹层滑动不再把页面底下的列表一起拖走。
+- 新增 vx-drawer 抽屉：从屏幕的一条边滑出，`position` 有 `left` / `right` / `top` / `bottom`，默认右侧；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()`。
+- 左右抽屉占满高度、宽 280px（`--vx-drawer-width`）；上下抽屉占满宽度、高 45%（`--vx-drawer-height`）。新增 `width` / `height` 覆盖尺寸，必须带单位；面板最大不超出整屏。
+- 面板贴住屏幕的一侧不圆角，朝向页面的两角用 `lg` 12；`surface` 底、`--vx-shadow-lg`，不加描边；遮罩用 `--vx-color-mask`，只压页面。新增 `bgColor` / `maskColor` 两个字面值入口。
+- 新增头部：`title`（17 / 24 / 600、单行省略）、`closable`（44 热区、18 图标）、`prefix` / `extra` 插槽；头部高 52，底部一条 1px `divider`。四者都没有时不渲染头部。
+- 正文用 `scroll-view` 占满头尾之间的剩余高度，头部和底栏固定；默认四边内边距 16，`bodyPadded=false` 让列表和图片贴边。新增 `suffix` 固定底栏，上边一条 `divider`，内边距 12 / 16。
+- 点可关闭的遮罩或关闭叉收起并抛 `close`；`maskClosable=false` 时点遮罩不关闭也不抛事件；`close()` 只收起，不抛 `close`。
+- 四个方向的安全区由面板内边距承担：左右抽屉让开顶部、所在边的侧边距和底部手势条，上下抽屉让开顶部或底部。
+- 层级默认 90，和操作菜单、日期时间选择器、日历弹层同档；低于消息提示 100、弹框 110、加载浮层 150、轻提示 200。Web 上遮罩淡入、面板从所在边滑入；App 5.26 直接出现，关闭即移除。
+- 新增令牌 `--vx-drawer-width` 280px、`--vx-drawer-height` 45%，亮色、暗色各一份。
+- DESIGN.md 补充抽屉的方向、尺寸、头部、正文滚动、底栏、遮罩、安全区、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-drawer` 迁移说明。
+- 演示页新增抽屉实验室，含基础、四个方向、尺寸、头部、贴边与底栏、长内容滚动、遮罩受限、自定义颜色、方法与事件、筛选组合十组示例。
+- 文档站新增抽屉页，中英文含基础、位置、尺寸、头部、插槽、遮罩、自定义颜色、组合、方法、设计规范、可访问性和 API；预览层接入真实组件，四个方向和正文滚动都能操作。
+
+## 0.25.0（2026-10-26）
+
+- 新增 vx-calendar 日历：按周排布的月历，`mode="single"` 选一个日期，`mode="range"` 点两下选一段区间；`popup` 走底部弹层，不写就平铺在页面里，宽度跟随父级。`ref` 上暴露 `open()` / `close()`。
+- 模型按模式分开：单日期用 `v-model`，区间用 `v-model:start` / `v-model:end`，两种模式互不干扰。弹层里点选先落在草稿上，点确定才写回；关闭叉、遮罩和 `close()` 都不动已提交的值。平铺模式没有确定这一步，点选当场写回。
+- 区间交互：第一下点起点、第二下点终点，点到起点之前重新起头，再点一次起点得到一天的区间，两端都定好后点任意一格从那一格重来；只选了起点时按单日显示，确定按钮同时是灰的。
+- 新增 `minDate` / `maxDate` 可选范围（闭区间，默认收到 1900-01-01 到 2100-12-31），范围外的日子转灰不可选；目标月一天都选不了时翻月和翻年箭头自动禁用，点也不动、不抛 `monthChange`。已选值优先于可选范围：有已选值时显示月跟着它走，没有已选值时收窄范围才把显示月收到最近的边界月。
+- 新增 `showLunar` 农历：日期下方排一行初一、廿一这样的农历日，附带 `libs/lunar.ts`（1900–2100 公历转农历，只算日子和闰月）。农历不出现节气、干支和宜忌，越界时安静留空。
+- 新增 `marks` 日期标记：`bgColor` 画圆、`color` 改数字色、`text` 顶掉农历行、`done` 换成对勾。选中和区间优先于标记，不可选的日子也不显示标记颜色。标记是正圆，和选中方块同为 36。
+- 新增 `type` 语义色（`primary` / `success` / `info` / `warning` / `danger` / `default`），同时作用于选中底色、区间浅底、文字和确定按钮；warning 的琥珀底配深色字，区间文字用 `warning-ink`。
+- 新增 `showYearArrow`（外侧双箭头翻年、内侧单箭头翻月，关掉后只剩按月翻，等同 ThorUI 的「只能切换月份」）、`title`、`confirmText`、`startText` / `endText`、`placeholder`、`showConfirm`、`maskClosable`、`maskColor`、`zIndex`（默认 90，和操作菜单、日期时间选择器同档）。
+- 新增 `libs/calendar.ts`：一天的序号、星期、月份网格、日期解析与格式化、前后翻月。闰年、当月天数、补零沿用 `libs/datetime.ts`；日期比较用整数序号，不建 Date，设备时区不影响排序。`vxDatetimeNumbers` 改为导出，日期解析复用它。
+- 网格按当月占几周排 5 或 6 行，当月之外留空，五周的月份不留空的第六行；周日排第一列；今天只换数字颜色。每天一个 36 的等大方块（圆角 10），四边都留缝：选中和区间两端实心、区间中间铺浅底，标记画成正圆；小字槽钉在方块底部、不占布局，整行数字对齐，没有小字时日期回到方块正中。
+- 新增令牌 `--vx-calendar-cell`、`--vx-calendar-tile`、`--vx-calendar-week`、`--vx-calendar-max-width`、`--vx-calendar-line-day`、`--vx-calendar-line-result`、`--vx-calendar-font-sub`、`--vx-calendar-line-sub`，亮色、暗色各一份。
+- DESIGN.md 补充日历的尺寸、行数、区间底色、标记、语义色、翻月、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-calendar` 迁移说明（`isFixed` → `popup`，`status` → `marks`）。
+- 演示页新增日历实验室，含单个日期、日期区间、农历、平铺、可选范围与翻月、标记、自定义颜色、标题与遮罩、方法与事件、表单组合十组示例。
+- 文档站新增日历页，中英文含基础、日期区间、农历、平铺展示、可选范围与翻月、标记、自定义颜色、标题与遮罩、方法、组合、设计规范、可访问性和 API；预览层接入真实组件，可翻月、可点选。
+- 打磨 vx-calendar：修好翻月箭头一直点不动的问题（`vxCalendarMonthBounds` 返回数组、组件按 `.first` / `.last` 读，可选范围的边界收口也一直没生效）；`marks` 的 `date` 先归一再匹配，`2026-10-5` 这种不补零的写法也认，读不出来的直接丢掉；禁用日和翻不动的箭头在 Web 上不再显示可点光标；`libs/lunar.ts` 的年份上下限改用 `libs/calendar.ts` 的同一对常量，不再各写一份。
+
+## 0.24.0（2026-10-26）
+
+- 新增 vx-tabs 标签页：`items` 按顺序等宽渲染，`v-model` 绑当前索引；点击未选中且未禁用的页签写回模型并抛 `change(index)`，点击当前项不再抛事件。
+- 新增三种外观：`line` 下划线（默认）、`soft` 浅底胶囊、`inverse` 反色条。反色条用正文色铺满整条，选中项浮 `surface` 胶囊，且不画分割线；一屏最多一条。`soft` 的选中文字取对应的 `*-pressed`，warning 取 `warning-ink`，保证浅底上的 4.5:1。
+- 新增 `size` 三档：高度沿用列表行 44 / 52 / 60，选中胶囊收一档到紧凑高度 28 / 32 / 36，角标跟 `--vx-badge-height-*`，下划线固定 24 / 32 / 40 × 2px。新增令牌 `--vx-tabs-indicator-sm/md/lg`，亮色、暗色各一份。
+- 新增 `items[].badge`、`dot`、`disabled`：计数超过 `badgeMax`（默认 99）显示 `99+`；`dot` 优先于计数；禁用项不响应点击，文字转灰且保持不透明，角标单独降到 `--vx-opacity-disabled`；反色条上的未选中禁用项只降透明度。新增 `badgeType`，角标默认 `danger`。
+- 有分割线时下划线下移 `--vx-tabs-indicator-out`（-1px）盖住底边；没有分割线时贴在行内。不认识的 `size` / `type` 落回 `md` / `default`。点击停在页签上。
+- 新增 `type` 语义色，只染选中文字、下划线和浅底胶囊；`warning` 文字用 `warning-ink`，下划线用 `warning-pressed`。`divider` 控制底部 1px 分割线，`bgColor` / `color` 分别覆盖整条底色和未选中文字，都是字面值，传 `var(--vx-color-*)` 时才跟主题。
+- 页签只切视图：不内置内容、路由、请求和插槽；一屏 2–5 个，不横向滚动；空数组不渲染，负数或越界索引不选中。
+- DESIGN.md 补充标签页的尺寸、三种外观、角标、禁用、分割线、自定义颜色、状态色和可访问性规则；readme 新增 API、用法和 ThorUI `tui-tabs` 迁移说明。
+- 演示页新增标签页实验室，含基础、三种外观、尺寸、角标、禁用与状态色、分割线、自定义颜色和页签与内容八组示例。
+- 文档站新增标签页页面，中英文含基础、视觉变体、尺寸、角标、状态、分割线、自定义颜色、组合、设计规范、可访问性和 API；预览层接入真实组件。
+
+## 0.23.0（2026-10-26）
+
+- 新增 vx-datetime 日期时间选择器：底部弹层里的滚轮，`mode` 十种——`year`、`year-month`、`month-day`、`date`、`date-hour`、`datetime`（默认）、`datetime-second`、`time`、`time-second`、`minute-second`；列数从 1 到 6，只出现模式包含的列。
+- 打开时按 `v-model` 定位：读不出来或超出年份区间时回落到当前时间 / 区间边界，分钟和秒按步长对齐；滚动只改草稿，点确定才写回，取消、遮罩和 `close()` 都不动已提交的值。`ref` 上暴露 `open()` / `close()`。
+- 新增 `startYear` / `endYear`（收口到 1000–2999，倒序自动交换）、`minuteStep` / `secondStep`（1–30）、`unitPosition`（`inline` / `top`）、`format`、`maskClosable`、`maskColor` 和 `zIndex`（默认 90，和操作菜单同档）。
+- 天数跟着年月走，闰年二月 29 天；换月或换年时选中的日超出当月会收口，并把日期列滚回去。打开期间收窄年份区间，选中的年也会夹回区间。
+- 滚轮用 uni-app x 原生 `picker-view`：可视高度 220、每行 44（五行），指示器高度必须等于行高，列才按行对齐。原生蒙层写死了白色渐变，暗色下会在两端发白，组件用 `mask-class` 换成透明，选中行靠字重和颜色区分。六列时数值自动收一档字号。
+- 新增 `libs/datetime.ts`：字段顺序、模式列、解析、格式化、闰年天数、步长对齐和年份列表。解析只认数字并按模式字段的位置取值，`date` 收到带时间的整串也取前三段。
+- 新增令牌 `--vx-datetime-row`、`--vx-datetime-wheel`、`--vx-datetime-max-width`，亮色、暗色各一份；行高同时写在 `libs/datetime.ts` 的 `VX_DATETIME_ROW` 里，改一处要改两处。
+- DESIGN.md 补充日期时间选择器的尺寸、模式、单位、格式化、遮罩、层级和可访问性规则；readme 新增 API、用法和 ThorUI `tui-datetime` 迁移说明（数字 `type` 换成语义化 `mode`）。
+- 演示页新增日期选择实验室，含基础、日期模式、时间模式、默认值与年份区间、步长、单位置顶、自定义格式、标题与遮罩、方法与变更事件、表单组合十组示例。
+- 文档站新增日期时间选择器页，中英文含基础、日期模式、时间模式、默认值与年份区间、步长、单位位置、自定义格式、标题与遮罩、方法、组合、设计规范、可访问性和 API；预览层新增 `picker-view` / `picker-view-column` 的近似实现，滚轮在文档里也能真的滚。
+
+## 0.22.0（2026-10-26）
+
+- 新增 vx-no-data 暂无数据：默认内置线稿插图、主文案和可选说明 / 动作；支持 `icon`、`image`、`icon` 插槽和 `default` / `extra` 插槽。
+- 内置线稿按 96 / 128 / 160 三档缩放，不依赖图片，也不判断主题；`type` 只给纸边、加号和图标圆上色，文案保持正文色。
+- 新增动作透传：`actionText` / `actionType` / `actionVariant` / `actionShape` / `actionSize` / `actionWidth` / `actionLoading` / `actionDisabled`，点击抛 `action`。
+- 新增 `fill` 撑满父级并垂直居中；新增 `iconVariant` 和 `image`；extend 图标仍需引入 `icons-extend.css`。
+- 新增令牌 `--vx-no-data-art-*`、`--vx-no-data-disc-*`、`--vx-no-data-glyph-*` 和 `--vx-no-data-copy-max`，亮色、暗色各一份。
+- `VxButtonVariant` / `VxButtonShape` 移到 `libs/types/common.ts`，按钮和空状态共用同一组类型。
+- DESIGN.md 补充空状态的尺寸、色板、动作、填充、插槽和可访问性规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增暂无数据实验室，含基础、插图、类型、尺寸、动作、状态、插槽和组合八组示例。
+- 文档站新增暂无数据页，中英文含基础、插图、类型、尺寸、动作、状态、插槽、组合、设计规范、可访问性和 API；预览层同步接入。
+- 打磨 vx-no-data：语义色改挂 class，纸边、加号、图标圆和字形各写各的，不再把 color 写到 view 上；字形补上和字号相同的宽高；长文案在 320 内折行；lg 不再重复挂一份 24 的内边距。readme 里自定义图片的方框改回 96 / 128 / 160。
+- 打磨 vx-collapse / vx-collapse-item：按下态只留一份底色，箭头收成一层，点击停在面板上；平面分组不再挂空的修饰 class。
+
+## 0.21.0（2026-10-26）
+
+- 新增 vx-collapse 折叠面板与 vx-collapse-item 折叠项：容器用 `v-model` 绑展开面板的 `name` 数组，面板承载标题、说明、前缀图标、角标和内容。支持手风琴、三档尺寸、卡片 / 平面形态、整组或单项禁用、无箭头和固定高度滚动。
+- 新增容器方法 `open(name)` / `close(name)` / `toggle(name)` 和 `change(name, open)` 事件；手风琴打开新项时自动收起上一项，收起当前项时清空名单。面板另抛 `change(open)`。
+- 标题行沿用列表行最小高度 44 / 52 / 60；标题 13 / 15 / 17（20 / 22 / 24、500），说明固定 13 / 20，箭头沿用图标三档 14 / 18 / 22；水平内边距 12 / 16 / 16，垂直 8 / 12 / 16，内容左右与标题对齐。
+- 分割线 1px，左右与标题内边距对齐，最后一项按实例挂载顺序自动不画；`divider=false` 去掉全部面板间分割线。`card` 用 `surface` 底、1px 描边和 `md` 圆角，`plain` 只保留 `surface` 底，两者都不加阴影。
+- 展开用 `max-height` 加透明度和 8px 上移过渡，固定高度改用 `height` 过渡；第一帧不挂过渡，默认展开的面板不会滑进来。5.26 的 App 不支持 `max-height` 过渡时直接换高度，透明度仍然过渡。
+- `contentHeight` 必须带单位，内容放进 `scroll-view` 内部滚动；自动高度最多 2000px。`prefix` 放图标或头像，`extra` 放标签、徽章、时间或状态；插槽内容自己带颜色和字号。
+- 不新增令牌：标题行复用列表行高度，箭头复用图标三档，颜色和动效复用现有 `--vx-*`。
+- DESIGN.md 补充折叠面板的尺寸、形态、展开名单、手风琴、分割线、禁用、无箭头、固定高度、方法、动效和可访问性规则；readme 新增两个组件的 API、用法和 ThorUI 迁移说明。
+- 演示页新增折叠面板实验室，含基础、手风琴、卡片与平面、尺寸、禁用与无箭头、固定高度、前缀与角标、卡片组合和方法与事件九组示例。
+- 文档站新增折叠面板和折叠项两页，中英文含基础、手风琴、视觉变体、尺寸、组合、禁用、无箭头、固定高度、插槽、设计规范、可访问性和 API；预览层同步接入真实组件。
+- 打磨 vx-modal：内置动作从 `md` 收到 `sm` 档 32 / 13，左右内边距 12，并排仍等宽；默认动作更紧凑，不再压过标题和正文。自定义正文里的表单控件保持业务尺寸，示例仍用 `md`。
+- vx-modal 新增 `closable`：右上角显示 44 × 44 关闭叉，图标 18，点击收起并抛 `cancel`；和取消、遮罩走同一个出口，不受 `maskClosable` / `closeOnAction` 影响。有标题时标题左右各让 24，没有标题时正文右侧让 24。新增令牌 `--vx-modal-close-size` 44px，亮色、暗色各一份。
+
+## 0.20.0（2026-10-26）
+
+- 新增 vx-modal 弹框：居中对话框，`title` / `content` 或默认插槽放正文，默认取消、确定两个动作；支持 `v-model:show`，`ref` 上暴露 `open()` / `close()`。
+- 新增 `actions` 自定义动作，每项有 `text` / `type` / `variant` / `role` / `disabled` / `loading`；一个动作铺满、两个并排等宽、三个以上纵向，轮廓由 `actionShape` 统一。`role="cancel"` / `"confirm"` 走语义事件，没有 `role` 的动作抛 `action(index, action)`。
+- 动作统一用 `md` 控件：40 高、14 / 22 / 500，左右内边距 16；自定义正文里的输入和按钮也按 `md` 对齐，不另造第四档尺寸。
+- 默认取消是镂空 `default`，确定是实心 `primary`；`cancelType` / `confirmType` / `confirmText` / `confirmLoading` / `confirmDisabled` 只作用于默认动作。新增 `closeOnAction`，异步提交可以保持打开，完成后再调 `close()`。
+- 新增 `showActions`、`maskClosable`、`titleColor`、`contentColor`、`maskColor` 和 `zIndex`；自定义正文用默认插槽 + `:show-actions="false"`，插槽不继承正文的颜色和字号。
+- 新增 `size` 三档 280 / 320 / 400，只改面板最大宽度，字号固定；新增 `icon` / `iconType` 状态图标，圆 48、图标 22，圆用 `*-soft` 浅底，图标用 `*-pressed`。
+- 新增令牌 `--vx-modal-max-width-sm/md/lg` 和 `--vx-modal-icon-size`，亮色、暗色各一份。
+- 新增浮层层级 110：高于操作菜单 90 和消息提示 100，低于加载浮层 150 和轻提示 200；组件自带浮层改为七档。
+- DESIGN.md 补充弹框的宽度、图标、动作、颜色、事件、遮罩、层级、自定义正文和可访问性规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增弹框实验室，含基础、提示文本样式、危险确认、单个按钮、多个按钮、圆角按钮、按钮颜色、尺寸、遮罩不可点、自定义内容、异步确认和方法十二组示例。
+- 文档站新增弹框页，中英文含基础、危险确认、文本颜色、动作、动作颜色、图标、尺寸、遮罩、自定义内容、异步确认、方法、设计规范、可访问性和 API；预览层同步接入。
+- 打磨 vx-actionsheet：选中勾固定在行右侧，文案保持居中；阴影和按下态圆角裁切分层，App 上阴影不会被 overflow 裁掉。动作色改由 class 表达，禁用写在最后盖过类型色。
+- 打磨 vx-modal：定位层和面板打开 `overflow: visible`，App 上 `lg` 阴影不再被裁掉。图标下边距只在有标题时留 12，避免和正文上边距叠成 24。`iconType="default"` 的图标改为 `text`，与浅底按钮一致。并排长文案裁在自己的按钮里，不再盖住另一侧。
+
+## 0.19.0（2026-10-26）
+
+- 新增 vx-actionsheet 操作菜单：底部弹层，用 `items` 列动作，`title` / `description` 可选，默认带取消按钮。支持 `v-model:show`，`ref` 上暴露 `open()` / `close()`。
+- 动作支持 `default` / `primary` / `danger` 三种类型，以及 `disabled` 和 `selected` 状态；点击默认收起并抛 `select(index, item)`，`closeOnSelect=false` 时保持打开。
+- 点取消或可关闭的遮罩收起并抛 `cancel`；`maskClosable=false` 时只能点动作或取消退出；`close()` 只收起，不抛 `cancel`。
+- 面板用 `surface` 底、顶部 `lg` 圆角、`lg` 阴影，最大宽度 480px，手机上铺满；遮罩用 `--vx-color-mask`，只压页面不压面板。底部安全区由面板内边距承担，取消与动作之间用 4px `default-soft` 间隔带，不画 border。
+- 标题 17 / 24 / 600，说明 13 / 20 次要色，动作和取消 15 / 22 / 500，行高 52，左右内边距 24；动作默认 `text`，primary 用 `primary-pressed`，danger 用 `danger-pressed`，禁用用 `disabled-text`，按下用 `surface-pressed`。
+- 新增 `titleColor` / `descriptionColor` / `maskColor` 三个字面值覆盖入口；新增令牌 `--vx-actionsheet-max-width` 480px，亮色、暗色各一份。
+- 新增浮层层级 90：低于消息提示 100、加载浮层 150、轻提示 200，高于页面内容和吸顶条 10；组件自带浮层改为六档。
+- Web 上用 `--vx-duration-normal` 淡入遮罩、从底部滑入面板；App 5.26 直接出现，关闭即移除，不做退场动画。
+- DESIGN.md 补充操作菜单的尺寸、层级、颜色、状态、选中、遮罩、安全区和可访问性规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增操作菜单实验室，含基础、危险操作、提示文本样式、无提示、无取消按钮、遮罩不可关闭、选中状态和方法八组示例。
+- 文档站新增操作菜单页，中英文含基础、标题与说明、类型、状态、自定义颜色、无取消、遮罩、组合、方法、设计规范、可访问性和 API；预览层同步接入。
+
+## 0.18.0（2026-10-25）
+
+- 新增 vx-steps 步骤条：用 `items` 按顺序渲染节点、连线和文字，`active` 是当前步骤索引，从 0 开始，`-1` 表示还没开始。负数按未开始处理，其余非整数四舍五入，超过末项收到最后一步。空数组不渲染，单条步骤不画连线。
+- 当前步骤用勾标记，之前的步骤保留圆点或序号；当前步骤之前的连线用语义色，之后的连线保持待处理色。`variant="dot"` 用小圆点表示已完成和待处理，`variant="number"` 已完成和待处理都显示序号。
+- 新增 `direction` 的 `horizontal` / `vertical`，`lineStyle` 的 `solid` / `dashed`，`clickable` 整步热区和 `click` 索引；组件不维护内部状态，父级用 `active` 和 `click` 同步。
+- 连线固定 1px 并压在节点中心：四边宽度先归零，只留上 / 左 1px，避免默认 medium 把线撑成 4px；横向 / 纵向再用 50% 位移居中。`solid` / `dashed` 只换 `border-style`。
+- 新增 `type` 的六种语义色，同时决定当前节点、当前标题和已完成连线；`warning` 的标题用 `warning-ink`、连线用 `warning-pressed`。已完成标题保持正文色，待处理标题转次要灰。
+- 新增自定义图标节点：已完成 `*-soft` 浅底配语义色图标，当前实心底配 `on-*` 图标，待处理 `surface` 底加 `border` 描边配次要灰图标；`iconVariant` 切 regular / fill，扩展图标需要引入 `icons-extend.css`。
+- 新增令牌 `--vx-steps-node-*` 20 / 24 / 28、`--vx-steps-dot-*` 6 / 8 / 10、`--vx-steps-font-*` 12 / 13 / 14、`--vx-steps-center-*` 10 / 12 / 14 和 `--vx-steps-line-out-*` -10 / -12 / -14，亮色、暗色各一份。纵向连线的 bottom 用 line-out，App 不能 calc，负值单独写字面量。
+- 步骤名按 13 / 15 / 17（20 / 22 / 24、600），说明 `sm` 13 / 20、`md` / `lg` 15 / 22，时间固定 13 / 20；节点到内容 8 / 12 / 16，纵向步骤之间留 24。
+- DESIGN.md 补充步骤条的尺寸、方向、状态、语义色、图标、虚线、点击和插槽规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增步骤条实验室，含水平、数字、垂直、自定义图标、尺寸、语义色、线条、可点击和卡片组合九组示例。
+- 文档站新增步骤条页，中英文含基础、类型、方向、数字、尺寸、线条、图标、可点击、组合、设计规范、可访问性和 API；预览层同步接入。
+
+## 0.17.0（2026-10-25）
+
+- 新增 vx-countdown 倒计时：`time` 传剩余秒数，默认显示时 / 分 / 秒；`showDays` / `showHours` / `showMinutes` / `showSeconds` 控制可见单位。隐藏上层单位时由下一个可见单位接管余数，四段全关时回落到秒。
+- 新增 `separator` 的 `colon` / `unit` 和 `unit` 的 `zh` / `en`：冒号，或天 / 时 / 分 / 秒、d / h / m / s。支持三档尺寸、`outline` / `soft` / `plain` 三种盒形和六种语义色。
+- 新增 `showMilliseconds` 十分位：读数取自真实剩余时间，按 100ms 刷新，依附秒数；关闭时回到 1 秒一跳。
+- 计时按截止时间重算，不在每次回调里递减计数；`tick` 在显示秒数变化时抛，`reset` 和改 `time` 会补抛一次新值，`end` 只在自然到 0 时抛一次。`time` 变化时按新值重置。
+- 新增 `start()` / `pause()` / `reset(seconds?)` 方法和 `autoStart`；`start` 在结束后从 `time` 重来，`reset` 不传参回到 `time`。
+- 新增令牌 `--vx-countdown-height-*` 24 / 32 / 40 和 `--vx-countdown-ms-width-*` 20 / 26 / 32，亮色、暗色各一份。
+- 新增 `bgColor` / `color` / `unitColor` / `borderColor`：底色、数字、盒外分隔与单位、描边各改一处；默认按字面值使用，传 `var(--vx-color-*)` 时跟随主题。
+- DESIGN.md 补充倒计时的尺寸、字号、圆角、颜色、计时语义、毫秒精度和自定义颜色规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增倒计时实验室，含基础、天数与单位、隐藏单位、毫秒、尺寸、形态、类型与颜色、方法与事件、组合九组示例。
+- 文档站新增倒计时页，中英文含基础、单位、隐藏单位、毫秒、尺寸、形态、类型与颜色、方法与事件、组合、设计规范、可访问性和 API；预览层同步接入。
+
+## 0.16.0（2026-10-25）
+
+- 新增 vx-number-box 数字框：减号、数值输入、加号三段，`v-model` 绑定数值，支持范围、步长、三档尺寸、描边 / 浅底形态、聚焦、校验失败和禁用。
+- 默认 `min=1`、`max=99`、`step=1`。到边界后对应按钮转灰并停止响应；`min` 大于 `max` 时按交换后的区间处理。非数字边界按 1 / 99。
+- 输入中只同步范围内的有效值；失焦或确认时收口：空值回 `min`，非数字回到最近一次有效值，越界夹到边界。点加减时越界或空草稿先夹回边界再走一步。父级写入的越界值不回写，点加减或失焦只夹到边界。`change` 只在点加减、失焦和确认后值真的变化时抛一次。
+- 精度按值、`step`、`min`、`max` 里最多的小数位收口，最多 6 位；`0.1 + 0.2` 不留浮点尾巴。`step` 只决定加减量，不对齐步长网格。
+- 新增三档尺寸：控件高 32 / 40 / 48，数值区宽 44 / 52 / 60，图标 14 / 18 / 22，数值字号 13 / 14 / 16。新增令牌 `--vx-number-box-field-*`，亮色、暗色各一份。
+- 新增 `variant` 的 `outline` / `soft`、`shape` 的 `rounded` / `pill` / `square`，以及 `bgColor` / `color` / `iconColor`。自定义颜色是字面值，禁用时不生效。描边盒按下铺 `surface-pressed`；浅底和自定义底色只让图标变淡。下限为负时数值区改用 `text`，否则 `digit` 键盘没有负号。
+- 新增 `focus` / `blur` 事件和普通 `change` 数值；没有插槽和方法。整个数字框的点击停在本组件内。
+- DESIGN.md 补充数字框的尺寸、范围、步长、精度、输入收口、状态和自定义颜色规则；readme 新增 API、用法和 ThorUI 迁移说明。
+- 演示页新增数字框实验室，含基本用法、范围、步长、尺寸、形态、状态、自定义颜色和购物车组合八组示例。
+- 文档站新增数字框页，中英文含基础、范围、步长、尺寸、形态与轮廓、状态、自定义颜色、组合、设计规范、可访问性和 API；预览层同步接入。
+
+## 0.15.0（2026-10-25）
+
+- 新增 vx-time-axis 时间轴：用 `items` 从上到下渲染节点、竖线、标题、说明和时间，不提供容器加子项的组合写法。空数组不渲染。
+- 有 `title` 的是阶段，没有 `title` 的是同一阶段下的事件。阶段用图标节点，事件缩成圆点；当前条目下一条没有 `title` 时，底部留白从 24 收到 12，分组只由数组顺序表达。
+- 节点三档 20 / 24 / 28，事件圆点 6 / 8 / 10；阶段名 13 / 15 / 17（20 / 22 / 24、600），说明 `sm` 13 / 20、`md` / `lg` 15 / 22，时间固定 13 / 20。新增令牌 `--vx-time-axis-node-*`、`--vx-time-axis-dot-*` 和 `--vx-time-axis-node-center-*`，亮色、暗色各一份。
+- `type` 默认 `default`，用浅灰节点和次要灰图标；`primary` / `success` / `info` / `warning` / `danger` 用语义实心底和 `on-*` 图标。没有 `icon` 时用圆点，圆点也可以用 `type` 上色。
+- 竖线 1px，两端收在第一个和最后一个节点中心，单条记录不画线；`lineColor` 只改线色，是字面值，不跟随主题。
+- 新增 `vx-time-axis` 的 props、readme 与 DESIGN.md 规则；演示页新增订单物流、节点类型、尺寸、事件与竖线、订单卡片五组示例。
+- 文档站新增时间轴页，中英文含基础、节点类型、尺寸、事件节点、自定义竖线、组合、设计规范、可访问性和 API；预览层同步接入。
+- 从 ThorUI `tui-time-axis` / `tui-timeaxis-item` 迁移：`items` 取代容器加子项，`title` / `description` / `time` / `icon` 取代 `content`、`node` 插槽；`backgroundColor` 不再需要，节点会自动盖住竖线，节点颜色用 `type`，线色用 `lineColor`。
+
+## 0.14.0（2026-10-25）
+
+- 新增 vx-sticky 吸顶容器：用 `scrollTop` 驱动，在文档流和 `position: fixed` 之间切换，吸顶后补一个等高占位，下面的内容不跳。App 不支持 `position: sticky`，各端共用这一套行为。
+- 吸顶条默认在文档流里透明，吸顶后铺 `surface` 底和底部 1px 分割线；`shadow` 改用 `--vx-shadow-md`，`bgColor` 可换品牌底色，未吸顶也生效。
+- 新增 `offsetTop` 吸顶距离，单位 px，在顶部安全区之外再让出；Web 自动避让导航栏。`zIndex` 默认 10，压在页面内容和固定页脚上、低于消息提示。
+- 新增 `suffix` 插槽：放吸顶条后面的内容，决定吸到哪里结束；容器底边滚到顶时把吸顶条推出去，下一段接着吸。不传 `suffix` 时吸到页面末尾。
+- 新增 `change` 事件和 `refresh()` 方法：吸顶状态切换时抛布尔值；异步内容、图片字体加载或窗口尺寸变化后重新测量。
+- 演示页新增吸顶实验室，含基础、吸顶距离、指定范围和阴影与底色四组示例；页面滚动值统一接到 `vx-sticky`。
+- DESIGN.md 补充吸顶的层级、底色、分割线、范围、刷新和限制；组件库 readme 新增 API 与用法。
+- 文档站新增吸顶容器页，中英文含基础、吸顶距离、指定范围、阴影、自定义底色、事件与刷新、设计规范、可访问性和 API；预览层同步接入，画布用 CSS sticky 示意页面级 fixed 的吸顶效果。
+
+## 0.13.0（2026-10-25）
+
+- 新增 vx-loading 加载中：转圈加可选文案，支持 `row` / `column` 两种排列、`sm | md | lg` 三档尺寸和 `primary | success | info | warning | danger | default` 六种语义色。
+- 转圈提供 `ring`、`arc`、`bars` 三种形态，分别对应圆环、开口弧和十二瓣渐隐；十二瓣的延迟按 `--vx-duration-spin` 等分，像素常量在 `libs/motion.ts`。
+- 新增 `overlay` 全屏浮层：默认带 `mask` 遮罩，面板居中，挡住页面点击；面板最小 120、最大 240，内边距 24，`md` 圆角和 `lg` 阴影，层级默认 150，压在消息提示上、轻提示下。
+- `type` 只改转圈颜色，文案保持次要灰；浮层里默认转圈和文案改用正文色。`mask=false` 只去掉压暗，不放开点击；`maskColor` 自定义遮罩色。
+- 新增 vx-loadmore 加载更多：和 vx-loading 共用转圈，默认文案「正在加载...」，上下留白 16，文案 13 / 20；不承载点击和重试。
+- 新增 vx-nomore 没有更多：默认文案「没有更多了」加两侧 1px 细线，`dot` 换成 6px 圆点，`line=false` 去掉线；`color` / `lineColor` 分别覆盖文案圆点和线条。`size` 三档只改文案和标记高度，和同尺寸的 vx-loadmore 一样高。
+- vx-loadmore 与 vx-nomore 共用同一套尾部节奏，切换时不跳高度；建议放在分组卡片外，加载结束再换成没有更多。两边同尺寸时高度完全一致。
+- 新增令牌 `--vx-loading-min-width`、`--vx-loading-max-width` 和 `--vx-nomore-dot`，亮色、暗色各一份。
+- DESIGN.md 补充加载、尾部状态、字号、间距、浮层层级和动效规则；演示页新增加载与尾部实验室，含行内、纵向、尺寸、类型、三种形态、浮层、加载更多、没有更多和列表尾部切换。
+- 文档站新增加载中、加载更多和没有更多三页，中英文含基础、布局、尺寸、类型、形态、浮层、自定义颜色、列表尾部、设计规范和 API；预览层同步接入。
+- 十二瓣收成单层节点，角度和延迟按 700ms 等分后一次算好。纵排或浮层没有文案时不再多留 8。浮层单独接住点击。加载更多关掉换行，避免长句把尾部撑得比没有更多高。
+
+## 0.12.0（2026-10-25）
+
+- 新增 vx-grid 宫格与 vx-grid-item 宫格项。容器负责 `surface` 底、外框、`md` 圆角和四角裁切；格子负责宽度、内部线、内容和点击。
+- 列数写在格子上：`columns` 取 2–5，超出按 3，宽度按 50% / 33.33% / 25% / 20% 分。`index` 从 0 开始按行递增，第一行、第一列不画内部线。
+- `divider` 默认打开，只画上、左两条 1px 内部线，线色用 `--vx-color-divider`；外框仍用 `--vx-color-border`。`divider=false` 去掉内部线，`variant="plain"` 去掉外框和圆角。
+- 格子三档尺寸：最小高度 72 / 88 / 104，内边距 8 / 12 / 16，主文案 13 / 15 / 17，单行省略；说明固定 13 / 20。图标 18 / 22，图片 32 / 40 / 48；新增令牌 `--vx-grid-height-*` 与 `--vx-grid-media-*`，亮色、暗色各一份。
+- 格子支持字体图标 `icon`、图片 `image` 和 `icon` 插槽，优先级为插槽 > 图片 > 字体图标。字体图标直接渲染，默认次要灰；`type` 改语义色，`iconVariant` 切 regular / fill。图片按 32 / 40 / 48 方框 `aspectFit` 展示，圆角由方框裁切。
+- 新增 `bgColor` / `color`：分别覆盖格子和主文案、字体图标的颜色，字面值不随主题；有底色时按下改用整体透明度，不再换 `surface-pressed`。去外框用 `variant="plain"`，去内部线再传 `:divider="false"`，可以拼出参考里的纯色块和无边框宫格。
+- `extra` 插槽贴右上角，放徽章、短标签或状态；不占内容高度。
+- `clickable` 默认打开，按下用 `surface-pressed` 底并抛 `click`，点击停在格子上；静态格传 `:clickable="false"`，禁用格转灰且不抛 `click`。
+- DESIGN.md 补充宫格的列数、内部线、尺寸、图标、底色和点击规则；演示页新增宫格实验室，含基础、列数、分隔线、形态、尺寸、图标、状态、组合、色底与无边框。
+- 文档站新增宫格和宫格项两页，中英文含基础、列数、分隔线、视觉变体、尺寸、图标、自定义颜色、布局、插槽、状态、组合和 API；预览层同步接入。
+
+## 0.11.0（2026-10-25）
+
+- 新增 vx-card 卡片：头部、正文、底部三段。`title` / `meta` / `avatar` 组成头部，正文用默认插槽或 `content`，底部用 `footer` 或 `suffix`。
+- 头部支持 `avatarShape`（rounded / circle）、`titleColor` / `metaColor`、`headerBg` 和 `headerDivider`；`prefix` 替换头像，`extra` 替换右侧 meta，插槽内容自己带颜色和字号。
+- 新增三档尺寸：内边距 12 / 16 / 24，头像 32 / 40 / 48，标题 13 / 15 / 17；正文 `sm` 用 13，`md` / `lg` 用 15；meta 与 footer 固定 13。标题、正文和底部在剩余宽度内换行。
+- `bodyPadded=false` 让封面图、图片网格和列表行贴边；`full` 去掉左右描边和圆角，用于通栏。默认 `surface` 底、1px 描边和 `md` 圆角，不加阴影。
+- `clickable` 打开后整卡可点，按下变淡并抛 `click`，点击停在卡片上；默认关闭，卡片里不再嵌套入口。
+- 圆角统一：`vx-card`、`vx-list-view` 的 `card` 分组和 `vx-toast` 改用 `md` 8px，和按钮、输入框一致；`lg` 令牌保留给页面级大容器，组件默认不用。
+- 新增卡片令牌 `--vx-card-avatar-sm/md/lg` 与 `--vx-card-meta-max`，亮色、暗色各一份；`--vx-card-avatar-*` 只用于头部图片，`--vx-card-meta-max` 收口单行截断，App 不支持百分比 `max-width`。
+- DESIGN.md 补充卡片的结构、尺寸、头部、正文贴边、通栏、点击和颜色规则；演示页新增卡片实验室，含默认、头部设置、尺寸、通栏、富内容、图文网格和可点击七组示例。
+- 文档站新增卡片页，中英文含基础、头部、尺寸、通栏、富内容、图文网格、可点击和 API；预览层同步接入。
+- vx-list-cell 分割线新增 `dividerColor` / `dividerOpacity`，可分别改颜色和深浅，0 隐藏；默认线色改用新的 `--vx-color-divider`，亮色比 `border` 浅一档，暗色保持和描边同深。文档和演示新增分割线示例。
+
+## 0.10.0（2026-10-25）
+
+- 新增 vx-list-view 列表分组：标题在卡片外，支持 `description` 和 `extra` 插槽；`variant="card"` 用 surface 底、1px 描边和 `lg` 圆角，`plain` 去掉描边和圆角。
+- 新增 vx-list-cell 列表行：`title` / `description` / `value`，默认插槽替换文案区，`prefix` 放图标、头像或选择框，`extra` 放徽章、标签或时间。
+- 行高与主文案分三档：`sm` 44（13 / 20）、`md` 52（15 / 22）、`lg` 60（17 / 24）；双行内容由内边距自然撑高。新增令牌 `--vx-list-height-sm/md/lg`，亮色、暗色各一份。
+- `clickable` 默认打开：可点行按下用 `surface-pressed` 底并抛 `click`，点击停在行上；静态行传 `:clickable="false"`，禁用行转灰且不抛事件。主文案和说明在剩余宽度内换行。箭头固定用 `chevron-right`，按行档位取 14 / 18。
+- 分割线在行内左右让出内边距；分组最后一行传 `:divider="false"`，避免和卡片底边叠线。
+- 演示页新增列表实验室；文档站新增列表分组和列表行两页，含基础、标题、视觉变体、尺寸、多行、插槽、状态和组合；预览层同步接入。
+
+## 0.9.0（2026-10-24）
+
+- 新增 vx-toast 轻提示：全屏浮层、盒子居中，图标加一句短文案，默认 2000ms 后自动收起。`v-model:show` 回写状态，`ref` 上暴露 `open()` / `close()`。
+- `type` 的六种语义只决定默认图标（success / danger / warning / info / default / primary），盒子固定用正文色的反相底，亮暗主题自动互换，正文对比度保持 4.5:1。
+- 支持自定义字体图标 `icon`、图片地址 `image`、字重 `variant`、显示图标 `showIcon`、最大宽度 `maxWidth`、常驻 `duration="0"`、层级 `zIndex` 和自定义颜色 `bgColor` / `color`；图片优先于字体图标，固定 40 × 40 等比展示。
+- 全屏层接住点击，提示期间页面不响应；点浮层可以提前收起，常驻提示也有出口。Web 上用 `--vx-duration-normal` 淡入，App 5.26 直接出现。
+- 新增轻提示令牌：`--vx-toast-icon-size` 40px、`--vx-toast-min-width` 120px，亮色、暗色各一份。
+- vx-toast 与 vx-tips 新增 `bgOpacity`：只调整底色透明度，文字和图标保持不透明；轻提示默认 0.9，消息提示默认 1，范围 0–1。
+- 演示页新增轻提示实验室；文档站新增轻提示页，含基础、类型、无图标、多行文本、自定义图标、时长、自定义颜色、组合和方法；预览层新增 `image` 组件映射。
+
+## 0.8.0（2026-10-24）
+
+- 新增 vx-rate 评分：`v-model` 绑定分值，`count` 收敛到 1–10，`allowHalf` 半星，三档星形 20 / 24 / 28，间距固定 8。
+- 选中层用核心图标字体的 `star` 字形按百分比裁出小数进度，`3.45`、`3.5`、`3.6` 都能如实显示；未选中默认浅灰实心，`hollow` 换成线性空心。
+- 点按左右半区分别选半星和整星，支持横向滑动手势；纵向为主的移动按滚动处理，不误改分值。点按和滑动结束后补发的 click 会被短暂屏蔽。Web 上鼠标拖动和触摸同一套位移。
+- `type` 默认 `warning`，支持六种语义色；warning 的选中星形取 `warning-pressed`，白底上才够 3:1。`activeColor` / `voidColor` 分别覆盖选中色和未选中色，字面值不随主题。`readonly` 保留颜色，`disabled` 转灰，两者都不响应点按。
+- `showText` 显示一位小数，整数不补 `.0`；`text` 自定义文案优先。
+- 新增评分令牌：`--vx-rate-size-sm/md/lg` 与 `--vx-rate-gap`，亮色、暗色各一份；`libs/rate.ts` 同步手势用的像素常量。
+- 演示页新增评分实验室；文档站新增评分页，含基础、星星数、半星、类型、尺寸、自定义颜色、空心、分值、状态和组合。
+
+## 0.7.0（2026-10-24）
+
+- 新增 vx-tips 消息提示：`position` 三档 `top` / `center` / `bottom`。顶部是整条横幅，居中和底部是圆角浮层，`maxWidth` 默认 320。
+- 六种语义色沿用实心底 + `on-*` 前景；`default` 用正文色的反相底，亮色、暗色主题自动互换。
+- `duration` 默认 2000ms，`0` 常驻；自动关闭、点关闭和 `close()` 都抛 `close`，`v-model:show` 会同步回 `false`。
+- 支持 `icon`、`closable`、`offset`、`bgColor` / `color` 和默认插槽；`ref` 上暴露 `open()` / `close()`，同一条提示重复触发时重新计时。
+- 顶部横幅用 `--uni-safe-area-inset-top` 避让导航栏；底部浮层在安全区外再留 16，不铺满全屏挡点击。`zIndex` 默认 100。
+- 演示页新增消息提示实验室；文档站新增提示页，含位置、类型、时长、长文案、插槽、图标、自定义颜色、组合和方法。
+
+## 0.6.0（2026-10-24）
+
+- 新增 vx-footer 页脚：版权、备案号和辅助链接。默认留在文档流，`fixed` 时贴住安全区底部。
+- 链接用 `links` 数组，相邻项自动加竖分隔线，点击只抛 `click` 和链接对象；`value` 承载业务路由值，不内置跳转。
+- 支持 `color` / `linkColor` / `borderColor` / `bgColor` 分别覆盖版权文字、链接、分隔线和底色；`color`、`linkColor` 是字面值，不跟随主题。
+- 固定页脚用 `surface` 和顶部 1px 描边分层，不加阴影，并使用 `--uni-safe-area-inset-*` 避让手势条、tabBar。
+- 默认插槽放在标准行上方，承载品牌或社交入口。演示页新增页脚实验室；文档站新增页脚页，含基础、链接、自定义颜色、固定底栏和插槽。
+
+## 0.5.0（2026-10-24）
+
+- 新增 vx-badge 徽章：计数、`max` 封顶、圆点、三档尺寸，solid / soft 两种形态，默认 `danger`，支持自定义颜色。
+- 新增徽章令牌：`--vx-badge-height-*` 16 / 20 / 24、`--vx-badge-font-*` 12 / 13 / 14、`--vx-badge-dot-*` 6 / 8 / 10，亮色、暗色各一份。
+- 徽章支持 `absolute` 叠加到默认插槽右上角，`offsetX` / `offsetY` 调偏移，`ring` 用页面底色描边；定位层不接收点击。圆心按徽章自身尺寸计算，宽胶囊同样压在角上。App 上 `absolute` 和 `ring` 打开 `overflow: visible`，避免角标和阴影被默认裁掉。
+- 演示页新增徽章实验室；文档站新增徽章页，含数字、封顶、圆点、视觉变体、尺寸、自定义颜色、绝对定位和组合。
+
+## 0.4.0（2026-10-23）
+
+- 新增 vx-tag 标签：solid / soft / plain 三种形态，六种语义色，三档尺寸，rounded / pill / half / square 四种轮廓，支持自定义颜色和关闭。
+- 控件高度统一为 28 / 32 / 36，按钮、输入框、标签共用；控件文案改用 `--vx-font-control-*`（13 / 14 / 16），按钮和表单标题 500、标签 400、内容和辅助文字 400。
+- 演示页新增标签实验室；输入框清除态改为带值展示，自定义尺寸示例跟随新高度。
+- vx-input 内部间距收紧：单位与内容留 8px，箭头补 4px，清除图标与箭头、后缀图标对齐右侧基线；预览里的同一组 `label-width` 统一。
+- DESIGN.md 补充标签的形态、轮廓、颜色、关闭与自定义颜色规则。
+
+## 0.3.0（2026-10-23）
+
+- 首次发布。包含 vx-button、vx-input、vx-textarea、vx-icon。
+- vx-icon 提供 core 112 与 extend 1000，regular / fill 两套。图标来自 Phosphor 2.1.2（MIT）。
+- 设计令牌在 `libs/style/variables.css`，页面根节点使用 `vx-theme-light` 或 `vx-theme-dark`。

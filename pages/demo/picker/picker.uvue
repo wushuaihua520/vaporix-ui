@@ -1,0 +1,583 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-picker</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="map-pin" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">联动选择</text>
+								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">树形数据按 children 逐级联动。滚动只改草稿，点确定才写回；分支提前结束时列数跟着少一列。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-picker</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">三级联动</text>
+							<text class="demo-section__desc">省、市、区三列，换省时下面两列自动回到第一项。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="primary" text="请选择省市区" @click="onOpenBasic" />
+						<view class="demo-picker-status">
+							<text class="demo-picker-status__text">{{ pickerText }}</text>
+							<text class="demo-picker-status__meta">v-model</text>
+						</view>
+						<text class="demo-hint">打开时按 v-model 的值停在对应行；第一次确定会提交当前停在的那条路径。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">数据层级</text>
+							<text class="demo-section__desc">列数由树深度决定：两级省市、四级园区房间。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="两级 · 省市" @click="onOpenTwoLevel" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="四级 · 园区房间"
+									@click="onOpenFourLevel" />
+							</view>
+						</view>
+						<view class="demo-picker-status">
+							<text class="demo-picker-status__text">{{ levelText }}</text>
+							<text class="demo-picker-status__meta">columns · {{ levelColumns }}</text>
+						</view>
+						<text class="demo-hint">层级不写死在组件里：叶子节点没有 children，当前分支就只有几列；四列起文字自动收一档，长地名不会顶到相邻列。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">默认值</text>
+							<text class="demo-section__desc">v-model 存每一级的值，打开时定位到保存过的路径。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="打开广东省 / 深圳市 / 南山区" @click="onOpenPreset" />
+						<view class="demo-picker-status">
+							<text class="demo-picker-status__text">广东省 / 深圳市 / 南山区</text>
+							<text class="demo-picker-status__meta">440000 · 440300 · 440305</text>
+						</view>
+						<text class="demo-hint">value 省略的节点按 text 匹配；整套文本数组也能直接当 v-model，从 ThorUI 迁过来不用改数据。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">禁用选项</text>
+							<text class="demo-section__desc">不可选的节点留在滚轮里转灰，停上去时确定置灰。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="打开含不可选项的地区" @click="onOpenDisabled" />
+						<text class="demo-hint">深圳市龙岗区、宁波市镇海区、绵阳市安州区、九龙深水埗区标了 disabled。滚到这些行时头部换成「该选项不可选」，确定置灰，取消和遮罩仍可退出。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">禁用状态</text>
+							<text class="demo-section__desc">入口由业务提供，不可用时禁用只读行或按钮。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-input v-model="disabledRegion" label="所在地区" label-width="88px" readonly arrow disabled
+								placeholder="请选择地区" />
+						</view>
+						<vx-button block disabled text="请选择地区" />
+						<text class="demo-hint">选择器本身没有 disabled：禁用入口就不会打开面板；如果只是想展示值，用 disabled 的行，别用只读行冒充不可用。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">空数据</text>
+							<text class="demo-section__desc">options 为空时留一块和滚轮等高的空状态。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="打开空数据" @click="onOpenEmpty" />
+						<text class="demo-hint">空树不渲染 picker-view，面板高度不跳；确定置灰，取消和遮罩仍能退出。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">标题与遮罩</text>
+							<text class="demo-section__desc">title 居中，maskColor 只改遮罩。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="标题 + 品牌遮罩" @click="onOpenCustom" />
+						<text class="demo-hint">标题太长时单行省略；遮罩传 var(--vx-color-*) 时跟随亮暗主题，传字面值时对比度由业务保证。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法与事件</text>
+							<text class="demo-section__desc">open() 打开，close() 只收起；change 只在路径可选且变了时抛。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="open() 打开" @click="onMethodsOpen" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="close() 关闭" @click="onMethodsClose" />
+							</view>
+						</view>
+						<view class="demo-picker-status">
+							<text class="demo-picker-status__text">{{ lastEvent }}</text>
+							<text class="demo-picker-status__meta">event</text>
+						</view>
+						<view class="demo-picker-status">
+							<text class="demo-picker-status__text">{{ lastChange }}</text>
+							<text class="demo-picker-status__meta">change</text>
+						</view>
+						<text class="demo-hint">滚到不可选项时 change 不抛，避免业务拿到不能提交的路径；close() 不抛 cancel，也不改已确定的值。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">分隔符与结果</text>
+							<text class="demo-section__desc">confirm 带 values、texts、indices 和拼好的 text。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="默认分隔" @click="onOpenResultDefault" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="· 分隔" @click="onOpenResultDot" />
+							</view>
+						</view>
+						<view class="demo-picker-result">
+							<view class="demo-picker-result__line">
+								<text class="demo-picker-result__key">text</text>
+								<text class="demo-picker-result__value">{{ confirmedText }}</text>
+							</view>
+							<view class="demo-picker-result__line">
+								<text class="demo-picker-result__key">values</text>
+								<text class="demo-picker-result__value">{{ confirmedValues }}</text>
+							</view>
+							<view class="demo-picker-result__line">
+								<text class="demo-picker-result__key">indices</text>
+								<text class="demo-picker-result__value">{{ confirmedIndices }}</text>
+							</view>
+						</view>
+						<text class="demo-hint">separator 只改 text，不改 texts 和 values；确定后 v-model 只存 values，展示文案可以用 libs/picker.ts 的 vxPickerText 自己拼。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">表单组合</text>
+							<text class="demo-section__desc">只读输入行加箭头，点整行打开；两个值各用一个实例。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-input :model-value="receiveLabel" label="所在地区" label-width="88px" readonly arrow
+								placeholder="请选择地区" @click="receiveVisible = true" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-input :model-value="roomLabel" label="房间" label-width="88px" readonly arrow
+								placeholder="请选择房间" @click="buildingVisible = true" />
+						</view>
+						<text class="demo-hint">入口值从 v-model 拼出来，确定后写回同一个模型；地区三级、房间四级，互不影响。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 实验室共用一台选择器；配置在打开前就位，滚轮挂载时停在正确路径。 -->
+		<vx-picker ref="pickerRef" v-model="pickerValues" v-model:show="pickerVisible"
+			:options="pickerOptions" :title="pickerTitle" :separator="pickerSeparator"
+			:mask-color="pickerMaskColor" @confirm="onPickerConfirm" @change="onPickerChange"
+			@cancel="onPickerCancel" />
+
+		<!-- 数据层级单独一台：两级、四级和地区实验室互不共享状态。 -->
+		<vx-picker v-model="levelValues" v-model:show="levelVisible" :options="levelOptions"
+			:title="levelTitle" />
+
+		<!-- 表单组合各一个实例：地区和房间的 options、值互不影响。 -->
+		<vx-picker v-model="receiveRegion" v-model:show="receiveVisible" :options="regionOptions"
+			title="选择所在地区" @confirm="onReceiveConfirm" />
+
+		<vx-picker v-model="roomValues" v-model:show="buildingVisible" :options="buildingOptions"
+			title="选择房间" @confirm="onRoomConfirm" />
+	</view>
+</template>
+
+<script setup>
+	import {
+		buildingDefaultValues,
+		buildingOptions,
+		provinceCityDefaultValues,
+		provinceCityOptions,
+		regionDefaultValues,
+		regionOptions
+	} from '@/pages/demo/shared/picker-data'
+	import {
+		VxPickerOption,
+		VxPickerResult,
+		vxPickerAlign,
+		vxPickerColumns,
+		vxPickerText
+	} from '@/uni_modules/vaporix-ui/libs/picker'
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type PickerDemoApi = {
+		open?: () => void
+		close?: () => void
+	}
+
+	type PickerDemoConfig = {
+		options: VxPickerOption[]
+		values: Array<string>
+		title: string
+		separator: string
+		maskColor: string
+	}
+
+	const pickerVisible = ref(false)
+
+	const pickerOptions = ref<Array<VxPickerOption>>(regionOptions)
+
+	const pickerValues = ref<Array<string>>([])
+
+	const pickerTitle = ref('')
+
+	const pickerSeparator = ref(' / ')
+
+	const pickerMaskColor = ref('')
+
+	const pickerRef = ref<PickerDemoApi | null>(null)
+
+	const lastEvent = ref('还没有操作')
+
+	const lastChange = ref('还没有滚动')
+
+	const confirmed = ref<VxPickerResult>({ values: [], texts: [], indices: [], text: '' })
+
+	const pickerText = computed((): string => {
+		if (pickerValues.value.length === 0) return '请选择'
+		return vxPickerText(pickerOptions.value, pickerValues.value, pickerSeparator.value)
+	})
+
+	// 数据层级单独一台选择器：两级和四级切换时只改这里，不碰地区实验室的当前值。
+	const levelVisible = ref(false)
+
+	const levelOptions = ref<Array<VxPickerOption>>(provinceCityOptions)
+
+	const levelValues = ref<Array<string>>(provinceCityDefaultValues.slice())
+
+	const levelTitle = ref('选择省市')
+
+	const levelText = computed((): string => {
+		if (levelValues.value.length === 0) return '请选择'
+		return vxPickerText(levelOptions.value, levelValues.value, ' / ')
+	})
+
+	const levelColumns = computed((): number => {
+		if (levelOptions.value.length === 0) return 0
+		const indices = vxPickerAlign(levelOptions.value, levelValues.value)
+		return vxPickerColumns(levelOptions.value, indices).length
+	})
+
+	const confirmedText = computed((): string => (confirmed.value.text.length > 0 ? confirmed.value.text : '还没有确定'))
+
+	const confirmedValues = computed((): string => {
+		if (confirmed.value.values.length === 0) return '—'
+		return confirmed.value.values.join(', ')
+	})
+
+	const confirmedIndices = computed((): string => {
+		if (confirmed.value.indices.length === 0) return '—'
+		return confirmed.value.indices.join(', ')
+	})
+
+	const applyPicker = (config: PickerDemoConfig) => {
+		pickerOptions.value = config.options
+		pickerValues.value = config.values.slice()
+		pickerTitle.value = config.title
+		pickerSeparator.value = config.separator
+		pickerMaskColor.value = config.maskColor
+	}
+
+	const openPicker = (config: PickerDemoConfig) => {
+		applyPicker(config)
+		pickerVisible.value = true
+	}
+
+	const onOpenBasic = () => {
+		openPicker({
+			options: regionOptions,
+			values: pickerValues.value,
+			title: '选择省市区',
+			separator: ' / ',
+			maskColor: ''
+		})
+	}
+
+	const onOpenTwoLevel = () => {
+		levelOptions.value = provinceCityOptions
+		levelValues.value = provinceCityDefaultValues.slice()
+		levelTitle.value = '选择省市'
+		levelVisible.value = true
+	}
+
+	const onOpenFourLevel = () => {
+		levelOptions.value = buildingOptions
+		levelValues.value = buildingDefaultValues.slice()
+		levelTitle.value = '选择房间'
+		levelVisible.value = true
+	}
+
+	const onOpenPreset = () => {
+		openPicker({
+			options: regionOptions,
+			values: regionDefaultValues,
+			title: '选择地区',
+			separator: ' / ',
+			maskColor: ''
+		})
+	}
+
+	const onOpenDisabled = () => {
+		openPicker({
+			options: regionOptions,
+			values: regionDefaultValues,
+			title: '选择地区',
+			separator: ' / ',
+			maskColor: ''
+		})
+	}
+
+	const onOpenEmpty = () => {
+		openPicker({
+			options: [],
+			values: [],
+			title: '选择地区',
+			separator: ' / ',
+			maskColor: ''
+		})
+	}
+
+	const onOpenCustom = () => {
+		openPicker({
+			options: regionOptions,
+			values: ['330000', '330100', '330106'],
+			title: '选择收货地区',
+			separator: ' / ',
+			maskColor: 'rgba(43, 107, 224, 0.28)'
+		})
+	}
+
+	const onMethodsOpen = () => {
+		applyPicker({
+			options: regionOptions,
+			values: pickerValues.value,
+			title: '选择地区',
+			separator: ' / ',
+			maskColor: ''
+		})
+		pickerRef.value?.open?.()
+		lastEvent.value = 'open() 打开'
+	}
+
+	const onMethodsClose = () => {
+		pickerRef.value?.close?.()
+		lastEvent.value = 'close() 只收起'
+	}
+
+	const onOpenResultDefault = () => {
+		openPicker({
+			options: regionOptions,
+			values: regionDefaultValues,
+			title: '选择地区',
+			separator: ' / ',
+			maskColor: ''
+		})
+	}
+
+	const onOpenResultDot = () => {
+		openPicker({
+			options: regionOptions,
+			values: regionDefaultValues,
+			title: '选择地区',
+			separator: ' · ',
+			maskColor: ''
+		})
+	}
+
+	const onPickerConfirm = (result: VxPickerResult) => {
+		confirmed.value = result
+		lastEvent.value = 'confirm · ' + result.text
+	}
+
+	const onPickerChange = (result: VxPickerResult) => {
+		lastChange.value = result.text
+	}
+
+	const onPickerCancel = () => {
+		lastEvent.value = 'cancel'
+	}
+
+	// 禁用状态的示意值：入口本身不可用，点击不会打开面板。
+	const disabledRegion = ref('广东省 / 深圳市 / 南山区')
+
+	const receiveRegion = ref<Array<string>>(regionDefaultValues.slice())
+
+	const receiveVisible = ref(false)
+
+	const receiveLabel = ref(vxPickerText(regionOptions, receiveRegion.value, ' / '))
+
+	const roomValues = ref<Array<string>>(buildingDefaultValues.slice())
+
+	const buildingVisible = ref(false)
+
+	const roomLabel = ref(vxPickerText(buildingOptions, roomValues.value, ' / '))
+
+	const onReceiveConfirm = (result: VxPickerResult) => {
+		receiveLabel.value = result.text
+	}
+
+	const onRoomConfirm = (result: VxPickerResult) => {
+		roomLabel.value = result.text
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/datetime/datetime'
+	const nextPath: string = '/pages/demo/calendar/calendar'
+	const prevName = '日期时间'
+	const nextName = '日历'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

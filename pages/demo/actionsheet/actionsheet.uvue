@@ -1,0 +1,398 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-actionsheet</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="menu" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">操作菜单</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">动作行沿用列表行高度，标题和说明分两档；取消与动作之间留一条间隔带。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-actionsheet</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础操作</text>
+							<text class="demo-section__desc">说明加一个动作和取消，点动作收起并抛 select。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="默认操作" @click="onActionSheetBasic" />
+						<text class="demo-hint">点「确定」收起；点取消或遮罩也会收起。最近动作：{{ actionSheetLastAction }}。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">危险操作</text>
+							<text class="demo-section__desc">退出登录用 danger，只染文字，不铺红底。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="退出登录" @click="onActionSheetDanger" />
+						<text class="demo-hint">危险色只表达不可逆操作；标题和说明仍是中性色，取消始终是普通文字。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">提示文本样式</text>
+							<text class="demo-section__desc">说明换成危险色，确认提示更醒目。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="提示文本样式" @click="onActionSheetTinted" />
+						<text class="demo-hint">descriptionColor 只改说明；传 var(--vx-color-*) 时跟随亮暗主题，字面值由业务保证对比度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">无提示</text>
+							<text class="demo-section__desc">不传标题和说明，动作直接从面板顶部开始。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="无提示操作" @click="onActionSheetNoHeader" />
+						<text class="demo-hint">点赞、评论、收藏、分享四条动作，头部整块省掉，第一条动作上方只有面板圆角。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">无取消按钮</text>
+							<text class="demo-section__desc">showCancel=false 只留动作，安全区仍在。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="选择您的性别" @click="onActionSheetNoCancel" />
+						<text class="demo-hint">没有取消行时末条动作下面仍留安全区；点遮罩可以关闭。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">遮罩不可点击</text>
+							<text class="demo-section__desc">maskClosable=false 时只能用取消退出。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="Mask 不可点击" @click="onActionSheetMaskLocked" />
+						<text class="demo-hint">点遮罩不关闭，也不抛 cancel；强制选择时仍要保留取消按钮，给用户一条出口。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">选中状态</text>
+							<text class="demo-section__desc">closeOnSelect=false 时保持打开，选中项显示勾。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="选择您的性别" @click="onActionSheetSelectable" />
+						<view class="demo-actionsheet-status">
+							<text class="demo-actionsheet-status__text">当前选择：{{ actionSheetGender }}</text>
+							<text class="demo-actionsheet-status__meta">closeOnSelect=false</text>
+						</view>
+						<text class="demo-hint">组件不保存选中值，在 select 里更新 items 的 selected；勾和主色一起表达选中，不只靠颜色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法</text>
+							<text class="demo-section__desc">ref 拿实例，open() 打开，close() 只收起。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="open() 打开" @click="onActionSheetOpen" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="close() 关闭" @click="onActionSheetClose" />
+							</view>
+						</view>
+						<text class="demo-hint">open() 打开菜单；close() 只收起，不抛 cancel。自动收起和手动关闭都会同步 v-model:show。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 操作菜单也挂在页面根上，遮罩才盖得住滚动容器。 -->
+		<vx-actionsheet ref="actionSheetRef" v-model:show="actionSheetVisible" :title="actionSheetTitle"
+			:description="actionSheetDescription" :items="actionSheetItems" :show-cancel="actionSheetShowCancel"
+			:mask-closable="actionSheetMaskClosable" :close-on-select="actionSheetCloseOnSelect"
+			:description-color="actionSheetDescriptionColor" @select="onActionSheetSelect"
+			@cancel="onActionSheetCancel" />
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 操作菜单演示：一个实例切换全部配置，页面根上不叠多张面板。
+	type ActionSheetDemoItem = {
+		text: string
+		type?: 'default' | 'primary' | 'danger'
+		disabled?: boolean
+		selected?: boolean
+	}
+
+	type ActionSheetDemoConfig = {
+		title?: string
+		description?: string
+		items: ActionSheetDemoItem[]
+		showCancel?: boolean
+		maskClosable?: boolean
+		closeOnSelect?: boolean
+		descriptionColor?: string
+	}
+
+	type ActionSheetApi = {
+		open?: () => void
+		close?: () => void
+	}
+
+	const actionSheetVisible = ref(false)
+
+	const actionSheetTitle = ref('')
+
+	const actionSheetDescription = ref('')
+
+	const actionSheetItems = ref<ActionSheetDemoItem[]>([])
+
+	const actionSheetShowCancel = ref(true)
+
+	const actionSheetMaskClosable = ref(true)
+
+	const actionSheetCloseOnSelect = ref(true)
+
+	const actionSheetDescriptionColor = ref('')
+
+	const actionSheetLastAction = ref('还没有操作')
+
+	const actionSheetGender = ref('男')
+
+	const actionSheetRef = ref<ActionSheetApi | null>(null)
+
+	const genderSheetItems = (selected: string): ActionSheetDemoItem[] => {
+		return [
+			{ text: '男', selected: selected === '男' },
+			{ text: '女', selected: selected === '女' },
+			{ text: '不公开', selected: selected === '不公开' }
+		]
+	}
+
+	// 先写配置再显示，连开两次时文案和动作不会串到上一张面板。
+	const applyActionSheetConfig = (config: ActionSheetDemoConfig) => {
+		actionSheetTitle.value = config.title != null ? config.title : ''
+		actionSheetDescription.value = config.description != null ? config.description : ''
+		actionSheetItems.value = config.items
+		actionSheetShowCancel.value = config.showCancel !== false
+		actionSheetMaskClosable.value = config.maskClosable !== false
+		actionSheetCloseOnSelect.value = config.closeOnSelect !== false
+		actionSheetDescriptionColor.value = config.descriptionColor != null ? config.descriptionColor : ''
+	}
+
+	const openActionSheet = (config: ActionSheetDemoConfig) => {
+		applyActionSheetConfig(config)
+		actionSheetVisible.value = true
+	}
+
+	const onActionSheetBasic = () => {
+		openActionSheet({
+			description: '确认清空搜索历史吗？',
+			items: [{ text: '确定' }]
+		})
+	}
+
+	const onActionSheetDanger = () => {
+		openActionSheet({
+			description: '退出登录会清除您的登录信息，确认退出吗？',
+			items: [{ text: '退出登录', type: 'danger' }]
+		})
+	}
+
+	const onActionSheetTinted = () => {
+		openActionSheet({
+			description: '确认清空搜索历史吗？',
+			items: [{ text: '确定' }],
+			descriptionColor: 'var(--vx-color-danger)'
+		})
+	}
+
+	const onActionSheetNoHeader = () => {
+		openActionSheet({
+			items: [{ text: '点赞' }, { text: '评论' }, { text: '收藏' }, { text: '分享' }]
+		})
+	}
+
+	const onActionSheetNoCancel = () => {
+		openActionSheet({
+			title: '选择您的性别',
+			items: genderSheetItems(actionSheetGender.value),
+			showCancel: false
+		})
+	}
+
+	const onActionSheetMaskLocked = () => {
+		openActionSheet({
+			description: '遮罩不可点击，请用取消关闭',
+			items: [{ text: '确定' }],
+			maskClosable: false
+		})
+	}
+
+	const onActionSheetSelectable = () => {
+		openActionSheet({
+			title: '选择您的性别',
+			items: genderSheetItems(actionSheetGender.value),
+			closeOnSelect: false
+		})
+	}
+
+	const onActionSheetSelect = (index: number, item: ActionSheetDemoItem) => {
+		actionSheetLastAction.value = item.text
+		// 性别选择的勾由业务维护，组件只抛索引和动作对象。
+		if (actionSheetTitle.value !== '选择您的性别') return
+		actionSheetGender.value = item.text
+		actionSheetItems.value = actionSheetItems.value.map((row: ActionSheetDemoItem,
+			rowIndex: number): ActionSheetDemoItem => {
+			return { text: row.text, selected: rowIndex === index }
+		})
+	}
+
+	const onActionSheetCancel = () => {
+		actionSheetLastAction.value = '取消'
+	}
+
+	const onActionSheetOpen = () => {
+		applyActionSheetConfig({
+			description: '用 ref 调 open() 和 close()',
+			items: [{ text: '知道了' }]
+		})
+		actionSheetRef.value?.open?.()
+	}
+
+	const onActionSheetClose = () => {
+		actionSheetRef.value?.close?.()
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/no-data/no-data'
+	const nextPath: string = '/pages/demo/modal/modal'
+	const prevName = '暂无数据'
+	const nextName = '弹框'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

@@ -1,0 +1,351 @@
+<template>
+	<!-- 状态栏区域只负责留高和底色：系统时间、信号和电池仍由操作系统绘制。
+	     默认高度取 --uni-safe-area-inset-top，App 为状态栏与刘海高度，Web 为 0。
+	     固定时根节点在文档流里补同高，页面不用自己加 padding-top。 -->
+	<view :class="rootClass" :style="rootStyle">
+		<view :class="barClass" :style="barStyle">
+			<!-- 底色单独一层：渐显只改这一层，插槽内容始终不透明。 -->
+			<view class="vx-status-bar__bg" :style="bgStyle"></view>
+
+			<view v-if="$slots['default'] != null" class="vx-status-bar__content">
+				<view :class="safeClass">
+					<slot></slot>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxStatusBarInfo, VxStatusBarProps } from './props'
+
+	const props = withDefaults(defineProps<VxStatusBarProps>(), {
+		height: 0,
+		bgColor: '',
+		transparent: false,
+		fixed: false,
+		placeholder: true,
+		zIndex: 20,
+		safeArea: true,
+		align: 'center',
+		fade: false,
+		scrollTop: 0,
+		scrollRatio: 0.3,
+		maxOpacity: 1
+	})
+
+	const emit = defineEmits<{
+		ready: [info: VxStatusBarInfo]
+	}>()
+
+	const instance = getCurrentInstance()
+
+	// 200 是上限：再高就不像状态栏，渐显距离也会长得没有手感。
+	const VX_STATUS_BAR_HEIGHT_MAX = 200
+	const VX_STATUS_BAR_RETRY = 3
+	const VX_STATUS_BAR_RETRY_DELAY = 50
+
+	// 渐显按条的宽度算；还没量到时先跟窗口宽度，铺满整屏时两者相等。
+	const initialWindow = uni.getWindowInfo()
+	const barWidth = ref(initialWindow.windowWidth > 0 ? initialWindow.windowWidth : 0)
+
+	let retryTimer = 0
+	let retryCount = 0
+	let measureId = 0
+	let lastReadyHeight = -1
+
+	// 0 和非法值都表示跟系统。传了正数就按它排，不跟系统高度相加。
+	const customHeight = computed((): number => {
+		const value = Math.round(props.height)
+		if (!(value > 0)) return 0
+		return value > VX_STATUS_BAR_HEIGHT_MAX ? VX_STATUS_BAR_HEIGHT_MAX : value
+	})
+
+	const heightStyle = computed((): string => {
+		if (customHeight.value <= 0) return ''
+		return `height: ${customHeight.value}px;`
+	})
+
+	// 透明直接 0，未开渐显直接 1，这两支不读 scrollTop，滚动时不会跟着算。
+	// 宽度还没量到时按 1 算，滚动 0 仍然是全透明。0、负数和 NaN 收口，0 是有效上限。
+	const backgroundOpacity = computed((): number => {
+		if (props.transparent) return 0
+		if (!props.fade) return 1
+		const maxOpacity = props.maxOpacity
+		const capped = !(maxOpacity > 0) ? 0 : (maxOpacity >= 1 ? 1 : maxOpacity)
+		const ratio = props.scrollRatio > 0 ? props.scrollRatio : 0.3
+		const width = barWidth.value > 0 ? barWidth.value : 1
+		const span = width * ratio
+		if (!(span > 0)) return capped
+		const offset = props.scrollTop > 0 ? props.scrollTop : 0
+		const value = offset / span
+		return value >= capped ? capped : value
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-status-bar'
+		if (props.fixed && props.placeholder) name += ' vx-status-bar--placeholder'
+		return name
+	})
+
+	// 占位值要和条本身同源：默认走安全区变量，传 height 时两边一起写 px。
+	const rootStyle = computed((): string => {
+		if (!props.fixed || !props.placeholder) return ''
+		return heightStyle.value
+	})
+
+	const barClass = computed((): string => {
+		let name = 'vx-status-bar__bar'
+		if (props.fixed) name += ' vx-status-bar__bar--fixed'
+		return name
+	})
+
+	const barStyle = computed((): string => {
+		let style = heightStyle.value
+		if (props.fixed) {
+			const value = props.zIndex >= 0 ? Math.round(props.zIndex) : 20
+			style += ` z-index: ${value};`
+		}
+		return style
+	})
+
+	const bgStyle = computed((): string => {
+		let style = `opacity: ${backgroundOpacity.value};`
+		if (props.bgColor.length > 0) style += ` background: ${props.bgColor};`
+		return style
+	})
+
+	// class 顺序：基础 → 对齐 → 安全区。和样式表一致，后写的盖过先写的。
+	// 对齐放在撑满整行的内层，插槽里的整条横幅才能铺到两端。
+	const safeClass = computed((): string => {
+		let name = 'vx-status-bar__safe'
+		if (props.align === 'start') name += ' vx-status-bar__safe--start'
+		else if (props.align === 'end') name += ' vx-status-bar__safe--end'
+		if (props.safeArea) name += ' vx-status-bar__safe--inset'
+		return name
+	})
+
+	// 量到的高度才是条真正占的高度；和上一次相同就不重复抛。
+	// 窗口信息在抛出时现读，旋转后不用提前写进响应式数据。
+	const emitReady = (height: number) => {
+		const value = Math.round(height)
+		if (value === lastReadyHeight) return
+		lastReadyHeight = value
+		const windowInfo = uni.getWindowInfo()
+		const statusBarHeight = windowInfo.statusBarHeight
+		emit('ready', {
+			height: value,
+			statusBarHeight: statusBarHeight > 0 ? statusBarHeight : 0,
+			windowWidth: windowInfo.windowWidth > 0 ? windowInfo.windowWidth : 0,
+			windowHeight: windowInfo.windowHeight > 0 ? windowInfo.windowHeight : 0
+		})
+	}
+
+	// 测量失败时按传进来的高度或系统高度回退，ready 不会因为拿不到节点就不抛。
+	const fallbackHeight = (): number => {
+		if (customHeight.value > 0) return customHeight.value
+		const statusBarHeight = uni.getWindowInfo().statusBarHeight
+		return statusBarHeight > 0 ? statusBarHeight : 0
+	}
+
+	const clearRetry = () => {
+		if (retryTimer === 0) return
+		clearTimeout(retryTimer)
+		retryTimer = 0
+	}
+
+	const scheduleMeasure = () => {
+		if (retryTimer !== 0) return
+		retryTimer = setTimeout(() => {
+			retryTimer = 0
+			measure()
+		}, VX_STATUS_BAR_RETRY_DELAY)
+	}
+
+	const retryMeasure = () => {
+		if (retryCount >= VX_STATUS_BAR_RETRY) {
+			emitReady(fallbackHeight())
+			return
+		}
+		retryCount++
+		scheduleMeasure()
+	}
+
+	// 只量条本身：宽度给渐显，高度给 ready。
+	// Web 上没有状态栏，量到的 0 是有效值；宽为 0 说明节点还没排版。
+	// 传了 height 却量到 0，是样式还没落上，不能当成 0 高抛出去。
+	const measure = () => {
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) {
+			emitReady(fallbackHeight())
+			return
+		}
+		// 后发起的测量覆盖先发起的；过期回调不再改结果，也不再排重试。
+		const id = ++measureId
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.vx-status-bar__bar')
+			.boundingClientRect()
+			.exec((result) => {
+				if (id !== measureId) return
+				const rect = result.length > 0 ? result[0] as NodeInfo | null : null
+				if (rect == null) {
+					retryMeasure()
+					return
+				}
+				const width = rect.width
+				const height = rect.height
+				if (width == null || height == null) {
+					retryMeasure()
+					return
+				}
+				if (width <= 0 || (height <= 0 && customHeight.value > 0)) {
+					retryMeasure()
+					return
+				}
+				retryCount = 0
+				barWidth.value = width
+				emitReady(height)
+			})
+	}
+
+	// 样式先落到节点上再量。挂载、改高度、改固定都走这里。
+	const measureOnNextTick = () => {
+		retryCount = 0
+		clearRetry()
+		nextTick(() => {
+			measure()
+		})
+	}
+
+	onMounted(() => {
+		measureOnNextTick()
+	})
+
+	onUnmounted(() => {
+		measureId++
+		clearRetry()
+	})
+
+	// 窗口尺寸、方向或状态栏高度变化后调用；每次都重新抛一次 ready。
+	const refresh = () => {
+		retryCount = 0
+		lastReadyHeight = -1
+		clearRetry()
+		measure()
+	}
+
+	// 条已经跟着变高，外面补间距要用新值，所以清掉上次高度再抛。
+	watch(customHeight, () => {
+		lastReadyHeight = -1
+		measureOnNextTick()
+	})
+
+	// 铺满父级和贴屏幕两边不是同一个宽，渐显距离跟着变。同高不重复抛 ready。
+	watch((): boolean => props.fixed, () => {
+		measureOnNextTick()
+	})
+
+	defineExpose({
+		refresh
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 根节点固定时只负责占位，条本身脱离这一层；不占位时高度为 0。
+	   页面是纵向 flex 时不收缩，避免 scroll-view 把占位压扁。
+	   App 默认 overflow 是 hidden，固定条会被裁在这层里。
+	   拍平后 visible 不生效，这一层不要加 flatten。 */
+	.vx-status-bar {
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		overflow: visible;
+	}
+
+	/* 占位和条同源：默认都读安全区顶部，传 height 时由内联样式盖过。 */
+	.vx-status-bar--placeholder {
+		height: var(--uni-safe-area-inset-top, 0px);
+	}
+
+	/* 条满宽，底色和插槽都在这一层里。高度跟随安全区，Web 上为 0。
+	   插槽是绝对定位，超出裁在这一层，条高不会被内容撑开。 */
+	.vx-status-bar__bar {
+		position: relative;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+		height: var(--uni-safe-area-inset-top, 0px);
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	/* left / right 都写 0，宽度交给左右撑开；再写 100% 会多出安全区那一截。 */
+	.vx-status-bar__bar--fixed {
+		position: fixed;
+		top: 0;
+		right: 0;
+		left: 0;
+		width: auto;
+	}
+
+	/* 底色只铺这一层；透明度由脚本按滚动距离算，不加过渡。 */
+	.vx-status-bar__bg {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 插槽绝对铺满，左右各留 16；对齐和横屏安全区落在内层。
+	   不写 width:100%。left / right 再加 100% 会多出安全区那一截。
+	   交叉轴拉开：短标签由内层垂直居中，height:100% 的横幅铺满条高。 */
+	.vx-status-bar__content {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		flex-direction: row;
+		align-items: stretch;
+		box-sizing: border-box;
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+	}
+
+	/* 内层撑满整行：插槽里的横幅可以用 width: 100% 铺到两端，单个短标签仍按对齐落位。
+	   长文案裁在这一层，不伸进左右留白。 */
+	.vx-status-bar__safe {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.vx-status-bar__safe--start {
+		justify-content: flex-start;
+	}
+
+	.vx-status-bar__safe--end {
+		justify-content: flex-end;
+	}
+
+	/* 横屏时左右安全区叠在页面留白内侧，内容不被刘海盖住。 */
+	.vx-status-bar__safe--inset {
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+	}
+</style>

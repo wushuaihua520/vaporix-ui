@@ -1,0 +1,635 @@
+<template>
+	<view :class="rootClass">
+		<view class="vx-no-data__media">
+			<!-- 自定义插图优先，然后是图片、字体图标，最后是内置线稿。 -->
+			<slot v-if="$slots['icon'] != null" name="icon"></slot>
+			<image v-else-if="image.length > 0" :class="imageClass" :src="image" mode="aspectFit" />
+			<view v-else-if="hasIcon" :class="discClass">
+				<text :class="glyphClass">{{ glyph }}</text>
+			</view>
+			<view v-else :class="artClass">
+				<view :class="stageClass">
+					<!-- 波浪先画，纸张压在上面，弧线只从纸底露出来。 -->
+					<view class="vx-no-data__wave vx-no-data__wave--a"></view>
+					<view class="vx-no-data__wave vx-no-data__wave--b"></view>
+					<view class="vx-no-data__wave vx-no-data__wave--c"></view>
+
+					<view class="vx-no-data__sheet vx-no-data__sheet--back"></view>
+					<view :class="sheetClass">
+						<view class="vx-no-data__fold"></view>
+						<view class="vx-no-data__mark"></view>
+						<view class="vx-no-data__line vx-no-data__line--a"></view>
+						<view class="vx-no-data__line vx-no-data__line--b"></view>
+						<view class="vx-no-data__line vx-no-data__line--c"></view>
+						<view class="vx-no-data__line vx-no-data__line--d"></view>
+						<view class="vx-no-data__line vx-no-data__line--e"></view>
+					</view>
+
+					<text :class="sparkAClass">+</text>
+					<text :class="sparkBClass">+</text>
+					<text :class="sparkCClass">+</text>
+					<text :class="sparkDClass">+</text>
+				</view>
+			</view>
+		</view>
+
+		<view v-if="$slots['default'] != null || text.length > 0 || description.length > 0" :class="copyClass">
+			<slot v-if="$slots['default'] != null"></slot>
+			<text v-else-if="text.length > 0" :class="textClass">{{ text }}</text>
+			<text v-if="$slots['default'] == null && description.length > 0" :class="descClass">{{ description }}</text>
+		</view>
+
+		<view v-if="$slots['extra'] != null || actionText.length > 0" :class="actionsClass">
+			<slot v-if="$slots['extra'] != null" name="extra"></slot>
+			<vx-button v-else :text="actionText" :type="actionType" :variant="actionVariant" :shape="actionShape"
+				:size="actionSize" :width="actionWidth" :loading="actionLoading" :disabled="actionDisabled"
+				@click="onAction" />
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxNoDataProps } from './props'
+	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+
+	const props = withDefaults(defineProps<VxNoDataProps>(), {
+		text: '暂无数据',
+		description: '',
+		size: 'md',
+		type: 'default',
+		iconVariant: 'regular',
+		image: '',
+		fill: false,
+		actionText: '',
+		actionType: 'primary',
+		actionVariant: 'solid',
+		actionShape: 'rounded',
+		actionSize: 'md',
+		actionWidth: '',
+		actionLoading: false,
+		actionDisabled: false
+	})
+
+	const emit = defineEmits<{
+		action: []
+	}>()
+
+	const hasIcon = computed((): boolean => {
+		return props.icon != null && props.icon.length > 0
+	})
+
+	// 模板只在 hasIcon 时取字形，空名字给一个合法码点，避免索引到空。
+	const iconName = computed((): VxIconName => {
+		return props.icon != null ? props.icon : 'info'
+	})
+
+	const glyph = computed((): string => {
+		const value = VX_ICON_GLYPHS[iconName.value]
+		return value != null ? value : ''
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-no-data'
+		// lg 和默认都是 24 的内边距，只有 sm 收成 16。
+		if (props.size === 'sm') name += ' vx-no-data--sm'
+		if (props.fill) name += ' vx-no-data--fill'
+		return name
+	})
+
+	const copyClass = computed((): string => {
+		return props.size === 'lg' ? 'vx-no-data__copy vx-no-data__copy--lg' : 'vx-no-data__copy'
+	})
+
+	const artClass = computed((): string => {
+		return props.size === 'md' ? 'vx-no-data__art' : `vx-no-data__art vx-no-data__art--${props.size}`
+	})
+
+	const stageClass = computed((): string => {
+		return props.size === 'md' ? 'vx-no-data__stage' : `vx-no-data__stage vx-no-data__stage--${props.size}`
+	})
+
+	// 类型接在 --front 后面，盖过默认的 text-secondary。default 不挂，沿用纸边本色。
+	const sheetClass = computed((): string => {
+		let name = 'vx-no-data__sheet vx-no-data__sheet--front'
+		if (props.type !== 'default') name += ` vx-no-data__sheet--${props.type}`
+		return name
+	})
+
+	// 四个加号只差位置，类型 class 接在后面，避免在模板里拼接。
+	const sparkName = (mark: string): string => {
+		let name = `vx-no-data__spark vx-no-data__spark--${mark}`
+		if (props.type !== 'default') name += ` vx-no-data__spark--${props.type}`
+		return name
+	}
+
+	const sparkAClass = computed((): string => sparkName('a'))
+
+	const sparkBClass = computed((): string => sparkName('b'))
+
+	const sparkCClass = computed((): string => sparkName('c'))
+
+	const sparkDClass = computed((): string => sparkName('d'))
+
+	const imageClass = computed((): string => {
+		return props.size === 'md' ? 'vx-no-data__image' : `vx-no-data__image vx-no-data__image--${props.size}`
+	})
+
+	const discClass = computed((): string => {
+		let name = props.size === 'md' ? 'vx-no-data__disc' : `vx-no-data__disc vx-no-data__disc--${props.size}`
+		if (props.type !== 'default') name += ` vx-no-data__disc--${props.type}`
+		return name
+	})
+
+	const glyphClass = computed((): string => {
+		let name = 'vx-no-data__glyph'
+		if (props.size !== 'md') name += ` vx-no-data__glyph--${props.size}`
+		if (props.type !== 'default') name += ` vx-no-data__glyph--${props.type}`
+		const tier = VX_ICON_TIER[iconName.value]
+		// fill 和 extend 都改 font-family，合成一个 class，避免两条声明抢。
+		if (props.iconVariant === 'fill') {
+			name += tier === 'extend' ? ' vx-no-data__glyph--extend-fill' : ' vx-no-data__glyph--fill'
+		} else if (tier === 'extend') {
+			name += ' vx-no-data__glyph--extend'
+		}
+		return name
+	})
+
+	const textClass = computed((): string => {
+		return props.size === 'md' ? 'vx-no-data__text' : `vx-no-data__text vx-no-data__text--${props.size}`
+	})
+
+	const descClass = computed((): string => {
+		let name = props.size === 'lg' ? 'vx-no-data__desc vx-no-data__desc--lg' : 'vx-no-data__desc'
+		if (props.text.length === 0) name += ' vx-no-data__desc--solo'
+		return name
+	})
+
+	const actionsClass = computed((): string => {
+		return props.size === 'lg' ? 'vx-no-data__actions vx-no-data__actions--lg' : 'vx-no-data__actions'
+	})
+
+	const onAction = () => {
+		emit('action')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 空状态横向居中，纵向由父级决定；fill 时才撑满可用高度。 */
+	.vx-no-data {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		padding: 24px;
+	}
+
+	.vx-no-data--sm {
+		padding: 16px;
+	}
+
+	.vx-no-data--fill {
+		flex: 1;
+		align-self: stretch;
+	}
+
+	.vx-no-data__media {
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* 线稿画在 160 的方框里，三档只改外层尺寸和缩放，位置只维护一套。 */
+	.vx-no-data__art {
+		position: relative;
+		flex-shrink: 0;
+		width: var(--vx-no-data-art-md);
+		height: var(--vx-no-data-art-md);
+	}
+
+	.vx-no-data__art--sm {
+		width: var(--vx-no-data-art-sm);
+		height: var(--vx-no-data-art-sm);
+	}
+
+	.vx-no-data__art--lg {
+		width: var(--vx-no-data-art-lg);
+		height: var(--vx-no-data-art-lg);
+	}
+
+	/* 画布就是 lg 的 160，md / sm 只缩放，不重排坐标。
+	   uvue 默认把 transform-origin 放在中心，改到左上，缩小后才贴住方框。
+	   舞台绝对定位，160 的布局盒不撑开 sm / md。不改成 overflow: visible，Android 上会放大这一层的渲染区域。 */
+	.vx-no-data__stage {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: var(--vx-no-data-art-lg);
+		height: var(--vx-no-data-art-lg);
+		transform: scale(0.8);
+		transform-origin: 0 0;
+	}
+
+	.vx-no-data__stage--sm {
+		transform: scale(0.6);
+	}
+
+	.vx-no-data__stage--lg {
+		transform: scale(1);
+	}
+
+	/* 三道弧线从纸底露出；top 错开一点，轮廓不排成一条直线。 */
+	.vx-no-data__wave {
+		position: absolute;
+		box-sizing: border-box;
+		width: 58px;
+		height: 20px;
+		border-top-width: 2px;
+		border-top-style: solid;
+		border-top-color: var(--vx-color-disabled-text);
+		/* 宽 58 高 20，50% 才是扁弧。胶囊 999 用来做正圆，这里换成它弧会变圆。 */
+		border-radius: 50%;
+	}
+
+	.vx-no-data__wave--a {
+		top: 127px;
+		left: 22px;
+	}
+
+	.vx-no-data__wave--b {
+		top: 124px;
+		left: 58px;
+	}
+
+	.vx-no-data__wave--c {
+		top: 127px;
+		left: 94px;
+	}
+
+	/* 两张纸叠出厚度：后纸只在上沿和右侧露一条边。 */
+	.vx-no-data__sheet {
+		position: absolute;
+		box-sizing: border-box;
+		border-width: 2px;
+		border-style: solid;
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.vx-no-data__sheet--back {
+		top: 22px;
+		left: 52px;
+		width: 76px;
+		height: 92px;
+		border-color: var(--vx-color-border);
+	}
+
+	.vx-no-data__sheet--front {
+		top: 32px;
+		left: 32px;
+		width: 84px;
+		height: 98px;
+		border-color: var(--vx-color-text-secondary);
+	}
+
+	/* 语义色只改纸边。浅底上用 pressed，warning 用 ink。
+	   加号和字形用同一套色，图标圆用 *-soft；各写各的 class，不能靠后代选择器。 */
+	.vx-no-data__sheet--primary {
+		border-color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-no-data__sheet--success {
+		border-color: var(--vx-color-success-pressed);
+	}
+
+	.vx-no-data__sheet--info {
+		border-color: var(--vx-color-info-pressed);
+	}
+
+	.vx-no-data__sheet--warning {
+		border-color: var(--vx-color-warning-ink);
+	}
+
+	.vx-no-data__sheet--danger {
+		border-color: var(--vx-color-danger-pressed);
+	}
+
+	/* 左上角折角只用一条斜线表示，不裁掉纸张的角。 */
+	.vx-no-data__fold {
+		position: absolute;
+		top: 13px;
+		left: 0;
+		width: 18px;
+		height: 2px;
+		background-color: var(--vx-color-text-secondary);
+		transform: rotate(-45deg);
+		transform-origin: 0 50%;
+	}
+
+	/* 第一条内容前的小方框，和列表行里的缩略标记同形。 */
+	.vx-no-data__mark {
+		position: absolute;
+		top: 24px;
+		left: 14px;
+		box-sizing: border-box;
+		width: 10px;
+		height: 10px;
+		border-width: 2px;
+		border-style: solid;
+		border-color: var(--vx-color-disabled-text);
+	}
+
+	.vx-no-data__line {
+		position: absolute;
+		height: 2px;
+		background-color: var(--vx-color-disabled-text);
+	}
+
+	.vx-no-data__line--a {
+		top: 28px;
+		left: 32px;
+		width: 30px;
+	}
+
+	.vx-no-data__line--b {
+		top: 38px;
+		left: 32px;
+		width: 22px;
+	}
+
+	.vx-no-data__line--c {
+		top: 58px;
+		left: 14px;
+		width: 54px;
+	}
+
+	.vx-no-data__line--d {
+		top: 68px;
+		left: 14px;
+		width: 40px;
+	}
+
+	.vx-no-data__line--e {
+		top: 78px;
+		left: 14px;
+		width: 46px;
+	}
+
+	/* 加号属于 160 的线稿，字号不借用正文或控件档。 */
+	.vx-no-data__spark {
+		position: absolute;
+		color: var(--vx-color-disabled-text);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-no-data__spark--a {
+		top: 44px;
+		left: 12px;
+		font-size: 16px;
+		line-height: 16px;
+	}
+
+	.vx-no-data__spark--b {
+		top: 14px;
+		left: 132px;
+		font-size: 20px;
+		line-height: 20px;
+	}
+
+	.vx-no-data__spark--c {
+		top: 88px;
+		left: 140px;
+		font-size: 14px;
+		line-height: 14px;
+	}
+
+	.vx-no-data__spark--d {
+		top: 110px;
+		left: 8px;
+		font-size: 12px;
+		line-height: 12px;
+	}
+
+	.vx-no-data__spark--primary {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-no-data__spark--success {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-no-data__spark--info {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-no-data__spark--warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-no-data__spark--danger {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	/* 自定义图片按方框等比展示，方框和线稿同宽；图片底色由业务自己带。 */
+	.vx-no-data__image {
+		flex-shrink: 0;
+		width: var(--vx-no-data-art-md);
+		height: var(--vx-no-data-art-md);
+	}
+
+	.vx-no-data__image--sm {
+		width: var(--vx-no-data-art-sm);
+		height: var(--vx-no-data-art-sm);
+	}
+
+	.vx-no-data__image--lg {
+		width: var(--vx-no-data-art-lg);
+		height: var(--vx-no-data-art-lg);
+	}
+
+	/* 图标圆比线稿小一档，让字号图标在留白里不显空。 */
+	.vx-no-data__disc {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-no-data-disc-md);
+		height: var(--vx-no-data-disc-md);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-no-data__disc--sm {
+		width: var(--vx-no-data-disc-sm);
+		height: var(--vx-no-data-disc-sm);
+	}
+
+	.vx-no-data__disc--lg {
+		width: var(--vx-no-data-disc-lg);
+		height: var(--vx-no-data-disc-lg);
+	}
+
+	.vx-no-data__disc--primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-no-data__disc--success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-no-data__disc--info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-no-data__disc--warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-no-data__disc--danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	/* 字形直接取图标字体：图标三档放不下 32 / 40 / 48。
+	   宽高和字号同一档，字面宽不会把圆撑变形。 */
+	.vx-no-data__glyph {
+		flex-shrink: 0;
+		width: var(--vx-no-data-glyph-md);
+		height: var(--vx-no-data-glyph-md);
+		color: var(--vx-color-text-secondary);
+		font-family: VaporixIcons;
+		font-size: var(--vx-no-data-glyph-md);
+		line-height: var(--vx-no-data-glyph-md);
+		font-weight: var(--vx-weight-regular);
+		font-style: normal;
+		letter-spacing: 0;
+		text-align: center;
+	}
+
+	.vx-no-data__glyph--sm {
+		width: var(--vx-no-data-glyph-sm);
+		height: var(--vx-no-data-glyph-sm);
+		font-size: var(--vx-no-data-glyph-sm);
+		line-height: var(--vx-no-data-glyph-sm);
+	}
+
+	.vx-no-data__glyph--lg {
+		width: var(--vx-no-data-glyph-lg);
+		height: var(--vx-no-data-glyph-lg);
+		font-size: var(--vx-no-data-glyph-lg);
+		line-height: var(--vx-no-data-glyph-lg);
+	}
+
+	.vx-no-data__glyph--primary {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-no-data__glyph--success {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-no-data__glyph--info {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-no-data__glyph--warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-no-data__glyph--danger {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	.vx-no-data__glyph--fill {
+		font-family: VaporixIconsFill;
+	}
+
+	.vx-no-data__glyph--extend {
+		font-family: VaporixIconsExtend;
+	}
+
+	.vx-no-data__glyph--extend-fill {
+		font-family: VaporixIconsExtendFill;
+	}
+
+	.vx-no-data__copy {
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: var(--vx-no-data-copy-max);
+		min-width: 0;
+		margin-top: var(--vx-space-lg);
+	}
+
+	.vx-no-data__copy--lg {
+		margin-top: var(--vx-space-xl);
+	}
+
+	/* App 默认 keep、Web 默认 pre-line，写明 normal 才会换行。
+	   min-width 压成 0，长词才能在 320 里断开。 */
+	.vx-no-data__text {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+		text-align: center;
+		white-space: normal;
+	}
+
+	.vx-no-data__text--sm {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-no-data__text--lg {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.vx-no-data__desc {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		margin-top: var(--vx-space-xs);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+		white-space: normal;
+	}
+
+	.vx-no-data__desc--lg {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	/* 没有主文案时说明是唯一一行，不再为了和主文案拉开层级留 4。 */
+	.vx-no-data__desc--solo {
+		margin-top: 0;
+	}
+
+	/* 动作和文案之间留一档；按钮由 vx-button 管尺寸和状态。 */
+	.vx-no-data__actions {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		margin-top: var(--vx-space-lg);
+	}
+
+	.vx-no-data__actions--lg {
+		margin-top: var(--vx-space-xl);
+	}
+</style>

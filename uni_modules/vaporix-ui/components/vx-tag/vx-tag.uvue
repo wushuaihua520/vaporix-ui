@@ -1,0 +1,353 @@
+<template>
+	<view :class="rootClass" :style="rootStyle">
+		<view v-if="$slots['prefix'] != null" class="vx-tag__prefix">
+			<slot name="prefix"></slot>
+		</view>
+		<text v-if="text.length > 0" :class="textClass" :style="textStyle">{{ text }}</text>
+		<!-- 选择器碰不到插槽内容，包一层才有间距。颜色自己带，不读 color。 -->
+		<view v-if="$slots['default'] != null" class="vx-tag__extra">
+			<slot></slot>
+		</view>
+		<view v-if="closable" class="vx-tag__close" hover-class="vx-tag__close--pressed"
+			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClose">
+			<vx-icon name="close" :size="iconSize" :color="closeColor" />
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxTagProps } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxTagProps>(), {
+		text: '',
+		type: 'default',
+		variant: 'solid',
+		size: 'md',
+		shape: 'rounded',
+		color: '',
+		bgColor: '',
+		borderColor: '',
+		closable: false
+	})
+
+	const emit = defineEmits<{
+		close: []
+	}>()
+
+	// 实心用 on-*，浅底和空心用 *-pressed。warning 的浅底和空心用 ink，黄底上 pressed 色不够深。
+	// default 跟随正文色，返回空串，不再挂一层重复 class。
+	const textTone = computed((): string => {
+		const type = props.type
+		if (props.variant === 'solid') {
+			if (type === 'primary') return 'on-primary'
+			if (type === 'success') return 'on-success'
+			if (type === 'info') return 'on-info'
+			if (type === 'warning') return 'on-warning'
+			if (type === 'danger') return 'on-danger'
+			return ''
+		}
+		if (type === 'primary') return 'primary-pressed'
+		if (type === 'success') return 'success-pressed'
+		if (type === 'info') return 'info-pressed'
+		if (type === 'warning') return 'warning-ink'
+		if (type === 'danger') return 'danger-pressed'
+		return ''
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-tag'
+		if (props.size !== 'md') name += ` vx-tag--${props.size}`
+
+		// 实心 default 就是基础态，不再挂类型 class。
+		if (props.variant !== 'solid' || props.type !== 'default') {
+			if (props.variant === 'solid') name += ` vx-tag--${props.type}`
+			else name += ` vx-tag--${props.variant}-${props.type}`
+		}
+
+		if (props.shape === 'pill') name += ' vx-tag--pill'
+		else if (props.shape === 'half') name += ' vx-tag--half'
+		else if (props.shape === 'square') name += ' vx-tag--square'
+		if (props.closable) name += props.size === 'lg' ? ' vx-tag--lg-closable' : ' vx-tag--closable'
+		return name
+	})
+
+	// 自定义颜色只覆盖传进来的那一处，不做明暗推导。warning 这类需要深色文字的底色，由业务自己配 color。
+	const rootStyle = computed((): string => {
+		let style = ''
+		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		if (props.borderColor.length > 0) style += `border-color: ${props.borderColor};`
+		return style
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-tag__text'
+		if (props.size !== 'md') name += ` vx-tag__text--${props.size}`
+		if (textTone.value.length > 0) name += ` vx-tag__text--${textTone.value}`
+		return name
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	// 关闭图标比标签文字小一档，lg 用 md，其余用 sm。
+	const iconSize = computed((): 'sm' | 'md' => {
+		return props.size === 'lg' ? 'md' : 'sm'
+	})
+
+	// vx-icon 不继承父级颜色。tone 与 --vx-color-* 同名，直接拼变量，不再抄一份色表。
+	const closeColor = computed((): string => {
+		if (props.color.length > 0) return props.color
+		if (textTone.value.length === 0) return 'var(--vx-color-text)'
+		return `var(--vx-color-${textTone.value})`
+	})
+
+	const onClose = () => {
+		emit('close')
+	}
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+	.vx-tag {
+		flex-direction: row;
+		align-items: center;
+		align-self: flex-start;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		height: var(--vx-compact-height-md);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-surface);
+	}
+
+	/* 标签比按钮紧一档：md 只留 8，lg 用 12。 */
+	.vx-tag--lg {
+		height: var(--vx-compact-height-lg);
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	/* sm 与 md 共用 space-sm，只改高度。 */
+	.vx-tag--sm {
+		height: var(--vx-compact-height-sm);
+	}
+
+	.vx-tag--primary {
+		background-color: var(--vx-color-primary);
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-tag--success {
+		background-color: var(--vx-color-success);
+		border-color: var(--vx-color-success);
+	}
+
+	.vx-tag--info {
+		background-color: var(--vx-color-info);
+		border-color: var(--vx-color-info);
+	}
+
+	.vx-tag--warning {
+		background-color: var(--vx-color-warning);
+		border-color: var(--vx-color-warning);
+	}
+
+	.vx-tag--danger {
+		background-color: var(--vx-color-danger);
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-tag--soft-primary {
+		background-color: var(--vx-color-primary-soft);
+		border-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-tag--soft-success {
+		background-color: var(--vx-color-success-soft);
+		border-color: var(--vx-color-success-soft);
+	}
+
+	.vx-tag--soft-info {
+		background-color: var(--vx-color-info-soft);
+		border-color: var(--vx-color-info-soft);
+	}
+
+	.vx-tag--soft-warning {
+		background-color: var(--vx-color-warning-soft);
+		border-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-tag--soft-danger {
+		background-color: var(--vx-color-danger-soft);
+		border-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-tag--soft-default {
+		background-color: var(--vx-color-default-soft);
+		border-color: var(--vx-color-default-soft);
+	}
+
+	.vx-tag--plain-primary,
+	.vx-tag--plain-success,
+	.vx-tag--plain-info,
+	.vx-tag--plain-warning,
+	.vx-tag--plain-danger,
+	.vx-tag--plain-default {
+		background-color: transparent;
+	}
+
+	.vx-tag--plain-primary {
+		border-color: var(--vx-color-primary);
+	}
+
+	.vx-tag--plain-success {
+		border-color: var(--vx-color-success);
+	}
+
+	.vx-tag--plain-info {
+		border-color: var(--vx-color-info);
+	}
+
+	/* 黄描边用 ink。--vx-color-warning 在白底上太浅。 */
+	.vx-tag--plain-warning {
+		border-color: var(--vx-color-warning-ink);
+	}
+
+	.vx-tag--plain-danger {
+		border-color: var(--vx-color-danger);
+	}
+
+	.vx-tag--plain-default {
+		border-color: var(--vx-color-border);
+	}
+
+	.vx-tag--pill {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	/* 半圆角：左边胶囊，右边平角。四角单独写，盖掉基础圆角。 */
+	.vx-tag--half {
+		border-top-left-radius: var(--vx-radius-pill);
+		border-bottom-left-radius: var(--vx-radius-pill);
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.vx-tag--square {
+		border-radius: 0;
+	}
+
+	/* 关闭热区右侧已有 4px。sm / md 左侧是 8，根上再留 4。 */
+	.vx-tag--closable {
+		padding-right: var(--vx-space-xs);
+	}
+
+	/* lg 左侧是 12，根上留 8，加上热区 4 仍是 12。 */
+	.vx-tag--lg-closable {
+		padding-right: var(--vx-space-sm);
+	}
+
+	.vx-tag__text {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-regular);
+		/* App 默认 keep、Web 默认 pre-line，都会在边界换行；高度固定，第二行会被裁掉。 */
+		white-space: nowrap;
+	}
+
+	.vx-tag__text--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-tag__text--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-tag__text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-tag__text--on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-tag__text--on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-tag__text--on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-tag__text--on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-tag__text--primary-pressed {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-tag__text--success-pressed {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-tag__text--info-pressed {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-tag__text--warning-ink {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-tag__text--danger-pressed {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	.vx-tag__prefix {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		margin-right: var(--vx-space-xs);
+	}
+
+	/* 页面默认纵向，补充内容横排才不会被固定高度裁掉。 */
+	.vx-tag__extra {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		margin-left: var(--vx-space-xs);
+	}
+
+	/* 图标本身有宽高，热区跟标签等高；左右各留 4，点按区域比图标大一圈。 */
+	.vx-tag__close {
+		flex-shrink: 0;
+		align-self: stretch;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin-left: var(--vx-space-xs);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
+	}
+
+	.vx-tag__close--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* #ifdef WEB */
+	.vx-tag__close {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

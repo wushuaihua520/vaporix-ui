@@ -1,0 +1,256 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-hero demo-home">
+					<view class="demo-home__head">
+						<view class="demo-brand">
+							<view class="demo-brand__mark">
+								<text class="demo-brand__mark-text">VX</text>
+							</view>
+							<view class="demo-brand__copy">
+								<text class="demo-brand__name">元汽UI</text>
+								<text class="demo-brand__meta">VAPORIX UI</text>
+							</view>
+						</view>
+						<view class="demo-home__actions">
+							<vx-tag type="primary" variant="soft" size="sm" text="v0.58.0" />
+							<view class="demo-theme-toggle demo-home__theme" hover-class="demo-theme-toggle--pressed"
+								@click="onToggleTheme">
+								<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+							</view>
+						</view>
+					</view>
+
+					<text class="demo-hero__eyebrow demo-home__eyebrow">VAPORIX UI · COMPONENT LAB</text>
+					<view class="demo-hero__title-wrap">
+						<text class="demo-hero__title">组件实验室</text>
+						<text class="demo-hero__title demo-hero__title--accent">按分类慢慢看</text>
+					</view>
+					<text class="demo-hero__lead">每个组件单独一个演示页，首屏只加载目录。点开之后只渲染这一页的示例。</text>
+
+					<view class="demo-hero__stats">
+						<view class="demo-stat demo-stat--first">
+							<text class="demo-stat__value">{{ demoCount }}</text>
+							<text class="demo-stat__label">演示页</text>
+						</view>
+						<view class="demo-stat">
+							<text class="demo-stat__value">{{ componentCount }}</text>
+							<text class="demo-stat__label">组件</text>
+						</view>
+						<view class="demo-stat">
+							<text class="demo-stat__value">{{ iconCount }}</text>
+							<text class="demo-stat__label">图标</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-catalog-search">
+					<vx-input v-model="keyword" placeholder="搜索组件名或 vx-xxx" clearable>
+						<template #prefix>
+							<view class="demo-catalog-search__prefix">
+								<vx-icon name="search" size="md" />
+							</view>
+						</template>
+					</vx-input>
+				</view>
+
+				<view class="demo-catalog-chips">
+					<view v-for="option in categoryOptions" :key="option.key" :class="chipClass(option.key)"
+						:hover-class="chipHoverClass(option.key)" :hover-stay-time="120"
+						@click="selectCategory(option.key)">
+						<text :class="chipTextClass(option.key)">{{ option.label }}</text>
+						<text :class="chipCountClass(option.key)">{{ option.count }}</text>
+					</view>
+				</view>
+
+				<view class="demo-catalog-meta">
+					<text class="demo-catalog-meta__text">{{ resultText }}</text>
+				</view>
+
+				<view v-for="group in visibleGroups" :key="group.key" class="demo-catalog-group">
+					<view class="demo-catalog-group__head">
+						<text class="demo-catalog-group__title">{{ group.title }}</text>
+						<text class="demo-catalog-group__count">{{ group.items.length }} 个组件</text>
+					</view>
+					<view class="demo-catalog-grid">
+						<view v-for="(item, index) in group.items" :key="item.key" :class="cellClass(index)">
+							<view class="demo-catalog-card" hover-class="demo-catalog-card--pressed"
+								:hover-stay-time="120" @click="openComponent(item.key)">
+								<view class="demo-catalog-card__top">
+									<view class="demo-catalog-card__icon">
+										<vx-icon :name="item.icon" size="md" type="primary" />
+									</view>
+									<vx-icon name="chevron-right" size="sm" />
+								</view>
+								<text class="demo-catalog-card__name">{{ item.name }}</text>
+								<text class="demo-catalog-card__en">{{ item.en }}</text>
+								<text class="demo-catalog-card__desc">{{ item.desc }}</text>
+								<view class="demo-catalog-card__meta">
+									<text class="demo-catalog-card__meta-text">{{ item.sections }} 组示例</text>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<view v-if="visibleGroups.length === 0" class="demo-catalog-empty">
+					<vx-no-data size="sm" icon="search" type="primary" text="没有找到组件" description="换个关键词，或清空搜索。"
+						action-text="清空搜索" @action="clearSearch" />
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">MIT · Vaporix UI</text>
+					<text class="demo-footer__meta">组件 · 接口 · 我的 · 亮色 / 暗色 · v0.55.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { DEMO_CATEGORIES, DEMO_COMPONENT_COUNT, DEMO_COMPONENTS, DEMO_ICON_COUNT, demoPagePath } from '@/pages/demo/shared/catalog'
+	import { demoIsDark, setDemoTabTheme, syncDemoTabTheme } from '@/pages/demo/shared/theme'
+
+	type DemoCard = {
+		key: string
+		name: string
+		en: string
+		icon: string
+		category: string
+		desc: string
+		sections: number
+	}
+
+	type DemoGroup = {
+		key: string
+		title: string
+		items: DemoCard[]
+	}
+
+	type DemoCategoryOption = {
+		key: string
+		label: string
+		count: number
+	}
+
+	const isDark = demoIsDark
+	const keyword = ref('')
+	const activeCategory = ref('全部')
+
+	const demoCount = DEMO_COMPONENTS.length
+	const componentCount = DEMO_COMPONENT_COUNT
+	const iconCount = DEMO_ICON_COUNT
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const buildCategoryOptions = (): DemoCategoryOption[] => {
+		const options: DemoCategoryOption[] = [
+			{ key: '全部', label: '全部', count: DEMO_COMPONENTS.length }
+		]
+		for (let index = 0; index < DEMO_CATEGORIES.length; index++) {
+			const category = DEMO_CATEGORIES[index]
+			let count = 0
+			for (let itemIndex = 0; itemIndex < DEMO_COMPONENTS.length; itemIndex++) {
+				if (DEMO_COMPONENTS[itemIndex].category === category) count += 1
+			}
+			options.push({ key: category, label: category, count: count })
+		}
+		return options
+	}
+
+	const categoryOptions: DemoCategoryOption[] = buildCategoryOptions()
+
+	const matchesKeyword = (item: DemoCard, query: string): boolean => {
+		if (query === '') return true
+		const haystack = (item.name + ' ' + item.en + ' ' + item.desc + ' ' + item.category).toLowerCase()
+		return haystack.indexOf(query) >= 0
+	}
+
+	const visibleGroups = computed((): DemoGroup[] => {
+		const query = keyword.value.trim().toLowerCase()
+		const groups: DemoGroup[] = []
+		for (let categoryIndex = 0; categoryIndex < DEMO_CATEGORIES.length; categoryIndex++) {
+			const category = DEMO_CATEGORIES[categoryIndex]
+			if (activeCategory.value !== '全部' && activeCategory.value !== category) continue
+			const items: DemoCard[] = []
+			for (let itemIndex = 0; itemIndex < DEMO_COMPONENTS.length; itemIndex++) {
+				const item: DemoCard = DEMO_COMPONENTS[itemIndex]
+				if (item.category !== category) continue
+				if (!matchesKeyword(item, query)) continue
+				items.push(item)
+			}
+			if (items.length > 0) {
+				groups.push({ key: category, title: category, items: items })
+			}
+		}
+		return groups
+	})
+
+	const resultText = computed((): string => {
+		let total = 0
+		for (let index = 0; index < visibleGroups.value.length; index++) {
+			total += visibleGroups.value[index].items.length
+		}
+		if (keyword.value.trim() !== '') return `找到 ${total} 个组件`
+		if (activeCategory.value !== '全部') return '只看「' + activeCategory.value + '」'
+		return '点开任意组件进入独立演示页'
+	})
+
+	const chipClass = (key: string): string => {
+		if (activeCategory.value === key) return 'demo-catalog-chip demo-catalog-chip--active'
+		return 'demo-catalog-chip'
+	}
+
+	const chipHoverClass = (key: string): string => {
+		if (activeCategory.value === key) return 'demo-catalog-chip--active-pressed'
+		return 'demo-catalog-chip--pressed'
+	}
+
+	const chipTextClass = (key: string): string => {
+		if (activeCategory.value === key) return 'demo-catalog-chip__text demo-catalog-chip__text--active'
+		return 'demo-catalog-chip__text'
+	}
+
+	const chipCountClass = (key: string): string => {
+		if (activeCategory.value === key) return 'demo-catalog-chip__count demo-catalog-chip__count--active'
+		return 'demo-catalog-chip__count'
+	}
+
+	const cellClass = (index: number): string => {
+		if (index % 2 === 0) return 'demo-catalog-cell'
+		return 'demo-catalog-cell demo-catalog-cell--end'
+	}
+
+	const selectCategory = (key: string) => {
+		activeCategory.value = key
+	}
+
+	const clearSearch = () => {
+		keyword.value = ''
+	}
+
+	const openComponent = (key: string) => {
+		uni.navigateTo({ url: demoPagePath(key) })
+	}
+
+	const onToggleTheme = () => {
+		setDemoTabTheme(!isDark.value)
+	}
+
+	onShow(() => {
+		syncDemoTabTheme()
+	})
+</script>
+
+<style>
+	.demo-home__theme {
+		margin-left: var(--vx-space-sm);
+	}
+
+	.demo-home__eyebrow {
+		margin-top: var(--vx-space-xl);
+	}
+</style>

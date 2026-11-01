@@ -1,0 +1,471 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-section</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="layout-dashboard" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">标题栏</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">一个区块的标题层：标题、说明、竖线、分割线和右侧短操作。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-section</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础</text>
+							<text class="demo-section__desc">标题和说明都可以省略；说明只补一句上下文。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<vx-section title="今日推荐" description="根据你的浏览记录更新，每天 6:00 刷新。" />
+							<view class="demo-sect-body">
+								<text class="demo-sect-body__text">标题和说明之间留 4，说明用 13 / 20 次要色。</text>
+							</view>
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<vx-section title="最近更新" />
+							<view class="demo-sect-body">
+								<text class="demo-sect-body__text">只有标题时说明不占位，标题栏回到一行的高度。</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">title / description 是文案快捷入口；默认插槽替换标题，suffix 替换说明。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">竖线</text>
+							<text class="demo-section__desc">打开 marker，在标题前加一条 3px 竖线；markerColor 只改这一处。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<vx-section title="前端工程化" description="构建、规范和发布流程。" marker />
+							<view class="demo-sect-body">
+								<text class="demo-sect-body__text">默认竖线用 primary，只作区块标记，不表达状态。</text>
+							</view>
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<vx-section title="设计系统" description="令牌、组件和文档。" marker
+								marker-color="#7c3aed" />
+							<view class="demo-sect-body">
+								<text class="demo-sect-body__text">markerColor 是字面值，可以传品牌色；不跟随亮暗主题。</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">竖线宽固定 3，高 14 / 16 / 20；和标题首行居中，不跟着说明拉长。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">视觉变体</text>
+							<text class="demo-section__desc">plain 留在页面底色上；soft 用浅底和 md 圆角分出标题条。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<text class="demo-sect-caption">plain</text>
+							<vx-section title="普通区块" description="不加底色、描边和圆角。" />
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<text class="demo-sect-caption">soft</text>
+							<vx-section title="浅底标题条" description="default-soft 底，md 圆角。" variant="soft"
+								marker />
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">soft 只用于需要在页面底色上分出标题条的场景；同一个层级不要混用两种。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">sm / md / lg 改标题、说明、竖线和留白；md 是默认档。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<text class="demo-sect-caption">sm · 15 / 22</text>
+							<vx-section size="sm" title="小号区块" description="适合卡片内部和密集分组。" marker />
+						</view>
+						<view class="demo-sect-block">
+							<text class="demo-sect-caption">md · 17 / 24</text>
+							<vx-section title="常规区块" description="页面里最常用的一档。" marker />
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<text class="demo-sect-caption">lg · 20 / 28</text>
+							<vx-section size="lg" title="大号区块" description="用于页面级章节和强标题。" marker />
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">同一层级用同一档；标题栏不是控件，不借 --vx-font-control-*。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">插槽</text>
+							<text class="demo-section__desc">prefix 放图标，extra 放右侧短操作，suffix 替换说明。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<vx-section clickable title="账户与安全" description="最近 30 天内更新"
+								@click="onSectionAction('账户与安全')">
+								<template #prefix>
+									<vx-icon name="shield" size="md" type="primary" />
+								</template>
+								<template #extra>
+									<view class="demo-sect-action" hover-class="demo-sect-action--pressed"
+										@click="onSectionAction('查看全部')">
+										<text class="demo-sect-action__text">查看全部</text>
+										<vx-icon name="chevron-right" size="sm"
+											color="var(--vx-color-primary-pressed)" />
+									</view>
+								</template>
+							</vx-section>
+							<view class="demo-sect-body">
+								<text class="demo-sect-body__text">prefix 和 extra 都用标题行高托底，小图标和短链接不会顶偏。</text>
+							</view>
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<vx-section title="发布状态" marker>
+								<template #suffix>
+									<view class="demo-sect-tags">
+										<view class="demo-sect-tag">
+											<vx-tag size="sm" type="success" variant="soft" text="已发布" />
+										</view>
+										<view class="demo-sect-tag demo-sect-tag--last">
+											<vx-tag size="sm" type="default" variant="soft" text="自动同步" />
+										</view>
+									</view>
+								</template>
+							</vx-section>
+							<view class="demo-sect-body">
+								<text class="demo-sect-body__text">suffix 替换 description，可以放标签、时间或自定义富文本。</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">插槽内容不继承标题和说明的字号、颜色；图标、标签和链接自己带样式。标题和右侧「查看全部」各是一次独立点击。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">分割线</text>
+							<text class="demo-section__desc">divider 在标题内容下方画 1px 线，默认用 border 色。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<vx-section title="版本记录" description="0.31.0 · 2026-10-27" divider />
+							<view class="demo-sect-body demo-sect-body--flush">
+								<text class="demo-sect-body__text">分割线只分隔当前标题和下文，不代替区块之间的 24。</text>
+							</view>
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<vx-section title="自定义线色" description="dividerColor 是字面值" divider
+								divider-color="#cbd5e1" />
+							<view class="demo-sect-body demo-sect-body--flush">
+								<text class="demo-sect-body__text">默认线色跟主题；需要更浅或更重时再传字面值。</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">分割线不压底部留白，也不和卡片外框叠在一起；最后一段不需要分割线时直接关掉。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">可点击</text>
+							<text class="demo-section__desc">clickable 打开后整条可点，按下变淡并抛 click。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block demo-sect-block--last">
+							<vx-section clickable title="查看全部订单" description="整条可点，点击更新下面的状态。" marker
+								@click="onSectionClick" />
+							<text class="demo-sect-status">最近点击：{{ sectionLastAction }}</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">静态标题栏保持默认 clickable=false；需要键盘入口时由外层按钮或链接承载。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">组合</text>
+							<text class="demo-section__desc">文章章节和设置分组：标题栏在前，内容紧跟其后。</text>
+						</view>
+					</view>
+					<view class="demo-sect-stage">
+						<view class="demo-sect-block">
+							<vx-section title="第一章 · 起点" description="2026 年 10 月 27 日" marker divider />
+							<text class="demo-sect-article">标题栏只负责标题层。正文、列表和操作都留在下面，由页面自己排间距和阅读节奏。</text>
+						</view>
+						<view class="demo-sect-block demo-sect-block--last">
+							<vx-section title="账户安全" description="最近 30 天内更新" variant="soft" marker />
+							<vx-list-view variant="plain">
+								<vx-list-cell title="登录密码" value="已设置" arrow
+									@click="onSectionAction('登录密码')">
+									<template #prefix>
+										<vx-icon name="lock" size="md" type="primary" />
+									</template>
+								</vx-list-cell>
+								<vx-list-cell title="绑定手机" value="138****8888" arrow
+									@click="onSectionAction('绑定手机')">
+									<template #prefix>
+										<vx-icon name="smartphone" size="md" type="info" />
+									</template>
+								</vx-list-cell>
+								<vx-list-cell title="登录设备" value="3 台" arrow :divider="false"
+									@click="onSectionAction('登录设备')">
+									<template #prefix>
+										<vx-icon name="laptop" size="md" type="success" />
+									</template>
+								</vx-list-cell>
+							</vx-list-view>
+						</view>
+					</view>
+					<text class="demo-hint demo-sect-hint">标题栏不包内容，也不加外部间距；页面左右边距用 16，区块之间用 24。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 可点击标题栏和插槽操作共用一份状态，演示最后一步落在哪里。
+	const sectionLastAction = ref('还没有点击')
+
+	const onSectionClick = () => {
+		sectionLastAction.value = '查看全部订单'
+	}
+
+	const onSectionAction = (label: string) => {
+		sectionLastAction.value = label
+		// 插槽操作和下面的列表行离状态行较远，补一条即时反馈。
+		uni.showToast({ title: label, icon: 'none' })
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/card/card'
+	const nextPath: string = '/pages/demo/white-space/white-space'
+	const prevName = '卡片'
+	const nextName = '上下留白'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	/* 演示容器只负责竖排和间距；标题栏本身仍然贴页面底色，soft 才能看准。 */
+	.demo-sect-stage {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.demo-sect-block {
+		width: 100%;
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-sect-block--last {
+		margin-bottom: 0;
+	}
+
+	.demo-sect-caption {
+		margin-bottom: var(--vx-space-xs);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	/* 示例正文用 surface 描边盒托住，标题栏和内容之间的 8 才看得清。 */
+	.demo-sect-body {
+		margin-top: var(--vx-space-sm);
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-sect-body--flush {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-sect-body__text {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* extra 里的「查看全部」自己带 44 热区，不把标题行撑高。 */
+	.demo-sect-action {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		min-width: 44px;
+		min-height: 44px;
+		margin-top: -10px;
+		margin-right: -8px;
+		margin-bottom: -10px;
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.demo-sect-action--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.demo-sect-action__text {
+		color: var(--vx-color-primary-pressed);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.demo-sect-tags {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 标签之间留 4；App 不保证 flex gap，用外层盒子的右边距。 */
+	.demo-sect-tag {
+		margin-right: var(--vx-space-xs);
+	}
+
+	.demo-sect-tag--last {
+		margin-right: 0;
+	}
+
+	.demo-sect-status {
+		margin-top: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.demo-sect-article {
+		margin-top: var(--vx-space-sm);
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.demo-sect-hint {
+		margin-top: var(--vx-space-sm);
+	}
+</style>

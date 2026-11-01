@@ -1,0 +1,398 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-loading · vx-loadmore · vx-nomore</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="loader-circle" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">加载与尾部</text>
+								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">前两个共用一套转圈，后两个共用一套尾部节奏；浮层和行内都能用。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-loading · vx-loadmore · vx-nomore</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">行内加载</text>
+							<text class="demo-section__desc">转圈加文案，默认横排；文案可以留空。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loading-rows">
+							<view class="demo-loading-row">
+								<text class="demo-loading-row__key">默认</text>
+								<vx-loading />
+							</view>
+							<view class="demo-loading-row">
+								<text class="demo-loading-row__key">主色</text>
+								<vx-loading text="保存中" type="primary" />
+							</view>
+							<view class="demo-loading-row">
+								<text class="demo-loading-row__key">仅转圈</text>
+								<vx-loading text="" size="lg" />
+							</view>
+							<view class="demo-loading-row demo-loading-row--last">
+								<text class="demo-loading-row__key">大号</text>
+								<vx-loading text="正在加载..." size="lg" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">type 只改转圈，文案保持次要灰；传 text="" 只留转圈，不额外留间距。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">布局</text>
+							<text class="demo-section__desc">默认横排；column 把转圈放在文案上方。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loading-columns">
+							<view class="demo-loading-column demo-loading-column--first">
+								<text class="demo-loading-label">row · 横排</text>
+								<vx-loading text="正在加载..." />
+							</view>
+							<view class="demo-loading-column">
+								<text class="demo-loading-label">column · 纵排</text>
+								<vx-loading text="正在加载..." layout="column" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">浮层固定纵排，layout 只作用于行内。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸</text>
+							<text class="demo-section__desc">转圈 14 / 18 / 22，文案 13 / 13 / 15。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loading-sizes">
+							<view class="demo-loading-size">
+								<text class="demo-loading-label">sm</text>
+								<vx-loading text="加载中" size="sm" layout="column" />
+							</view>
+							<view class="demo-loading-size">
+								<text class="demo-loading-label">md</text>
+								<vx-loading text="加载中" size="md" layout="column" />
+							</view>
+							<view class="demo-loading-size demo-loading-size--last">
+								<text class="demo-loading-label">lg</text>
+								<vx-loading text="加载中" size="lg" layout="column" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">转圈沿用图标三档，不新增第四种尺寸；同一块内容只取一档。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">类型</text>
+							<text class="demo-section__desc">语义色只改转圈，warning 取 ink。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loading-types">
+							<view class="demo-loading-type">
+								<vx-loading text="" size="lg" type="default" />
+								<text class="demo-loading-type__label">default</text>
+							</view>
+							<view class="demo-loading-type">
+								<vx-loading text="" size="lg" type="primary" />
+								<text class="demo-loading-type__label">primary</text>
+							</view>
+							<view class="demo-loading-type">
+								<vx-loading text="" size="lg" type="success" />
+								<text class="demo-loading-type__label">success</text>
+							</view>
+							<view class="demo-loading-type">
+								<vx-loading text="" size="lg" type="info" />
+								<text class="demo-loading-type__label">info</text>
+							</view>
+							<view class="demo-loading-type">
+								<vx-loading text="" size="lg" type="warning" />
+								<text class="demo-loading-type__label">warning</text>
+							</view>
+							<view class="demo-loading-type">
+								<vx-loading text="" size="lg" type="danger" />
+								<text class="demo-loading-type__label">danger</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">默认行内是次要灰；浮层里 default 改用正文色，保证面板上的对比。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">转圈形态</text>
+							<text class="demo-section__desc">圆环、开口弧、十二瓣。同一页只用一种。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loading-forms">
+							<view class="demo-loading-form demo-loading-form--first">
+								<vx-loading text="" size="lg" variant="ring" layout="column" />
+								<text class="demo-loading-form__label">ring · 圆环</text>
+							</view>
+							<view class="demo-loading-form demo-loading-form--middle">
+								<vx-loading text="" size="lg" variant="arc" layout="column" />
+								<text class="demo-loading-form__label">arc · 开口弧</text>
+							</view>
+							<view class="demo-loading-form">
+								<vx-loading text="" size="lg" variant="bars" layout="column" />
+								<text class="demo-loading-form__label">bars · 十二瓣</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint">三种形态共用 700ms 线性节奏；bars 最重，适合更大的展示位。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">全屏浮层</text>
+							<text class="demo-section__desc">遮罩加居中面板，挡住页面点击，1.6 秒后收起。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loading-overlay-row">
+							<view class="demo-loading-overlay-copy">
+								<text class="demo-loading-overlay-title">等待保存完成</text>
+								<text class="demo-loading-overlay-meta">浮层挂在页面根节点，用 v-if 控制；层级默认 150。</text>
+							</view>
+							<vx-button type="primary" size="sm" text="打开浮层" @click="onLoadingOverlay" />
+						</view>
+					</view>
+					<text class="demo-hint">mask=false 只去掉压暗，整层仍然接住点击；面板最小 120、最大 240，内边距 24。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">加载更多</text>
+							<text class="demo-section__desc">列表尾部正在加载；三种转圈和六种语义色都能用。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-loadmore-rows">
+							<vx-loadmore />
+							<vx-loadmore text="上拉加载更多..." type="primary" />
+							<vx-loadmore text="正在加载更多..." variant="arc" />
+							<vx-loadmore text="正在加载更多..." variant="bars" />
+							<vx-loadmore text="" />
+						</view>
+					</view>
+					<text class="demo-hint">上下留白 16，文案 sm / md 用 13 / 20、lg 用 15 / 22；传 text="" 只留转圈，尾部高度不变。和没有更多放在同一个位置，替换时不跳高度。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">没有更多</text>
+							<text class="demo-section__desc">默认加两侧细线；dot 换成圆点，line=false 去掉线。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nomore-rows">
+							<vx-nomore />
+							<vx-nomore text="我是有底线的" />
+							<vx-nomore text="NO MORE" />
+							<vx-nomore size="sm" text="sm · 没有更多了" />
+							<vx-nomore size="lg" text="lg · 没有更多了" />
+							<vx-nomore dot />
+							<vx-nomore :line="false" text="没有更多了" />
+						</view>
+					</view>
+					<text class="demo-hint">text="" 且 dot=false 时，两条线接成一条通栏分割线；size 只改文案字号和标记高度，和同尺寸的加载更多一样高。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义尾部颜色</text>
+							<text class="demo-section__desc">color 只改文案和圆点，line-color 只改线。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-nomore-rows">
+							<vx-nomore text="NO MORE" color="#a12f3b" line-color="#f0d3d8" />
+							<vx-nomore text="没有更多订单了" color="#2f5d8a" line-color="#d4e0ee" />
+							<vx-nomore dot color="#7a5b2e" line-color="#eadcc7" />
+							<vx-nomore :line="false" text="没有更多了" color="#5f6672" />
+						</view>
+					</view>
+					<text class="demo-hint">自定义颜色是字面值，不跟随亮色、暗色主题；要跟主题就不要传，只作品牌收尾，不表达成功或失败。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">列表尾部状态</text>
+							<text class="demo-section__desc">加载更多和没有更多二选一，放在分组卡片外。</text>
+						</view>
+					</view>
+					<view class="demo-loading-feed">
+						<vx-list-view title="最近动态" description="分组卡片外放尾部状态">
+							<vx-list-cell title="订单已发货" description="顺丰速运 · 预计明天送达"
+								:clickable="false" />
+							<vx-list-cell title="优惠券到账" description="满 100 减 20 · 3 天后过期"
+								:clickable="false" />
+							<vx-list-cell title="系统通知" description="你关注的设计规范已更新"
+								:clickable="false" :divider="false" />
+						</vx-list-view>
+						<vx-loadmore v-if="listFooterLoading" text="正在加载更多..." />
+						<vx-nomore v-else text="没有更多动态了" />
+					</view>
+					<view class="demo-loading-switch">
+						<vx-button size="sm" :text="listFooterLoading ? '显示没有更多' : '显示加载更多'"
+							@click="toggleListFooter" />
+						<text class="demo-loading-switch__text">两个状态共用 16 的上下留白，切换不跳高度。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.58.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 全屏加载同样挂在页面根上，避免被 scroll-view 裁掉。 -->
+		<vx-loading v-if="loadingOverlayVisible" overlay text="页面加载中..." />
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	const loadingOverlayVisible = ref(false)
+
+	const listFooterLoading = ref(true)
+
+	const onLoadingOverlay = () => {
+		if (loadingOverlayVisible.value) return
+		loadingOverlayVisible.value = true
+		setTimeout(() => {
+			loadingOverlayVisible.value = false
+		}, 1600)
+	}
+
+	const toggleListFooter = () => {
+		listFooterLoading.value = !listFooterLoading.value
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/toast/toast'
+	const nextPath: string = '/pages/demo/no-data/no-data'
+	const prevName = '轻提示'
+	const nextName = '暂无数据'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

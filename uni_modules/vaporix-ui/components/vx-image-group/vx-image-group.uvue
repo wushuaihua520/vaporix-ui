@@ -1,0 +1,261 @@
+<template>
+	<!-- 图片组合只负责排列、裁切和点击，标题、数量和操作交给外层。 -->
+	<!-- 可点时点击停在单张图上；静态展示不拦点击，交给外层列表行或卡片。 -->
+	<view v-if="items.length > 0" :class="rootClass" :style="rootStyle">
+		<view v-for="tile in tiles" :key="tile.key" :class="tile.tileClass" :style="tile.tileStyle"
+			:hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME" @click="onTileClick(tile, $event)">
+			<image v-if="!tile.broken" class="vx-image-group__image" :src="tile.item.src" :mode="imageMode"
+				@load="onImageLoad(tile.item.src)" @error="onImageError(tile)" />
+			<vx-icon v-else name="image" :size="glyphSize" color="var(--vx-color-disabled-text)" />
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxImageGroupProps, VxImageGroupItem, VxImageGroupMode } from './props'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxImageGroupProps>(), {
+		items: (): Array<VxImageGroupItem> => [],
+		size: 'md',
+		shape: 'rounded',
+		mode: 'aspectFill',
+		direction: 'row',
+		offset: 0,
+		wrap: false,
+		ring: false,
+		ringColor: '',
+		clickable: true
+	})
+
+	const emit = defineEmits<{
+		click: [index: number, item: VxImageGroupItem]
+		error: [index: number, item: VxImageGroupItem]
+	}>()
+
+	/** 一行图；样式和偏移在 computed 里算好，模板只绑定。 */
+	type ImageGroupTile = {
+		key: string
+		index: number
+		item: VxImageGroupItem
+		tileClass: string
+		tileStyle: string
+		broken: boolean
+	}
+
+	// 读不出来的 src 单独占一个占位图；按 src 记，列表重排后仍然对得上。
+	const failedSources = ref<Array<string>>([])
+
+	// 不认识的尺寸按 md 处理，class 只拼 sm / lg。
+	const sizeName = computed((): string => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	// 不认识的轮廓按 rounded 处理，class 只拼 circle / square。
+	const shapeName = computed((): string => {
+		if (props.shape === 'circle' || props.shape === 'square') return props.shape
+		return 'rounded'
+	})
+
+	// 只用 image 支持的三种模式，其它值回落到裁剪填满。
+	const imageMode = computed((): VxImageGroupMode => {
+		if (props.mode === 'aspectFit' || props.mode === 'scaleToFill') return props.mode
+		return 'aspectFill'
+	})
+
+	const directionName = computed((): string => {
+		return props.direction === 'column' ? 'column' : 'row'
+	})
+
+	// 多行只对 row 生效；column 排一列，不需要换行。
+	const wrapLayout = computed((): boolean => {
+		return props.wrap && directionName.value === 'row'
+	})
+
+	// 偏移取整；多行配负值会把上下两行叠在一起，按 0 处理。
+	const resolvedOffset = computed((): number => {
+		if (isNaN(props.offset)) return 0
+		const value = Math.round(props.offset)
+		if (wrapLayout.value && value < 0) return 0
+		return value
+	})
+
+	// 图片失败时换占位图标；sm 用 md 图标，md / lg 用 lg。
+	const glyphSize = computed((): 'md' | 'lg' => {
+		return sizeName.value === 'sm' ? 'md' : 'lg'
+	})
+
+	const rootClass = computed((): string => {
+		let name = 'vx-image-group'
+		if (directionName.value === 'column') name += ' vx-image-group--column'
+		if (wrapLayout.value) name += ' vx-image-group--wrap'
+		return name
+	})
+
+	// 多行时每张图都带右、下外边距，容器用负的等值外边距收回最后一行和最后一列的尾巴。
+	const rootStyle = computed((): string => {
+		const gap = resolvedOffset.value
+		if (!wrapLayout.value || gap <= 0) return ''
+		return `margin-right: -${gap}px; margin-bottom: -${gap}px;`
+	})
+
+	const tileStyleOf = (index: number, gap: number, wrap: boolean): string => {
+		let style = ''
+		if (wrap) {
+			if (gap !== 0) style += `margin-right: ${gap}px; margin-bottom: ${gap}px;`
+		} else if (directionName.value === 'column') {
+			if (index > 0 && gap !== 0) style += `margin-top: ${gap}px;`
+		} else if (index > 0 && gap !== 0) {
+			style += `margin-left: ${gap}px;`
+		}
+		if (props.ring && props.ringColor.length > 0) style += `border-color: ${props.ringColor};`
+		return style
+	}
+
+	// class 顺序：基础 → 尺寸 → 轮廓 → 圆环 → 状态。和样式表一致，后写的盖过先写的。
+	const tiles = computed((): Array<ImageGroupTile> => {
+		const list: Array<ImageGroupTile> = []
+		const base = 'vx-image-group__tile'
+		const gap = resolvedOffset.value
+		const wrap = wrapLayout.value
+		for (let index = 0; index < props.items.length; index++) {
+			const item = props.items[index]
+			const broken = item.src.length === 0 || failedSources.value.indexOf(item.src) >= 0
+			let tileClass = base
+			if (sizeName.value !== 'md') tileClass += ` ${base}--${sizeName.value}`
+			if (shapeName.value !== 'rounded') tileClass += ` ${base}--${shapeName.value}`
+			if (props.ring) tileClass += ` ${base}--ring`
+			if (props.clickable) tileClass += ` ${base}--clickable`
+			list.push({
+				key: String(index),
+				index: index,
+				item: item,
+				tileClass: tileClass,
+				tileStyle: tileStyleOf(index, gap, wrap),
+				broken: broken
+			})
+		}
+		return list
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		return props.clickable ? 'vx-image-group__tile--pressed' : 'none'
+	})
+
+	// 可点时把点击留在这一张图上；静态展示不拦截，点缩略图等同于点外层列表行或卡片。
+	const onTileClick = (tile: ImageGroupTile, event: UniEvent) => {
+		if (!props.clickable) return
+		event.stopPropagation()
+		emit('click', tile.index, tile.item)
+	}
+
+	// 父级整组换图时清掉上一次的失败记录，重新给一次加载机会；只改 id 或顺序也重新试。
+	watch(() => props.items, () => {
+		if (failedSources.value.length === 0) return
+		failedSources.value = []
+	})
+
+	// 同一张图只记一次；同一个地址反复失败不重复抛 error。
+	const onImageError = (tile: ImageGroupTile) => {
+		const source = tile.item.src
+		if (source.length === 0 || failedSources.value.indexOf(source) >= 0) return
+		const next = failedSources.value.slice()
+		next.push(source)
+		failedSources.value = next
+		emit('error', tile.index, tile.item)
+	}
+
+	// 地址换好了就撤掉占位，同一个 src 重新加载成功也能恢复。
+	const onImageLoad = (source: string) => {
+		const index = failedSources.value.indexOf(source)
+		if (index < 0) return
+		const next = failedSources.value.slice()
+		next.splice(index, 1)
+		failedSources.value = next
+	}
+</script>
+
+<style>
+	/* 图片组合不占外部间距，宽度由内容决定；多行时铺满父级再换行。
+	   5.26 的 App 不保证 flex gap，偏移用每张图的外边距表达。 */
+	.vx-image-group {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+	}
+
+	.vx-image-group--wrap {
+		flex-wrap: wrap;
+		align-items: flex-start;
+		width: 100%;
+	}
+
+	.vx-image-group--column {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	/* 方框裁掉图片四角；App 上图片自己的圆角裁不住，裁切写在方框上。
+	   底色给加载中和失败留一块稳定区域，描边默认 0，打开 ring 才加。
+	   Web 默认 content-box，描边要算进方框，图片才不会把相邻图挤开。 */
+	.vx-image-group__tile {
+		position: relative;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		overflow: hidden;
+		width: var(--vx-image-group-size-md);
+		height: var(--vx-image-group-size-md);
+		border-width: 0;
+		border-style: solid;
+		border-color: var(--vx-color-surface);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-image-group__tile--sm {
+		width: var(--vx-image-group-size-sm);
+		height: var(--vx-image-group-size-sm);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-image-group__tile--lg {
+		width: var(--vx-image-group-size-lg);
+		height: var(--vx-image-group-size-lg);
+	}
+
+	/* 圆形靠 pill 圆角；平角只去掉圆角，不换底色。 */
+	.vx-image-group__tile--circle {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-image-group__tile--square {
+		border-radius: 0;
+	}
+
+	/* 圆环压在图片外侧，重叠时靠它把上下两张分开；颜色默认 surface，可由 ringColor 覆盖。 */
+	.vx-image-group__tile--ring {
+		border-width: var(--vx-border-width-strong);
+	}
+
+	/* 图片铺满方框，mode 决定裁切方式。 */
+	.vx-image-group__image {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 单张图的按下反馈；圆环和占位一起变淡。 */
+	.vx-image-group__tile--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* #ifdef WEB */
+	.vx-image-group__tile--clickable {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>
