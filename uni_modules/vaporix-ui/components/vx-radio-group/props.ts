@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 
 /** 选中标记：circle 是圆圈加对号，check 只画对号。 */
 export type VxRadioVariant = 'circle' | 'check'

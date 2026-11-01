@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 import { VxCheckboxLayout, VxCheckboxPlacement, VxCheckboxVariant } from './props'
 
 /** provide / inject 的 key。只在 vx-checkbox-group 和 vx-checkbox 之间使用。 */

@@ -8,7 +8,7 @@
 <script setup>
 	import { VxCheckboxGroupProps, VxCheckboxLayout, VxCheckboxPlacement, VxCheckboxVariant, VxCheckboxValues } from './props'
 	import { VX_CHECKBOX_CONTEXT, VxCheckboxContext } from './context'
-	import { VxSemantic, VxSize } from '../../../libs/types/common'
+	import { VxSemantic, VxSize } from '../../libs/types/common'
 
 	const props = withDefaults(defineProps<VxCheckboxGroupProps>(), {
 		size: 'md',

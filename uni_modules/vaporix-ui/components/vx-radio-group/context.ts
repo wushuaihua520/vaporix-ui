@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 import { VxRadioLayout, VxRadioPlacement, VxRadioVariant } from './props'
 
 /** provide / inject 的 key。只在 vx-radio-group 和 vx-radio 之间使用。 */

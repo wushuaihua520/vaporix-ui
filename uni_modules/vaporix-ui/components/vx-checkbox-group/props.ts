@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 
 /** 选中的 value 集合，顺序按用户勾选的先后追加。 */
 export type VxCheckboxValues = Array<string>

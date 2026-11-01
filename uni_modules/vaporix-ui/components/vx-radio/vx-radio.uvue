@@ -35,8 +35,8 @@
 	import { VxRadioProps } from './props'
 	import { VX_RADIO_CONTEXT, VxRadioContext } from '../vx-radio-group/context'
 	import { VxRadioLayout, VxRadioPlacement, VxRadioVariant } from '../vx-radio-group/props'
-	import { VxSemantic, VxSize } from '../../../libs/types/common'
-	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+	import { VxSemantic, VxSize } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxRadioProps>(), {
 		value: '',

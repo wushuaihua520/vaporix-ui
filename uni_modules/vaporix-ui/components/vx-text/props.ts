@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 
 /** 文本颜色：default 正文，secondary 次要说明，其余按语义表达状态。 */
 export type VxTextType = VxSemantic | 'secondary'

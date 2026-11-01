@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 
 /** 排布：inline 单行，list 整行。 */
 export type VxSwitchLayout = 'inline' | 'list'

@@ -1,4 +1,4 @@
-import { VxSemantic, VxSize } from '../../../libs/types/common'
+import { VxSemantic, VxSize } from '../../libs/types/common'
 
 /** 链接颜色：primary 品牌色、secondary 次要灰，其余按语义表达状态。 */
 export type VxLinkType = VxSemantic | 'secondary'

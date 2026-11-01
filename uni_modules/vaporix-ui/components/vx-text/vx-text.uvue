@@ -10,8 +10,8 @@
 
 <script setup>
 	import { VxTextAlign, VxTextDecoration, VxTextFormat, VxTextProps, VxTextType, VxTextWeight } from './props'
-	import { VxSize } from '../../../libs/types/common'
-	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+	import { VxSize } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxTextProps>(), {
 		text: '',

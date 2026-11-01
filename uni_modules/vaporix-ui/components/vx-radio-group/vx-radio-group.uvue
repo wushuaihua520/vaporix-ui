@@ -8,7 +8,7 @@
 <script setup>
 	import { VxRadioGroupProps, VxRadioLayout, VxRadioPlacement, VxRadioVariant } from './props'
 	import { VX_RADIO_CONTEXT, VxRadioContext } from './context'
-	import { VxSemantic, VxSize } from '../../../libs/types/common'
+	import { VxSemantic, VxSize } from '../../libs/types/common'
 
 	const props = withDefaults(defineProps<VxRadioGroupProps>(), {
 		size: 'md',

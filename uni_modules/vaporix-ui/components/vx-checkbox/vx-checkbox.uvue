@@ -37,8 +37,8 @@
 	import { VxCheckboxProps } from './props'
 	import { VX_CHECKBOX_CONTEXT, VxCheckboxContext } from '../vx-checkbox-group/context'
 	import { VxCheckboxLayout, VxCheckboxPlacement, VxCheckboxVariant } from '../vx-checkbox-group/props'
-	import { VxSemantic, VxSize } from '../../../libs/types/common'
-	import { VX_PRESSED_STAY_TIME } from '../../../libs/motion'
+	import { VxSemantic, VxSize } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxCheckboxProps>(), {
 		value: '',
