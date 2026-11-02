@@ -3768,6 +3768,5 @@ const onClose = () => {
 | vx-checkbox-group | 多项选择器分组 | 0.58.0 |
 | vx-checkbox | 多项选择器 | 0.58.0 |
 | vx-switch | 开关选择器 | 0.58.0 |
-| vx-upload | 图片上传（Pro） | 1.21.0 |
 
 付费组件在 `vaporix-ui-pro`。当前提供 `vx-gallery` 图片预览（1.0.0）、`vx-loader` 加载动画（1.1.0）、`vx-index-list` 索引列表（1.5.0）、`vx-circular-progress` 环形进度条（1.6.0）、`vx-msg` 提示页（1.7.0）、`vx-slider` 滑动选择器（1.8.0）、`vx-segmented-control` 分段器（1.10.0）、`vx-divide-list` 分隔列表（1.11.0）、`vx-select` 选择框（1.12.0）、`vx-data-checkbox` 数据选择器（1.15.0）、`vx-code-input` 验证码输入框（1.16.0）、`vx-upload` 图片上传（1.21.0），用法和 API 见该模块的 `readme.md` 与文档站；`vx-gallery` 用免费库 0.37.1 起的 `--vx-gallery-*` / `--vx-color-viewer-*` 令牌，`vx-loader` 用 0.38.0 起的 `--vx-loader-*` 令牌，`vx-index-list` 用 0.42.0 起的 `--vx-index-*` 令牌，`vx-circular-progress` 的尺寸与 0.44.0 起的 `--vx-circular-progress-*` 令牌同值，`vx-msg` 用 0.45.0 起的 `--vx-msg-*` 令牌，`vx-slider` 用 0.46.0 起的 `--vx-slider-*` 令牌，`vx-segmented-control` / `vx-data-checkbox` 也不新增令牌，`vx-divide-list` 用 0.49.0 起的令牌，`vx-select` 用 0.50.0 起的令牌，`vx-code-input` 用 0.54.0 起的 `--vx-code-*` 令牌。0.56.0 起 `vx-row`、`vx-col`、`vx-status-bar`，0.57.0 起 `vx-text`、`vx-link`，0.58.0 起 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch` 已迁入免费库，不再依赖付费模块。
