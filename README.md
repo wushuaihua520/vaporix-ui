@@ -16,7 +16,7 @@ uni-app x 蒸汽模式的原生渲染组件库。基础组件开源，按 `uni_m
 
 图标来自 Phosphor 2.1.2（MIT），分 core 112 / extend 1000 两档，每档都有 regular / fill；许可证全文随组件放在 `uni_modules/vaporix-ui/libs/icons/LICENSE`。core 默认加载，extend 按需引入 `libs/style/icons-extend.css`。
 
-高级组件在私有仓库 `vaporix-ui-pro`，不包含在本仓库。
+高级组件单独销售（`vaporix-ui-pro`），不包含在本仓库；范围、价格与授权见文档站的「Pro 组件」页。
 
 ## 目录
 

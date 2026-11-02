@@ -9,6 +9,8 @@ Native-rendered component library for uni-app x vapor mode. Free components live
 
 Basic components are MIT licensed, including button, icon, input, textarea, text, link, radio, checkbox, switch, number box, countdown, steps, progress, action sheet, bubble popup, drawer, modal, datetime, picker, calendar, tabs, tab bar, swipe action, tag, badge, footer, tips, toast, rate, list view, list cell, collapse, collapse item, card, section, white space, wing blank, grid, grid item, row, col, image group, QR code, loading, load more, no more, no data, sticky, navigation bar, status bar, rolling news, notice bar and time axis. Icons come from Phosphor 2.1.2 (MIT), split into core 112 and extended 1000, each in regular and fill. Core ships by default; extended requires `libs/style/icons-extend.css`. The upstream license ships in `uni_modules/vaporix-ui/libs/icons/LICENSE`. Paid components belong to the private `vaporix-ui-pro` repository and are not included here.
 
+Advanced components ship separately as `vaporix-ui-pro`; see the docs site Pro page for scope, pricing and licensing.
+
 ## Layout
 
 The repository is itself a uni-app x playground. The library is `uni_modules/vaporix-ui`; the demo is a three-tab app:
