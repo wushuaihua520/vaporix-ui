@@ -55,6 +55,20 @@
 	--vx-list-height-md: 52px;
 	--vx-list-height-lg: 60px;
 
+	/* 树型菜单：节点行高、每级缩进和箭头位三组三档。树比列表行紧一档，
+	   层级靠缩进表达，不靠缩字号 */
+	--vx-tree-row-sm: 36px;
+	--vx-tree-row-md: 44px;
+	--vx-tree-row-lg: 52px;
+
+	--vx-tree-indent-sm: 16px;
+	--vx-tree-indent-md: 20px;
+	--vx-tree-indent-lg: 24px;
+
+	--vx-tree-marker-sm: 20px;
+	--vx-tree-marker-md: 24px;
+	--vx-tree-marker-lg: 28px;
+
 	/* 导航栏内容行高：内置返回和右侧动作都按这一档排 */
 	--vx-navigation-bar-height: 44px;
 
@@ -213,6 +227,65 @@
 	--vx-code-caret-sm: 20px;
 	--vx-code-caret-md: 24px;
 	--vx-code-caret-lg: 28px;
+
+	/* 数字键盘：按键高度、数字字号、密码位宽和密码圆点四组三档，另加一个密码位高度。
+	   键高不并入控件和列表行三档；密码位宽只决定下划线宽度和数字落点，高度三档共用 44px，
+	   数字和圆点都贴着下划线落位。 */
+	--vx-keyboard-key-sm: 44px;
+	--vx-keyboard-key-md: 52px;
+	--vx-keyboard-key-lg: 60px;
+
+	--vx-keyboard-font-sm: 20px;
+	--vx-keyboard-font-md: 24px;
+	--vx-keyboard-font-lg: 28px;
+
+	--vx-keyboard-slot-sm: 32px;
+	--vx-keyboard-slot-md: 36px;
+	--vx-keyboard-slot-lg: 40px;
+
+	--vx-keyboard-slot-height: 44px;
+
+	--vx-keyboard-dot-sm: 8px;
+	--vx-keyboard-dot-md: 10px;
+	--vx-keyboard-dot-lg: 12px;
+
+	/* 骨架屏：标题、文本行、头像、资料头像、媒体、宫格块和两组间距。
+	   占位块只表达结构，高度按档位收紧；间距与行高分开，改字号时不拖动整个骨架。 */
+	--vx-skeleton-title-sm: 16px;
+	--vx-skeleton-title-md: 18px;
+	--vx-skeleton-title-lg: 20px;
+
+	--vx-skeleton-line-sm: 10px;
+	--vx-skeleton-line-md: 12px;
+	--vx-skeleton-line-lg: 14px;
+
+	--vx-skeleton-avatar-sm: 32px;
+	--vx-skeleton-avatar-md: 40px;
+	--vx-skeleton-avatar-lg: 48px;
+
+	--vx-skeleton-profile-sm: 56px;
+	--vx-skeleton-profile-md: 64px;
+	--vx-skeleton-profile-lg: 72px;
+
+	--vx-skeleton-media-sm: 120px;
+	--vx-skeleton-media-md: 160px;
+	--vx-skeleton-media-lg: 200px;
+
+	--vx-skeleton-tile-sm: 64px;
+	--vx-skeleton-tile-md: 80px;
+	--vx-skeleton-tile-lg: 96px;
+
+	--vx-skeleton-gap-sm: 6px;
+	--vx-skeleton-gap-md: 8px;
+	--vx-skeleton-gap-lg: 10px;
+
+	--vx-skeleton-row-sm: 16px;
+	--vx-skeleton-row-md: 20px;
+	--vx-skeleton-row-lg: 24px;
+
+	/* 骨架屏动效：脉冲和扫光各一条，循环时长亮暗同值 */
+	--vx-skeleton-duration-pulse: 1400ms;
+	--vx-skeleton-duration-shimmer: 1600ms;
 
 	/* 索引列表：分组标题、头像、索引字母和指示器四组尺寸；
 	   索引条每个字母的槽高等于字母圆直径，条宽只放宽触摸区。 */
@@ -599,6 +672,10 @@
 	--vx-loader-muted: rgba(255, 255, 255, 0.64);
 	--vx-loader-track: rgba(255, 255, 255, 0.24);
 
+	/* 骨架屏：中性占位底和扫光高光，只表达结构，不承载状态和品牌色 */
+	--vx-skeleton-fill: #eceff5;
+	--vx-skeleton-shine: rgba(255, 255, 255, 0.72);
+
 	/* 阴影 */
 	--vx-shadow-sm: 0 1px 2px rgba(16, 18, 22, 0.06);
 	--vx-shadow-md: 0 4px 12px rgba(16, 18, 22, 0.1);
@@ -655,6 +732,19 @@
 	--vx-list-height-sm: 44px;
 	--vx-list-height-md: 52px;
 	--vx-list-height-lg: 60px;
+
+	/* 树型菜单：节点行高、每级缩进和箭头位（与亮色一致） */
+	--vx-tree-row-sm: 36px;
+	--vx-tree-row-md: 44px;
+	--vx-tree-row-lg: 52px;
+
+	--vx-tree-indent-sm: 16px;
+	--vx-tree-indent-md: 20px;
+	--vx-tree-indent-lg: 24px;
+
+	--vx-tree-marker-sm: 20px;
+	--vx-tree-marker-md: 24px;
+	--vx-tree-marker-lg: 28px;
 
 	/* 导航栏内容行高（与亮色一致） */
 	--vx-navigation-bar-height: 44px;
@@ -807,6 +897,61 @@
 	--vx-code-caret-sm: 20px;
 	--vx-code-caret-md: 24px;
 	--vx-code-caret-lg: 28px;
+
+	/* 数字键盘（与亮色一致） */
+	--vx-keyboard-key-sm: 44px;
+	--vx-keyboard-key-md: 52px;
+	--vx-keyboard-key-lg: 60px;
+
+	--vx-keyboard-font-sm: 20px;
+	--vx-keyboard-font-md: 24px;
+	--vx-keyboard-font-lg: 28px;
+
+	--vx-keyboard-slot-sm: 32px;
+	--vx-keyboard-slot-md: 36px;
+	--vx-keyboard-slot-lg: 40px;
+
+	--vx-keyboard-slot-height: 44px;
+
+	--vx-keyboard-dot-sm: 8px;
+	--vx-keyboard-dot-md: 10px;
+	--vx-keyboard-dot-lg: 12px;
+
+	/* 骨架屏（与亮色一致） */
+	--vx-skeleton-title-sm: 16px;
+	--vx-skeleton-title-md: 18px;
+	--vx-skeleton-title-lg: 20px;
+
+	--vx-skeleton-line-sm: 10px;
+	--vx-skeleton-line-md: 12px;
+	--vx-skeleton-line-lg: 14px;
+
+	--vx-skeleton-avatar-sm: 32px;
+	--vx-skeleton-avatar-md: 40px;
+	--vx-skeleton-avatar-lg: 48px;
+
+	--vx-skeleton-profile-sm: 56px;
+	--vx-skeleton-profile-md: 64px;
+	--vx-skeleton-profile-lg: 72px;
+
+	--vx-skeleton-media-sm: 120px;
+	--vx-skeleton-media-md: 160px;
+	--vx-skeleton-media-lg: 200px;
+
+	--vx-skeleton-tile-sm: 64px;
+	--vx-skeleton-tile-md: 80px;
+	--vx-skeleton-tile-lg: 96px;
+
+	--vx-skeleton-gap-sm: 6px;
+	--vx-skeleton-gap-md: 8px;
+	--vx-skeleton-gap-lg: 10px;
+
+	--vx-skeleton-row-sm: 16px;
+	--vx-skeleton-row-md: 20px;
+	--vx-skeleton-row-lg: 24px;
+
+	--vx-skeleton-duration-pulse: 1400ms;
+	--vx-skeleton-duration-shimmer: 1600ms;
 
 	/* 索引列表（与亮色一致） */
 	--vx-index-header-sm: 28px;
@@ -1169,6 +1314,10 @@
 	--vx-loader-fg: #ffffff;
 	--vx-loader-muted: rgba(255, 255, 255, 0.64);
 	--vx-loader-track: rgba(255, 255, 255, 0.24);
+
+	/* 骨架屏（暗色占位底深一档，扫光降到 8%，不抢正文） */
+	--vx-skeleton-fill: #2a2e38;
+	--vx-skeleton-shine: rgba(255, 255, 255, 0.08);
 
 	/* 阴影（暗色下加深，避免浮层糊在一起） */
 	--vx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);

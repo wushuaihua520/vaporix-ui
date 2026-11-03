@@ -43,6 +43,12 @@ export const VX_PROGRESS_DURATION = 220
 export const VX_CIRCULAR_PROGRESS_DURATION = 600
 
 /**
+ * 数字键盘输入框校验失败的抖动时长，单位毫秒。
+ * 抖动本身是 CSS 关键帧，5.26 的 App 没有关键帧，停在原位；这个数只负责摘掉 class。
+ */
+export const VX_KEYBOARD_SHAKE_TIME = 320
+
+/**
  * 通告栏滚动速度，单位 px/s。
  * 与 props 的默认值一致；文字宽度和视口宽度都读实际测量值。
  */

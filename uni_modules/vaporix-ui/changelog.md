@@ -1,3 +1,27 @@
+## 0.61.0（2026-11-03）
+
+- 新增树型菜单令牌 `--vx-tree-row-sm/md/lg`（36 / 44 / 52）、`--vx-tree-indent-sm/md/lg`（16 / 20 / 24）和 `--vx-tree-marker-sm/md/lg`（20 / 24 / 28），亮暗各一份。
+- 节点行高单独一档，不并入列表行 44 / 52 / 60；层级靠缩进表达，箭头位跟着档位放大，字号仍用控件三档 13 / 14 / 16。
+- DESIGN.md 补充树型菜单的配色、排版、尺寸、形状、层级、动效、组件和 Do / Don't 规则；树只负责展开、选中和勾选，不排序、不请求、不虚拟化。
+- 免费组件没有改动；`vx-tree-view` 在 `vaporix-ui-pro` 1.27.0，使用本版新增的 `--vx-tree-*` 令牌，升级时两个模块一起换。
+- 版本号统一到 0.61.0：组件包、manifest、演示页页脚和文档站一起更新。
+
+## 0.60.0（2026-11-03）
+
+- 新增数字键盘令牌 `--vx-keyboard-key-sm/md/lg`（44 / 52 / 60）、`--vx-keyboard-font-sm/md/lg`（20 / 24 / 28）、`--vx-keyboard-slot-sm/md/lg`（32 / 36 / 40）、`--vx-keyboard-slot-height`（44）和 `--vx-keyboard-dot-sm/md/lg`（8 / 10 / 12），亮暗各一份。
+- 键高单独一档，不并入控件 32 / 40 / 48 和列表行 44 / 52 / 60；密码位的下划线宽度跟档位，高度三档共用，数字和圆点都贴着下划线落位。
+- DESIGN.md 补充数字键盘的配色、排版、尺寸、形状、动效、组件和 Do / Don't 规则；按键只承载一位数字，不校验、不保存、不自动收起。
+- 免费组件没有改动；`vx-keyboard` 和 `vx-keyboard-input` 在 `vaporix-ui-pro` 1.26.0，使用本版新增的 `--vx-keyboard-*` 令牌，升级时两个模块一起换。
+- 版本号统一到 0.60.0：组件包、manifest、演示页页脚和文档站一起更新。
+
+## 0.59.0（2026-11-02）
+
+- 新增骨架屏令牌 `--vx-skeleton-title-sm/md/lg`（16 / 18 / 20）、`--vx-skeleton-line-sm/md/lg`（10 / 12 / 14）、`--vx-skeleton-avatar-sm/md/lg`（32 / 40 / 48）、`--vx-skeleton-profile-sm/md/lg`（56 / 64 / 72）、`--vx-skeleton-media-sm/md/lg`（120 / 160 / 200）、`--vx-skeleton-tile-sm/md/lg`（64 / 80 / 96）、`--vx-skeleton-gap-sm/md/lg`（6 / 8 / 10）、`--vx-skeleton-row-sm/md/lg`（16 / 20 / 24），以及 `--vx-skeleton-duration-pulse`（1400ms）和 `--vx-skeleton-duration-shimmer`（1600ms）。
+- 新增占位色 `--vx-skeleton-fill`（亮色 `#eceff5` / 暗色 `#2a2e38`）和扫光色 `--vx-skeleton-shine`（亮色 72% 白 / 暗色 8% 白），亮暗各一份；占位块只用中性色，不表达状态。
+- DESIGN.md 补充骨架屏的配色、尺寸、间距、圆角、动效、组件和 Do / Don't 规则；骨架是装饰，不拦点击，不进入键盘顺序。
+- 免费组件没有改动；`vx-skeleton` 在 `vaporix-ui-pro` 1.22.0，使用本版新增的令牌，升级时两个模块一起换。
+- 版本号统一到 0.59.0：组件包、manifest、文档站、演示页页脚和组件索引计数一起更新。
+
 ## 0.58.0（2026-11-01）
 
 - 迁入 `vx-radio` / `vx-radio-group` 单项选择器：整组只选一项，`v-model` 绑字符串；横排或列表两种排布、圆圈或只画对号、三档尺寸、六种语义色、行尾标记、分割线、卡片和整组禁用。
