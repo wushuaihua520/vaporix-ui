@@ -1,0 +1,339 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-divider</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="minus" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">分割线</text>
+								<text class="demo-hero__title demo-hero__title--accent">5 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">横竖两向、实线虚线、带文字的对齐，以及间距和颜色的覆盖方式。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-divider</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础横线</text>
+							<text class="demo-section__desc">1px，默认 border 色，上下各留 12；它就是一条线，没有插槽和点击。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-div-paragraph">第一段内容：分割线只负责分隔，不代替区块之间的 24 留白。</text>
+						<vx-divider />
+						<text class="demo-div-paragraph">第二段内容：同一个区块内部用 12，跨区块时仍由页面节奏决定。</text>
+						<vx-divider />
+						<text class="demo-div-paragraph">第三段内容：线色取 border，比列表行内的 divider 深一档。</text>
+					</view>
+					<text class="demo-hint demo-div-hint">spacing 不传时，横线上下各 12；它只是外边距，不改变线的宽度。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">带文字三种对齐</text>
+							<text class="demo-section__desc">left 只画右侧线、right 只画左侧线、center 两侧各画一段等宽线。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-div-label">align="left"</text>
+						<vx-divider text="最近更新" align="left" />
+						<text class="demo-div-label demo-div-label--spaced">align="center"</text>
+						<vx-divider text="分组标题" align="center" />
+						<text class="demo-div-label demo-div-label--spaced">align="right"</text>
+						<vx-divider text="展开全部" align="right" />
+					</view>
+					<text class="demo-hint demo-div-hint">文字 13 / 20 次要灰，和线之间留 12；left 只画右侧线、right 只画左侧线、center 两侧等宽。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">虚线</text>
+							<text class="demo-section__desc">dashed 只把边框样式换成虚线，不画背景渐变。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-div-label">虚线横线</text>
+						<vx-divider dashed />
+						<text class="demo-div-label demo-div-label--spaced">虚线 + 文字</text>
+						<vx-divider dashed text="更多内容" />
+						<view class="demo-div-dash-row">
+							<view class="demo-div-dash__bar">
+								<text class="demo-div-dash__text">上一格</text>
+							</view>
+							<vx-divider direction="vertical" dashed spacing="12" />
+							<view class="demo-div-dash__bar">
+								<text class="demo-div-dash__text">下一格</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-div-hint">1px 虚线在屏幕上会显得略淡；要更醒目时换 color，不要加粗到 2px。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">纵向</text>
+							<text class="demo-section__desc">高度空串时撑满父级那一行，不自动水平居中。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-div-stats">
+							<view class="demo-div-stat">
+								<text class="demo-div-stat__value">128</text>
+								<text class="demo-div-stat__label">订单</text>
+							</view>
+							<vx-divider direction="vertical" />
+							<view class="demo-div-stat">
+								<text class="demo-div-stat__value">36</text>
+								<text class="demo-div-stat__label">收藏</text>
+							</view>
+							<vx-divider direction="vertical" />
+							<view class="demo-div-stat">
+								<text class="demo-div-stat__value">4.9</text>
+								<text class="demo-div-stat__label">评分</text>
+							</view>
+						</view>
+						<view class="demo-div-height">
+							<view class="demo-div-height__box">
+								<text class="demo-div-height__text">上一格</text>
+							</view>
+							<vx-divider direction="vertical" height="40px" />
+							<view class="demo-div-height__box">
+								<text class="demo-div-height__text">40 高的线</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-div-hint">竖线宽 1px，由父级 flex 排布；传 height 才固定高度，不传就撑满整行。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义间距与颜色</text>
+							<text class="demo-section__desc">spacing 数字按 px，字符串带单位；color 同时改线和文字。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-div-label">spacing 0</text>
+						<vx-divider :spacing="0" />
+						<text class="demo-div-label demo-div-label--spaced">spacing 24</text>
+						<vx-divider :spacing="24" />
+						<text class="demo-div-label demo-div-label--spaced">spacing 32px</text>
+						<vx-divider spacing="32px" />
+						<text class="demo-div-label demo-div-label--spaced">color · 主色</text>
+						<vx-divider text="品牌分隔" color="var(--vx-color-primary)" />
+						<text class="demo-div-label demo-div-label--spaced">color · 危险色</text>
+						<vx-divider dashed text="危险操作" color="var(--vx-color-danger)" />
+					</view>
+					<text class="demo-hint demo-div-hint">color 是字面值，只覆盖线色和文字色，不跟随主题；跟主题时传 var(--vx-color-*)。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.64.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/image/image'
+	const nextPath: string = '/pages/demo/safe-area/safe-area'
+	const prevName = '图片'
+	const nextName = '安全区'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	.demo-div-hint {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-div-paragraph {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-div-label {
+		font-size: 12px;
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-div-label--spaced {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-div-dash-row {
+		flex-direction: row;
+		align-items: stretch;
+		margin-top: var(--vx-space-lg);
+		min-height: 44px;
+	}
+
+	.demo-div-dash__bar {
+		flex: 1;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-div-dash__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-div-stats {
+		flex-direction: row;
+		align-items: stretch;
+		width: 100%;
+		padding-top: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-sm);
+	}
+
+	.demo-div-stat {
+		flex: 1;
+		align-items: center;
+		justify-content: center;
+		min-width: 0;
+	}
+
+	.demo-div-stat__value {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-div-stat__label {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-div-height {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+		margin-top: var(--vx-space-lg);
+		padding-top: var(--vx-space-sm);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+	}
+
+	.demo-div-height__box {
+		flex: 1;
+		align-items: center;
+		justify-content: center;
+		min-width: 0;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-div-height__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

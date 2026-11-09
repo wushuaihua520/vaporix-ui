@@ -22,6 +22,6 @@ export type VxPickerProps = {
 	maskClosable?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
-	/** 浮层层级，默认 90，和操作菜单、日期时间选择器同档。 */
+	/** 浮层层级，默认 1000，和操作菜单、日期时间选择器同档。 */
 	zIndex?: number
 }

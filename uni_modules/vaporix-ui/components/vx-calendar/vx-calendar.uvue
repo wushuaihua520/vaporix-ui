@@ -96,7 +96,8 @@
 		vxCalendarWeekText
 	} from '../../libs/calendar'
 	import { vxLunarFromSolar } from '../../libs/lunar'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
 	import { VxCalendarMark, VxCalendarProps } from './props'
 
 	const props = withDefaults(defineProps<VxCalendarProps>(), {
@@ -116,7 +117,7 @@
 		marks: (): Array<VxCalendarMark> => [],
 		maskClosable: true,
 		maskColor: '',
-		zIndex: 90
+		zIndex: VX_OVERLAY_LAYER
 	})
 
 	// 单个日期、区间两端各一个模型：区间模式不读也不写 modelValue，两种模式互不干扰。
@@ -709,8 +710,10 @@
 	}
 
 	// 遮罩可关闭时按取消处理，和点关闭叉走同一条出口。
+	// 打开那一下抬起的触摸也会落到遮罩上，保护窗内直接丢掉，否则浮层会一闪就关。
 	const onMaskTap = () => {
 		if (!props.maskClosable) return
+		if (Date.now() - openedAt < VX_POPUP_MASK_GUARD) return
 		onCancelTap()
 	}
 
@@ -733,9 +736,18 @@
 		show.value = false
 	}
 
+	// 系统返回键等页面级出口：按用户取消处理，和点关闭叉、点遮罩走同一条链路。
+	const cancel = () => {
+		onCancelTap()
+	}
+
+	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
+	let openedAt = 0
+
 	// 打开时重新读模型，草稿和显示月都跟着回到已选位置。
 	watch(show, (visible: boolean) => {
 		if (!props.popup || !visible) return
+		openedAt = Date.now()
 		prepare()
 	})
 
@@ -766,11 +778,13 @@
 	watch(() => props.maxDate, clampView)
 
 	// 挂载时已经打开的，先对齐再出第一帧；平铺模式也要先读一次模型，否则首帧是空的。
+	if (props.popup && show.value) openedAt = Date.now()
 	prepare()
 
 	defineExpose({
 		open,
 		close,
+		cancel,
 		confirm
 	})
 </script>

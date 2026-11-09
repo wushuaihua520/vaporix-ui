@@ -14,6 +14,12 @@ export type VxRowContext = {
 	lineGutter: () => number
 	/** 当前窗口宽度，单位 px。读不到时是 0，断点退回 span。 */
 	windowWidth: () => number
+	/** 垂直对齐方式；列用它决定是否显式声明 align-self: stretch。 */
+	align: () => string
+	/** stretch 时量出的行高；App 端只靠 align-items 拉不平列高，用显式高度兜底。 */
+	stretchHeight: () => number
+	/** 本行的实例标识；列用它挂一个只属于本行的 class，测量时不会把嵌套行的列算进来。 */
+	id: () => string
 }
 
 /** 蒸汽模式没有 @media，断点用窗口宽度。不是正数时按 0，列只用 span。 */

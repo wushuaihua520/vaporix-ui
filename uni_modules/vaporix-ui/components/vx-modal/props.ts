@@ -71,6 +71,6 @@ export type VxModalProps = {
 	contentColor?: string
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
-	/** 浮层层级，默认 110，低于加载浮层（150）和轻提示（200）。 */
+	/** 浮层层级，默认 1020，低于加载浮层（1050）和轻提示（1100）。 */
 	zIndex?: number
 }

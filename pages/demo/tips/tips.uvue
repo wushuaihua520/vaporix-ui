@@ -439,9 +439,9 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/calendar/calendar'
+	const prevPath: string = '/pages/demo/form/form'
 	const nextPath: string = '/pages/demo/toast/toast'
-	const prevName = '日历'
+	const prevName = '表单'
 	const nextName = '轻提示'
 
 	const goCatalog = () => {

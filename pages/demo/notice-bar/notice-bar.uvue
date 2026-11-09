@@ -413,9 +413,9 @@
 	})
 
 	const prevPath: string = '/pages/demo/rolling-news/rolling-news'
-	const nextPath: string = ''
+	const nextPath: string = '/pages/demo/popup/popup'
 	const prevName = '滚动消息'
-	const nextName = '已经是最后一个'
+	const nextName = '弹出层'
 
 	const goCatalog = () => {
 		const pages = getCurrentPages()

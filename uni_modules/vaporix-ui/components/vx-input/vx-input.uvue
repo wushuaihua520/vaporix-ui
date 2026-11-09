@@ -1,9 +1,14 @@
 <template>
 	<!-- 整行点击由组件抛出，不再往外冒。 -->
 	<view :class="rootClass" @click.stop="onClick">
-		<view v-if="label.length > 0" :class="labelClass" :style="labelStyle">
+		<view v-if="showLabel" :class="labelClass" :style="labelStyle">
 			<text v-if="required" :class="requiredClass">*</text>
 			<text :class="labelTextClass">{{ label }}</text>
+		</view>
+
+		<!-- 搜索变体的前置图标由组件画，业务不用再传 prefix。 -->
+		<view v-if="isSearch" class="vx-input__search-icon">
+			<vx-icon name="search" :size="searchIconSize" :color="searchIconColor" />
 		</view>
 
 		<view v-if="$slots['prefix'] != null" class="vx-input__prefix">
@@ -15,16 +20,22 @@
 		</view>
 		<input v-else v-model="modelValue" :class="controlClass" :type="type" :password="password"
 			:placeholder="placeholder" :placeholder-class="placeholderClass" :disabled="disabled"
-			:maxlength="maxlength" :confirm-type="confirmType" @input="onInput" @change="onChange"
+			:maxlength="maxlength" :confirm-type="resolvedConfirmType" @input="onInput" @change="onChange"
 			@confirm="onConfirm" @focus="onFocus" @blur="onBlur" />
 
-		<text v-if="unit.length > 0" :class="unitClass">{{ unit }}</text>
+		<text v-if="showUnit" :class="unitClass">{{ unit }}</text>
 
 		<view v-if="showClear" :class="clearClass" hover-class="vx-input__clear--pressed"
 			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClear">
 			<view :class="clearMarkClass">
 				<vx-icon name="close" :size="iconSize" color="var(--vx-color-text-secondary)" />
 			</view>
+		</view>
+
+		<!-- 取消只在搜索变体出现：有值或聚焦时占位，其余时候不渲染也不留白。 -->
+		<view v-if="showSearchCancel" :class="searchCancelClass" :hover-class="searchCancelHoverClass"
+			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onSearchCancel">
+			<text :class="searchCancelTextClass">取消</text>
 		</view>
 
 		<view v-if="$slots['suffix'] != null" class="vx-input__suffix">
@@ -38,7 +49,7 @@
 </template>
 
 <script setup>
-	import { VxInputProps } from './props'
+	import { VxInputProps, VxInputConfirmType } from './props'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxInputProps>(), {
@@ -53,7 +64,7 @@
 		readonly: false,
 		maxlength: -1,
 		invalid: false,
-		confirmType: 'done',
+		confirmType: '',
 		label: '',
 		labelWidth: '',
 		required: false,
@@ -71,6 +82,8 @@
 		input: [value: string]
 		change: [value: string]
 		confirm: [value: string]
+		search: [value: string]
+		cancel: []
 		clear: []
 		focus: []
 		blur: []
@@ -78,6 +91,26 @@
 	}>()
 
 	const focused = ref(false)
+
+	// search 是搜索语义：没有标题位，取消按钮跟焦点和值走。
+	const isSearch = computed((): boolean => {
+		return props.variant === 'search'
+	})
+
+	// 键盘右下角按键：显式传了就用传入值；没传时 search 落到搜索键，其余变体仍是完成键。
+	// 用计算值而不是 prop，variant 从 search 切回 outline / line 时键面跟着回到 done。
+	const resolvedConfirmType = computed((): VxInputConfirmType => {
+		if (props.confirmType.length > 0) return props.confirmType
+		return isSearch.value ? 'search' : 'done'
+	})
+
+	const showLabel = computed((): boolean => {
+		return !isSearch.value && props.label.length > 0
+	})
+
+	const showUnit = computed((): boolean => {
+		return !isSearch.value && props.unit.length > 0
+	})
 
 	// md 不加尺寸 class。state 为空不加状态 class。
 	const partClass = (base: string, size: string, state: string): string => {
@@ -90,10 +123,13 @@
 	const rootClass = computed((): string => {
 		let name = 'vx-input'
 		if (props.size !== 'md') name += ` vx-input--${props.size}`
-		// line 只有下边框，圆角没有可作用的对象。
+		// line 只有下边框，圆角没有可作用的对象；search 固定胶囊圆角，不吃 shape。
 		if (props.variant === 'line') name += ' vx-input--line'
+		else if (props.variant === 'search') name += ' vx-input--search'
 		else if (props.shape === 'pill') name += ' vx-input--pill'
 		else if (props.shape === 'square') name += ' vx-input--square'
+		// 搜索的左右内边距收在一档：sm 12、md / lg 16，写在 search 之后才能盖掉档位值。
+		if (props.variant === 'search' && props.size === 'sm') name += ' vx-input--search-sm'
 
 		if (props.disabled) {
 			name += props.variant === 'line' ? ' vx-input--line-disabled' : ' vx-input--disabled'
@@ -139,11 +175,41 @@
 	})
 
 	const clearClass = computed((): string => {
-		return partClass('vx-input__clear', props.size, '')
+		let name = partClass('vx-input__clear', props.size, '')
+		// 搜索变体右侧要先让位给取消，清除收成图标宽，不再占一个控件高度。
+		if (isSearch.value) name += ' vx-input__clear--search'
+		return name
 	})
 
 	const clearMarkClass = computed((): string => {
 		return partClass('vx-input__clear-mark', props.size, '')
+	})
+
+	const searchCancelClass = computed((): string => {
+		return partClass('vx-input__search-cancel', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const searchCancelTextClass = computed((): string => {
+		return partClass('vx-input__search-cancel-text', props.size, props.disabled ? 'disabled' : '')
+	})
+
+	const searchCancelHoverClass = computed((): string => {
+		return props.disabled ? 'none' : 'vx-input__search-cancel--pressed'
+	})
+
+	// 搜索图标走 vx-icon 的 sm / md 两档（14 / 18），lg 与 md 同档，不新增第四种图标尺寸。
+	const searchIconSize = computed((): 'sm' | 'md' => {
+		return props.size === 'sm' ? 'sm' : 'md'
+	})
+
+	const searchIconColor = computed((): string => {
+		return props.disabled ? 'var(--vx-color-disabled-text)' : 'var(--vx-color-text-secondary)'
+	})
+
+	// 有值或聚焦时出现，其余时候不占位；只读行不出取消，避免一个点了没反应的按钮。
+	const showSearchCancel = computed((): boolean => {
+		if (!isSearch.value || props.readonly) return false
+		return focused.value || modelValue.value.length > 0
 	})
 
 	// 清除和选择箭头都比输入框字号小一档，避免图标撑满控件高度。
@@ -185,8 +251,11 @@
 		emit('change', event.detail != null ? event.detail.value : modelValue.value)
 	}
 
+	// 搜索变体的确认键多抛一次 search，值仍是当前文本；confirm 照常保留。
 	const onConfirm = (event: UniInputConfirmEvent) => {
-		emit('confirm', event.detail != null ? event.detail.value : modelValue.value)
+		const value = event.detail != null ? event.detail.value : modelValue.value
+		emit('confirm', value)
+		if (isSearch.value) emit('search', value)
 	}
 
 	const onFocus = () => {
@@ -204,11 +273,46 @@
 		emit('clear')
 	}
 
+	// 取消：先清空、收起键盘，再抛 cancel。禁用时不响应，只读不出取消。
+	const onSearchCancel = () => {
+		if (props.disabled) return
+		modelValue.value = ''
+		focused.value = false
+		// 收键盘走平台 API；文档站预览没有 uni 运行时会静默跳过。
+		if (typeof uni !== 'undefined' && typeof uni.hideKeyboard === 'function') {
+			try {
+				uni.hideKeyboard()
+			} catch (error) {
+				// 拿不到键盘不影响清空和事件。
+			}
+		}
+		emit('cancel')
+	}
+
 	// 禁用不抛 click。只读行仍抛，用来开选择器。
 	const onClick = () => {
 		if (props.disabled) return
 		emit('click')
 	}
+
+	// 搜索框没有标题位：同时传了 label / required / unit 时提示一次，渲染时也不画。
+	let warnedSearchSlot = false
+
+	const warnSearchSlot = () => {
+		if (warnedSearchSlot) return
+		if (!isSearch.value) return
+		if (props.label.length === 0 && !props.required && props.unit.length === 0) return
+		warnedSearchSlot = true
+		console.warn('[vx-input] variant="search" 不渲染 label / required / unit；标题和单位请放到输入框外面。')
+	}
+
+	watch((): string => `${props.variant}|${props.label}|${props.required ? '1' : '0'}|${props.unit}`, () => {
+		warnSearchSlot()
+	})
+
+	onMounted(() => {
+		warnSearchSlot()
+	})
 </script>
 
 <style>
@@ -255,6 +359,22 @@
 
 	.vx-input--square {
 		border-radius: 0;
+	}
+
+	/* 搜索框：浅底胶囊，默认不画可见描边。描边留 1px 透明，
+	   聚焦和错误只换颜色，于是状态切换不改内宽、也不跳行高。 */
+	.vx-input--search {
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		border-color: transparent;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 小号搜索框收一档左右内边距，跟控件内边距 12 对齐。 */
+	.vx-input--search-sm {
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
 	}
 
 	.vx-input--focused {
@@ -418,6 +538,53 @@
 		width: var(--vx-control-height-sm);
 	}
 
+	/* 搜索的清除收成图标宽，和取消挤在同一条右侧基线上。 */
+	.vx-input__clear--search {
+		width: auto;
+		justify-content: center;
+		margin-left: var(--vx-space-xs);
+	}
+
+	.vx-input__search-icon {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	/* 取消整格是热区，高度撑满控件；文案只占自身宽度，不预先留白。 */
+	.vx-input__search-cancel {
+		flex-shrink: 0;
+		flex-direction: row;
+		align-self: stretch;
+		align-items: center;
+		padding-left: var(--vx-space-sm);
+	}
+
+	.vx-input__search-cancel--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	.vx-input__search-cancel-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-input__search-cancel-text--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	.vx-input__search-cancel-text--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-input__search-cancel-text--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+
 	.vx-input__clear--pressed {
 		opacity: var(--vx-opacity-pressed);
 	}
@@ -487,6 +654,14 @@
 
 	.vx-input__clear {
 		cursor: pointer;
+	}
+
+	.vx-input__search-cancel {
+		cursor: pointer;
+	}
+
+	.vx-input__search-cancel--disabled {
+		cursor: not-allowed;
 	}
 
 	.vx-input__control {

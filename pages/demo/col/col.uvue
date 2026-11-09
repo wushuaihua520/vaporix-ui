@@ -438,10 +438,11 @@
 		color: var(--vx-color-disabled-text);
 	}
 
-	/* 窗口宽度读数：断点不是猜的，这一行就是列正在用的那个数。 */
+	/* 窗口宽度读数：断点不是猜的，这一行就是列正在用的那个数。
+	   数值和档位按中线对齐；App 的 align-items 不支持 baseline。 */
 	.demo-col-meter {
 		flex-direction: row;
-		align-items: baseline;
+		align-items: center;
 		margin-bottom: var(--vx-space-md);
 	}
 

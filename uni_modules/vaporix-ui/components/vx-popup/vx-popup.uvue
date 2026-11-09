@@ -1,0 +1,504 @@
+<template>
+	<!-- 弹出层是通用浮层：遮罩铺满页面，面板按 placement 贴边或居中。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
+	<!-- 进出场靠 class 切换，关闭动画走完才卸载；关闭过程中再打开会从当前位置回终点，不会留下两个面板。 -->
+	<view v-if="rendered" :class="rootClass" :style="rootStyle">
+		<!-- 遮罩只压页面，不压面板。点它抛 click-mask，可关闭时收起并抛 close。 -->
+		<!-- Web 上标成装饰层，读屏跳过；App 和鸿蒙不认 aria，编译时整段换成不带属性的版本。 -->
+		<!-- #ifdef WEB -->
+		<view :class="maskClass" :style="maskStyle" aria-hidden="true" @click="onMaskTap"
+			@touchmove.stop.prevent></view>
+		<!-- #endif -->
+		<!-- #ifndef WEB -->
+		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
+		<!-- #endif -->
+
+		<!-- 外层就是面板：位移、圆角、底色和裁切都在这一层。面板不投影、也不描边，层级由遮罩和留白表达。 -->
+		<view :class="sheetClass" :style="sheetStyle" @click.stop>
+			<!-- 关闭叉在内容上方单占一行：顶部贴边时不会钻进状态栏，也不会压住业务内容。 -->
+			<view v-if="closeable" class="vx-popup__bar">
+				<!-- #ifdef WEB -->
+				<view class="vx-popup__close" role="button" aria-label="关闭"
+					hover-class="vx-popup__close--pressed" :hover-stay-time="VX_PRESSED_STAY_TIME"
+					@click.stop="onCloseTap">
+					<vx-icon name="close" size="md" color="var(--vx-color-text-secondary)" />
+				</view>
+				<!-- #endif -->
+				<!-- #ifndef WEB -->
+				<view class="vx-popup__close" hover-class="vx-popup__close--pressed"
+					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCloseTap">
+					<vx-icon name="close" size="md" color="var(--vx-color-text-secondary)" />
+				</view>
+				<!-- #endif -->
+			</view>
+
+			<!-- 内容由业务给，组件不内置标题栏、动作区和滚动容器。
+			   这一层不监听 touchmove，里面的 scroll-view 才接得住手势。 -->
+			<slot></slot>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxPopupPlacement, VxPopupProps } from './props'
+	import {
+		VX_OVERLAY_DURATION,
+		VX_OVERLAY_DURATION_NONE,
+		VX_OVERLAY_FRAME,
+		VX_OVERLAY_LAYER,
+		vxLockPageScroll,
+		vxOverlayRadius,
+		vxOverlaySafeEdge,
+		vxUnlockPageScroll
+	} from '../../libs/overlay'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxPopupProps>(), {
+		placement: 'bottom',
+		width: '',
+		height: '',
+		round: 'lg',
+		closeable: false,
+		maskClosable: true,
+		maskColor: '',
+		safeArea: true,
+		zIndex: VX_OVERLAY_LAYER,
+		duration: VX_OVERLAY_DURATION,
+		lockScroll: true
+	})
+
+	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
+	const show = defineModel('show', {
+		type: Boolean,
+		default: false
+	})
+
+	const emit = defineEmits<{
+		open: []
+		close: []
+		clickMask: []
+	}>()
+
+	// 挂载和落位分开：rendered 控制根节点在不在，inState 控制面板在不在终点。
+	// 首次渲染就显示时不播放入场，直接落在终点。
+	const rendered = ref(show.value === true)
+	const inState = ref(show.value === true)
+
+	// setTimeout 在 App 上返回 number，0 表示没有在计时。
+	let settleTimer = 0
+	let leaveTimer = 0
+	// Web 上这个实例是否已经锁过页面，收起和卸载时只还原自己加的那一次。
+	let pageLocked = false
+
+	// 传进来不认识的方向落回 bottom，class 拼出来才是合法的。
+	const placement = computed((): VxPopupPlacement => {
+		const value = props.placement
+		if (value === 'top' || value === 'left' || value === 'right' || value === 'center') return value
+		return 'bottom'
+	})
+
+	// Web 上跟随系统的减少动效；其他端没有这个开关，保持 false。
+	// 系统设置可能在页面存活期间改变，所以每次打开都重新读一次，不在 computed 里缓存。
+	const reduceMotionOn = ref(false)
+
+	const refreshReduceMotion = () => {
+		// #ifdef WEB
+		if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+			reduceMotionOn.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		}
+		// #endif
+	}
+
+	refreshReduceMotion()
+
+	// 0 表示直接切换：不挂过渡类，也不等动画和那一帧。
+	const animateDuration = computed((): number => {
+		if (!(props.duration > 0)) return 0
+		if (reduceMotionOn.value) return 0
+		return props.duration
+	})
+
+	// 只有上下贴边由面板内边距让开安全区；左右和居中的侧边安全区每档都让。
+	const safeEdge = computed((): string => {
+		if (!props.safeArea) return ''
+		return vxOverlaySafeEdge(placement.value)
+	})
+
+	// class 顺序：基础 → 方向 → 安全区 → 过渡 → 落位。样式表顺序与此一致。
+	const rootClass = computed((): string => {
+		return `vx-popup vx-popup--${placement.value}`
+	})
+
+	const maskClass = computed((): string => {
+		let name = 'vx-popup__mask'
+		if (props.maskClosable) name += ' vx-popup__mask--closable'
+		if (animateDuration.value > 0) name += ' vx-popup__mask--animated'
+		if (inState.value) name += ' vx-popup__mask--in'
+		return name
+	})
+
+	const sheetClass = computed((): string => {
+		let name = `vx-popup__sheet vx-popup__sheet--${placement.value}`
+		if (safeEdge.value.length > 0) name += ` vx-popup__sheet--safe-${safeEdge.value}`
+		if (animateDuration.value > 0) name += ' vx-popup__sheet--animated'
+		if (inState.value) name += ' vx-popup__sheet--in'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		return `z-index: ${props.zIndex};`
+	})
+
+	// 时长写行内：duration 是数值，过渡类只给属性和曲线，两处不重复。
+	const maskStyle = computed((): string => {
+		let style = ''
+		if (props.maskColor.length > 0) style += ` background-color: ${props.maskColor};`
+		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
+		return style
+	})
+
+	// 贴边那条边固定直角，只圆朝向页面的两条边；居中四角全圆。
+	// App 不能 calc，所以四个角一起写死，切换 round 时旧的圆角会被盖掉。
+	const radiusStyle = (radius: number): string => {
+		const name = `${radius}px`
+		let style = ''
+		const place = placement.value
+		if (place === 'bottom') {
+			style += ` border-top-left-radius: ${name}; border-top-right-radius: ${name};`
+			style += ' border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;'
+			return style
+		}
+		if (place === 'top') {
+			style += ` border-bottom-left-radius: ${name}; border-bottom-right-radius: ${name};`
+			style += ' border-top-left-radius: 0px; border-top-right-radius: 0px;'
+			return style
+		}
+		if (place === 'left') {
+			style += ` border-top-right-radius: ${name}; border-bottom-right-radius: ${name};`
+			style += ' border-top-left-radius: 0px; border-bottom-left-radius: 0px;'
+			return style
+		}
+		if (place === 'right') {
+			style += ` border-top-left-radius: ${name}; border-bottom-left-radius: ${name};`
+			style += ' border-top-right-radius: 0px; border-bottom-right-radius: 0px;'
+			return style
+		}
+		style += ` border-top-left-radius: ${name}; border-top-right-radius: ${name};`
+		style += ` border-bottom-left-radius: ${name}; border-bottom-right-radius: ${name};`
+		return style
+	}
+
+	// 只覆盖当前方向那一条边；另一条边的默认尺寸在样式表里。
+	const sheetStyle = computed((): string => {
+		let style = ''
+		const place = placement.value
+		if (place === 'left' || place === 'right' || place === 'center') {
+			if (props.width.length > 0) style += ` width: ${props.width};`
+		}
+		if (place === 'top' || place === 'bottom') {
+			if (props.height.length > 0) style += ` height: ${props.height};`
+		}
+		style += radiusStyle(vxOverlayRadius(props.round))
+		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
+		return style
+	})
+
+	const clearSettle = () => {
+		if (settleTimer === 0) return
+		clearTimeout(settleTimer)
+		settleTimer = 0
+	}
+
+	const clearLeave = () => {
+		if (leaveTimer === 0) return
+		clearTimeout(leaveTimer)
+		leaveTimer = 0
+	}
+
+	// 页面滚动锁只做 Web：页面根节点是 body，加一个全局 class 就停住滚轮和滚动条。
+	// 小程序拿不到页面根节点，App 没有等价手段；两端靠遮罩拦住手势，平台差异写进 readme。
+	// 同页叠了两个弹层时由底座计数，最后一个收起才解锁。
+	const setPageLock = (locked: boolean) => {
+		if (!props.lockScroll || pageLocked === locked) return
+		pageLocked = locked
+		if (locked) vxLockPageScroll()
+		else vxUnlockPageScroll()
+	}
+
+	// 一开始就是显示状态时不会走进场，滚动锁在这里补一次。
+	if (show.value === true) setPageLock(true)
+
+	// 打开：先挂载，再等一帧落位，过渡才有起点；还在退场时直接落位，从当前位置回来。
+	const enter = () => {
+		refreshReduceMotion()
+		clearSettle()
+		clearLeave()
+		if (!rendered.value) {
+			rendered.value = true
+			if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+				inState.value = true
+			} else {
+				settleTimer = setTimeout(() => {
+					settleTimer = 0
+					inState.value = true
+				}, VX_OVERLAY_FRAME)
+			}
+		} else {
+			inState.value = true
+		}
+		setPageLock(true)
+		emit('open')
+	}
+
+	// 关闭：先退到终点，等 duration 加一帧再卸载；duration=0 直接移除，不留空壳。
+	const leave = () => {
+		clearSettle()
+		clearLeave()
+		if (!rendered.value) return
+		// 还没落位就被关掉：没有退场可看，直接卸载。
+		if (!inState.value) {
+			rendered.value = false
+			setPageLock(false)
+			return
+		}
+		inState.value = false
+		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+			rendered.value = false
+			setPageLock(false)
+			return
+		}
+		leaveTimer = setTimeout(() => {
+			leaveTimer = 0
+			rendered.value = false
+			setPageLock(false)
+		}, animateDuration.value + VX_OVERLAY_FRAME)
+	}
+
+	// 父级改 v-model 也走同一条进出场，方法只是把模型改掉。
+	watch((): boolean => show.value, (value: boolean) => {
+		if (value) enter()
+		else leave()
+	})
+
+	onUnmounted(() => {
+		clearSettle()
+		clearLeave()
+		setPageLock(false)
+	})
+
+	// 点遮罩总是抛 click-mask；maskClosable 打开时先收起再抛 close，父级在事件里改 show 也不会被覆盖。
+	const onMaskTap = () => {
+		const closing = props.maskClosable && show.value
+		if (closing) show.value = false
+		emit('clickMask')
+		if (closing) emit('close')
+	}
+
+	// 关闭叉是独立出口，和可关闭的遮罩走同一个 close。
+	const onCloseTap = () => {
+		if (!props.closeable || !show.value) return
+		show.value = false
+		emit('close')
+	}
+
+	const open = () => {
+		show.value = true
+	}
+
+	// 程序关闭只收起，不抛 close；close 只代表用户关闭。
+	const close = () => {
+		show.value = false
+	}
+
+	const toggle = () => {
+		show.value = !show.value
+	}
+
+	defineExpose({
+		open,
+		close,
+		toggle
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 定位层铺满页面，遮罩垫在面板下面。层级写在行内，默认 1000。
+	   宽高再写一遍：只靠四边定位时，子项百分比高度在 App 上会落成 auto。
+	   裁掉移出屏幕的面板，Web 上也不会被过渡带出一条横向滚动条。 */
+	.vx-popup {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	/* 左右贴边横排，上下贴边纵排；居中时两个方向都居中，四周留 24 由这一层的内边距给。 */
+	.vx-popup--left {
+		flex-direction: row;
+		justify-content: flex-start;
+	}
+
+	.vx-popup--right {
+		flex-direction: row;
+		justify-content: flex-end;
+	}
+
+	.vx-popup--top {
+		flex-direction: column;
+		justify-content: flex-start;
+	}
+
+	.vx-popup--bottom {
+		flex-direction: column;
+		justify-content: flex-end;
+	}
+
+	.vx-popup--center {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: var(--vx-space-xl);
+	}
+
+	/* 遮罩只压页面，不压面板。 */
+	.vx-popup__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: var(--vx-color-mask);
+		opacity: 0;
+	}
+
+	/* 面板就是外层：底色、圆角、裁切和位移都在这一层。
+	   不加阴影也不加描边，本库的浮层层级靠遮罩和留白表达。
+	   底部贴边时高度由内容决定，超过一屏要给 height，再由内容里的 scroll-view 自己滚。 */
+	.vx-popup__sheet {
+		position: relative;
+		z-index: 1;
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		padding-left: var(--uni-safe-area-inset-left, 0px);
+		padding-right: var(--uni-safe-area-inset-right, 0px);
+		background-color: var(--vx-color-surface);
+		opacity: 0;
+		overflow: hidden;
+	}
+
+	/* 贴住屏幕的一侧不圆角，朝向页面的两角用 lg；具体半径写在行内，跟 round 走。
+	   左右面板占满高度，两头都会碰到状态栏和手势条，不管 safeArea 都让开；
+	   起点的位移方向跟着贴边方向，落位时回到 0。 */
+	.vx-popup__sheet--left {
+		width: var(--vx-popup-width);
+		height: 100%;
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		transform: translateX(-100%);
+	}
+
+	.vx-popup__sheet--right {
+		width: var(--vx-popup-width);
+		height: 100%;
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+		transform: translateX(100%);
+	}
+
+	.vx-popup__sheet--top {
+		width: 100%;
+		transform: translateY(-100%);
+	}
+
+	.vx-popup__sheet--bottom {
+		width: 100%;
+		transform: translateY(100%);
+	}
+
+	/* 居中按内容宽度排，长内容收到 480；四周的 24 由定位层的内边距给。
+	   居中不做位移，只淡入，缩放会让文字在过渡里发虚。 */
+	.vx-popup__sheet--center {
+		max-width: var(--vx-popup-max-width);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+	}
+
+	/* 上下贴边时由面板内边距让开状态栏和手势条；居中面板四周有 24，不再加。 */
+	.vx-popup__sheet--safe-top {
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+	}
+
+	.vx-popup__sheet--safe-bottom {
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+	}
+
+	/* 只过渡位移和透明度。过渡类只在 duration 大于 0 时挂上，
+	   duration=0 和系统的减少动效都退化成直接切换。 */
+	.vx-popup__mask--animated {
+		transition-property: opacity;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-popup__sheet--animated {
+		transition-property: transform, opacity;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-popup__mask--in {
+		opacity: 1;
+	}
+
+	/* 落位：位移回到 0、透明度到 1。规则必须排在方向和过渡之后，后写的才盖得住。 */
+	.vx-popup__sheet--in {
+		transform: translateX(0);
+		opacity: 1;
+	}
+
+	/* 关闭叉单占一行，行高沿用列表行的 44；右内边距 8，44 的热区缩在面板轮廓内，不顶进圆角。 */
+	.vx-popup__bar {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: flex-end;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--vx-list-height-sm);
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-sm);
+	}
+
+	.vx-popup__close {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: var(--vx-list-height-sm);
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-popup__close--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* Web 上可关闭的遮罩是按钮，不可关闭的只是背景；关闭叉同样给指针。
+	   这两条只加指针，不参与粗细和颜色。 */
+	/* #ifdef WEB */
+	.vx-popup__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-popup__close {
+		cursor: pointer;
+	}
+	/* #endif */
+</style>

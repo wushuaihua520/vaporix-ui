@@ -31,6 +31,6 @@ export type VxDatetimeProps = {
 	maskClosable?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
-	/** 浮层层级，默认 90，和操作菜单同档，低于弹框（110）和提示（100 / 200）。 */
+	/** 浮层层级，默认 1000，和操作菜单同档，低于弹框（1020）和提示（1010 / 1100）。 */
 	zIndex?: number
 }

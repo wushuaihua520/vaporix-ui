@@ -2,12 +2,10 @@
 	<!-- 日期时间选择器是底部弹层：遮罩铺满页面，面板贴底。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
 	<!-- 滚轮只改草稿，点确定才写回 v-model；取消、遮罩和 close() 都不动已提交的值。 -->
 	<!-- 触摸只拦遮罩、头部和单位条：滚轮本身要接住手势，根节点不能统一 prevent，否则轮子拖不动。 -->
-	<view v-if="show" class="vx-datetime" :style="rootStyle">
-		<view :class="sheetMaskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
-
-		<!-- 外层只负责阴影和滑入；内层裁底色和按下态，避免 overflow 把阴影一起裁掉。 -->
-		<view class="vx-datetime__sheet" @click.stop>
-			<view class="vx-datetime__panel">
+	<!-- 弹层底座复用 vx-popup：遮罩、贴底面板、安全区都由底座负责。 -->
+	<vx-popup v-model:show="show" placement="bottom" :duration="0" :safe-area="false"
+		:mask-closable="maskClosable" :mask-color="maskColor" :z-index="zIndex" @close="onPopupClose">
+		<view class="vx-datetime__panel">
 				<!-- 头部固定 52：取消在左、确定在右。两侧动作等分，标题才在整行正中；没有标题时两个按钮贴着两端。 -->
 				<view class="vx-datetime__header" @touchmove.stop.prevent>
 					<view class="vx-datetime__action" hover-class="vx-datetime__action--pressed"
@@ -31,8 +29,11 @@
 
 				<!-- 滚轮的高度和每行高度都由令牌给定，指示器高度必须和行高一致，否则列不会按行对齐。 -->
 				<!-- picker-view 的原生蒙层写死了白色渐变，暗色主题下会发白，这里用 mask-class 去掉。 -->
-				<picker-view class="vx-datetime__picker" :value="columnIndices" :indicator-style="indicatorStyle"
-					mask-class="vx-datetime__fade" @change="onColumnChange">
+				<!-- 先占位、等草稿下标准备好再挂原生滚轮：picker-view 拿到空 value 时在 App 端
+				     会拒绝创建，整棵弹层跟着不落屏（vx-picker 用空状态分支避开了同一个坑）。 -->
+				<view v-if="!wheelReady" class="vx-datetime__picker"></view>
+				<picker-view v-else :key="wheelKey" class="vx-datetime__picker" :value="columnIndices"
+					:indicator-style="indicatorStyle" mask-class="vx-datetime__fade" @change="onColumnChange">
 					<picker-view-column v-for="(column, columnIndex) in columns" :key="column.key">
 						<view v-for="(option, optionIndex) in column.options" :key="option"
 							class="vx-datetime__option">
@@ -41,9 +42,8 @@
 						</view>
 					</picker-view-column>
 				</picker-view>
-			</view>
 		</view>
-	</view>
+	</vx-popup>
 </template>
 
 <script setup>
@@ -65,6 +65,7 @@
 		vxDatetimeYears
 	} from '../../libs/datetime'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
 	import { VxDatetimeProps } from './props'
 
 	const props = withDefaults(defineProps<VxDatetimeProps>(), {
@@ -80,7 +81,7 @@
 		format: '',
 		maskClosable: true,
 		maskColor: '',
-		zIndex: 90
+		zIndex: VX_OVERLAY_LAYER
 	})
 
 	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
@@ -203,6 +204,14 @@
 		}
 		return list
 	})
+
+	// 原生滚轮必须拿到和列数一致的下标数组；空数组先不挂，等 prepare() 把草稿下标注好。
+	const wheelReady = computed((): boolean => {
+		return columns.value.length > 0 && columnIndices.value.length === columns.value.length
+	})
+
+	// 模式切换时列数会变，整只换掉滚轮，避免原生列沿用旧下标停在空行。
+	const wheelKey = computed((): string => 'vx-datetime-wheel-' + columns.value.length)
 
 	// 六列时（年月日时分秒）每列只有屏宽的六分之一，字号收一档，年、月、日才不会被截断。
 	const dense = computed((): boolean => fields.value.length > 5)
@@ -347,11 +356,12 @@
 		emit('cancel')
 	}
 
-	// 遮罩可关闭时按取消处理，和点取消按钮走同一条出口。
-	const onMaskTap = () => {
-		if (!props.maskClosable) return
-		onCancelTap()
+	// 底座遮罩收起后只抛 close；这里补上日期时间的 cancel 语义。
+	const onPopupClose = () => {
+		emit('cancel')
 	}
+
+
 
 	const open = () => {
 		show.value = true
@@ -361,6 +371,11 @@
 	const close = () => {
 		if (!show.value) return
 		show.value = false
+	}
+
+	// 系统返回键等页面级出口：按用户取消处理，和点取消、点遮罩走同一条链路。
+	const cancel = () => {
+		onCancelTap()
 	}
 
 	// 打开时重新读 value，滚轮挂载时就能停在正确的位置。
@@ -410,20 +425,8 @@
 
 	watch(() => props.secondStep, alignStep)
 
-	const sheetMaskClass = computed((): string => {
-		if (props.maskClosable) return 'vx-datetime__mask vx-datetime__mask--closable'
-		return 'vx-datetime__mask'
-	})
-
 	// picker-view 的 indicator-style 只认行内样式，读不到 CSS 变量，高度跟 VX_DATETIME_ROW 对齐。
 	const indicatorStyle = `height: ${VX_DATETIME_ROW}px;`
-
-	const maskStyle = computed((): string => {
-		if (props.maskColor.length === 0) return ''
-		return `background-color: ${props.maskColor};`
-	})
-
-	const rootStyle = computed((): string => `z-index: ${props.zIndex};`)
 
 	// 挂载时已经打开的，先对齐再出第一帧；关着的等 show 的 watch。
 	if (show.value) prepare()
@@ -436,7 +439,8 @@
 
 	defineExpose({
 		open,
-		close
+		close,
+		cancel
 	})
 </script>
 
@@ -444,7 +448,7 @@
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
-	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 90，和操作菜单同档。 */
+	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 1000，和操作菜单同档。 */
 	.vx-datetime {
 		position: fixed;
 		top: 0;
@@ -452,9 +456,12 @@
 		bottom: 0;
 		left: 0;
 		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
 		flex-direction: column;
 		align-items: center;
 		justify-content: flex-end;
+		overflow: hidden;
 	}
 
 	.vx-datetime__mask {

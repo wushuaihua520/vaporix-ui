@@ -36,6 +36,6 @@ export type VxActionSheetProps = {
 	titleColor?: string
 	/** 自定义说明色，字面值；传 var(--vx-color-*) 时跟随主题。 */
 	descriptionColor?: string
-	/** 浮层层级，默认 90，低于消息提示（100）、弹框（110）、加载浮层（150）和轻提示（200）。 */
+	/** 浮层层级，默认 1000，低于消息提示（1010）、弹框（1020）、加载浮层（1050）和轻提示（1100）。 */
 	zIndex?: number
 }

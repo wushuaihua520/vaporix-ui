@@ -1,0 +1,208 @@
+<template>
+	<!-- 一条线：没有插槽、图标、箭头和点击态；带文字时两侧各画一段等宽线。 -->
+	<!-- 纵向线不自己居中，由父级 flex 排布；高度空串时靠 align-self 撑满一行。 -->
+	<view :class="rootClass" :style="rootStyle">
+		<view v-if="showLeadingLine" :class="lineClass" :style="lineStyle"></view>
+		<text v-if="showText" class="vx-divider__text" :style="textStyle">{{ text }}</text>
+		<view v-if="showTrailingLine" :class="lineClass" :style="lineStyle"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxDividerProps } from './props'
+
+	const props = withDefaults(defineProps<VxDividerProps>(), {
+		direction: 'horizontal',
+		text: '',
+		align: 'center',
+		dashed: false,
+		spacing: '',
+		color: '',
+		height: ''
+	})
+
+	// 不识别的方向按横线处理；竖线只认 vertical。
+	const isVertical = computed((): boolean => {
+		return props.direction === 'vertical'
+	})
+
+	// 空白串不当文字，竖线也不显示文字；文字用原值，不去空格。
+	const showText = computed((): boolean => {
+		return !isVertical.value && props.text.trim().length > 0
+	})
+
+	// 不识别的对齐按 center 处理。
+	const alignValue = computed((): string => {
+		if (props.align === 'left' || props.align === 'right') return props.align
+		return 'center'
+	})
+
+	// left 不画左侧线，right 不画右侧线，center 两侧都画。
+	const showLeadingLine = computed((): boolean => {
+		return showText.value && alignValue.value !== 'left'
+	})
+
+	const showTrailingLine = computed((): boolean => {
+		return showText.value && alignValue.value !== 'right'
+	})
+
+	// 纯数字（含小数和负号）按 px 补单位；其余按原样透传。
+	const isNumericText = (text: string): boolean => {
+		if (text.length === 0) return false
+		let start = 0
+		if (text.charAt(0) === '-') {
+			if (text.length === 1) return false
+			start = 1
+		}
+		let hasDot = false
+		for (let index = start; index < text.length; index++) {
+			const code = text.charCodeAt(index)
+			if (code === 46) {
+				if (hasDot) return false
+				hasDot = true
+				continue
+			}
+			if (code < 48 || code > 57) return false
+		}
+		return true
+	}
+
+	// 空串按方向的默认值：横线上下各 12，竖线左右各 16。
+	const spacingValue = computed((): string => {
+		const text = `${props.spacing}`.trim()
+		if (text.length === 0) return isVertical.value ? '16px' : '12px'
+		if (isNumericText(text)) return `${text}px`
+		return text
+	})
+
+	// class 顺序：基础 → 方向 → 虚线 → 文字。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-divider'
+		if (isVertical.value) {
+			name += ' vx-divider--vertical'
+			if (props.dashed) name += ' vx-divider--vertical-dashed'
+			return name
+		}
+		if (!showText.value) {
+			name += ' vx-divider--horizontal'
+			if (props.dashed) name += ' vx-divider--horizontal-dashed'
+			return name
+		}
+		return `${name} vx-divider--text`
+	})
+
+	// 间距走外边距：横线是上下、竖线是左右；竖线高度传了才写。
+	// 自定义颜色只在纯线时落在根节点上，带文字时改由线段和文字各自承担。
+	const rootStyle = computed((): string => {
+		const spacing = spacingValue.value
+		let style = ''
+		if (isVertical.value) {
+			style += `margin-left: ${spacing}; margin-right: ${spacing};`
+			const height = props.height.trim()
+			if (height.length > 0) style += ` height: ${height};`
+		} else {
+			style += `margin-top: ${spacing}; margin-bottom: ${spacing};`
+		}
+		if (!showText.value && props.color.length > 0) {
+			// 虚线只能改 border-color：背景色会把 1px 的盒子整条填实，虚线间隙也被盖掉。
+			if (props.dashed) style += ` border-color: ${props.color};`
+			else style += ` background-color: ${props.color}; border-color: ${props.color};`
+		}
+		return style
+	})
+
+	const lineClass = computed((): string => {
+		if (props.dashed) return 'vx-divider__line vx-divider__line--dashed'
+		return 'vx-divider__line'
+	})
+
+	// 实线读 background-color，虚线读 border-color。虚线不能写背景色：
+	// 1px 高的盒子被背景填满后，虚线的间隙会透出背景色，看起来又变回实线。
+	const lineStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		if (props.dashed) return `border-color: ${props.color};`
+		return `background-color: ${props.color}; border-color: ${props.color};`
+	})
+
+	const textStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+</script>
+
+<style>
+	/* 基类只管排布：宽度跟随父级，纵向不收缩；高度由方向决定。
+	   App 默认 overflow 是 hidden，这里不裁，虚线边框和文字都能完整画出。 */
+	.vx-divider {
+		display: flex;
+		box-sizing: border-box;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 竖线宽 1px，高度靠 align-self: stretch 撑满父级那一行；传 height 时内联样式盖过。 */
+	.vx-divider--vertical {
+		align-self: stretch;
+		width: var(--vx-border-width);
+		background-color: var(--vx-color-border);
+	}
+
+	/* 虚线只换边框样式，不画背景渐变；描边宽度算进 1px 里，不占额外高度。 */
+	.vx-divider--vertical-dashed {
+		width: var(--vx-border-width);
+		background-color: transparent;
+		border-left-width: var(--vx-border-width);
+		border-left-style: dashed;
+		border-left-color: var(--vx-color-border);
+	}
+
+	.vx-divider--horizontal {
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-border);
+	}
+
+	.vx-divider--horizontal-dashed {
+		height: var(--vx-border-width);
+		background-color: transparent;
+		border-top-width: var(--vx-border-width);
+		border-top-style: dashed;
+		border-top-color: var(--vx-color-border);
+	}
+
+	/* 带文字时根节点只做一行排布，线由两侧的线段画；高度由文字行高撑开。 */
+	.vx-divider--text {
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+	}
+
+	/* 两侧线段等宽，各自吃掉一半剩余宽度；内容宽为 0，不需要额外高度。 */
+	.vx-divider__line {
+		box-sizing: border-box;
+		flex: 1;
+		min-width: 0;
+		height: var(--vx-border-width);
+		background-color: var(--vx-color-border);
+	}
+
+	.vx-divider__line--dashed {
+		background-color: transparent;
+		border-top-width: var(--vx-border-width);
+		border-top-style: dashed;
+		border-top-color: var(--vx-color-border);
+	}
+
+	/* 文字用辅助说明档：13 / 20，左右各留 12 和线段分开。 */
+	.vx-divider__text {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-md);
+		margin-right: var(--vx-space-md);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

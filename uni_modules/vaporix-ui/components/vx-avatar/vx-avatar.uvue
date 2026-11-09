@@ -1,0 +1,393 @@
+<template>
+	<!-- 头像只承载图片、首字和图标三种回落，徽章和在线状态点交给业务在外面组合。 -->
+	<!-- 失败只记一次，src 变化后重新给图片一次机会；图片态不铺占位动画。 -->
+	<view :class="rootClass" :style="rootStyle" :hover-class="hoverClass"
+		:hover-stay-time="VX_PRESSED_STAY_TIME" @click="onClick">
+		<image v-if="showImage" class="vx-avatar__image" :src="src" :mode="imageMode"
+			@error="onImageError" />
+
+		<!-- 首字优先于图标；两者都为空时才用默认 user 图标。 -->
+		<text v-else-if="initial.length > 0" :class="textClass" :style="contentStyle">{{ initial }}</text>
+		<text v-else :class="glyphClass" :style="contentStyle">{{ glyph }}</text>
+
+		<!-- 描边画在内侧的一层上，外框不写 border，堆叠时仍是 32 / 40 / 48。 -->
+		<view v-if="ring" :class="ringClass"></view>
+	</view>
+</template>
+
+<script setup>
+	import { VxAvatarProps } from './props'
+	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+	import { VxSemantic, VxSize } from '../../libs/types/common'
+	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+
+	const props = withDefaults(defineProps<VxAvatarProps>(), {
+		src: '',
+		text: '',
+		// icon 不设默认值：未传和空串都回落到 user。
+		size: 'md',
+		shape: 'circle',
+		type: 'default',
+		ring: false,
+		bgColor: '',
+		color: '',
+		mode: 'aspectFill'
+	})
+
+	const emit = defineEmits<{
+		click: []
+		error: []
+	}>()
+
+	const instance = getCurrentInstance()
+	const attrs = useAttrs()
+
+	// 图片失败标记只对当前 src 有效；src 变化由 watch 复位。
+	const failed = ref(false)
+
+	// 不认识的尺寸按 md 处理，class 只拼 sm / lg。
+	const sizeName = computed((): VxSize => {
+		if (props.size === 'sm' || props.size === 'lg') return props.size
+		return 'md'
+	})
+
+	// 不认识的轮廓按 circle 处理，class 只拼 circle / square。
+	const shapeName = computed((): 'circle' | 'rounded' | 'square' => {
+		if (props.shape === 'rounded' || props.shape === 'square') return props.shape
+		return 'circle'
+	})
+
+	// 不认识的语义色回到 default，class 只拼认识的名字。
+	const typeName = computed((): VxSemantic => {
+		const type = props.type
+		if (type === 'primary' || type === 'success' || type === 'info' || type === 'warning' || type === 'danger') {
+			return type
+		}
+		return 'default'
+	})
+
+	// 只透传原生 image 的两档，其它值回落到裁剪填满。
+	const imageMode = computed((): 'aspectFill' | 'aspectFit' => {
+		return props.mode === 'aspectFit' ? 'aspectFit' : 'aspectFill'
+	})
+
+	// 有图片且还没失败才渲染 image；空串直接走首字，不经过图片节点。
+	const showImage = computed((): boolean => {
+		return props.src.length > 0 && !failed.value
+	})
+
+	// trim 后按 code point 取首字；第一个 code unit 是高位代理时连取两个，emoji 不会被切成半个。
+	const firstCharacter = (value: string): string => {
+		const trimmed = value.trim()
+		if (trimmed.length === 0) return ''
+		const head = trimmed.charCodeAt(0)
+		if (head >= 0xD800 && head <= 0xDBFF && trimmed.length > 1) {
+			return trimmed.substring(0, 2)
+		}
+		return trimmed.substring(0, 1)
+	}
+
+	const initial = computed((): string => firstCharacter(props.text))
+
+	// icon 为空时用 user；未登记的图标名同样回落到 user，避免留下一个空字形。
+	const iconName = computed((): VxIconName => {
+		if (props.icon != null && props.icon.length > 0) return props.icon
+		return 'user'
+	})
+
+	const glyph = computed((): string => {
+		const current = VX_ICON_GLYPHS[iconName.value]
+		if (current != null && current.length > 0) return current
+		const fallback = VX_ICON_GLYPHS['user']
+		return fallback != null ? fallback : ''
+	})
+
+	// extend 图标要业务先引入 icons-extend.css；font-family 仍由组件按 tier 切。
+	const glyphTier = computed((): string => {
+		const tier = VX_ICON_TIER[iconName.value]
+		return tier === 'extend' ? 'extend' : 'core'
+	})
+
+	// 有 @click 监听才挂按下态和指针；不新增 clickable 属性。
+	const hasClickListener = computed((): boolean => {
+		const vnode = instance != null ? instance.vnode : null
+		const nodeProps = vnode != null ? vnode.props : null
+		if (nodeProps != null && nodeProps['onClick'] != null) return true
+		return attrs['onClick'] != null
+	})
+
+	// class 顺序：基础 → 尺寸 → 形状 → 类型 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-avatar'
+		if (sizeName.value !== 'md') name += ` vx-avatar--${sizeName.value}`
+		if (shapeName.value !== 'rounded') name += ` vx-avatar--${shapeName.value}`
+		// 图片态不铺底色；首字和图标态才套类型的浅底。
+		if (!showImage.value) name += ` vx-avatar--${typeName.value}`
+		if (hasClickListener.value) name += ' vx-avatar--clickable'
+		return name
+	})
+
+	// bgColor 覆盖类型浅底，图片态也生效。
+	const rootStyle = computed((): string => {
+		if (props.bgColor.length === 0) return ''
+		return `background-color: ${props.bgColor};`
+	})
+
+	// color 只作用于首字和图标，不碰图片。
+	const contentStyle = computed((): string => {
+		if (props.color.length === 0) return ''
+		return `color: ${props.color};`
+	})
+
+	const textClass = computed((): string => {
+		let name = 'vx-avatar__text'
+		if (sizeName.value !== 'md') name += ` vx-avatar__text--${sizeName.value}`
+		name += ` vx-avatar__fg--${typeName.value}`
+		return name
+	})
+
+	const glyphClass = computed((): string => {
+		let name = 'vx-avatar__glyph'
+		if (sizeName.value !== 'md') name += ` vx-avatar__glyph--${sizeName.value}`
+		if (glyphTier.value === 'extend') name += ' vx-avatar__glyph--extend'
+		name += ` vx-avatar__fg--${typeName.value}`
+		return name
+	})
+
+	// 描边层的圆角和尺寸跟外框同步：base 是 md，尺寸 class 改 sm / lg，形状 class 再盖圆角。
+	const ringClass = computed((): string => {
+		let name = 'vx-avatar__ring'
+		if (sizeName.value !== 'md') name += ` vx-avatar__ring--${sizeName.value}`
+		if (shapeName.value !== 'rounded') name += ` vx-avatar__ring--${shapeName.value}`
+		return name
+	})
+
+	// uni-app 里空字符串关不掉按下态，要写 none。
+	const hoverClass = computed((): string => {
+		return hasClickListener.value ? 'vx-avatar--pressed' : 'none'
+	})
+
+	// src 变化清掉失败记录，重新走一遍图片；相同的 src 不重试。
+	watch((): string => props.src, () => {
+		failed.value = false
+	})
+
+	// 失败只记一次并抛一次 error；之后 image 被移除，不会反复触发。
+	const onImageError = () => {
+		if (failed.value) return
+		failed.value = true
+		emit('error')
+	}
+
+	// 没有监听时 emit 不会落到任何地方，也没有按下反馈。
+	const onClick = () => {
+		emit('click')
+	}
+</script>
+
+<style>
+	/* 外框只负责尺寸、圆角和裁切；底色默认透明，首字 / 图标态由类型 class 补。
+	   flex 居中并且不参与父级压缩，横向排一排时不会被挤扁。
+	   Web 默认 content-box，box-sizing 归到 border-box，外框尺寸才等于 32 / 40 / 48。 */
+	.vx-avatar {
+		display: flex;
+		position: relative;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		overflow: hidden;
+		width: var(--vx-avatar-md);
+		height: var(--vx-avatar-md);
+		background-color: transparent;
+		border-radius: var(--vx-radius-md);
+	}
+
+	/* 尺寸 class 同时改外框和 rounded 的圆角；circle / square 在后面覆盖圆角。 */
+	.vx-avatar--sm {
+		width: var(--vx-avatar-sm);
+		height: var(--vx-avatar-sm);
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-avatar--lg {
+		width: var(--vx-avatar-lg);
+		height: var(--vx-avatar-lg);
+		border-radius: var(--vx-radius-lg);
+	}
+
+	/* 圆形用胶囊圆角；平角只去掉圆角，不换底色。 */
+	.vx-avatar--circle {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-avatar--square {
+		border-radius: 0;
+	}
+
+	/* 六种语义色只在首字 / 图标态生效：底色取对应的 soft；前景在下面的 fg class 里配对。 */
+	.vx-avatar--default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-avatar--primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-avatar--success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-avatar--info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-avatar--warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-avatar--danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	/* 按下只压透明度，和卡片一样；没有 @click 时不挂这个 class。 */
+	.vx-avatar--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 图片绝对铺满，mode 决定裁切方式；圆角由外框裁，不在图片上加。 */
+	.vx-avatar__image {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 首字单行居中；行高等于外框，字和框的垂直中心对齐。 */
+	.vx-avatar__text {
+		flex-shrink: 0;
+		font-size: var(--vx-avatar-font-md);
+		line-height: var(--vx-avatar-md);
+		font-weight: var(--vx-weight-semibold);
+		text-align: center;
+		white-space: nowrap;
+	}
+
+	.vx-avatar__text--sm {
+		font-size: var(--vx-avatar-font-sm);
+		line-height: var(--vx-avatar-sm);
+	}
+
+	.vx-avatar__text--lg {
+		font-size: var(--vx-avatar-font-lg);
+		line-height: var(--vx-avatar-lg);
+	}
+
+	/* 图标字形单独三档 14 / 16 / 18，不并入 vx-icon 的 14 / 18 / 22。 */
+	.vx-avatar__glyph {
+		flex-shrink: 0;
+		width: var(--vx-avatar-icon-md);
+		height: var(--vx-avatar-icon-md);
+		font-family: VaporixIcons;
+		font-size: var(--vx-avatar-icon-md);
+		line-height: var(--vx-avatar-icon-md);
+		font-weight: var(--vx-weight-regular);
+		font-style: normal;
+		letter-spacing: 0;
+		text-align: center;
+	}
+
+	.vx-avatar__glyph--sm {
+		width: var(--vx-avatar-icon-sm);
+		height: var(--vx-avatar-icon-sm);
+		font-size: var(--vx-avatar-icon-sm);
+		line-height: var(--vx-avatar-icon-sm);
+	}
+
+	.vx-avatar__glyph--lg {
+		width: var(--vx-avatar-icon-lg);
+		height: var(--vx-avatar-icon-lg);
+		font-size: var(--vx-avatar-icon-lg);
+		line-height: var(--vx-avatar-icon-lg);
+	}
+
+	.vx-avatar__glyph--extend {
+		font-family: VaporixIconsExtend;
+	}
+
+	/* 首字和图标的语义前景色单独写：text 不继承根节点的 color，直接按类型落色。 */
+	.vx-avatar__fg--default {
+		color: var(--vx-color-text);
+	}
+
+	.vx-avatar__fg--primary {
+		color: var(--vx-color-primary-pressed);
+	}
+
+	.vx-avatar__fg--success {
+		color: var(--vx-color-success-pressed);
+	}
+
+	.vx-avatar__fg--info {
+		color: var(--vx-color-info-pressed);
+	}
+
+	.vx-avatar__fg--warning {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.vx-avatar__fg--danger {
+		color: var(--vx-color-danger-pressed);
+	}
+
+	/* 2px 描边画在 inset 0 的内层上，不占外框；圆角和尺寸跟外框同步。 */
+	.vx-avatar__ring {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		border-width: var(--vx-border-width-strong);
+		border-style: solid;
+		border-color: var(--vx-color-surface);
+		border-radius: var(--vx-radius-md);
+	}
+
+	.vx-avatar__ring--sm {
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-avatar__ring--lg {
+		border-radius: var(--vx-radius-lg);
+	}
+
+	.vx-avatar__ring--circle {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	.vx-avatar__ring--square {
+		border-radius: 0;
+	}
+
+	/* #ifdef WEB */
+	.vx-avatar--clickable {
+		cursor: pointer;
+	}
+
+	/* 拖选时不要把首字和图标字形选走。 */
+	.vx-avatar__text {
+		user-select: none;
+	}
+
+	.vx-avatar__glyph {
+		user-select: none;
+	}
+	/* #endif */
+</style>

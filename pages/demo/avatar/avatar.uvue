@@ -1,0 +1,403 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">导航与展示</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-avatar</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="user" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">头像</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">图片、首字、图标三态回落；首字按 code point 取，2px 描边画在内侧。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">导航与展示</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-avatar</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">三态回落</text>
+							<text class="demo-section__desc">图片失败才回落首字；首字为空再用图标，图标也为空用 user。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">图片</text>
+							<vx-avatar src="/static/demo/card/avatar-cs.png" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">首字 · 中</text>
+							<vx-avatar text="汽" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">首字 · emoji</text>
+							<vx-avatar text="😀" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">图标</text>
+							<vx-avatar icon="camera" type="primary" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">全空 · user</text>
+							<vx-avatar />
+						</view>
+					</view>
+					<text class="demo-hint">src 为空不经过图片节点；图片失败只抛一次 error，之后不再重试。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸三档</text>
+							<text class="demo-section__desc">外框 32 / 40 / 48；首字 12 / 14 / 16，图标 14 / 16 / 18。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">sm · 32</text>
+							<vx-avatar size="sm" text="汽" type="primary" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">md · 40</text>
+							<vx-avatar text="汽" type="primary" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">lg · 48</text>
+							<vx-avatar size="lg" text="汽" type="primary" />
+						</view>
+					</view>
+					<view class="demo-image-row demo-image-row--spaced">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">图标 sm · 14</text>
+							<vx-avatar size="sm" icon="heart" type="danger" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">图标 md · 16</text>
+							<vx-avatar icon="heart" type="danger" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">图标 lg · 18</text>
+							<vx-avatar size="lg" icon="heart" type="danger" />
+						</view>
+					</view>
+					<text class="demo-hint">三档尺寸只改外框、首字和图标，不跟父级宽度缩放。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">形状三档</text>
+							<text class="demo-section__desc">circle 用胶囊；rounded 按档取 radius；square 为 0。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">circle</text>
+							<vx-avatar src="/static/demo/card/grid-2.jpg" shape="circle" />
+						</view>
+						<view class="demo-image-cell">
+							<text class="demo-image-label">rounded</text>
+							<vx-avatar src="/static/demo/card/grid-2.jpg" shape="rounded" />
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">square</text>
+							<vx-avatar src="/static/demo/card/grid-2.jpg" shape="square" />
+						</view>
+					</view>
+					<text class="demo-hint">图片由外框的 overflow 裁切，图片本身不再写圆角。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">语义色</text>
+							<text class="demo-section__desc">六种 type 的浅底首字头像，前景按浅底配对规则取。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view v-for="(tone, index) in tones" :key="tone.type"
+							:class="index === tones.length - 1 ? 'demo-image-cell demo-image-cell--last' : 'demo-image-cell'">
+							<text class="demo-image-label">{{ tone.label }}</text>
+							<vx-avatar :type="tone.type" text="元" />
+						</view>
+					</view>
+					<text class="demo-hint">primary / success / info / danger 用 pressed，warning 用 warning-ink，default 用正文色。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">描边</text>
+							<text class="demo-section__desc">ring 打开后外框仍是 32 / 40 / 48；和图片组合的堆叠对照。</text>
+						</view>
+					</view>
+					<view class="demo-image-row">
+						<view class="demo-image-cell">
+							<text class="demo-image-label">vx-avatar · ring</text>
+							<view class="demo-cluster">
+								<view class="demo-cluster__item">
+									<vx-avatar size="sm" ring text="汽" type="primary" />
+								</view>
+								<view class="demo-cluster__item">
+									<vx-avatar ring text="汽" type="primary" />
+								</view>
+								<view class="demo-cluster__item">
+									<vx-avatar size="lg" ring text="汽" type="primary" />
+								</view>
+							</view>
+						</view>
+						<view class="demo-image-cell demo-image-cell--last">
+							<text class="demo-image-label">vx-image-group · 40 · 堆叠</text>
+							<vx-image-group :items="stackItems" size="sm" shape="circle" :offset="-12" ring
+								:clickable="false" />
+						</view>
+					</view>
+					<text class="demo-hint">描边层绝对定位在 inset 0，2px 往内画；外框不加 border，整排并排时不会歪。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">失败回落</text>
+							<text class="demo-section__desc">坏地址回落到首字；换一个可用地址后重新加载图片。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-cluster">
+							<view class="demo-cluster__item">
+								<vx-avatar :src="avatarSrc" text="汽" @error="onAvatarError" />
+							</view>
+							<view class="demo-cluster__item demo-cluster__item--last">
+								<text class="demo-hint">{{ avatarState }}</text>
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button size="sm" type="primary" variant="soft" text="换一个坏地址"
+									@click="useBrokenSource" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button size="sm" type="success" variant="soft" text="换成可用地址"
+									@click="useWorkingSource" />
+							</view>
+						</view>
+						<text class="demo-hint">同一个坏 src 只抛一次 error；只有 src 变化才重新走图片。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">事件与自定义</text>
+							<text class="demo-section__desc">@click 打日志、@error 计数；bgColor / color 各来一组。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-cluster">
+							<view class="demo-cluster__item">
+								<vx-avatar text="点" type="primary" @click="onAvatarClick" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar text="静" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar size="lg" ring type="success" text="😀" @click="onAvatarClick" />
+							</view>
+						</view>
+						<text class="demo-hint">左边和右边有 @click，按下压到 0.8；中间没有监听，不挂 hover-class，也不加指针。</text>
+						<text class="demo-hint">点击：{{ clickLog }} · error 累计 {{ errorCount }} 次（来自失败回落）</text>
+					</view>
+					<view class="demo-card demo-card--spaced">
+						<view class="demo-cluster">
+							<view class="demo-cluster__item">
+								<vx-avatar text="底" bg-color="#1f2a44" color="#ffffff" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar text="色" bg-color="#e8f1ff" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar text="前" color="#d92d20" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar icon="heart" type="info" color="var(--vx-color-info-pressed)" />
+							</view>
+						</view>
+						<text class="demo-hint">bgColor 只盖底色，color 只盖首字和图标；字面值不跟主题，跟主题时传 var(--vx-color-*)。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.65.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 演示页不引用组件库的类型：script setup 里只有 defineProps 用到的类型会被擦除，
+	// 普通 type 导入会留在运行时代码里，页面加载时报 missing export。
+	type AvatarSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
+
+	type AvatarTone = {
+		type: AvatarSemantic
+		label: string
+	}
+
+	type AvatarStackItem = {
+		src: string
+		id: string
+	}
+
+	const tones: AvatarTone[] = [
+		{ type: 'primary', label: 'primary' },
+		{ type: 'success', label: 'success' },
+		{ type: 'info', label: 'info' },
+		{ type: 'warning', label: 'warning' },
+		{ type: 'danger', label: 'danger' },
+		{ type: 'default', label: 'default' }
+	]
+
+	const stackItems: AvatarStackItem[] = [
+		{ src: '/static/demo/card/avatar-cs.png', id: '头像 1' },
+		{ src: '/static/demo/card/avatar-js.png', id: '头像 2' },
+		{ src: '/static/demo/card/thumb-1.jpg', id: '头像 3' },
+		{ src: '/static/demo/card/thumb-2.jpg', id: '头像 4' }
+	]
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/safe-area/safe-area'
+	const nextPath: string = ''
+	const prevName = '安全区'
+	const nextName = '已经是最后一个'
+
+	// 失败演示只换坏地址来触发新一次 error；换回可用地址后应恢复图片态。
+	const brokenSources: string[] = [
+		'/static/demo/card/missing-avatar-a.jpg',
+		'/static/demo/card/missing-avatar-b.jpg'
+	]
+	let brokenIndex = 0
+
+	const avatarSrc = ref(brokenSources[0])
+	const errorCount = ref(0)
+	const clickCount = ref(0)
+	const clickLog = ref('还没有点击')
+
+	const avatarState = computed((): string => {
+		if (avatarSrc.value.indexOf('missing-avatar') >= 0) return '坏地址 · 已回落首字'
+		return '可用地址 · 图片态'
+	})
+
+	const useBrokenSource = () => {
+		brokenIndex = (brokenIndex + 1) % brokenSources.length
+		avatarSrc.value = brokenSources[brokenIndex]
+	}
+
+	const useWorkingSource = () => {
+		avatarSrc.value = '/static/demo/card/avatar-js.png'
+	}
+
+	const onAvatarError = () => {
+		errorCount.value += 1
+	}
+
+	const onAvatarClick = () => {
+		clickCount.value += 1
+		clickLog.value = `已点击 ${clickCount.value} 次`
+	}
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

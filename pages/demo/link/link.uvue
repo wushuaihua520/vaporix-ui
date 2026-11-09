@@ -346,11 +346,11 @@
 		color: var(--vx-color-text-secondary);
 	}
 
-	/* 协议文案：链接和正文在同一行里按基线排。 */
+	/* 协议文案：链接和正文在同一行里按中线排；App 的 align-items 不支持 baseline。 */
 	.demo-lk-flow {
 		flex-direction: row;
 		flex-wrap: wrap;
-		align-items: baseline;
+		align-items: center;
 	}
 
 	.demo-lk-flow__text {

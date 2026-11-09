@@ -1,0 +1,241 @@
+<template>
+	<!-- 容器只管登记、串行校验和错误定位；标题、说明和错误行由 vx-form-item 提供。 -->
+	<!-- 不接收 model：业务的值仍留在各控件的 v-model 上，这里只做调度。 -->
+	<view class="vx-form">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup>
+	import { VxFormProps, VxFormLabelPosition } from './props'
+	import { VX_FORM_CONTEXT, VxFormContext, VxFormItemInstance } from './context'
+	import { VxSize } from '../../libs/types/common'
+
+	const props = withDefaults(defineProps<VxFormProps>(), {
+		labelWidth: '72px',
+		labelPosition: 'left',
+		size: 'md',
+		disabled: false,
+		scrollToError: true
+	})
+
+	const instance = getCurrentInstance()
+
+	// 登记表不参与渲染，用普通数组即可；顺序由 order 记录，动态增删项时也能还原注册先后。
+	const items: Array<VxFormItemInstance> = []
+	const warnedProps: Array<string> = []
+	const warnedFields: Array<string> = []
+	let nextOrder = 0
+	let scrollToken = 0
+
+	// 失败项滚动到视口时上方留 8px，错误行不会贴住屏幕顶边。
+	const SCROLL_OFFSET = 8
+
+	// labelWidth 必须带单位：纯数字在样式里不是合法宽度，标签列会塌掉。开发阶段提示一次。
+	// 逐字符判断，不用正则字面量：库里约定跨端构造只用 new RegExp 加字符串。
+	let warnedLabelWidth = false
+
+	// 只要出现一个非数字、非小数点的字符，就认为带了单位（px、rpx、%、em、auto 都算）。
+	const hasWidthUnit = (width: string): boolean => {
+		if (width.length === 0) return false
+		for (let index = 0; index < width.length; index++) {
+			const code = width.charCodeAt(index)
+			const isDigit = code >= 48 && code <= 57
+			const isDot = code === 46
+			if (!isDigit && !isDot) return true
+		}
+		return false
+	}
+
+	watch(() => props.labelWidth, (width: string) => {
+		if (warnedLabelWidth) return
+		if (!hasWidthUnit(width)) {
+			warnedLabelWidth = true
+			console.warn(`[vx-form] labelWidth="${width}" 不带单位，标签列宽会失效；请传 "72px" / "88rpx" 这样带单位的值。`)
+		}
+	}, { immediate: true })
+
+	const register = (item: VxFormItemInstance) => {
+		if (item.prop.length === 0) return
+		for (let index = 0; index < items.length; index++) {
+			if (items[index].prop !== item.prop) continue
+			// 同一个 prop 只认先注册者；开发阶段提示一次，避免两份规则里只有一份生效却没人发现。
+			if (!warnedProps.includes(item.prop)) {
+				warnedProps.push(item.prop)
+				console.warn(`[vx-form] prop "${item.prop}" 重复注册，以先注册的表单项为准。`)
+			}
+			return
+		}
+		item.order = nextOrder
+		nextOrder++
+		items.push(item)
+	}
+
+	const unregister = (item: VxFormItemInstance) => {
+		for (let index = 0; index < items.length; index++) {
+			if (items[index].uid !== item.uid) continue
+			items.splice(index, 1)
+			return
+		}
+	}
+
+	// 按注册顺序校验，不并发：前一项失败时不启动后一项，错误定位也不会被后面的项抢走。
+	const orderedItems = (): Array<VxFormItemInstance> => {
+		const list = items.slice()
+		list.sort((left: VxFormItemInstance, right: VxFormItemInstance): number => left.order - right.order)
+		return list
+	}
+
+	// 把页面滚到目标位置。预览环境没有 pageScrollTo 时静默跳过。
+	const scrollPageTo = (top: number) => {
+		if (typeof uni === 'undefined' || typeof uni.pageScrollTo !== 'function') return
+		let target = top - SCROLL_OFFSET
+		if (target < 0) target = 0
+		try {
+			uni.pageScrollTo({
+				scrollTop: target,
+				duration: 200,
+				// 页面不可滚动时平台会走 fail；吞掉它，滚动失败不影响校验结果。
+				fail: () => {}
+			})
+		} catch (error) {
+			// 页面不可滚动时平台会拒绝；滚动只是增强，不影响校验结果。
+		}
+	}
+
+	// 量第一个错误项的位置，再交给 pageScrollTo。App 上页面滚动由最外层 scroll-view 模拟，
+	// 量不到、位置为空或当前不在可滚动页面时都静默返回，不打断已经失败的校验结果。
+	const scrollToFirstInvalid = () => {
+		if (typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') return
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) return
+		// 后发起的校验覆盖先发起的：前一次的回调不再改滚动位置。
+		const token = ++scrollToken
+		nextTick(() => {
+			if (token !== scrollToken) return
+			try {
+				const query = uni.createSelectorQuery()
+				if (query == null || typeof query.in !== 'function') return
+				const scoped = query.in(proxy)
+				if (scoped == null || typeof scoped.select !== 'function') return
+				const target = scoped.select('.vx-form-item--invalid')
+				if (target == null || typeof target.boundingClientRect !== 'function') return
+				target.boundingClientRect().exec((result) => {
+					if (token !== scrollToken) return
+					if (result == null || result.length < 1) return
+					const rect = result[0] as NodeInfo | null
+					if (rect == null) return
+					const top = rect.top
+					if (top == null) return
+
+					// 页面已经滚过一段时 rect.top 只是视口内的位置，补上页面自身的滚动量才是绝对位置。
+					let scrolled = 0
+					try {
+						const viewportQuery = uni.createSelectorQuery()
+						if (viewportQuery != null && typeof viewportQuery.selectViewport === 'function') {
+							const viewport = viewportQuery.selectViewport()
+							if (viewport != null && typeof viewport.scrollOffset === 'function') {
+								viewport.scrollOffset().exec((viewportResult) => {
+									if (token !== scrollToken) return
+									if (viewportResult != null && viewportResult.length > 0) {
+										const info: any = viewportResult[0]
+										if (info != null) {
+											const value = info.scrollTop
+											if (typeof value === 'number' && value > 0) scrolled = value
+										}
+									}
+									scrollPageTo(scrolled + top)
+								})
+								return
+							}
+						}
+					} catch (error) {
+						// 没有 viewport 查询时按视口位置滚。
+					}
+					scrollPageTo(scrolled + top)
+				})
+			} catch (error) {
+				// 预览环境可能只实现最小的选择器 API：滚动只是增强，不影响校验结果。
+			}
+		})
+	}
+
+	/** 按注册顺序串行校验，遇到第一个失败就停下；scrollToError 打开时滚过去。 */
+	const validate = async (): Promise<boolean> => {
+		const list = orderedItems()
+		for (let index = 0; index < list.length; index++) {
+			const passed = await list[index].validate()
+			if (passed) continue
+			// 错误文案在下一帧才落到节点上，滚动查询也等这一帧结束。
+			if (props.scrollToError) scrollToFirstInvalid()
+			return false
+		}
+		return true
+	}
+
+	/** 只校验一项。业务在控件的 change / blur 里调用，不自动滚动，避免边输入边跳。 */
+	const validateField = async (prop: string): Promise<boolean> => {
+		if (prop.length === 0) return true
+		for (let index = 0; index < items.length; index++) {
+			if (items[index].prop !== prop) continue
+			return await items[index].validate()
+		}
+		// prop 打错时校验会静默通过，业务不容易发现；提示一次，返回值仍是 true，不改变行为。
+		if (!warnedFields.includes(prop)) {
+			warnedFields.push(prop)
+			console.warn(`[vx-form] validateField("${prop}") 没有匹配的表单项，请核对 prop 拼写。`)
+		}
+		return true
+	}
+
+	/** 不传清全部，只清错误态；受控 error 仍由父级改 prop 收起。 */
+	const clearValidate = (prop?: string) => {
+		const target = prop != null ? prop : ''
+		for (let index = 0; index < items.length; index++) {
+			if (target.length > 0 && items[index].prop !== target) continue
+			items[index].clearValidate()
+		}
+	}
+
+	// 不认识的枚举值按默认档收口：labelPosition 收到 left，size 收到 md，和分组类组件的 sizeKey 一致。
+	const positionKey = (value: VxFormLabelPosition): VxFormLabelPosition => {
+		return value === 'top' ? 'top' : 'left'
+	}
+
+	const sizeKey = (value: VxSize): VxSize => {
+		if (value === 'sm' || value === 'lg') return value
+		return 'md'
+	}
+
+	const context: VxFormContext = {
+		register: register,
+		unregister: unregister,
+		labelWidth: (): string => props.labelWidth,
+		labelPosition: (): VxFormLabelPosition => positionKey(props.labelPosition),
+		size: (): VxSize => sizeKey(props.size),
+		disabled: (): boolean => props.disabled
+	}
+
+	provide(VX_FORM_CONTEXT, context)
+
+	defineExpose({
+		validate,
+		validateField,
+		clearValidate
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 表单只占父级宽度，不加外部间距，也不画底色、描边和圆角。
+	   项与项之间的距离由页面、卡片或演示页的外层留白决定，表单不替业务做排版。 */
+	.vx-form {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+</style>

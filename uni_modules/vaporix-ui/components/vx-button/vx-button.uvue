@@ -271,6 +271,9 @@
 
 	.vx-button--shadow {
 		box-shadow: var(--vx-shadow-button);
+		/* 运行时默认给 view 裁剪 overflow，会把阴影贴着按钮盒切掉；shadow 变体自己声明不裁。
+		   父级容器也要放开裁剪，阴影才出得来（示例页 bt-row 有对应注释）。 */
+		overflow: visible;
 	}
 
 	.vx-button--disabled {

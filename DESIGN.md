@@ -495,33 +495,33 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 
 ### 免费层的最低配置
 
-六族分发，合计 53。少一件，就有一类页面拼不出来。
+六族分发，合计 60。少一件，就有一类页面拼不出来。
 
 | 族 | 数 | 件 |
 | --- | --- | --- |
 | 基础 | 6 | button、icon、input、textarea、text、link |
-| 表单 | 8 | number-box、radio、checkbox、switch、rate、datetime、picker、calendar |
-| 展示 | 12 | tag、badge、card、section、image-group、qrcode、collapse、collapse-item、time-axis、countdown、steps、progress |
+| 表单 | 10 | number-box、radio、checkbox、switch、rate、datetime、picker、calendar、form、form-item |
+| 展示 | 14 | avatar、tag、badge、card、section、image、image-group、qrcode、collapse、collapse-item、time-axis、countdown、steps、progress |
 | 导航 | 7 | navigation-bar、status-bar、sticky、tabs、swipe-action、tabbar、footer |
-| 反馈 | 12 | tips、toast、loading、loadmore、nomore、no-data、modal、drawer、actionsheet、bubble-popup、rolling-news、notice-bar |
-| 布局 | 8 | row、col、grid、grid-item、list-view、list-cell、white-space、wing-blank |
+| 反馈 | 13 | tips、toast、loading、loadmore、nomore、no-data、modal、drawer、actionsheet、popup、bubble-popup、rolling-news、notice-bar |
+| 布局 | 10 | row、col、grid、grid-item、list-view、list-cell、white-space、wing-blank、divider、safe-area |
 
-分组容器 `vx-radio-group`、`vx-checkbox-group` 随各自的单项一起算，不另计一件；按目录数是 55 个，按组件清单是 53 个。
+分组容器 `vx-radio-group`、`vx-checkbox-group` 随各自的单项一起算，不另计一件；按目录数是 62 个，按组件清单是 60 个。
 
 ### 付费层的准入
 
 只收四类：
 
-1. 同一件事的高配版本：select、slider、segmented-control、code-input、data-checkbox、index-list、divide-list、gallery、loader、skeleton、msg、circular-progress、landscape、pagination、waterfall。
-2. 跨控件的组合件：`vx-page` 把导航栏、状态栏、安全区和滚动容器收成一件；表单与校验把控件、规则和错误定位收成一套。
+1. 同一件事的高配版本：select、slider、segmented-control、code-input、data-checkbox、index-list、divide-list、gallery、loader、skeleton、msg、circular-progress、landscape、pagination、waterfall、swiper、count-to。
+2. 跨控件的组合件：`vx-page` 把导航栏、状态栏、安全区和滚动容器收成一件。表单容器与校验从 0.62.0 起在免费层，不再作为付费组合件规划。
 3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-editor。
 4. 服务：暗色与主题、i18n、无障碍、升级协助、源码授权。
 
-第 2 类还没做；第 3 类的 `upload` 已补，table、virtual-list、tree 和 rich-editor 按顺序补。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
+第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table` 和 `virtual-list` 已补，tree 和 rich-editor 按顺序补。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
 
 ### 迁移（0.56.0 起）
 
-分三批迁完，数量从 45 / 19 变成 53 / 11：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，当前付费层 19 件。
+分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`，当前付费层 29 件。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。
 
 每个转出的组件跟着改：两包 readme 的清单、两包 changelog、文档站 `nav.ts` 的 `pro` 标记、`content` 中英文 meta 的「会员组件」、首页与索引页的组件数、Pro 的演示与依赖说明。免费库还要补演示页、`catalog.ts`、`pages.json`。全部迁完删掉本节。
 
@@ -543,6 +543,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 徽章的 `variant="soft"` 用对应的 `*-soft` 衬底：文字取 `*-pressed`，warning 取 `warning-ink`，default 取 `text`。实心 `default` 是深色中性底，配 `text-inverse`；浅底 `default` 才是浅灰底的中性计数。
 - 徽章的自定义颜色同样分两处：`bgColor` 改底色、`color` 改文字，不做明暗推导。覆盖在图标或图片上时用 `ring` 加一圈页面底色，亮色、暗色各取自己的 `surface`。
 - 图片组合只显示缩略图，不承载语义色：图片本身不能染色，空白和加载失败用 `default-soft` 占位，占位图标用 `disabled-text`。重叠时用 `ring` 加一圈 `surface` 描边把相邻图分开；`ringColor` 是字面值，放在页面底色上时传对应的 `--vx-color-bg`。
+- 头像的 `type` 只给首字和图标：底色取对应的 `*-soft`，前景取 `*-pressed`，`warning` 取 `warning-ink`，`default` 取正文色；图片态默认透明，传了 `bgColor` 才铺。`bgColor` 只改底色、`color` 只改前景，都是字面值，组件不做明暗推导。`ring` 固定 `surface`，不跟 `type`。
 - 评分默认用 `warning` 的琥珀色表达评价结果；选中星形取 `warning-pressed`（原色在白底上不到 3:1，`warning-pressed` 才是可用的填充色）。`activeColor` 只覆盖选中色，`voidColor` 只覆盖未选中色，不做明暗推导。分数高低不改用 `success` / `danger` 表达，除非业务本身就在评价风险等级。
 - 单选的选中圆圈用 `type` 语义色填充，对号取对应的 `on-*`，`warning` 填充取 `warning-pressed`、对号取 `on-warning`；未选中圆圈用 `text-secondary` 描边，不用 `border`。只画对号时对号本身就是选中色，`color` 同时改这一处。`color` / `borderColor` / `checkColor` 都是字面值，组件不做明暗推导，禁用时文字和圆圈转 `disabled-text`，圆圈模式的对号用 `surface`、只画对号时用 `disabled-text`，对比度由业务保证。
 - 复选的选中方框用 `type` 语义色填充，对号取对应的 `on-*`，`warning` 填充取 `warning-pressed`、对号取 `on-warning`；未选中方框同样用 `text-secondary` 描边。部分选中的横线跟随对号色，禁用时方框填充用 `disabled-text`。`color` / `borderColor` / `checkColor` 的规则和单选一致，`checkColor` 同时改对号和横线；对比度由业务保证。
@@ -580,8 +581,12 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 压屏窗是活动浮层：遮罩取 `mask`，关闭按钮固定 `surface` 底配 `text-secondary` 叉，1px `border` 勾边、`--vx-shadow-md` 托起；海报和权益卡的颜色由内容自带，组件不染色、不铺底色。`closeColor` / `closeBgColor` / `maskColor` 各只改一处，都是字面值，浅色品牌底配深色叉的对比度由业务保证。
 - 分隔列表的数值用 `text`，说明用 `text-secondary`，竖线用 `divider`，整条默认 `surface` 底；图片方框衬 `default-soft`，透明图的留白落在浅灰上。角标复用徽章的 `type`，默认 `danger`，只表达未读、待处理。`bgColor` / `valueColor` / `labelColor` / `dividerColor` 各只覆盖一处，每项的 `valueColor` / `labelColor` 再盖过全局；这些颜色都是字面值，禁用时数值和说明颜色不生效，整格内容淡到 0.5；整条底色保留，竖线随整格变淡，对比度由业务保证。
 - 选择框的单选用正圆标记、多选用小圆角方形标记：选中填充跟随 `type`，`warning` 取 `warning-pressed`、对号取 `on-warning`，`default` 用正文色填充配 `text-inverse`；未选中标记用 `text-secondary` 描边。`color` / `borderColor` / `checkColor` 各只覆盖填充、未选中描边和对号，都是字面值，禁用时不生效。确定按钮固定走 `confirmType`，默认 `primary`，和标记的语义色分开；选项图片衬 `default-soft`，禁用时只压透明度，不染色。`titleColor` 只改标题，`maskColor` 只改遮罩。
+- 弹出层只做容器：面板 `surface` 底、遮罩 `--vx-color-mask`，不铺语义色，也不给内容染前景色。`maskColor` 只改遮罩，是字面值；面板底色、文字和图标颜色都由业务自己带，组件不做明暗推导，也不在面板上铺品牌色。
 - 文本的 `type` 只改文字颜色：`default` 用 `text`，`secondary` 用 `text-secondary`，语义色按状态取 `primary` / `success` / `info` / `warning-ink` / `danger`；warning 正文用 `warning-ink`，不用琥珀原色。`color` 是字面值，优先于 `type`，`disabled` 又盖过两者并转 `disabled-text`；这些颜色都不改底色和字重。
 - 链接默认用 `primary`，`secondary` 只用于正文里不该抢眼的内联入口；`success` / `info` / `warning` / `danger` 只在链接本身表达状态时出现，warning 用 `warning-ink`。`color` 是字面值，优先于 `type`，禁用时两者都不生效，文字转 `disabled-text`。复制后的提示走系统轻提示，组件不另外铺底色或描边。
+- 页面容器不承载配色：`bgColor` 只改页面底色，默认 `--vx-color-bg`；`navBgColor` 和 `color` 原样透传给 `vx-navigation-bar`，三者都是字面值，组件不做明暗推导。页面不改变导航栏、吸顶条和标签栏各自的语义色，也不在页面上铺渐变和遮罩。
+
+- 表单标题用 `text`，星号用 `danger`，常驻说明用 `text-secondary`，错误行用 `danger`；错误不能只用颜色表达，错误行必须同时有文案，表单本身不铺底色、描边和语义色。禁用项跳过校验，标题和星号不因为禁用而转灰。
 
 - 验证码输入框的焦点格用 `type` 的语义色描边、`*-soft` 浅底和同色光标，`warning` 取 `warning-ink`，`default` 用正文色和 `default-soft`；未聚焦格子和已填数字保持中性。`invalid` 时描边、焦点浅底和光标转 `danger`，`disabled` 时整格转 `disabled-bg` / `disabled-text`。`color` / `bgColor` / `borderColor` / `textColor` / `cursorColor` 各改一处，字面值，禁用时不生效。
 - 状态栏只负责系统状态栏区域的底色和留白：默认 `surface`，`bgColor` 可传品牌色、渐变或令牌。系统时间、信号和电池由平台绘制，组件不改前景；浅底配深色前景、深底配浅色前景由 `pages.json` 的 `navigationBarTextStyle` 或系统配置决定。组件不画分割线、阴影，也不做明暗推导。
@@ -589,6 +594,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 数字键盘输入框的密码位只有三态：下一位取 `type` 的强调色（`default` 为正文色），已填取正文色（`textColor`），空位取 `text-secondary`（`borderColor`）；`invalid` 时三者一起转 `danger`，`disabled` 时转 `disabled-text`，数字、圆点和下划线同色。`invalid` 与 `disabled` 盖过密码位这三个自定义颜色，键盘底色和遮罩色仍生效；键盘部分沿用 `vx-keyboard` 的中性色，不跟着密码位染色。
 - 树型菜单只做层级和选择，不用语义色装饰：未选中行用 `text`，图标和箭头用 `text-secondary`，参考线用 `border`；选中行用 `type` 的 `*-soft` 浅底和 `*-pressed` 文字，`warning` 用 `warning-ink`，`default` 用 `default-soft` 配正文色。勾选框沿用复选：填充跟 `type`（`warning` 取 `warning-pressed`），对号和横线取对应的 `on-*`，未选中只画 `text-secondary` 描边。
 - 树型菜单的 `color` 只改选中文字、选中图标和勾选框填充，`activeBgColor` 只改选中底色，`textColor` 只改未选中文字和箭头，`iconColor` 只改未选中图标，`lineColor` 只改参考线，`bgColor` 只改整块底色；六者都是字面值，组件不做明暗推导，禁用时文字和图标仍转 `disabled-text`，整行淡到 0.5。
+- 图片底座只做占位与回落，不用语义色：加载中和失败态铺 `default-soft`，失败图标取 `disabled-text`、文案取 `text`（次要灰在 `default-soft` 上不到 4.5:1）；`bgColor` 是字面值，只改这一层底色，对比度由业务保证，组件不做明暗推导。成功态不染色、不加蒙层，也不读骨架屏令牌。
+- 分割线只用一条中性线：默认 `border`，比列表行内的 `divider` 深一档；带文字时文字取 `text-secondary`。`color` 是字面值，同时覆盖线色和文字色，不表达成功、失败或警告。
+- 安全区不承载颜色语义：默认透明，`bgColor` 是字面值，只铺这一条；固定态也不加分割线、毛玻璃和渐变，系统状态栏的前景仍由 `pages.json` 或系统配置决定。
+- 虚拟列表只做切片，不承载语义色：行本身不铺底色，分割线用 `divider`，空态文案用 `text-secondary`；行内容的背景、选中态和点击反馈由插槽自己带，组件不加品牌色和状态色。
+- 轮播图只做图片和标题，不承载语义色：指示器当前项用 `primary`、其余用 `default-soft`（放在图片外面时改用 `text-secondary`），计数胶囊是 `rgba(0, 0, 0, 0.45)` 暗底配白字，标题条同样是固定暗层配白字，亮暗同值。`extra` 和默认插槽的颜色由业务自己带，组件不做明暗推导，也不往图片上铺蒙层。
+- 数字动画只输出一串数字：默认正文色，`bold` 只把字重加到 600，不改颜色；`color` 是字面值、只改文字，不铺底色、不加描边。它不表达成功、警告或失败，状态由旁边的标签和图标说。
+- 筛选栏只做筛选入口，不承载语义色：触发条底色 `surface`，未选中文字和箭头用 `text-secondary`，展开项和已生效项用 `activeColor`（默认 `primary`）并加一档字重；面板是 `surface`，遮罩取 `mask`，选项自己的颜色由插槽内容带。`activeColor` 是字面值、只改这两处文字和箭头，浅色品牌底的对比度由业务保证。
+- 返回顶部只用中性色：默认 `surface` 底、1px `border` 描边、`text-secondary` 图标；`bgColor` 只改底色、`color` 只改图标，都是字面值，组件不做明暗推导。它不表达成功或警告，也不铺语义底色。
 
 ## Themes
 
@@ -671,6 +684,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 | md | `--vx-font-control-md` 14px | `--vx-line-md` 22px | 按钮 500，标签 400，表单标题 500 |
 | lg | `--vx-font-control-lg` 16px | `--vx-line-lg` 24px | 按钮 500，标签 400，表单标题 500 |
 
+- 表单标题沿用控件字号 `--vx-font-control-*`（13 / 14 / 16，行高 20 / 22 / 24、500），`size` 三档只换字号和行高；错误行和常驻说明固定 `body-small`（13 / 20 / 400），不跟 `size` 放大。星号跟标题同字号，只染色不加档。
 - 按钮文案用 `medium`；标签用 `regular`；输入框 / 多行输入框的标题用 `medium`；输入内容、占位、单位和辅助文字用 `regular`。
 - 徽章文案单独用 `--vx-badge-font-*`：12 / 13 / 14，跟徽章盒子配套，字重 `medium`。行高等于盒子高度，不单独定义。
 - 页脚不是控件：版权、备案号用 `body-small`（13 / 20 / 400），辅助链接用 `body`（15 / 22 / 500）。不借用 `--vx-font-control-*`。
@@ -678,6 +692,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 轻提示的文案同样用 `body`（15 / 22 / 400），图标单独 40px，不跟字号联动；多行按行高自然增高。
 - 操作菜单的标题用 `title`（17 / 24 / 600），说明用 `body-small`（13 / 20 / 400）；动作和取消文案用 `body`（15 / 22 / 500），不借控件字号。
 - 抽屉的标题用 `title`（17 / 24 / 600）；正文由业务组合，沿用正文档位，不借控件字号。
+- 弹出层没有文案档位：标题、说明和按钮由业务组合，沿用正文档位和控件字号；组件只画一个关闭叉图标，固定 `md` 18，不跟字号联动。
 - 弹框的标题固定 17 / 24 / 600，正文 15 / 22 / 400 次要色，都居中；动作文案沿用 `sm` 控件的 13 / 20 / 500，不借正文档位。弹框的字号不随 `size` 变化。
 - 日期时间选择器的滚轮文字用 `body`（15 / 22）：未选中 `text-secondary` 400，选中 `text` 600；六列时收一档到 `body-small`（13 / 20）。单位固定 `body-small`（13 / 20），头部取消和确定用 `body`（15 / 22 / 500），标题用 `title`（17 / 24 / 600）。滚轮行高 44 不随字号变，字号收一档后上下留白更大；选择器不是控件，不借 `--vx-font-control-*`。
 - 联动选择的滚轮文字和日期时间选择器同档：15 / 22，未选中 `text-secondary` 400，选中 `text` 600，不可选 `disabled-text`；四列起收一档到 13 / 20。头部取消、确定 15 / 22 / 500，标题 17 / 24 / 600，不可选提示用 `warning-ink`。空状态文案 13 / 20 次要色。选择器不是控件，不借 `--vx-font-control-*`。
@@ -725,6 +740,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 行高跟随所属档位，不单独定义。
 - 数字与金额如需等宽，另加数字字体令牌，不复用正文档位。
 
+- 图片底座没有正文档位：失败态文案固定 `body-small`（13 / 20 / 400）正文色，图标沿用 `--vx-icon-*` 的 18，不跟尺寸联动；成功态不显示文字。
+- 轮播图的标题和计数胶囊都用 `body-small`（13 / 20 / 400），单行省略；不借控件字号，也不为标题条单独放大一档。`extra` 里的角标沿用标签字级。
+- 数字动画的字号沿用控件三档 13 / 14 / 16，行高 20 / 22 / 24，字重默认 400、`bold` 取 600；不做页面级 28 / 34 的展示数字，大号数字由外层排版承担。
+- 筛选栏的触发项沿用控件字号 14 / 22（`--vx-font-control-md` / `--vx-line-md`），未选中 400、展开和已生效 500；箭头 14（`--vx-icon-sm`），不跟字号联动。面板里的行和按钮由插槽内容取自己的档位。
+- 返回顶部的自定义文案固定 13 / 20、字重 500，图标 22（`--vx-icon-lg`）；不借正文档位，也不为「回到顶部」单独放大一档。
+- 分割线带文字时用 `body-small`（13 / 20 / 400）次要灰，和线之间各留 12；不借控件字号，也不为分割线单独放大一档。纵向线没有文案档位。
+- 安全区没有文案档位：组件不含文字，需要说明时由页面自己带。
+
 ## Layout
 
 - 间距只取间距令牌，并且是 4 的倍数。
@@ -740,6 +763,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 列表行水平内边距 `sm` 12px、`md` / `lg` 16px，垂直 8 / 12 / 16px；说明固定 13 / 20，右侧值 `sm` / `md` 用 13 / 20，`lg` 用 15 / 22；箭头 14 / 18。
 - 导航栏内容行高 44px（`--vx-navigation-bar-height`），内置返回和右侧动作按行高 44 排；内置返回的热区由组件补足，`suffix` 里的动作自己包出 44 热区。左右各留 8px，顶部状态栏留白取 `--uni-safe-area-inset-top`，横屏两侧取 `--uni-safe-area-inset-left` / `--uni-safe-area-inset-right`。标题 17 / 24 / 600 居中单行省略。
 - 状态栏高度取 `--uni-safe-area-inset-top`（App 为状态栏与刘海，Web 为 0），`height` 传数字时是整条高度，0 表示跟随系统，超过 200 按 200。固定时占位同高；插槽内容左右各留 16，横屏再让开左右安全区；渐显距离是条宽 × `scrollRatio`（默认 0.3）。
+- 页面容器的顶栏在文档流里：导航栏内容行 44，状态栏留白由导航栏的 `statusBar` 承担，不再叠一只状态栏。滚动区吃剩余高度，底部按 `tabbar`（`--vx-tabbar-height-md` 56）和 `--uni-safe-area-inset-bottom` 叠加占位，两者相加就是插槽里的 `bottomInset`；内容左右留 `lg` 16，`padded=false` 交给业务。`navHeight` 只算内容行（不含状态栏），直接给 `vx-sticky` 的 `offsetTop`；导航栏第一次 `ready` 的瞬态值不采用，内容行下限 44。`scroll=false` 时不锁高，整页交给页面滚动，`refresh` / `loadmore` / `scrollToTop` 不生效；触底阈值固定 80，不做成属性。
 - 折叠面板的标题行沿用列表行最小高度 44 / 52 / 60，标题 13 / 15 / 17（20 / 22 / 24、500），说明固定 13 / 20，箭头沿用图标三档 14 / 18 / 22；水平内边距 12 / 16 / 16，垂直 8 / 12 / 16。内容左右与标题对齐，上 8 / 12 / 16、下 12 / 16。这组尺寸不新增令牌，也不并入控件高度。
 - 卡片不占外部间距，宽度跟随父级：正文四边内边距 12 / 16 / 24，头部上下 8 / 12 / 16、左右 12 / 16 / 24，头像 32 / 40 / 48。页面左右边距用 `lg`，卡片之间用 `xl`。
 - 滚动消息是三档高的展示行：`sm` 32、`md` 40、`lg` 48（`--vx-rolling-news-height-*`），左右内边距 `sm` 12、`md` / `lg` 16，图标 14 / 18 / 22 跟档位，图标和文案留 8（`lg` 12），后缀同理。1px 描边含在这档高度里；滑层、视口和热区用内容区高度 `--vx-rolling-news-inner-*`（30 / 38 / 46）。App 不能 calc，所以内容区写成字面量，改行高时两处一起改。这组高度不并入控件三档。
@@ -759,6 +783,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 图片组合的相邻偏移 `offset` 是像素数：负数重叠、正数留缝、0 贴边，行内只加前一张的后侧外边距，纵向只加上方外边距。重叠量不超过方框的三分之一，留缝不超过 16px。
 - 图片组合的 `wrap` 只用于 `direction="row"`：父级要有宽度边界，每一行铺满父级后换行，横向和纵向留缝都取 `offset`；负值按 0 处理，避免上下两行叠在一起。`column` 只排一列，忽略 `wrap`。
 - 图片组合的圆环用 `--vx-border-width-strong` 2px 描边，画在方框内侧；需要区分重叠的头像或缩略图时打开 `ring`，单张独立展示不加。
+- 头像的外框单独三档：`sm` 32px、`md` 40px、`lg` 48px（`--vx-avatar-*`），首字 12 / 14 / 16（`--vx-avatar-font-*`），图标 14 / 16 / 18（`--vx-avatar-icon-*`）。外框是固定正方形，不跟父级宽度缩放；`ring` 的 2px 描边画在内侧，不改变外框尺寸。
 - 图片预览是全屏层：顶部工具行 44（`--vx-gallery-bar`），关闭和删除热区 44（`--vx-gallery-control`），底部工具行 60（`--vx-gallery-foot`）。顶部让出状态栏，底部让出手势条，左右由外层 padding 让开刘海；舞台吃剩余高度，图片按 `aspectFit` 完整显示，不裁切。
 - 图片预览的计数在顶部正中，关闭在左，`extra` 在右；底部说明单行省略，删除靠右。说明放不下时先缩短文案，不缩小字号；需要完整说明时由外层卡片或页面提供。
 - 图片预览的缩放范围 1–`maxScale`（默认 3，收敛到 1.2–5），双击放大到 2.5 倍或 `maxScale`；放大后单指拖动查看，双击复位。翻页、关闭和换图都先把缩放复位到 1。
@@ -773,6 +798,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 进度条的轨道高度单独三档：`sm` 4px、`md` 6px、`lg` 8px（`--vx-progress-height-*`），不并入控件、图标和徽章高度；标签和轨道、轨道和数值之间留 8 / 12 / 16，数值最小宽度按档位 40 / 44 / 52（`--vx-progress-value-min-*`）。自定义 `height` 只改轨道高度，标签和数值仍按 `size`，并且必须带单位。
 - 环形进度的直径单独三档：`sm` 64px、`md` 80px、`lg` 100px（`--vx-circular-progress-size-*`），线宽 6 / 8 / 10（`--vx-circular-progress-stroke-*`）；半圆高度等于直径 / 2 + 线宽 / 2。组件读不到 CSS 变量，直径和线宽在脚本里按同值排像素。自定义 `width` 必须带 px，`thickness` 超过半径减 1 时收到上限；两者只改圆环，数值字号仍按 `size`。这组尺寸不并入控件、图标和进度条三档。
 - 多行输入框不套用 32 / 40 / 48 的控件高度：`size` 决定字号、内边距与圆角（`sm` 用 `sm` 圆角，`md` / `lg` 用 `md` 圆角），内容区默认高三行，取 `sm` 60px、`md` 66px、`lg` 72px；需要其他高度时由 `height` 传入带单位的值，`autoHeight` 时由内容撑高。
+- 表单项不占外部间距：项与项之间的距离由页面、卡片或外层留白决定。左侧标签的宽度由 `labelWidth` 给（默认 72px，必须带单位），标签最小高度等于控件高度，和单行控件垂直居中；顶部标签独占一行、和控件之间留 8，`labelWidth` 不生效。错误行上间距 4，单行省略；没有说明也没有错误时不预留高度。
 - `sm` 用于表格行内、工具条等密集场景。独立表单项与页面主操作使用 `lg`，或给 `md` 加外层热区；`md` 40px 本身低于 44px，需要更大的点击面积时用按钮的 `height` 放大。
 - 交互控件的左右内边距与尺寸同级：`sm` 12px、`md` 16px、`lg` 24px。标签保持紧凑，水平内边距固定比控件紧一档。
 - 图标尺寸只有 `sm` 14px、`md` 18px、`lg` 22px。
@@ -793,6 +819,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 步骤条的节点单独三档：`sm` 20px、`md` 24px、`lg` 28px；完成态圆点 6 / 8 / 10，节点中心 10 / 12 / 14。纵向连线伸出底边用 `--vx-steps-line-out-*`（-10 / -12 / -14），数值是中心的相反数；App 不能 calc，所以单独写字面量。节点到内容 8 / 12 / 16，纵向步骤之间留 24；横向每步等宽，连线从节点中心画到下一个节点中心。这组尺寸不并入图标三档。
 - 轻提示的盒子最小宽度 120px、最大宽度默认 240px，内边距 24px；图标 40px，和文案间距 12px。40px 图标单独一档，不并入 `--vx-icon-*`。
 - 操作菜单的面板最大宽度 480px（`--vx-actionsheet-max-width`），手机上铺满；动作行高 52px（沿用列表行 `md`），内边距 12 / 24；标题和说明上下留 16、左右留 24，取消与动作之间用 4px `default-soft` 间隔带。
+- 弹出层：上下贴边占满宽度、高度按内容或 `height`；左右贴边占满高度、宽 280（`--vx-popup-width`）；居中按内容宽度排、最宽 480（`--vx-popup-max-width`），四周留 24。关闭叉在内容上方单占一行 44（沿用列表行 `sm`）、图标 18；面板不预留内容内边距，由业务自己留 16。这组尺寸不并入控件三档。
 - 抽屉贴着屏幕的一条边：左右宽 280px（`--vx-drawer-width`）、占满高度；上下高 45%（`--vx-drawer-height`）、占满宽度。头部沿用列表行 `md` 的 52，标题 17 / 24 / 600、单行省略；正文默认四边 16，底栏上 12、左右 16；关闭叉热区 44、图标 18。面板最大不超出整屏，`width` / `height` 覆盖时必须带单位。这组尺寸不并入控件三档。
 - 弹框的面板最大宽度单独三档 280 / 320 / 400（`--vx-modal-max-width-*`），左右至少留 24；内边距固定 24，标题、正文和动作之间分别留 12、24。弹框是紧凑浮层，动作取 `sm` 档 32px 高，靠整行宽度补足热区；两个并排等宽、间距 12，三个以上纵向、间距 8，并排文案控制在 2–4 个字。图标圆 48（`--vx-modal-icon-size`），图标仍用 `lg` 的 22；关闭叉热区 44（`--vx-modal-close-size`），图标 18。这组尺寸不并入控件三档。
 - 日期时间选择器是底部弹层，头部高 52（沿用列表行 `md`），滚轮可视高度 220（`--vx-datetime-wheel`），每行 44（`--vx-datetime-row`），正好五行。指示器高度必须等于行高，列才按行对齐；面板最大宽度 480（`--vx-datetime-max-width`）。取消和确定各自在头部两侧整高，头部左右各留 8、动作再各留 8，文字离屏幕 16。
@@ -826,9 +853,20 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 数字键盘输入框的密码位宽 32 / 36 / 40（`--vx-keyboard-slot-*`），位高固定 44（`--vx-keyboard-slot-height`），数字沿用键盘字号，圆点 8 / 10 / 12（`--vx-keyboard-dot-*`），下划线 2px，间距默认 16（0–32）；总宽超出父级时位宽等比例收窄，不换行。密码位居中，4 位用 md，6 位用 sm 或 md，8 位用 sm。
 - 树型菜单的行高单独三档：36 / 44 / 52（`--vx-tree-row-*`），每一级缩进 16 / 20 / 24（`--vx-tree-indent-*`），箭头位 20 / 24 / 28（`--vx-tree-marker-*`）；行左右内边距 12 / 16 / 16，勾选框视觉沿用 `--vx-checkbox-size-*` 的 14 / 16 / 18；箭头和勾选框热区至少 24 宽并撑满行高。这组尺寸不并入控件和列表行三档，字号仍取控件 13 / 14 / 16。层级只靠缩进表达，`indent` 取 1–40 时可覆盖档位；超过 5–6 级时把子级换页或改成分组。
 
+- 图片底座不占外部间距，宽度跟随父级（默认 100%）：`width` / `height` 传带单位的值，`ratio` 只在 `width` 是 px 或 rpx 时生效（rpx 按 750 基准换算），百分比和 `auto` 下高度回落到父级。圆角四档只作用于外框，图片一起裁。
+- 图片底座的失败态：占位底色等于外框底色，不额外留白；图标 18，文案 `body-small`，两者之间留 4，超出外框的内容由 `overflow: hidden` 裁掉。
+- 分割线横向占满父级宽度，1px；`spacing` 数字按 px，空串横向上下各 12、纵向左右各 16。纵向线宽 1px、`align-self: stretch` 撑满父级那一行，`height` 传了才固定高度；文字行高 20。
+- 安全区：不传 `height` 时高度等于 `--uni-safe-area-inset-top` / `--uni-safe-area-inset-bottom`，传了按传入值；固定态贴住对应边、层级 1。它只做纵向，左右安全区仍由页面和导航栏处理。App 取状态栏 / 手势条高度；Web 取页面相对窗口的留白，原生导航栏和 tabBar 的高度也会算进去，页面已经让开时不要再叠。
+- 虚拟列表只支持等高行：`itemHeight` 默认 60（等于 `--vx-list-height-lg`），所有行必须同高；容器有 `height` 时按传入值，空串时 `flex: 1` 吃父级剩余高度，外层必须是纵向 flex 并给出确定高度。`buffer` 默认 3 行，只影响切片窗口，不改变总高。
+- 轮播图的高度只由 `height` 决定（默认 160），组件不读窗口宽；指示器压在图里时有标题条离底 48（标题条 36 + 间距 12）、没有标题条离底 12，放到图片外面时排在下方一行、上下留 8，计数胶囊右边距 12。卡片模式的左右露出固定 32。
+- 数字动画的宽度按「最终值字符数 × 字号 × 0.6」预留像素 `min-width`，字符数和字号变了才重算；`reserveWidth=false` 时不再预留，位数变化会带动后面的内容。宽度跟随内容、默认靠左，居中由外层的横向 flex 排。
+- 筛选栏的触发条行高沿用列表行 44（`--vx-list-height-sm`），触发项等宽平分整条；箭头 14，和文字留 4（`--vx-space-xs`）。面板紧贴触发条下沿、宽度等于触发条，最高铺到距窗口底 16（`--vx-space-lg`）；触发条放在内容区顶部，接近窗口底部时下方没有空间。
+- 返回顶部的热区 44 × 44（`--vx-list-height-sm`）：只有图标时收成正圆 44，换成文案时宽度跟着内容走、左右各留 12，高度仍是 44；贴边 16（`--vx-space-lg`），距底由 `bottom` 给，默认 24，安全区由页面自己留。
+
 ## Elevation & Depth
 
 - 按钮、输入框、卡片默认用 `border` 描边，不使用阴影。卡片只提供描边一种层级；通栏卡片用 `full` 去掉左右描边和圆角，不换成阴影。
+- 表单不加阴影和浮层层级：错误只用控件描边、错误行文案和页面滚动表达，不弹浮层、不抢焦点、不弹键盘；受控 `error` 和本地错误都在文档流里占一行。
 - 单选不加阴影和浮层层级：横排没有外框，标记只是一个 1px 描边的圆；列表分组默认透明，`card` 才加 `surface` 底、1px 描边和 `md` 圆角。行项之间只靠 1px `divider` 分开。
 - 复选和单选同一套层级：横排没有外框，标记只是一个 1px 描边的小方框；列表分组默认透明，`card` 才加 `surface` 底、1px 描边和 `md` 圆角。不加阴影、渐变和浮层层级。
 - 开关不加阴影和浮层层级：关闭轨道的浅灰底、滑块的 1px 描边和打开轨道的语义色就是全部层级，不用阴影把滑块从轨道上托起来。列表行仍不画外框，卡片边界交给外层 `vx-card` 或 `vx-list-view`。
@@ -842,6 +880,8 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 浮层阴影只用 `sm`、`md`、`lg` 三档。
 - 徽章的 `ring` 是浮层：底色描边配 `--vx-shadow-md`，让白底徽章压在浅色页面上也有边；独立计数不用。App 默认裁掉溢出，`ring` 和绝对定位要画出盒外的阴影和角标，这两处用 `overflow: visible`。
 - 图片组合不加阴影和浮层层级：缩略图是文档流里的图片，圆环是方框内侧的 2px 实线描边，不投阴影。
+- 图片底座不加阴影、描边和浮层层级：占位底色、图片和失败态都在文档流里，层级只靠底色和图片本身；失败态不套卡片外框。
+- 分割线不投阴影、不加描边、不建立浮层层级：1px 线就是全部层级，`color` 只改这一条线的颜色。
 - 分隔列表不加阴影和浮层层级：整条默认 `surface` 底、项间 1px `divider` 竖线；不进卡片时自己不带圆角、描边和外边距，外轮廓由外层卡片负责。角标沿用徽章的胶囊，不投阴影。
 - 验证码输入框不加阴影和浮层层级：1px 描边、焦点浅底和光标就是全部层级；`line` 只留 2px 底线，`filled` 用浅底，不叠阴影和渐变。
 - 图片预览是覆盖整屏的内容浮层：固定黑底铺满整屏，不加阴影、描边和圆角，也不铺渐变。顶部和底部工具行都叠在黑底上，底部再画一条 1px `viewer-line` 与舞台分层，顶部不画线；关闭按钮的浅色底只帮助识别热区。层级默认 105，高于消息提示 100，低于弹框 110、加载浮层 150 和轻提示 200；删除确认用 `vx-modal` 自然压在预览层上。
@@ -856,9 +896,28 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 环形进度不加阴影、描边和浮层层级：轨道、弧线和可选的圆心底色三层只靠色差分层，弧线两端用圆头收口。
 - 提示页不加阴影、描边和卡片底：结果块直接落在页面底色上，图标圆、标题、说明和按钮靠留白分层。需要边界时由页面或外层卡片提供。
 - 固定页脚用 `surface` 底色和顶部 1px 描边分层，不加阴影；底边整块抬到 `--uni-safe-area-inset-bottom` 之上，不压住手势条、tabBar 或页面自己的底栏。
+- 安全区固定时只压页面内容，层级 1，和固定页脚同档；不加分割线、阴影和毛玻璃，也不铺渐变。它没有内容和插槽，Web 上不拦指针。
 - 状态栏不加圆角、描边和阴影；固定时用层级 20，和导航栏同档，只压页面内容和吸顶条。透明和渐显初期也不叠外围线。
+- 页面容器不设 `z-index`，也不新建浮层：顶栏在文档流里，吸顶条、标签栏和弹层各用自己的层级；页面不加阴影、遮罩和渐变，底部占位只是留白。
 - 吸顶条未吸顶时透明，吸顶后用 `surface` 底色和底部 1px `border` 描边分层；`shadow` 打开时改用 `--vx-shadow-md`，不叠两层。吸顶条层级 10，只压页面内容和固定页脚，不压提示浮层。
-- 组件自带的浮层层级有十档：固定页脚 `1`、吸顶条 `10`、导航栏 `20`、操作菜单、气泡弹框、日期时间选择器、联动选择、日历弹层、选择框和抽屉 `90`、数字键盘 `95`、消息提示 `100`、图片预览 `105`、弹框 `110`、加载浮层和加载动画浮层 `150`、轻提示 `200`。导航栏压在吸顶条和页面内容上；吸顶条压在页面内容和固定页脚上；操作菜单、气泡弹框、选择框、选择器和抽屉压在页面内容、吸顶条和导航栏上，低于数字键盘、消息提示、图片预览、弹框、加载浮层和轻提示；数字键盘压在操作菜单和抽屉上，低于消息提示，收起后不占层级；图片预览压在操作菜单和消息提示上，低于弹框、加载浮层和轻提示；弹框压在操作菜单、消息提示和图片预览上，低于加载浮层和轻提示；加载浮层压在图片预览、弹框和消息提示上、轻提示下；轻提示压过页面内容和固定页脚。其他弹层由业务自己排。
+- 组件自带的浮层层级按下表排，同一档里后挂载的在上层：
+
+| 层 | z-index | 组件 |
+| --- | --- | --- |
+| 固定页脚 | 1 | `vx-footer`、`vx-tabbar`、`vx-safe-area` 的 `fixed`、`vx-back-top` |
+| 吸顶条 | 10 | `vx-sticky` |
+| 导航栏 | 20 | `vx-navigation-bar`、`vx-status-bar` |
+| 弹层 | 90 | `vx-popup`、`vx-drawer`、`vx-actionsheet`、`vx-bubble-popup`、`vx-datetime`、`vx-picker`、`vx-calendar`、`vx-select`、`vx-landscape`、`vx-guide` |
+| 数字键盘 | 95 | `vx-keyboard` 的 sheet |
+| 消息提示 | 100 | `vx-tips` |
+| 图片预览 | 105 | `vx-gallery` |
+| 弹框 | 110 | `vx-modal` |
+| 加载浮层 | 150 | `vx-loader`、`vx-loading` 的浮层 |
+| 轻提示 | 200 | `vx-toast` |
+
+  导航栏压在吸顶条和页面内容上；吸顶条压在页面内容和固定页脚上；弹层压在页面内容、吸顶条和导航栏上，低于数字键盘、消息提示、图片预览、弹框、加载浮层和轻提示；数字键盘收起后不占层级；图片预览压在弹层和消息提示上；弹框压在弹层、消息提示和图片预览上；加载浮层压在图片预览、弹框和消息提示上；轻提示压过页面内容和固定页脚。其他弹层由业务自己排。
+- 同一档的弹层不自动叠加：`vx-popup`、`vx-drawer`、`vx-actionsheet` 的 `zIndex` 默认 90，嵌套两个时由业务传 91 / 92，不要指望组件自己往上加。`vx-dropdown` 的面板固定比它的底座高 1，业务改 `zIndex` 时只改一个值，遮罩和面板一起跟着走。
+- 弹出层的面板用 `surface` 底色，不加阴影也不加描边；遮罩用 `--vx-color-mask`，只压页面，不压面板。居中面板四周加 1px `border`，从遮罩里分出边界；贴边和居中都不靠阴影表达层级。
 - 操作菜单的面板用 `surface` 底色和 `--vx-shadow-lg` 浮在遮罩上，遮罩用 `--vx-color-mask` 压暗页面；面板不加描边。
 - 抽屉面板同样用 `surface` 底色和 `--vx-shadow-lg` 浮在遮罩上，遮罩用 `--vx-color-mask`，只压页面，不压面板；面板不加描边。
 - 弹框的面板同样用 `surface` 底色和 `--vx-shadow-lg` 浮在遮罩上，遮罩用 `--vx-color-mask`；面板不加描边，也不铺语义底色。
@@ -877,9 +936,17 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 通告栏只用底色分层：`soft` 铺语义浅底，`solid` 铺语义实心底，`plain` 完全透明；不加阴影、描边和浮层层级。需要吸顶用 `vx-sticky`，固定由页面自己承载。
 - 浮层底色可带透明度：轻提示默认 `0.9`，消息提示默认 `1`。透明度只作用在底色上，文字和图标始终不透明。
 - 暗色主题加深阴影，层级仍以描边和背景色差为主。
+- 轮播图不加阴影、描边和浮层层级：外框只裁圆角，标题条和指示器直接压在图片上，靠半透明暗层分层；`extra` 的位置由组件给，底色、阴影和热区由内容自己带。
+- 数字动画不画底色、描边、圆角和阴影，也不建立浮层层级；放进卡片或统计块时边界由外层提供。
+- 筛选栏挂在 `vx-popup` 的底座上：遮罩用 `--vx-color-mask`，只压页面；面板用 `surface` 底色，不加阴影也不加描边，贴住触发条的一侧直角、只圆下两角。展开时固定层再画一遍触发条压在遮罩上，点另一项能直接切换；面板层比底座高 1（默认 90 / 91），同一实例只开一个。
+- 返回顶部固定定位，层级 1，和固定页脚同档，低于吸顶条 10 和弹层 90。`surface` 底配 1px `border` 和 `--vx-shadow-md` 从页面里浮起；不加第二层描边，也不用语义色，滚到页面任何位置都不抢弹层的位置。
+- 滚动列表不加阴影、描边和浮层层级：卡片边界由插槽或外层卡片给，指示器在文档流里；只有圆点颜色表达当前页，不给列表本身加底衬。
+- 级联选择是内联控件，不设层级、不投阴影：`surface` 底、1px `border`、`md` 圆角和列间 1px 竖线就是全部层级；需要弹层时由业务配 `vx-popup`，组件不内置。
+- 新手引导的遮罩、描边和气泡各自是 fixed 根节点，不套满屏透明父层：洞里的目标不被挡，Web 与 App 都能直接点；层级都用 90，和弹层同档。遮罩默认 `rgba(0, 0, 0, 0.55)` 只压页面，气泡 `surface` 底配 1px `border` 和 `--vx-shadow-lg`，洞外 2px `primary` 描边压在目标边界上；层级低于消息提示 100、弹框 110、加载浮层 150 和轻提示 200。
 
 ## Shapes
 
+- 表单容器和表单项不画外轮廓：不加底色、描边、圆角和阴影，边界交给外层卡片；错误行不画底色，只改文字色。表单不提供形状选项。
 - 按钮、输入框、卡片、列表分组、轻提示和加载浮层面板默认圆角 `md`；按钮和输入框的圆角按尺寸取 `--vx-control-radius-*` 6 / 8 / 10px，其他 `sm` 尺寸控件用 `sm` 圆角，通栏卡片用 `full` 去掉圆角。标签默认 `sm` 圆角，胶囊和半圆角用 `pill`。`lg` 保留给页面级大容器，组件默认不用。
 - 按钮的 `shape` 有三档：`rounded`（默认）、`pill`（胶囊）、`square`（平角，0 圆角）。`round` 是 `shape="pill"` 的旧写法。
 - 标签的 `shape` 有四档：`rounded`（默认小圆角）、`pill`（胶囊）、`half`（半圆角：左侧胶囊、右侧平角）、`square`（平角）。
@@ -896,6 +963,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 加载动画的面板用 `md` 圆角；液面方块 `sm` / `lg` 分别用 6 / 8 圆角，圆环、音律柱和圆点都是胶囊圆角。四种形态和两种布局都不提供形状选项。
 - 操作菜单只圆顶部两角（`lg` 12），底部贴住屏幕；动作行、取消按钮和遮罩都不单独加圆角。
 - 抽屉只圆朝向页面的两角（`lg` 12），贴住屏幕的一边保持直角；头部、正文、底栏和安全区都不单独加圆角。
+- 弹出层只圆朝向页面的那一侧：底部圆上两角、顶部圆下两角、左右圆朝向页面的那一边，居中四角全圆，贴住屏幕的一条边保持直角。`round` 四档 `none` / `sm` / `md` / `lg` 取 0 / 6 / 8 / 12，只作用于外轮廓，内容不跟着裁圆角。
 - 弹框面板用 `lg` 圆角（12），不加描边；动作按钮默认用按钮的 `rounded`，整组可以换成 `pill` 或 `square`，同一个弹框里保持一致。
 - 日期时间选择器只圆顶部两角（`lg` 12），底部贴住屏幕；头部、滚轮和行都不单独加圆角，滚轮的高亮只由上下两条 1px 细线表达。
 - 联动选择只圆顶部两角（`lg` 12），底部贴住屏幕；头部、滚轮和行都不单独加圆角，选中行只由字重和颜色分层。
@@ -904,6 +972,8 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 文本没有形状选项：不加圆角、描边和底色，装饰线只有下划线和删除线。
 - 链接没有形状选项：不加圆角、描边和底色，装饰线只有下划线。`prefix` / `suffix` 里的图标保持自己的形状，不给链接加底板。
 - 标签页的选中胶囊固定为胶囊圆角，不给形状选项；`line` 不画胶囊，只画 2px 圆头短线。页签本身是直角导航行，不单独加圆角。
+- 筛选栏的触发条是导航行，不给圆角；面板只圆下两角（`lg` 12），贴住触发条的上两角保持直角，不提供形状选项。
+- 返回顶部的 `shape` 两档：`circle`（默认，宽高都取 44 的正圆）和 `rounded`（44 方块配 `md` 8 圆角）；换成 `extra` 文案时正圆自然变成胶囊，不提供方形和自定义圆角。
 - 标签栏是直角导航条，不给圆角、描边和形状选项；凸起圆钮固定正圆（`pill`），角标沿用徽章的胶囊，图标和图片本身不裁圆角。
 - 滑动菜单的根节点和动作都不单独加圆角，动作之间也不留缝；外轮廓交给外层列表或卡片，卡片裁出圆角，滑块只负责方角裁切。
 - 分隔列表是直角长条，不给形状选项：根节点不画圆角，放进卡片时由卡片裁切；图片方框用小圆角（6），角标沿用徽章胶囊。
@@ -930,6 +1000,15 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 数字键盘输入框的密码位没有外框，只有 2px 下划线；`password` 下的圆点是正圆，数字和圆点共用一条基线，不画格子、不用胶囊。
 - 树型菜单没有外轮廓：行是直角长条，不给圆角、描边和阴影；勾选框沿用复选的小圆角方形（4 / 5 / 6），箭头只换字形，不做旋转动画和自定义圆角。参考线固定 1px，选中底色和按下态都不额外裁圆角。
 - 状态栏没有形状选项：不加圆角、描边和底色块边界，只铺满整宽的一条底色。
+- 头像的 `shape` 三档：`circle`（默认，胶囊圆角）、`rounded`（按档取 `--vx-radius-sm` / `md` / `lg`）、`square`（平角）。图片由外框裁切，不在 `<image>` 上加圆角，也不提供自定义圆角和描边宽度。
+- 图片底座的 `radius` 五档：`none` 直角、`sm` / `md` / `lg` 取 `--vx-radius-*`、`circle` 取 `pill`；圆角只作用于外框，图片一起裁，不提供自定义圆角。
+- 分割线没有形状选项：固定 1px 直线，竖线也不加圆角；不用胶囊线、粗线和双线。
+- 安全区没有形状选项：不加圆角、描边和阴影，只是一块透明的占位。
+- 轮播图的 `radius` 四档 `none` / `sm` / `md` / `lg` 取 0 / 6 / 8 / 12，同时作用于外框和每一屏，卡片模式下露出来的相邻屏也是圆的。指示器圆点固定正圆、短线固定胶囊、计数固定胶囊；标题条是直角通栏，不单独加圆角。
+- 数字动画没有形状选项：不加圆角、描边和底色，只有一串文字。
+- 滚动列表的卡片没有形状选项：宽高由 `itemWidth` / `height` 给，圆角、底色和描边都写在插槽里；指示器圆点固定正圆 6，未选中和当前页同尺寸，未选中取 `text-secondary`。
+- 级联选择外框取 `md` 圆角并裁掉列底，列与列之间只有 1px 竖线；行是直角长条，选中行只换底色和文字，不给单独圆角，也不提供形状选项。
+- 新手引导的描边圆角取 `step.radius`（默认 8），超过目标短边一半时收在短边的一半；气泡固定 `md` 圆角配 10px 旋转方块箭头，遮罩洞本身由四块遮罩切出直角矩形，不提供形状选项。
 
 ## Icons
 
@@ -954,9 +1033,13 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 图标本身是展示件，不触发 `click`。可点击图标由业务包一层不小于 44×44 的热区，或用带文案的按钮承载。
 - 14px 只放简单轮廓（箭头、关闭、勾选、加减）；`fill` 更重，复杂图形优先 18 或 22。
 - 图标名字与码点是公开契约：新增只能追加码点，不改名、不复用。构建后同时更新 `libs/icons/codepoints.ts`、`pages/demo/icon/icon.uvue` 和组件库 readme。
-- 四套字体随组件库分发：App 读包内 ttf，H5 读相对路径，小程序内嵌 base64；不依赖网络字体。core 默认加载，extend 只在引入扩展 CSS 后加载。
+- 四套字体随组件库分发：App 端在 `variables.css` / `icons-extend.css` 里内嵌 base64，字体跟样式一起进包，不依赖 `uni_modules` 下 static 目录的同步；H5 读相对路径，小程序内嵌 base64；不依赖网络字体。core 默认加载，extend 只在引入扩展 CSS 后加载（App 的 base64 也只进扩展 CSS 那一段）。
 - 图标来源与许可证记录在 `libs/icons/LICENSE`。不要混入第二个图标库，也不要用 emoji 代替图标。
 - 分隔列表不内置字体图标；需要图标时用默认插槽自己放 `vx-icon`，图标尺寸和颜色由插槽内容决定，不跟数值档位联动。
+- 图片底座的失败态回落到 `errorIcon`（默认 `image`），用 `vx-icon` 的 `md` 18、`disabled-text`；extend 图标要先引入 `icons-extend.css`。成功态不叠加图标和角标。
+- 头像的图标回落到 `icon`，空值用 `user`；图标单独 14 / 16 / 18 三档，不走 `vx-icon` 的 14 / 18 / 22。字形直接取图标字体，extend 图标要先引入 `icons-extend.css`。
+- 分割线和安全区都没有内置图标：需要图标时由外层的列表行、标题栏或按钮承载，不要往组件里塞装饰。
+- 级联选择的下一列箭头固定用 `vx-icon` 的 `chevron-right`（`sm` 14），选中项跟 `primary-pressed`，禁用项不显示；新手引导不内置字体图标，箭头是气泡自身的形状，不是字形。
 
 ## Motion
 
@@ -980,6 +1063,8 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 轻提示和消息提示同一套淡入；App 上直接出现，点浮层关闭也不做退场。
 - 操作菜单在 Web 上用 `--vx-duration-normal` 淡入遮罩、从底部滑入面板；App 5.26 直接出现，关闭即移除，不做退场动画。
 - 抽屉和操作菜单同一套动效：Web 上淡入遮罩、从所在边滑入面板；App 5.26 直接出现，关闭即移除。正文滚动不和页面串联，滚到底不把页面一起带走。
+- 弹出层只过渡 `transform` 和 `opacity`：贴边面板从所在边滑入，居中面板只淡入不缩放，遮罩同时淡入。默认 `--vx-duration-normal` 220ms、`--vx-ease-standard`；`duration=0` 和 Web 的 `prefers-reduced-motion: reduce` 都直接切换，不挂过渡类。关闭动画走完（`duration` 加 16ms 一帧）才卸载，关闭过程中再打开会从当前位置回到终点，不会叠出第二个面板。
+- 弹出层的高度和宽度直接落位，不做展开、收起和尺寸过渡；改 `placement` 也不补间，换边即换边。
 - 日期时间选择器和操作菜单同一套动效：Web 上淡入遮罩、从底部滑入面板；App 5.26 直接出现，关闭即移除。滚轮的惯性和吸附由原生 `picker-view` 负责，组件不额外加动画。
 - 联动选择和日期时间选择器同一套动效：Web 上淡入遮罩、从底部滑入面板；App 5.26 直接出现，关闭即移除。列数变化时重挂滚轮，不做跨列过渡；滚轮的惯性和吸附由原生 `picker-view` 负责。
 - 日历弹层和操作菜单同一套动效：Web 上淡入遮罩、从底部滑入面板；App 5.26 直接出现，关闭即移除。翻月、选中和区间都不做过渡，点完直接换色，避免 42 高的格子逐格动。平铺模式没有动效。
@@ -990,8 +1075,8 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 加载动画的圆环 700ms linear；音律柱 900ms `ease-in-out` 交替，五根柱子按 130ms 错开；弹跳点 960ms，影子同一条时间轴缩放；液面两片椭圆分别 2.8s / 3.2s 交替，只横向移动椭圆，不移动整块。循环时长取 `--vx-loader-duration-*`，和令牌一起改。浮层在 Web 上用 `normal` 淡入；5.26 的 App 没有关键帧，四种形态都停在静态姿态，文案要能独立说明等待。Web 上 `prefers-reduced-motion` 关掉循环动画。
 - 骨架屏的 pulse 1400ms 在 100% 与 70% 之间呼吸；shimmer 1600ms 让一道 64% 宽的高光从左扫到右。循环时长取 `--vx-skeleton-duration-*`，和令牌一起改。5.26 的 App 没有关键帧：pulse 停在 100%，shimmer 的扫光层保持透明。5.31 起 pulse 恢复；shimmer 的渐变在蒸汽模式不保证。Web 上 `prefers-reduced-motion` 同时停掉两条动画，静态骨架仍表达结构。
 - 折叠面板展开用 `normal` 220ms：内容透明度 0 → 1、上移 8px 归位，`max-height` 从 0 到 2000px；收起反向。固定高度改用 `height` 从 0 到指定高度。第一帧不挂过渡，默认展开的面板不会滑进来。`max-height` 在 5.26 的 App 上不支持过渡时直接换高度，透明度仍然过渡。
-- 标签页不画跨项滑块，也不做位移动画；当前项直接换字重、文字色和短线 / 胶囊，按下用 `--vx-opacity-pressed`。这样 Web 和 App 的落点一致，5.26 的 App 也不需要测量页签位置。
-- 标签栏同样不做滑块和位移动画：切换时直接换文字色、字重和图标，按下整列用 `--vx-opacity-pressed`；凸起圆钮不缩放、不位移，只在按下时一起变淡。
+- 标签页 `line` 形态的横向短线是一条跨项滑动的指示线：等宽形态挂在根节点上，格子按 `100 / 数量 %` 等分、`transform` 整格平移，几何全是百分比，Web 和 App 落点一致，也不需要测量；`scrollable` 形态页签不等宽，用 `createSelectorQuery` 实测选中项中心 x（和轨道同一批取样，滑动中量也准），量不到就退回逐项渲染，线仍然画在当前项下。时长 `normal` 220ms、`--vx-ease-standard`，只过渡 `transform`，不做淡入淡出。`soft` / `inverse` 的选中胶囊和竖排的左侧竖条仍直接落位，不做位移动画。点当前项不重播；索引失效（负数、越界）先摘线，重新选中直接落在位置上，不播入场。按下用 `--vx-opacity-pressed`。
+- 标签栏不画指示线；切换选中的动效是回弹（`animated`，默认打开）：新选中的图标位先收一档（缩到 0.82）再弹回 1，文案同时从下方 3px 上浮归位，时长 `normal` 220ms、`--vx-ease-standard`，只过渡 `transform`。App 没有 CSS 关键帧，收起帧不带时长当帧落位，弹回帧由行内给时长，两帧接力出回弹。首次渲染直接落在当前状态，不播放入场；`animated` 关掉后切换直接落位。纯文案栏没有图标位，整组轻微收放（0.96）。`action` 项没有选中态，凸起圆钮不缩放、不位移，都不参与回弹。其余照旧：切换换文字色、字重和图标，按下整列用 `--vx-opacity-pressed`。
 - 区块标题栏没有入场、展开和位移；唯一的状态过渡是 `clickable` 按下变淡，复用 `--vx-opacity-pressed`。
 - 留白组件没有动效：改 `size` / `height` / `gap` 时直接落位，不做展开、收起或过渡；滚动和页面切换由外层承载。
 - 滚动消息每格用 `normal` 220ms 的 `transform` 过渡：当前条滑出、下一条滑入，两层在视口外对调，不往回滚。按下整条时暂停，松手后重新计时；改文案或方向从第一条重来，改间隔只重新计时，不做跨条动画。
@@ -1008,7 +1093,19 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 验证码输入框只让光标 1s 线性闪烁，Web 上 `prefers-reduced-motion` 关掉闪烁；5.26 的 App 没有关键帧，光标停在静态竖线。焦点切换、满位和错误都不做缩放、位移、抖动和颜色过渡。
 - 数字键盘的 sheet 在 Web 上遮罩淡入、面板从下方滑入，时长 `--vx-duration-normal`，跟随减少动效；滑入只在 Web 启用，App 直接出现，关闭即移除。按下只换底色，不做缩放、位移和回弹；`random` 重排也直接落位。
 - 数字键盘输入框的错误抖动 320ms，Web 上生效；5.26 的 App 没有关键帧，只换颜色；抖动不改变值、不自动清空。密码位换色和数字增减直接落位，不做逐位弹出和计数动画。
+- 表单校验失败不播放入场、抖动和颜色过渡：错误行直接出现，控件描边和文案同时换色；`scrollToError` 只滚 200ms，不抢焦点、不弹键盘。`clearValidate()` 直接收掉错误行，不保留占位。
 - 状态栏不做入场和展开动画：`fade` 的底色透明度跟手滚动，不加过渡；`transparent` 时没有渐显，改主题或改高度都直接落位。
+- 图片底座只在加载完成后做一次 200ms 的 `opacity` 淡入，`fade=false` 直接落位；`src` 变化重置回占位，不缩放、不位移、不做骨架扫光。不支持过渡的平台直接落位。
+- 分割线没有动效：改方向、虚实、间距和颜色都直接落位，不做展开、收起和尺寸过渡。
+- 安全区没有动效：改边、改高度和切换 `fixed` 都直接落位；固定条出现和收起都不淡入淡出。
+- 虚拟列表不做入场、位移和缩放：用户滚动直接换窗口，不挂过渡；`scrollToIndex(animated=true)` 用 `scroll-view` 自带滚动动画，其余直接落位。程序化跳转期间锁住中间 `scroll` 事件，只取落点，避免连续重建和误触 loadmore。
+- 轮播图的切换动画由原生 swiper 负责（默认 400ms）：拖拽、回弹和循环都是平台行为，组件不挂过渡；指示器直接换态，不做宽度补间和位移动画，`line` 的当前项从 8 直接变成 20。`card` 的左右露出由平台在换屏时处理。
+- 数字动画用脚本按帧推进（优先 rAF，退回 16ms 定时器），每帧只改一个 `text`，不做逐位滚动；`duration=0` 和 `value === from` 不排帧，直接落值后异步抛一次 `finish`。连续改值先停旧补间再从 `from` 重播，不叠加、不从半路接着走。
+- 筛选栏的箭头翻转 220ms（`--vx-duration-normal`、`--vx-ease-standard`）；面板只淡入淡出不位移，和遮罩同频，展开时先量位置再淡入，第一帧不在错误位置闪。收起走完 220ms 加一帧才卸载，关闭过程中再打开从当前位置回来。
+- 返回顶部的显隐是透明度和 8px 位移的双向过渡，220ms（`--vx-duration-normal`、`--vx-ease-standard`）；节点常驻，滚过阈值时不跳版。按下压到 `--vx-opacity-pressed`，不做缩放和回弹。
+- 滚动列表不做入场、位移和缩放：指示器换页直接换色，不做圆点宽度补间；`scrollToIndex(animated=true)` 用 `scroll-view` 自带滚动动画，跳转期间忽略中间 `scroll` 事件，避免指示器一路抖过去。
+- 级联选择不播放入场和切列动画：换列、换选中行都直接换内容、底色和字重；每列首次出现时按选中行居中一次，同一列里的后续点选不再重算滚动位置，避免点一下跳一下。
+- 新手引导的遮罩和洞直接落位，不做缩放入场；气泡在量完位置后淡入 220ms（`normal`），箭头没有动画。`refresh()` 和切步都不播气泡位移过渡，直接换到新位置。
 
 ## Components
 
@@ -1029,13 +1126,29 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 按钮形状用 `shape` 表达：`rounded`、`pill`、`square`。`round` 是 `shape="pill"` 的旧写法。新代码优先使用 `variant` / `shape`。
 - 自定义尺寸只允许通过按钮的 `width` / `height` 传入带单位的值，且不得用于页面主操作；常规页面仍使用 `sm | md | lg`。`block` 优先于 `width`。
 - 按钮状态四种：默认、按下、禁用、加载。表单控件可以增加 `focused`。`invalid` 用修饰 class 改描边。
-- 输入框形态用 `variant` 表达：`outline`（默认描边盒）、`line`（只保留底部分割线的表单行）。外轮廓用 `shape`，`line` 不参与圆角。
+- 输入框形态用 `variant` 表达：`outline`（默认描边盒）、`line`（只保留底部分割线的表单行）、`search`（浅底胶囊的搜索框）。外轮廓用 `shape`，`line` 和 `search` 不参与圆角。
+- 搜索框是输入框的语义扩展，不另开组件：底色 `default-soft`、胶囊圆角、默认不画可见描边，前置 `vx-icon` 的 `search`，左右内边距 12 / 16 / 16，高度仍是控件三档。描边留在 1px 透明边框上，聚焦换 `primary`、`invalid` 换 `danger`，既保住焦点可见性，也不让状态切换跳行高。搜索框的键盘确认键默认是 `search`（放大镜 /「搜索」），显式传 `confirmType` 时以传入值为准；`outline` / `line` 不传仍是 `done`，变体切回普通形态时键面跟着回到「完成」。
+- 搜索框没有标题位：`label` / `required` / `unit` 在这个形态下不渲染，同时传了在开发环境提示一次；标题、必填和单位由外面的表单行或卡片承担。
+- 搜索框的取消按钮固定在右侧，文案「取消」，字号取 `--vx-font-control-*`，色取 `text-secondary`；有值或聚焦时出现，其余时候不占位，`disabled` 时仍显示但按下不响应，`readonly` 不出现。点取消先清空值、收起键盘，再抛 `cancel`；`clearable` 的清除图标排在取消左侧。
 - 多行输入框沿用输入框的形态，并额外提供 `plain`：只留透明描边、不加底色，用于已经放进卡片或分组里的段落输入。`shape` 只有 `rounded` 与 `square`。
 - 多行输入框的 `borderColor` 只改默认态描边。`focused`、`invalid`、`disabled` 仍按状态盖住，不用它表示错误。
 - 输入框的标题、必填星号、单位与选择箭头都在控件内部。同一组表单行统一 `label-width`，让输入起点对齐；该值需要带单位。多行输入框的标题与内容顶端对齐，计数和 `extra` 插槽放在内容区底部。
 - 输入框左右内边距跟尺寸（12 / 16 / 24）；标题与内容留 8 / 12 / 16，前缀、后缀、单位留 `sm`；清除、箭头和后缀图标共用右侧基线，箭头再补 `xs` 抵掉字形留白。
 - 只读选择行用 `readonly` + `arrow`，点击整行由 `click` 事件处理；不要用禁用态冒充可选状态。
-- 输入框的清除与选择箭头复用 `vx-icon` 的 `close` / `chevron-right`，尺寸比输入档位小一档；不要再用文字字符。
+- 输入框的清除与选择箭头复用 `vx-icon` 的 `close` / `chevron-right`，尺寸比输入档位小一档；不要再用文字字符。搜索框的前置图标复用 `vx-icon` 的 `search`，走 `sm` / `md` 两档（14 / 18），`lg` 与 `md` 同档，不新增第四种图标尺寸。
+- 表单由 `vx-form` 容器和 `vx-form-item` 表单项组成：容器管注册、串行校验、错误定位和整组状态，表单项管标题、星号、说明和错误行。表单不接收 `model`，也不抛 `submit` / `fail`：值留在各控件的 `v-model` 上，提交由页面调 `validate()` 后处理。
+- 项在挂载时向容器登记 `{ prop, order, validate, clearValidate }`，卸载时摘除；`prop` 为空只做布局。同一个 `prop` 以先注册者为准，开发环境提示一次。
+- `validate()` 按注册顺序串行、不并发，遇到第一个失败立即停止并返回 `false`；`validateField(prop)` 只校验一项，不自动滚动，适合输入框的 `change` / `blur`；`clearValidate(prop?)` 不传清全部、只清错误态，不碰业务数据。
+- 规则判定写死：空值只看 `required`，非空依次跑 `len` → `min` / `max` → `type` → `pattern` → `validator`，第一个失败即返回。空值包括 `''`、`null`、`undefined`、`false`、空数组和 `NaN`；`0` 是有效数值。
+- 内置 `type` 只有手机号、邮箱、身份证号、链接和数字；`pattern` 接字符串，内部 `new RegExp`，不接 RegExp 实例；`validator` 可同步或异步，抛异常按失败处理。
+- 错误状态归表单项私有：`error` 字符串非空即 `invalid`；受控 `error` 非空时以它为准，父级清空后本地错误一起收掉。`help` 常驻，出错时被错误替换；两者都没有时不预留高度。
+- 标题归属：输入类控件的标题在控件内部，表单项不传 `label`；非输入类控件由表单项画标题和星号。`labelPosition="top"` 时标签独占一行、`labelWidth` 不生效；星号在标题末尾，项没有 `label` 时不画。
+- `required` 不传时按规则里有没有 `required: true` 推断，显式 `false` 可关星号；`disabled` 的整组或字段跳过校验，星号仍显示，控件自己的禁用态由业务传。
+- `size` 改标题的字号、行距和左侧标签的最小高度，错误行固定 `body-small`；`labelWidth` 默认 72px、必须带单位。容器和项都不画底色、描边、圆角和外部间距。
+- `scrollToError` 用 `createSelectorQuery().in(proxy)` 量错误项、`selectViewport().scrollOffset()` 补页面滚动量，再 `pageScrollTo({ scrollTop, duration: 200 })`；量不到、被禁用或页面不滚动时静默跳过。校验失败不抢焦点、不弹键盘。
+- Web 上错误文案另有一层隐藏的 `aria-live="polite"` 播报层；App 没有 aria 属性。App 的页面滚动由最外层 `scroll-view` 模拟，内层 `scroll-view` 里 `pageScrollTo` 不生效，这时不滚动也不报错。
+- 表单不提供 `trigger` 自动校验：实时校验由业务在控件的 `change` / `blur` 里调 `validateField`。不托管 `model`、不做 schema、动态增删行、跨字段联动和表单构建器。
+- `vx-form-item` 默认插槽暴露 `{ invalid, error }`，把 `invalid` 传给控件的同名属性；没有具名插槽，控件的前后缀仍走控件自己的 `prefix` / `suffix`。
 - 数字框由减号、数值输入和加号三段组成，没有分段线。中间输入区宽 44 / 52 / 60px（`--vx-number-box-field-*`），两侧按钮宽度等于控件高度 32 / 40 / 48px，图标 14 / 18 / 22，数值用 `--vx-font-control-*`。
 - 数字框默认 `min` 1、`max` 99、`step` 1。到边界时对应按钮转 `disabled-text`，不再响应点击；`disabled` 让整组停下并转灰。
 - 数值精度按参与运算的值、`step`、`min`、`max` 里最多的小数位收口，最多保留 6 位，避免 `0.1 + 0.2` 这类浮点尾巴。`step` 只决定加减量，不强制把值对齐到步长网格。
@@ -1318,10 +1431,12 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 高度沿用列表行 `--vx-list-height-*` 44 / 52 / 60；选中胶囊用 `--vx-compact-height-*` 28 / 32 / 36；下划线固定 `--vx-tabs-indicator-*` 24 / 32 / 40 宽、2px 高。有分割线时下移 `--vx-tabs-indicator-out` 盖住底边。宽度不跟文字长度联动。
 - 文案用控件字号 13 / 14 / 16（行高 20 / 22 / 24），未选中 400，选中 500。页签是导航行，不借正文档位。
 - `type` 只染选中文字、下划线和浅底胶囊；`soft` 的选中文字取对应的 `*-pressed`，其余形态取原色。普通导航保持 `primary`，只有页签本身表达状态时才用 `warning` / `danger`。warning 选中文字用 `warning-ink`，下划线用 `warning-pressed`。
-- 角标用 `items[].badge`，`dot` 优先于计数；计数超过 `badgeMax`（默认 99）显示 `max+`。角标默认 `danger`，`badgeType` 只在计数有独立状态含义时改；角标叠在文字右上角，不参与布局，点击仍落在整格。
+- 角标用 `items[].badge`，`dot` 优先于计数；计数超过 `badgeMax`（默认 99）显示 `max+`。角标默认 `danger`，`badgeType` 只在计数有独立状态含义时改；横排角标叠在文字右上角，不参与布局，点击仍落在整格。竖排角标改成行内排布：和文案同一行、跟在文案后面垂直居中，落在右侧 12px 内边距内侧，不压上一行；文案单行省略、角标完整，`verticalWidth=96` 时也不会盖住文字。
 - `items[].disabled` 只停该页签的点击：文字转 `disabled-text` 且保持不透明，角标单独降到 `--vx-opacity-disabled`，仍占位；反色条上的未选中禁用项只降透明度，保留反色文字。不要把当前项设为禁用；禁用不要用来掩盖权限问题。
 - `divider` 默认打开，用 `--vx-color-divider` 画 1px 底边；`inverse` 始终不画。放进带描边的卡片时关掉，避免两条线叠加。
 - `bgColor` 改整条底色，`color` 改未选中文字，都是字面值，组件不推断明暗；传 `var(--vx-color-*)` 时跟随主题。自定义反色条时同时传 `color`，否则未选中文字在换主题后可能看不清。
+- `direction="vertical"` 是页签的另一种排布，不另开组件：每项占一整行，行高沿用列表行 44 / 52 / 60，宽度默认 96px（`verticalWidth`，传 0 跟随容器撑满）。竖排把底部下划线换成左侧 2px 竖条（`--vx-border-width-strong`、行高的 60%、垂直居中、颜色跟 `type`），选中项整行铺 `default-soft`（`soft` 外观铺对应的 `*-soft`），文字取 `*-pressed` 并加到 600 字重。竖排的角标不再绝对定位，和文案排在同一 flex 行、跟在文案后面垂直居中：文案占满剩余宽度并单行省略，角标不被压缩，宽度 96 时四字文案省略而角标完整。
+- 竖排的 `divider` 从底部一条通栏底线变成项与项之间的 1px 横线，最后一项不画，右侧也不画竖线；`inverse` 不支持，传了按 `soft` 渲染并在开发环境提示一次。竖排不含内容区，右侧内容由业务按 `active` 自己排，`v-model` 和 `change` 与横向一致。
 - 页签只切视图，不内置内容、路由、请求和插槽；需要内容联动时由业务按索引渲染。放进 `vx-sticky` 可以做吸顶，但要关掉页签自己的 `divider`，线交给吸顶条；页签本身不监听滚动。
 - 标签栏 `vx-tabbar` 是自定义底部导航：`items` 按顺序等宽渲染，`v-model` 是当前索引。点击任意可用项都抛 `click(index, item)`，只有普通项真的换到新索引时才写回 `v-model` 并抛 `change(index)`；点当前项只抛 `click`。
 - `items` 每项有 `text`、`icon` / `activeIcon`、`image` / `activeImage`、`badge` / `dot`、`disabled`、`raised`、`action`。图片优先于字体图标，`activeImage` 不传时沿用 `image`；`action` 项只做按钮，不参与选中。
@@ -1386,6 +1501,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - `gap` 是左右内边距，不是子项间距；接受 px、rpx、百分比和 `var()`，百分比按父级宽度算，左右都要给内容留足宽度，不传负值。
 - 页面左右边距只留一次：页面已经用 `lg` 时，通栏区块里的 `lg` 是把内容拉回页面边距，不是叠加；要再收进一段时才用更大的 `gap`。
 - 两个留白组件都不承载点击、状态和动效；需要交互时把按钮、列表行或链接放在 `vx-wing-blank` 的插槽里或外层容器里。需要背景、圆角或描边时，用外层 `view` 或 `vx-card`，不要把留白当卡片。
+- 分割线 `vx-divider` 只画一条线：`direction` 横 / 竖，`dashed` 换虚线，`text` 配 `align` 放横线文字，`spacing` 调外边距，`color` 同时盖线色和文字色，`height` 只作用于竖线。没有插槽、图标、箭头和点击态。
+- 分割线的横线默认 1px `border`；带文字时两侧各画一段等宽线，`left` 只画右侧、`right` 只画左侧、`center` 两侧都画；文字 13 / 20 次要灰，和线之间各留 12。
+- 分割线的 `spacing` 数字按 px、字符串带单位；空串横向上下各 12、纵向左右各 16。`color` 是字面值，不跟随主题，也不表达状态。
+- 分割线不自动居中：竖线靠父级 flex 排布，高度空串时 `align-self: stretch` 撑满一行，传 `height` 才固定高度。外边距不代替区块留白。
+- 安全区 `vx-safe-area` 只占纵向：`edge` 选顶部或底部，不传 `height` 时读 `--uni-safe-area-inset-top` / `--uni-safe-area-inset-bottom`（带 `0px` 兜底），传了就写死高度。
+- 安全区的 `bgColor` 是字面值、默认透明；`fixed` 时贴住对应边、层级 1，和固定页脚同档，不加分割线、毛玻璃和渐变，也不放内容。
+- 安全区固定条不占文档流，页面底部要自己留高度；它不处理左右安全区，横屏由页面和导航栏负责。
+- 状态栏 / 导航栏页面仍用 `vx-status-bar` 或 `vx-navigation-bar` 的 `statusBar`，不要在它们上面再叠一条安全区。
 - 滚动消息 `vx-rolling-news` 用 `items` 按顺序轮播，每项只有 `text` 和可选的 `id`；空数组不渲染，只有一条时不轮播。点击整条抛 `click(index, item)`，路由和请求由业务处理。
 - 两层叠放：当前条在上、下一条在下面一格（横向在右侧一格），换条时两层同时位移，落位后交换角色，滑出的那层在视口外回到下一格。不往回滚，也不复制副本；两层都用 `transform` 百分比位移，不测量高度。
 - `direction` 有 `vertical`（默认）和 `horizontal`；步长都是一整条，图标、箭头和插槽不跟着动。换方向从第一条重来。
@@ -1471,6 +1594,13 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 图片加载失败时换成 `default-soft` 底色加 `image` 占位图标，图标取 `disabled-text`，并抛 `error(index, item)`；`src` 为空只按占位处理，不抛事件。父级整组换图时清掉失败记录重新加载，同一个地址在清掉失败记录前只抛一次。
 - 图片组合只承载缩略图和点击，不放标题、数量、说明、按钮和主操作；需要标题或「查看全部」时由外面的卡片、列表行或页面区块承载。
 - 图片组合是 `view` 组合，Web 端不进入 Tab 顺序；需要键盘入口时由外层按钮或链接承载同一操作。
+- 头像 `vx-avatar` 用 `src` / `text` / `icon` 三态回落：图片失败后回落到首字，首字为空再回落到图标，图标也为空用 `user`；失败只记一次，`src` 变化后复位重试。首字先 `trim` 再按 code point 取，代理对连取两个 code unit。
+- 头像的 `size` 只改外框、首字和图标，`shape` 只改轮廓；`ring` 是 2px 内描边，`mode` 只透传 `aspectFill` / `aspectFit`。没有 `badge`、在线状态点和 `disabled`：徽章用 `vx-badge` 的 `absolute` 包一层，状态点由业务用绝对定位的小圆点加。
+- 图片底座 `vx-image` 承载单张图片：`src` 为空直接失败，加载中铺占位底色，成功后按 `fade` 淡入，失败回落到 `errorIcon` / `errorText`，只回落一次。
+- 图片底座的尺寸优先级：`height` → `ratio` 换算 → `100%`；`ratio` 只在 `width` 是 px 或 rpx 时生效，百分比和 `auto` 下回落到父级高度，只提示一次。
+- 图片底座的三态在框内居中：加载中只有占位底色，失败时图标在上、文案在下，整组垂直居中；`placeholder=false` 只影响加载中的底色，失败态始终铺底。
+- 图片底座的 `radius` 五档只作用于外框，`bgColor` 只覆盖占位与失败底色；`src` 变化重置成加载中，同一个地址重新赋值不会重挂节点，需要重播时换 `:key`。
+- 图片底座只抛 `load` / `error` / `click`，不内置预览、长按保存、裁剪和骨架；卡片、图片组合、上传和瀑布流里的裸 `<image>` 本版不迁移。
 - 图片预览 `vx-gallery` 是全屏浮层：`items` 按顺序放图，`show` 支持 `v-model:show`，`current` 支持 `v-model:current`。它挂在页面根节点，和滚动容器平级，不放进 `scroll-view`、卡片或 `fixed` 容器。
 - `items` 每项是 `{ src, description?, id? }`。`src` 为空显示失败占位；`description` 是底部单行说明；`id` 原样带回 `change` / `delete` / `error`。空数组不渲染整层，也不占高度。
 - `closable`、`showCounter`、`showDescription` 默认打开，`showDelete` 默认关闭。`deleteText` 默认「删除」，`errorText` 默认「图片加载失败」。删除只抛 `delete(index, item)`，组件不改 `items`；父级删完最后一张时自己关掉。
@@ -1557,8 +1687,31 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - `fade` 按 `scrollTop / (条宽 × scrollRatio)` 把底色从透明推到 `maxOpacity`，默认 0.3；背景单独一层，插槽内容不跟着淡，`transparent` 时不生效。
 - `ready` 在挂载后回传 `height` / `statusBarHeight` / `windowWidth` / `windowHeight`，`height` 变化或调 `refresh()` 后重测再抛。旋转、分屏和异步布局后调 `refresh()`。
 - 状态栏不加圆角、描边、阴影和动画；固定条不放进 `scroll-view`、卡片或带 `transform` 的容器。系统前景颜色在 `pages.json` 的 `navigationBarTextStyle` 或系统配置里设置，组件不改这一层。
+- 页面容器 `vx-page` 是 Pro 的组合件：把状态栏、导航栏、滚动区、下拉刷新、触底加载、tabbar 和安全区收成一件。顶栏在文档流里（`vx-navigation-bar` 开 `statusBar`、关 `fixed`），和滚动区是同级兄弟，所以不需要 `fixed`，也不和吸顶条抢层级。
+- 默认插槽的作用域是 `{ navHeight, bottomInset, scrollTop }`：`navHeight` 是导航栏内容行高度，不含状态栏留白，直接当 `vx-sticky` 的 `offsetTop`；`bottomInset` 是 tabbar 与安全区叠完的底部高度；`scrollTop` 是内容区滚动距离。业务不自己量这些值。
+- 底部占位在滚动区外面：`tabbar` 预留 `--vx-tabbar-height-md` 56，`safeArea` 再叠 `--uni-safe-area-inset-bottom`；组件量一次实际高度回填 `bottomInset`，量不到时按 56 + 系统底部插入值兜底。两者可以叠加，最后一屏内容不会被盖住。
+- 返回默认走组件的返回热区：栈底自动隐藏；点击先抛 `back`，再调 `uni.navigateBack`。业务要拦截跳转就传 `:back="false"` 自己画，不要既开 `back` 又监听 `back` 里再退一次。
+- 下拉刷新用 `scroll-view` 的 `refresher-enabled` / `refresher-triggered` / `@refresherrefresh`，不写自定义手势；用户下拉时组件把 `v-model:refreshing` 写回 `true`，请求结束用 `finishRefresh()` 或父级写 `false` 收起。不支持 refresher 的平台把 `scroll` 设成 `false`，改用 `pages.json` 的 `enablePullDownRefresh`。
+- 触底加载由 `@scrolltolower` 驱动，`lower-threshold` 固定 80；`noMore`、`finishLoadMore(true)` 的本地到底锁和 `loadingMore` 都会拦住重复触发。尾部用 `vx-loadmore` / `vx-nomore`，两个状态互斥，不跳高度。
+- `scroll=false` 时不包滚动容器、不锁高，中间交给默认插槽，整页跟着页面滚；`refresh` / `loadmore` / `scrollTop` 都不生效。要在中间放自己的滚动容器，给它确定高度；内容里有输入框时，软键盘弹起后的可视高度按平台行为。
+- 页面容器不接管路由、不做转场、不改 `pages.json`，也不内置吸顶、tabbar 和登录拦截；这些分别交给 `vx-sticky`、`vx-tabbar` 和业务。
+- 页面容器的 `bgColor` / `navBgColor` / `color` 是字面值，`navBgColor` / `color` 原样透传给导航栏；`extra` 插槽内容自己带尺寸和颜色。页面根节点要带 `vx-theme-light` / `vx-theme-dark`，令牌都挂在主题类上。
+- 导航栏第一次 `ready` 可能早于样式落上，高度会偏小；`vx-page` 不直接采用这个瞬态值，改量顶栏外层，内容行下限 44。Web 上的返回热区带 `role="button"`、`aria-label="返回"` 和 `tabindex="0"`，Enter / 空格也能触发。
 
 - Web 端指针：可点击控件用 `pointer`，禁用态用 `not-allowed`，加载态用 `progress`；原生端忽略该属性。
+- 弹出层 `vx-popup` 是通用浮层：`placement` 有 `top` / `bottom` / `left` / `right` / `center`，默认 `bottom`；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()` / `toggle()`。
+- 上下贴边占满宽度，`height` 可传；左右贴边占满高度、默认宽 280（`--vx-popup-width`），`width` 可传；居中按内容宽度排、最宽 480（`--vx-popup-max-width`），四周留 24。`width` / `height` 必须带单位。
+- 面板只圆朝向页面的那一侧（`round` 默认 `lg` 12，四档 `none` / `sm` / `md` / `lg`），贴住屏幕的一边保持直角；居中四角全圆。
+- 面板用 `surface` 底，不加阴影也不加描边；遮罩用 `--vx-color-mask`，只压页面，不压面板。居中面板四周加 1px `border`。`maskColor` 只改遮罩，是字面值。
+- 组件不内置内边距、标题栏、动作列表和滚动容器：内容由默认插槽给，自己留 16；超过一屏时先给 `height`，再由内容里的 `scroll-view` 接管滚动。
+- `closeable=true` 时关闭叉在内容上方单占一行，行高 44、图标 18；贴顶的面板不会把关闭叉顶进状态栏，也不压住内容。
+- 点可关闭的遮罩收起并抛 `close`，同时抛 `click-mask`；`maskClosable=false` 时点遮罩只抛 `click-mask`，不关闭也不抛 `close`。`close()` 只收起，不抛 `close`。
+- 安全区由面板内边距承担：上下贴边让开所在边的状态栏或手势条，`safeArea=false` 可以关掉；左右面板两头都让，横屏的左右安全区每档都让；居中靠四周的 24。
+- 只过渡 `transform` 和 `opacity`：贴边面板从所在边滑入，居中面板只淡入。`duration` 默认 220、`0` 直接切换；关闭动画走完才卸载，关闭中再打开会从当前位置回到终点。
+- 层级默认 90，和抽屉、操作菜单同档；低于数字键盘 95、消息提示 100、弹框 110、加载浮层 150 和轻提示 200。组件不自动叠加，嵌套时由业务传 `zIndex`。
+- 挂在页面根节点，和滚动容器平级；不要放进 `scroll-view`、卡片或 `fixed` 容器。同一屏只开一个。
+- Web 上遮罩标 `aria-hidden`、关闭叉带可读标签，内容区不抢焦点。滚动锁只在 Web 生效：打开时给页面根节点加 `.vx-scroll-lock`，收起后移除；App 不锁页面滚动，小程序只拦遮罩上的手势。
+- 弹出层只承载内容，不做动作列表、标题栏、跟手拖动、滚动容器和路由；这些用操作菜单、抽屉和弹框。
 - 抽屉 `vx-drawer` 从屏幕一条边滑出：`position` 有 `left` / `right` / `top` / `bottom`，默认 `right`；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()`。
 - 左右抽屉宽 280（`--vx-drawer-width`）、占满高度；上下抽屉高 45%（`--vx-drawer-height`）、占满宽度。`width` 只改左右宽度，`height` 只改上下高度，都要带单位；面板最大不超出整屏。
 - 面板贴边，只圆朝向页面的两角（`lg` 12），用 `surface` 底和 `--vx-shadow-lg` 浮在遮罩上；遮罩用 `--vx-color-mask`，只压页面。`bgColor` 只改面板底色，是字面值。
@@ -1658,6 +1811,66 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 组件提供 `expand()` / `collapse()` / `toggle()` / `expandAll()` / `collapseAll()` / `expandTo()`，方法只改展开名单，不抛 `toggle`；`expandTo` 用来在异步加载子级或外部跳转后把节点带到可见区。
 - 默认插槽替换行内容，`icon` / `extra` / `prefix` / `suffix` 补图标、行尾动作和头尾内容；箭头、勾选框、缩进和点击始终由组件负责。默认插槽拿到 `node` / `level` / `expanded` / `selected` / `checked` / `partial`。
 - 树型菜单是 `view` 组合，Web 端不进入 Tab 顺序；需要键盘操作时由外层提供可聚焦入口。展开和勾选都不发请求，异步由业务替换 `children` 后再调 `expandTo()` 或写 `v-model:expanded`。
+- 表格 `vx-table` 把列定义和数据行排成表头 + 数据行：`columns` 管顺序、宽度、对齐、排序、插槽和固定列，`rows` 的 `cells` 与列一一对应。数据由业务传入，组件不排序、不分页、不请求，也不做本地筛选。
+- 单元格值统一用字符串，和 `vx-tree-view` 的节点、`vx-picker` 的选项是同一套约定；数字、金额和日期先由业务格式化，组件不猜类型，也不做千分位和货币转换。
+- 行高沿用列表行 `--vx-list-height-*` 的 44 / 52 / 60，表头和数据行同高；字号用 `--vx-font-control-*` 的 13 / 14 / 16。`rowHeight` 覆盖行高，空态和加载态按它的 3 倍取高，最少 120。
+- 列宽全定宽时按 `width` 排；只要有一列缺 `width`，缺的列按「剩余宽度 ÷ 缺的列数」补，下限 120。基准是表格自身宽度，量不到时退回窗口宽度；页面和卡片有左右留白时，按窗口宽分会把列撑出表格。
+- 固定列用 `columns[i].fixed = 'left' | 'right'`，放在 `columns` 两端；左固定 / 中间滚动 / 右固定三段排布，固定列不参与剩余宽度均分，缺 `width` 时按 120。中间列分的是「表格宽 − 左固定宽 − 右固定宽」，三段表头和行高严格对齐。
+- 固定段和中间段之间有一条 `border` 色 1px 竖线，`border=false` 时一起收掉；固定列不加阴影和渐变，照常支持对齐、排序、斑马纹、按下态、行点击和插槽，插槽只渲染一次。
+- 超宽时表头和数据行在同一个横向 `scroll-view` 里一起滚；内层宽度按列宽之和（不够铺满时取视口宽）写死，滚到最右不露出空白。表格自己不垂直滚，纵向交给外层页面。不要给表格再包一层纵向滚动容器。
+- 表头底色默认 `default-soft`，文案用正文色、600；排序中的列标题加到 700，表头底线用 `border` 色，排序箭头未选中用 `text-secondary`、选中方向用正文色。两个箭头紧凑叠放，整格仍是热区。表头不参与斑马纹。
+- 数据行默认 `surface`；`stripe` 从第二行起隔行铺 `default-soft`，`border=false` 时斑马纹仍然保留。行间分割线用 `divider`，外框用 `border`，两者不要反过来用；最后一行不画分割线，底边由外框收口。
+- 排序是受控的：点 `sortable` 列头按 asc → desc → 空 三态循环，只抛 `sort(columnIndex, order)`；组件不改 `sortKey` / `sortOrder`，也不重排 `rows`，重排由业务做。数字列由业务自己传 `align="right"`。
+- `columns[i].slot=true` 的列走默认插槽，作用域是 `{ row, rowIndex, column, columnIndex }`；其余列直接渲染字符串。具名插槽只有 `extra`，放在表格右上角，用来放导出、筛选这类短操作。
+- 空态是一行次要色文案，加载态是 `vx-loading`，两者都占表体位置且同高；表头保留，切换时不跳版。单元格默认单行省略，`ellipsis` 是 v1 的固定行为，不做成属性。
+- 单选行、多选列、展开行、合计行、固定表头、虚拟滚动和列宽拖拽都不在 v1 内；需要分页时配合 `vx-pagination`，行多到要虚拟化时等后续版本，列表形态改用 `vx-list-view`。
+- 表格是 `view` 组合，Web 端用 `role="table"` / `row` / `columnheader` / `cell` 语义，排序列头带 `aria-sort`；固定列拆成左 / 中 / 右三段后仍保留同样的角色和排序状态，固定段不重复挂插槽。行和排序列头按下有底色或变淡。Web 端不进入 Tab 顺序，需要键盘操作时由外层按钮或可聚焦入口承载同一动作。
+- 虚拟列表 `vx-virtual-list` 只负责切片：`items` 用 `Array<any>` 原样收集，组件不读字段、不要求业务 key、不判断业务类型；行内容、背景和点击都由默认插槽给，作用域 `{ item, index }`。
+- v1 只支持等高行：`itemHeight` 默认 60，等于 `--vx-list-height-lg`；所有行必须同高，行内容超出行高会被裁掉。不定高要测高回写，留给后续版本。
+- 切片窗口是 `[start, end)`：`start = max(0, floor(scrollTop / itemHeight) - buffer)`，`end = min(total, ceil((scrollTop + viewHeight) / itemHeight) + buffer)`。顶部 spacer 高 `start × itemHeight`，底部 spacer 高 `(total - end) × itemHeight`，切片部分总高恒等于 `total × itemHeight`，尾部另算。
+- `@scroll` 只在算出的 `start` 变化时写 `start` / `end`，窗口没变不 setState；不按 16ms / 32ms 定时器节流。切片 key 用 `index`，不用业务数据当 key，避免窗口变化时整片重建。
+- 触底加载跟 `vx-page` 同一套语义：剩余不足 `buffer` 行时抛 `loadmore`，`loadingMore`、`noMore` 和本地到底锁拦住重复触发；尾部分别复用 `vx-loadmore` / `vx-nomore`，两个状态互斥。
+- 空态：`items` 为空且 `loadingMore=false` 时整块居中显示 `emptyText`，不渲染 spacer；`loadingMore=true` 时先显示转圈，不先闪空文案。
+- `scrollToIndex()` / `scrollToTop()` 先算目标 `scrollTop` 再写回受控值，目标按 `max(total × itemHeight - viewHeight, 0)` 夹住；同一目标连续调用交替写 ±1px，跳转期间锁住中间 `scroll` 事件，避免二次滚动、回弹和误触 `loadmore`。
+- `height` 有值时固定容器高度，空串时 `flex: 1` 吃父级剩余高度；可视高从 `scroll-view` 自身测量，量不到时补试三次，之后可以调 `refresh()`。一个页面只放一个纵向虚拟列表，不再套第二个纵向滚动容器。
+- 虚拟列表是 `view` 组合，Web 端根节点 `role="list"`、行 `role="listitem"`，不进入 Tab 顺序，也不劫持键盘；行内可点控件由插槽自己承载。
+- 轮播图 `vx-swiper` 用原生 `swiper` 当底座：拖拽、回弹、循环和卡片边距交给平台，组件只做外框尺寸与圆角、指示器、标题条和点击；不自己写手势，跨端差异最少。
+- `items` 三件事各管一处：`src` 决定这一屏走 `vx-image` 还是默认插槽，`title` 决定底部标题条，`key` 随 `change` / `click` 回传；`src` 为空时这一屏交给默认插槽，作用域 `{ item, index }`。
+- 指示器四态 `dot` / `line` / `number` / `none`；只有一项时不渲染指示器，也不自动播放。`indicatorOutside` 把它们放到图片下面一排，压在图里时按有没有标题条自动让位。
+- 标题条是固定 `rgba(0, 0, 0, 0.45)` 暗层配白字，单行省略、左右各 12；不跟主题反色，也不铺渐变。`showTitle=false` 时整条不渲染。
+- `card` 用原生的 `previous-margin` / `next-margin` 各 32，组件不自己算宽度；`vertical` 和 `card` 同时打开时按纵向渲染，开发环境提示一次。`circular` 只影响首尾衔接。
+- 方法 `next()` / `prev()` / `goTo(index)` / `startAutoplay()` / `stopAutoplay()`：循环时首尾相接、不循环时走到端点停住，`goTo()` 先按下标夹住；三个切屏方法同样抛 `change`，埋点不用区分来源。
+- 事件 `change(index, item)` 和 `click(index, item)` 都是下标在前，和 `vx-waterfall` 的 `(item, index)` 相反；`extra` 和插槽里的动作自己 `@click.stop`。
+- 高度只认正数，0、负数和非法值回落到 160；`items` 变短时把当前下标夹回最后一屏，变长不动。`lazyLoad` 透传给 `vx-image`，uni-app x 的原生 swiper 没有这个属性。
+- 轮播图是 `swiper` / `swiper-item` 组合，Web 端不进入 Tab 顺序；指示器和标题条只是视觉，键盘入口由外层给。
+- 数字动画 `vx-count-to` 只做一次读数滚动：`value` 是目标、`from` 是起点、`duration` 是时长；不接图表、不做倒计时，倒计时用免费的 `vx-countdown`。
+- 每帧只改一个 `text`，优先 `requestAnimationFrame`，没有就退回 16ms 定时器，两种都按 `Date.now()` 算进度；不做逐位滚动，也不切换数字字体。
+- 格式化顺序写死：先按 `decimals`（0–2）定小数位，再只给整数部分插千分位，最后拼 `prefix` / `suffix`；负号始终在最前，`-0.00` 这类负零不带负号。
+- 缓动三态 `linear` / `easeOut`（`1 - (1-t)^3`）/ `easeInOut`（标准两段）；`duration=0` 和 `value === from` 不排帧，直接落值后异步抛一次 `finish`。
+- `autoplay` 只管挂载那一次：关掉时停在 `from`，等 `start()`；`value` 变化一律先停旧补间再从 `from` 重播，`reset()` 是唯一停在 `from` 而不抛 `finish` 的方式。
+- 卸载、`reset()` 和下一次补间都会先取消排队的帧和定时器，并让 token 前进一格；已在回调里的那一帧直接退出，连续改值不会叠出第二条补间。
+- `reserveWidth` 按「最终值字符数 × 字号 × 0.6」算像素 `min-width`，位数变化时容器不动、后面的单位不跟着滑；需要像素级对齐时由外层给固定宽度。
+- 数字动画是 `view` / `text` 组合，Web 端读屏读的是当前渲染的值；动画过程中不写 `aria-live`，否则每帧都会念一次。
+- 筛选栏 `vx-dropdown` 是组合件：一行等宽的触发项 + 一块挂在 `vx-popup` 上的面板容器。只做展开态，选项列表和选中值由业务画在默认插槽里，组件不托管 `Record<key, value>`。
+- `items` 每项只有 `key` / `title` / `active`；`active` 是受控的展开下标（`-1` 收起）。用户点触发项时组件先算「点同一项收起、点别的项切换」，写回 `v-model:active` 后再抛 `open` / `close` / `change`。
+- 触发条留在文档流里，展开时固定层再画一遍同样的条压在遮罩上：点另一项直接切换，不经过全收起的中间态，遮罩也不会把触发表压暗。
+- 面板位置按触发条实测：1px 的 `fixed` 标尺量出坐标原点，面板 `top` 等于触发条底边、宽度等于触发条宽度；量不到时退回文档流里的绝对定位，外层裁切交给业务。
+- 面板贴住触发条，上两角直角、只圆下两角，不加阴影和描边；最高铺到距窗口底 16，长列表自己放进 `scroll-view` 并用 `panelHeight` 固定高度。
+- 遮罩、遮罩点击和滚动锁全部来自 `vx-popup`：点遮罩、插槽里的 `close()`、再点同一项都能收起，`closeOnMask=false` 时遮罩只拦手势。组件不另外加锁，也不新增层级。
+- 返回顶部 `vx-back-top` 是受控件：`scrollTop` 由业务传入，严格大于 `threshold` 时出现，点击只抛 `click`；不做自动滚动，也不监听页面滚动。
+- 显隐只用透明度和 8px 位移，节点常驻不挂卸；隐藏时 `pointer-events: none`，Web 上 `tabindex=-1` 并标 `aria-hidden`。
+- 只有图标时宽高都取 44 收成正圆；换成 `extra` 文案时宽度跟着内容走、左右各留 12，高度仍是 44。`position` 贴左或贴右，`bottom` 只认数字。
+- 返回顶部固定层级 1，不抢弹层的位置；一页只放一个，底部有 tabbar 或手势条时把 `bottom` 调到让开的高度。
+- 滚动列表 `vx-scroll-list` 只排宽度：`items` 用 `Array<any>` 原样收集，卡片宽 `itemWidth`、间距 `gap`、高度 `height` 由业务给定；卡片内容、底色和点击都在默认插槽，作用域 `{ item, index }`。
+- 行内容层按内容总宽写死 px，卡片 `flex-shrink: 0`；横向 `scroll-view` 的 `scrollWidth` 必须大于容器宽，卡片才真的能被拖动，只靠卡片不收缩不够。
+- 页宽从 `scroll-view` 自身量，页数 = `ceil(内容总宽 ÷ 页宽)`，当前页 = `round(scrollLeft ÷ 页宽)`；最后一页只露出一部分时，滚到末尾固定算最后一页。`@scroll` 按 16ms 合批，只在页码变化时抛 `change`。量不到页宽时指示器整条隐藏，一屏放得下时也不渲染。
+- `scrollToIndex()` / `scrollToStart()` 先按「内容总宽 − 一屏」夹目标再写 `scroll-left`；同一目标连续调用交替写 ±1px，跳转期间锁住中间 `scroll` 事件。`items` 为空时不渲染滚动区和指示器，空态由页面自己画。
+- 级联选择 `vx-cascader` 只做内联：`options` 按 `label / value / children / disabled` 读，`value` 省略时用 `label`；`modelValue` 是每一级的值数组，`change` 回传 `values` 和 `labels` 两条路径。
+- 列数 = 已选路径能走到的深度 + 1，末级是叶子就不再出一列；点某项写入该级、清掉更深的选择再抛 `change`，`disabled` 项灰掉、不可点、不显示箭头。面包屑每级可点回退，最后一级不再响应；空树显示「暂无可选项」，高度与 `panelHeight` 一致。
+- `children` 显式写成空数组表示可远程加载：点它抛一次 `expand(value, level)`，同一父项只抛一次；业务补完 `children` 后列靠 `options` 的响应式出现。`reset()` 清空选择并抛一次 `change([], [])`。
+- 新手引导 `vx-guide` 用四块遮罩拼洞：洞 = 目标外扩 `holePadding`，2px `primary` 描边内缩到目标边界，气泡和洞留 8。`show` / `current` 受控，`next()` / `prev()` 换步抛 `change`，最后一步主按钮换成「完成」。
+- 目标矩形用 `createSelectorQuery().select(step.target).boundingClientRect()` 量；量不到时洞隐藏、遮罩铺满、气泡居中，`next` 仍可用。组件不监听页面滚动，`refresh()` 由业务在页面滚动、键盘弹起和数据变化后调用。
+- `placement` 四档加 `auto`：`auto` 先看上下再看左右，显式方向放不下时翻到对面，再按 12 的边距夹住。组件不存「已看过」，`finish` / `skip` 之后由业务写存储；`closeOnMask` 默认关，打开后点遮罩等同跳过并抛 `skip`。
 - 每个组件同时交付：`vx-<block>.uvue`、`props.ts`、独立的 `pages/demo/<name>/<name>.uvue` 演示页、`pages/demo/shared/catalog.ts` 登记和 `uni_modules/vaporix-ui/readme.md` 登记。
 - 单文件顺序：`template` → `script setup` → `style`。`style` 与元素 class 字符串都按「基础 → 尺寸 → 类型 → 形状 → 状态 → 文本」排列。
 
@@ -1708,6 +1921,11 @@ Do：
 - 抽屉内容超过面板时靠正文滚动，不要给面板写死 `overflow`；头部和底栏保持不动。
 - 需要自定义宽度时给 `width` 传带单位的值（如 86%），窄屏不小于 240px；不要为塞内容缩小字号。
 - `closable=true` 或内容里放一个关闭按钮；关掉 `maskClosable` 时至少保留一个出口。
+- 弹出层用 `v-model:show` 控制显隐，入口放在页面操作区，弹出层挂页面根节点；同一屏只开一个，嵌套时自己传 `zIndex`。
+- 弹出层上下贴边用 `height`，左右和居中用 `width`，都要带单位；不要靠内容里的空 `view` 撑高度。
+- 弹出层的内容自己留 16；超过一屏时给 `height`，把列表放进 `scroll-view`，不要让面板无限往下长。
+- 弹出层要居中、四周留白和四角全圆时用 `placement="center"`；要贴边、只圆一侧时用四向。
+- 弹出层的关闭叉和内容里的关闭按钮至少留一个；关掉 `maskClosable` 时必须还有另一个出口。
 - 压屏窗用 `v-model:show` 控制显隐，入口放在首页卡片、活动按钮或列表行；挂在页面根节点。
 - 海报或权益卡自己带底色和圆角；内容控制在一屏内，超出一屏改用页面或拆成两步。
 - 关闭按钮保持 44 热区，底部居中或右上、左上；`closable=false` 时内容里必须留一个退出入口。
@@ -1757,6 +1975,8 @@ Do：
 - 上一页、下一页文案控制在 2–5 个字；空间紧时用 `iconOnly`，并在页面或列表标题里补一句「上一页 / 下一页」的说明。
 - 到端点只让对应按钮变淡，不要隐藏或移除按钮；只有一页时两个按钮都停下，页码仍显示 1/1。
 - 需要跳转、每页条数或总数说明时放在分页器外面；`showPage=false` 只用于已经有页码说明的表格底栏。
+- 虚拟列表用 `height` 或外层 flex 给确定高度，行内容按 60 等高排；要不等高卡片改用 `vx-waterfall`。
+- 触底加载只改 `loadingMore` / `noMore` 和数组长度；跳到指定行用 `scrollToIndex()`，不要在外部同时改 `scrollTop` 和重排数组。
 - 分页器不和滚动加载混用：整页翻页用分页器，信息流继续用加载更多；两者不要同时出现在同一列表底部。
 - 瀑布流用 `ratio` 预留图片高度，不要等图片加载后再让卡片长高；同一组卡片用同一个 `imageRatio` 兜底，图片比例差别大时逐项传 `ratio`。
 - 追加数据只往末尾加，已有卡片不会跳列；筛选、排序、删除后整组会重排，不要在两列之间做「保持滚动位置」的假设。
@@ -1796,6 +2016,7 @@ Do：
 - 页签表达状态筛选时才传 `type`，普通导航保持 `primary`；角标默认 `danger`，同一含义一屏只放一处。
 - 禁用单个页签只用于暂时不可选的分组；不可用入口优先隐藏，当前项永远不要禁用。
 - 页签放进卡片时关掉 `divider`，需要吸顶时放进 `vx-sticky` 并关掉页签自己的 `divider`；内容按 `change` 的索引切换，路由和请求留在业务。
+- 侧边导航用 `vx-tabs` 的 `direction="vertical"`：每项一整行，宽度用 `verticalWidth`，右侧内容按 `active` 自己排；一列 2–8 项，超了改用列表或宫格。竖排角标和文案同一行、跟在文案后面，不要再用绝对定位往文字上叠。
 - 自定义 `bgColor` / `color` 时成对检查亮暗两套主题的对比度；要跟主题就传 `var(--vx-color-*)`。
 - 标签栏用 `v-model` 绑当前索引，`items` 按顺序提供图标和文案；固定时放在页面根节点末尾，让占位生效。
 - 一屏 3–5 个标签，文案 2–4 个字；导航保持默认 `type="primary"`，同一屏不要再放第二个底部导航。
@@ -1907,6 +2128,13 @@ Do：
 - 留白档位用 `sm | md | lg`；需要 24 / 32 时给 `height` / `gap` 传带单位的值，不要叠两个 `md`。
 - `vx-white-space` 放在纵向布局里，`vx-wing-blank` 只包内容；同一个方向的留白只留一次。
 - 通栏区块用 `vx-wing-blank` 把内容对齐页面边距；页面已经用 `lg` 时不要再叠一个 `lg`。
+- 单张图片用 `vx-image`：占位、失败回落、圆角和比例一次配齐；点击预览交给 Pro 的 `vx-gallery`。
+- 需要按比例时给 `width` 传 px 或 rpx 再配 `ratio`；宽度要跟父级时改成只给 `height`，不要指望百分比宽度下 `ratio` 生效。
+- 传 `vx-image` 的 `bgColor` 时确认失败文案和图标仍有足够对比度；跟主题时传 `var(--vx-color-*)`。
+- 单人头像用 `vx-avatar`：有图传 `src`，名称首字传 `text`，没有字和图标时自动用 `user`；首字只取第一个字符，完整名称放在旁边的标题里。
+- 需要和卡片、列表行或图片组合对齐时，头像外框用同一档 32 / 40 / 48；`ring` 只用于重叠分隔，独立展示不加。
+- 区块内部的分隔用 `vx-divider`，横线配 `text` 做分组标题；页面级的区块间距仍交给 `vx-white-space`。
+- 底栏和手势条之间用 `vx-safe-area` 占位；固定底栏由业务自己留出高度，固定安全区只负责那一条。
 - `bgColor` 只在需要色带时传，跟主题用 `var(--vx-color-*)`；不要拿它表达状态。
 - 留白组件的交互交给插槽内容或外层按钮，组件本身不接点击。
 - 栅格用 `vx-row` 包一组 `vx-col`，宽度按 24 份写在 `span` 上；同一行加起来 24 就铺满，不到 24 用 `justify` 分配空间。
@@ -1960,6 +2188,23 @@ Do：
 - 行尾放状态用 `extra` 插槽，插槽里的动作自己写 `@click.stop`；整行点击只用来选中或展开。
 - 层级深时打开 `showLine`，用缩进和参考线读层级；`size="sm"` 给侧栏，`md` 给页面，`lg` 给平板和独立页面。
 - 数据多时分批或按目录加载，滚动的交给外层 `scroll-view`；切换目录后调 `expandTo(key)`，不要自己拼展开数组。
+- 需要搜索框时用 `vx-input` 的 `variant="search"`，图标、取消和清除都由组件画；查询放在 `search` 里做，退出搜索放在 `cancel` 里收状态，不要另建搜索组件。搜索变体的键盘确认键默认就是 `search`，不需要再传 `confirm-type="search"`；要换成发送 / 下一项时才显式传 `confirmType`。
+- 用 `vx-form` 包一组 `vx-form-item`，`prop` 在同组里唯一，`value` 和控件的 `v-model` 绑同一份数据；提交时 `await validate()` 再发请求。
+- 输入类控件用控件自己的 `label`，表单项只接错误行；开关、评分、多选、上传这类没有标题位的控件才给表单项传 `label`。
+- 实时校验在控件的 `change` / `blur` 里调 `validateField(prop)`；不要在每次输入里调 `validate()`，也不要在 `rules` 里写自动触发。
+- 服务端错误写进 `error`，成功后清成空串；本地说明和错误共用一行，语义由 `help` / `error` 分开。
+- 整组不可编辑时给表单 `disabled` 并同时把控件自己的 `disabled` 打开；只跳过校验不改控件会让用户以为还能改。
+- 表单和卡片之间用页面留白或 `vx-white-space`；表单项自身不加外边距，同一组 `labelWidth` 统一。
+- 需要错误定位时保留默认 `scrollToError`；只校验单项（失焦、联动）用 `validateField`，不要让它顺手滚动页面。
+- 轮播图用 `items` 给数据；要自定义一屏时让 `src` 留空、在默认插槽里排，不要在插槽里再画一层 swiper。
+- 轮播图一屏最多一个动作；图上的 `extra` 角标和插槽里的按钮自己 `@click.stop`，避免和整屏点击叠在一起。
+- 轮播图的高度用 `height` 给、宽度跟随父级；卡片模式要露出相邻屏时由外层留出左右空间，不要自己缩 `width`。
+- 数字动画在数据到手后播一次；同一屏最多两三个同时在跑，其余直接显示终值。
+- 金额和数量把单位放进 `prefix` / `suffix`，不要拼进 `value`；需要千分位和小数位就用组件的 `separator` / `decimals`。
+- 数字宽度会变的位置打开 `reserveWidth`，让它后面的单位不跟着左右滑；需要像素级对齐时给外层固定宽度。
+- 筛选栏把触发条放在内容区顶部，`active` 交给 `v-model:active`；选项在默认插槽里画，选完调插槽给的 `close()`。
+- 筛选项要标「已有筛选生效」时给对应的 item 打开 `active`，不要改触发条底色或加图标。
+- 返回顶部的 `scrollTop` 从 `vx-page` 的插槽作用域或 `scroll-view` 的 `@scroll` 拿，点击后由业务调 `scrollToTop()`；一页只放一个。
 - 新增令牌时同时补亮色、暗色，并更新本文档。
 
 Don't：
@@ -2027,6 +2272,12 @@ Don't：
 - 不把弹框放进 `scroll-view`、卡片或 `fixed` 容器，定位层会被裁剪或带走。
 - 不用遮罩关闭冒充强制选择；关掉 `maskClosable` 时必须保留动作出口。
 - 不把抽屉当对话框或操作菜单；需要确认用弹框，并列动作用操作菜单。
+- 不把弹出层当对话框、操作菜单或抽屉用；需要标题栏、动作列表和跟手拖动的场合分别用弹框、操作菜单和抽屉。
+- 不给弹出层面板加阴影、第二层底色、整块描边和渐变色块；层级由遮罩和留白表达，居中档才有 1px 描边。
+- 不把 `width` / `height` 写成数字或 calc 表达式；宽度只作用于左右和居中，高度只作用于上下。
+- 不在弹出层里再叠同档弹层而不传 `zIndex`；两个 90 谁在上面取决于挂载顺序，要按设计表自己往上加。
+- 不让面板内容无限往下长，也不给面板写死 `overflow`；长内容先给 `height`，滚动交给内容里的 `scroll-view`。
+- 不把弹出层放进 `scroll-view`、卡片或 `fixed` 容器，定位层会被裁剪或带走。
 - 不在抽屉里再放第二个抽屉、弹框或操作菜单；先关掉当前层。
 - 不给抽屉加外描边、第二层阴影、渐变和整块状态底色。
 - 不把 `width` / `height` 写成数字或 calc 表达式；面板自己不超过整屏。
@@ -2078,6 +2329,7 @@ Don't：
 - 不用图标或颜色单独表达选中；选项文案、描边和字重仍要能读出来。
 - 不给数据选择器加第四档尺寸、自定义行高、自定义圆角和多行文案；档位和形状由 props 收口。
 - 不把 `max` 当校验；提交前仍要检查最少选择数。
+- 不给搜索框传 `label` / `required` / `unit`，也不把搜索做成带标题的输入框；搜索没有标题位，这三项在 `variant="search"` 下不渲染，标题和单位放到外面的表单行。
 - 不用验证码输入框做手机号、密码登录、金额和长文本；普通输入用 `vx-input`，数字加减用 `vx-number-box`。
 - 不把标题、错误文案、重发倒计时和提交按钮塞进组件；它们属于外层表单或卡片。
 - 不把 `complete` 当成验证成功；是否自动提交由业务决定，失败要能重输。
@@ -2149,6 +2401,7 @@ Don't：
 - 不在同一屏放两条 `inverse` 页签，不默认拿 `primary` 铺满整条，也不做渐变背景。
 - 不靠颜色单独说明当前页签；字重和短线 / 胶囊必须同时存在。
 - 不给页签内置内容、路由、请求和插槽；页面内容、空状态和提交入口由业务自己排。
+- 不把竖向标签当页面主导航或步骤条：它是同一块区域里的侧边切换，页跳转用 tabBar 或列表行，流程用 `vx-steps`；竖排也不要 `inverse`。
 - 不用禁用冒充权限或隐藏入口，也不把当前页签设为禁用；不可用时先隐藏。
 - 不把角标当按钮，也不在每个页签上挂计数；同一含义一屏只留一处。
 - 不写死 `bgColor` / `color` 后又不检查另一套主题；自定义反色条不传 `color` 会让未选中文字在暗色下消失。
@@ -2269,6 +2522,14 @@ Don't：
 - 不用状态栏承载底部安全区、tabBar 或页面背景：底部安全区归标签栏、页脚和弹层。
 - 不在透明底上默认画分割线和阴影；需要分层时等渐显到位，或用 `shadow` 代替线。
 - 不让插槽内容依赖 `color` 和字号继承，自己带；小程序上不要往 `suffix` 塞两个以上动作。
+- 不用 `vx-page` 接管路由、页面转场和登录拦截；它只管一页的骨架，返回只调 `uni.navigateBack`。
+- 不在 `vx-page` 外面再叠一只状态栏或导航栏；需要透明渐变导航时不要用 `vx-page`，直接用 `vx-navigation-bar` 和 `scroll-view` 自己组合。
+- 不在另一个 `scroll-view` 里再放整页的 `vx-page` 做双层滚动；舞台和卡片里嵌入时给外层固定高度，整页场景用 `scroll=false` 交给页面滚。
+- 不让业务自己量导航栏高度再传给 `vx-sticky`：用插槽作用域的 `navHeight` 和 `scrollTop`，`navHeight` 已经扣掉状态栏留白。
+- 不在 `scroll=false` 时还依赖 `refresh` / `loadmore` / `scrollToTop`；要下拉刷新就换 `pages.json` 的 `enablePullDownRefresh`，要触底就用外层滚动自己监听。
+- 不把 `tabbar` 和 `safeArea` 当成互斥开关：两者是叠加的，`bottomInset` 才是最终占位高度。
+- 不在 `back` 打开时再监听 `back` 重复退一次；要拦截就传 `:back="false"`，自己画返回并在处理完后调 `uni.navigateBack`。
+- 不给页面容器加自定义高度、第二套顶栏和内置 tabbar；`tabbar` 只预留高度，标签栏用 `vx-tabbar` 自己放，并传 `:placeholder="false"` 避免占位叠两次。
 - 不把滚动消息当列表或详情页：它只轮播一条，详情和请求留在业务。
 - 不在同一页面放两条同时轮播的通告，也不要让轮播快过 1200ms。
 - 不用 `height` / `padding` / `radius` / 自定义字号改滚动消息：尺寸只取 `size`，外观只取 `variant` / `shape`。
@@ -2296,6 +2557,11 @@ Don't：
 - 不在组件里判断主题；`surface` / `solid` 和箭头颜色都来自令牌。
 - 不把气泡放进带 `transform` 的祖先里还指望 fixed 坐标准确；坐标原点会跟着变。
 - 不把 `vx-white-space` 当分割线、骨架屏或可点击占位；它只留白。
+- 不给 `vx-image` 的百分比宽度配 `ratio`，也不要用它做轮播、裁剪、长按保存和骨架扫光。
+- 不用 `vx-avatar` 做头像组、裁剪上传、在线状态点或徽章内嵌；头像组用 `vx-image-group`，徽章用 `vx-badge` 的 `absolute` 包一层。
+- 不给 `vx-avatar` 的 `bgColor` / `color` 传会自动推导的颜色；它们是字面值，跟主题时显式传 `var(--vx-color-*)`。
+- 不用 `vx-divider` 做卡片外框、区块留白和带图标的分组标题；它就是一条线。
+- 不把 `vx-safe-area` 当底栏、导航栏或背景板，也不在它上面再叠一条状态栏。
 - 不用 `vx-white-space` 的 `bgColor` 表达成功、失败或警告，也不用它画卡片和浮层。
 - 不把 `vx-wing-blank` 当卡片、弹层边界或点击入口；背景、圆角和描边交给外层。
 - 不给留白组件加第四档尺寸、阴影、描边和外部间距。
@@ -2356,3 +2622,29 @@ Don't：
 - 不把 `indent` 写到 40 以上，也不靠缩小字号塞深层级；超过 5–6 级时把子级换页或改成分组。
 - 不给树型菜单加展开动画、旋转箭头和整行缩放；展开直接换可见行，按下只压透明度。
 - 不用 `iconColor` 盖掉选中态；选中图标跟 `color` / `type`，未选中才用 `iconColor`。
+- 不把 `vx-form` 当数据容器：不传 `model`、不内置提交按钮和 Toast，值仍在控件上。
+- 不在输入类控件上同时给表单项传 `label`；两处标题会让表单行看起来像多了一列，标题归属只留一处。
+- 不让错误只靠红色描边表达；错误行必须有文案，读屏和灰度屏都要读得到。
+- 不把错误行塞成两行、加按钮或加图标；超长文案先在业务里缩短，错误行单行省略。
+- 不用 `error` 冒充本地校验结果；受控错误只放服务端回包、跨字段结果这类业务判断。
+- 不给表单项加背景、描边、圆角、阴影和外边距；外轮廓交给卡片，间距交给页面。
+- 不在表单里做动态增删行、schema 驱动、跨字段联动和异步防抖队列；这些由页面组合。
+- 不为表单新增颜色令牌：错误用 `danger`、说明用 `text-secondary`，字号和间距取现有令牌。
+- 不在 `rules` 里写 `trigger`、`transform` 和自定义规则 DSL；`validator` 只负责返回一句文案。
+- 不把 `scrollToError` 当成焦点管理：校验失败不抢焦点、不弹键盘，滚动只做定位。
+- 不用虚拟列表承载不等高内容；不定高、测高回写和瀑布流都不在 v1 内，卡片高低不一时改用 `vx-waterfall`。
+- 不给虚拟列表套第二个纵向 `scroll-view`，也不放进 `vx-page` 的滚动区当唯一内容；一个页面只放一个纵向虚拟列表。
+- 不用业务数据当切片 key，不在行内塞超过行高的内容；行内容超出会被裁掉，需要更高就调 `itemHeight`，不要改行高。
+- 不把 `height` 写成数字、`auto` 或百分比而没有确定父高；`scroll-view` 没有确定高度就不会滚，切片也会失效。
+- 不靠频繁改 `scrollTop` 驱动列表滚动，也不在跳转后马上重排数据；跳转用 `scrollToIndex()`，数据变更后用 `refresh()` 补量。
+- 不在虚拟列表里做分页请求、排序和筛选；组件只抛 `loadmore` 和当前首项下标，数据和请求都由业务处理。
+- 不用轮播图放长文案、表单和视频；一屏只留图片、标题和一条短说明，其余交给页面区块。
+- 不给轮播图加 3D、视差和自定义手势；拖拽和回弹交给原生 swiper，需要自由滑动时用 `vx-gallery` 或页面自己实现。
+- 不用轮播图做步骤导航、价格对比或倒计时；步骤用 `vx-steps`，对比用列表，倒计时用 `vx-countdown`。
+- 不用数字动画做倒计时、图表和逐位滚动；倒计时用 `vx-countdown`，金额格式化用 `vx-text` 的 `format="amount"`。
+- 不让数字一直循环播，也不在一屏里放十几个同时在跑；一次读数只播一次，其余直接显示终值。
+- 不在数字动画上加底色、描边和圆角，也不在动画过程中写 `aria-live`；读屏只读当前值，播报由业务在 `finish` 后做。
+- 不把筛选栏当页签、选择器或步骤条用：页面内切换视图用 `vx-tabs`，底部弹层做单选多选用 `vx-select`。
+- 不给筛选栏塞内置选项列表、多级联动、搜索和远程加载；组件不托管选中值，也不维护多选集合。
+- 不用返回顶部替业务滚动，也不让它监听页面滚动；滚动值和滚动动作留在业务手里，避免和 `vx-page` 抢同一份状态。
+- 不在返回顶部上加语义底色、第二个按钮和角标；它是收尾入口，一屏只出现一个。

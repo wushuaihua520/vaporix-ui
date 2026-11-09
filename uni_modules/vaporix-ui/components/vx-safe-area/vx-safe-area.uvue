@@ -1,0 +1,90 @@
+<template>
+	<!-- 只做安全区占位：不加分割线、不做毛玻璃、不做渐变，也不管左右安全区。 -->
+	<!-- 不传 height 时用 padding 读系统变量，App 有值、Web 为 0；传了就直接写高度。 -->
+	<view :class="rootClass" :style="rootStyle"></view>
+</template>
+
+<script setup>
+	import { VxSafeAreaProps } from './props'
+
+	const props = withDefaults(defineProps<VxSafeAreaProps>(), {
+		edge: 'bottom',
+		height: '',
+		bgColor: '',
+		fixed: false
+	})
+
+	// 不识别的边按底部处理；左右安全区不在本组件的范围内。
+	const isTop = computed((): boolean => {
+		return props.edge === 'top'
+	})
+
+	// height 传了才写死高度；空串保留系统安全区。
+	const hasHeight = computed((): boolean => {
+		return props.height.trim().length > 0
+	})
+
+	// class 顺序：基础 → 固定 → 安全区内边距。和样式表一致，后写的盖过先写的。
+	// 传了 height 就不挂内边距 class，避免高度和 padding 叠成两倍。
+	const rootClass = computed((): string => {
+		let name = 'vx-safe-area'
+		if (props.fixed) name += isTop.value ? ' vx-safe-area--fixed-top' : ' vx-safe-area--fixed-bottom'
+		if (!hasHeight.value) name += isTop.value ? ' vx-safe-area--top' : ' vx-safe-area--bottom'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		let style = ''
+		if (hasHeight.value) style += `height: ${props.height.trim()};`
+		if (props.bgColor.length > 0) style += ` background-color: ${props.bgColor};`
+		return style
+	})
+</script>
+
+<style>
+	/* 占位条铺满整宽、纵向不收缩；底色默认透明，只有传 bgColor 才铺。
+	   固定态用 left / right 撑开，宽度改回 auto，再叠 100% 会宽出一截。 */
+	.vx-safe-area {
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 100%;
+		background-color: transparent;
+	}
+
+	/* 系统安全区由内边距承担：没有 height 时整条高度就是这一圈留白。 */
+	.vx-safe-area--top {
+		padding-top: var(--uni-safe-area-inset-top, 0px);
+	}
+
+	.vx-safe-area--bottom {
+		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+	}
+
+	/* 固定到窗口对应边，层级 1 和固定页脚同档：只压页面内容，不压浮层。 */
+	.vx-safe-area--fixed-top {
+		position: fixed;
+		top: 0;
+		right: 0;
+		left: 0;
+		z-index: 1;
+		width: auto;
+	}
+
+	.vx-safe-area--fixed-bottom {
+		position: fixed;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		z-index: 1;
+		width: auto;
+	}
+
+	/* 固定条没有内容和插槽，Web 上不拦指针，底下的按钮仍然可点。
+	   App 没有这一属性，条件编译隔掉。 */
+	/* #ifdef WEB */
+	.vx-safe-area--fixed-top,
+	.vx-safe-area--fixed-bottom {
+		pointer-events: none;
+	}
+	/* #endif */
+</style>

@@ -121,6 +121,12 @@
 			}
 		},
 		{
+			"path": "pages/demo/form/form",
+			"style": {
+				"navigationBarTitleText": "表单"
+			}
+		},
+		{
 			"path": "pages/demo/tips/tips",
 			"style": {
 				"navigationBarTitleText": "消息提示"
@@ -310,6 +316,36 @@
 			"path": "pages/demo/notice-bar/notice-bar",
 			"style": {
 				"navigationBarTitleText": "通告栏"
+			}
+		},
+		{
+			"path": "pages/demo/popup/popup",
+			"style": {
+				"navigationBarTitleText": "弹出层"
+			}
+		},
+		{
+			"path": "pages/demo/image/image",
+			"style": {
+				"navigationBarTitleText": "图片"
+			}
+		},
+		{
+			"path": "pages/demo/divider/divider",
+			"style": {
+				"navigationBarTitleText": "分割线"
+			}
+		},
+		{
+			"path": "pages/demo/safe-area/safe-area",
+			"style": {
+				"navigationBarTitleText": "安全区"
+			}
+		},
+		{
+			"path": "pages/demo/avatar/avatar",
+			"style": {
+				"navigationBarTitleText": "头像"
 			}
 		}
 	],

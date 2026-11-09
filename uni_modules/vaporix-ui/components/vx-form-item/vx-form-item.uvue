@@ -1,0 +1,392 @@
+<template>
+	<!-- 一项只负责标题、必填星号和错误行；控件仍由业务放进默认插槽，并拿 invalid 去染自己的描边。 -->
+	<view :class="rootClass">
+		<view v-if="showLabel" :class="labelClass" :style="labelStyle">
+			<text :class="labelTextClass">{{ label }}</text>
+			<!-- 星号落在标题末尾；项没有 label 时不画，交给控件自己的 required。 -->
+			<text v-if="showRequired" :class="requiredClass">*</text>
+		</view>
+
+		<view :class="bodyClass">
+			<view class="vx-form-item__content">
+				<slot :invalid="invalid" :error="displayError"></slot>
+			</view>
+
+			<!-- 说明和错误共用一行：有错误时显示错误，错误消失后说明回来；两者都没有时不占高度。 -->
+			<view v-if="hasMessage" class="vx-form-item__message">
+				<text :class="messageTextClass">{{ displayMessage }}</text>
+			</view>
+
+			<!-- 读屏播报：视觉上隐藏，只给 aria-live 用。App 编译时整段移除，不产生不支持的属性警告。 -->
+			<!-- #ifdef WEB -->
+			<view v-if="hasMessage" class="vx-form-item__live" aria-live="polite">
+				<text class="vx-form-item__live-text">{{ displayMessage }}</text>
+			</view>
+			<!-- #endif -->
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxFormItemProps } from './props'
+	import { VX_FORM_CONTEXT, VxFormContext, VxFormItemInstance } from '../vx-form/context'
+	import { runFormRules } from '../../libs/form'
+	import { VxSize } from '../../libs/types/common'
+
+	const props = withDefaults(defineProps<VxFormItemProps>(), {
+		prop: '',
+		value: '',
+		rules: () => [],
+		label: '',
+		required: null,
+		help: '',
+		error: ''
+	})
+
+	const emit = defineEmits<{
+		validate: [ok: boolean, message: string]
+	}>()
+
+	// 没有容器时也要能单独用：档位、标签宽度退回表单的默认值，校验仍照常跑。
+	const form = inject(VX_FORM_CONTEXT, null) as VxFormContext | null
+
+	// 分割线和滚动定位都认实例：同一个 prop 可能出现在两个项里，不能只靠 prop 区分。
+	const uid = 'vx-form-item-' + Math.floor(Math.random() * 1000000000)
+	const localError = ref('')
+
+	const size = computed((): VxSize => {
+		return form != null ? form.size() : 'md'
+	})
+
+	const labelPosition = computed((): string => {
+		return form != null ? form.labelPosition() : 'left'
+	})
+
+	const labelWidth = computed((): string => {
+		return form != null ? form.labelWidth() : '72px'
+	})
+
+	const isDisabled = computed((): boolean => {
+		return form != null && form.disabled()
+	})
+
+	const showLabel = computed((): boolean => {
+		return props.label.length > 0
+	})
+
+	// 显式 true / false 优先；不传时看规则里有没有 required，避免标题星号和校验结果对不上。
+	const isRequired = computed((): boolean => {
+		if (props.required != null) return props.required
+		const rules = props.rules
+		for (let index = 0; index < rules.length; index++) {
+			if (rules[index].required === true) return true
+		}
+		return false
+	})
+
+	// 受控错误优先：外部给了错误就按它显示，本地校验结果先留着，等外部清掉再回来。
+	const displayError = computed((): string => {
+		if (props.error.length > 0) return props.error
+		return localError.value
+	})
+
+	const invalid = computed((): boolean => {
+		return displayError.value.length > 0
+	})
+
+	const showRequired = computed((): boolean => {
+		return showLabel.value && isRequired.value
+	})
+
+	const hasMessage = computed((): boolean => {
+		return displayError.value.length > 0 || props.help.length > 0
+	})
+
+	const displayMessage = computed((): string => {
+		return displayError.value.length > 0 ? displayError.value : props.help
+	})
+
+	// class 顺序：基础 → 尺寸 → 形状 / 位置 → 状态。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-form-item'
+		if (showLabel.value && labelPosition.value === 'left') name += ' vx-form-item--left'
+		// 只作为滚动定位的锚点，不改外观；错误由控件的 invalid 和下面的错误行共同表达。
+		if (invalid.value) name += ' vx-form-item--invalid'
+		return name
+	})
+
+	const labelClass = computed((): string => {
+		let name = 'vx-form-item__label'
+		if (size.value === 'sm') name += ' vx-form-item__label--sm'
+		else if (size.value === 'lg') name += ' vx-form-item__label--lg'
+		if (labelPosition.value === 'top') name += ' vx-form-item__label--top'
+		return name
+	})
+
+	const labelTextClass = computed((): string => {
+		if (size.value === 'sm') return 'vx-form-item__label-text vx-form-item__label-text--sm'
+		if (size.value === 'lg') return 'vx-form-item__label-text vx-form-item__label-text--lg'
+		return 'vx-form-item__label-text'
+	})
+
+	const requiredClass = computed((): string => {
+		if (size.value === 'sm') return 'vx-form-item__required vx-form-item__required--sm'
+		if (size.value === 'lg') return 'vx-form-item__required vx-form-item__required--lg'
+		return 'vx-form-item__required'
+	})
+
+	const bodyClass = computed((): string => {
+		if (showLabel.value && labelPosition.value === 'left') {
+			return 'vx-form-item__body vx-form-item__body--left'
+		}
+		return 'vx-form-item__body'
+	})
+
+	const messageTextClass = computed((): string => {
+		if (displayError.value.length > 0) {
+			return 'vx-form-item__message-text vx-form-item__message-text--error'
+		}
+		return 'vx-form-item__message-text vx-form-item__message-text--help'
+	})
+
+	// 标签宽度只作用于左侧且带标题的项；顶部标签独占一行，labelWidth 不生效。
+	const labelStyle = computed((): string => {
+		if (!showLabel.value || labelPosition.value !== 'left') return ''
+		return `width: ${labelWidth.value};`
+	})
+
+	const validate = async (): Promise<boolean> => {
+		// 禁用的字段不该挡住提交：跳过规则、清掉旧错误，星号仍显示。
+		if (isDisabled.value) {
+			localError.value = ''
+			emit('validate', true, '')
+			return true
+		}
+		// 受控错误已经是失败态，不再跑本地规则，避免两份文案来回闪。
+		if (props.error.length > 0) {
+			emit('validate', false, props.error)
+			return false
+		}
+		const message = await runFormRules(props.value, props.rules)
+		localError.value = message
+		const passed = message.length === 0
+		emit('validate', passed, message)
+		return passed
+	}
+
+	const clearValidate = () => {
+		localError.value = ''
+	}
+
+	const instance: VxFormItemInstance = {
+		uid: uid,
+		prop: props.prop,
+		order: 0,
+		validate: validate,
+		clearValidate: clearValidate
+	}
+
+	// 标题归属是使用约定：输入类控件的标题在控件内部，这一项不要再传 label。
+	// App 端没有 DOM，拿不到槽内控件的 label；Web 开发环境用一次 DOM 查询提示，其余端只靠文档约束。
+	// #ifdef WEB
+	let warnedDoubleLabel = false
+
+	const warnDoubleLabel = () => {
+		if (props.label.length === 0 || warnedDoubleLabel) return
+		const component = getCurrentInstance()
+		const proxy: any = component != null ? component.proxy : null
+		const el: any = proxy != null ? proxy.$el : null
+		if (el == null || typeof el.querySelector !== 'function') return
+		try {
+			const controlLabel = el.querySelector('.vx-input__label-text, .vx-textarea__label-text')
+			if (controlLabel == null) return
+			warnedDoubleLabel = true
+			console.warn('[vx-form-item] 控件自带 label 时不要再给表单项传 label，标题以表单项为准。')
+		} catch (error) {
+			// 拿不到渲染树时安静跳过：这只是一条开发提示，不影响布局和校验。
+		}
+	}
+	// #endif
+
+	onMounted(() => {
+		if (form != null) form.register(instance)
+		// #ifdef WEB
+		warnDoubleLabel()
+		// #endif
+	})
+
+	onUnmounted(() => {
+		if (form != null) form.unregister(instance)
+	})
+
+	// 运行时换 prop 时重登记；order 重新发号，这一项会排到串行顺序的末尾。
+	watch(() => props.prop, () => {
+		if (form == null) return
+		form.unregister(instance)
+		instance.prop = props.prop
+		instance.order = 0
+		form.register(instance)
+	})
+
+	// 外部把受控错误清掉后，本地旧错误一起收掉，否则会立刻顶上来。
+	watch(() => props.error, (value: string) => {
+		if (value.length === 0) localError.value = ''
+	})
+</script>
+
+<style>
+	/* App 不能把自定义变量定义成另一个 var()。
+	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
+
+	/* 默认纵向：顶部标签或无标签的项都按「标题 → 内容 → 说明」排。
+	   左右位置由 --left 改成横向；项本身不画底色、描边和圆角，边界交给外面的卡片。 */
+	.vx-form-item {
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 左侧标签与控件同一行，控件区吃掉剩余宽度；错误行仍然落在控件区下方。 */
+	.vx-form-item--left {
+		flex-direction: row;
+		align-items: flex-start;
+	}
+
+	/* 标签占一列，最小高度等于控件高度，单行标题才和控件垂直居中。
+	   超长标题裁在列内，不把控件挤走；需要完整标题时加大 labelWidth。 */
+	.vx-form-item__label {
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		box-sizing: border-box;
+		min-height: var(--vx-control-height-md);
+		margin-right: var(--vx-space-md);
+		overflow: hidden;
+	}
+
+	.vx-form-item__label--sm {
+		min-height: var(--vx-control-height-sm);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.vx-form-item__label--lg {
+		min-height: var(--vx-control-height-lg);
+		margin-right: var(--vx-space-lg);
+	}
+
+	/* 顶部标签独占一行，不再有左侧宽度和右间距；和控件之间留一档 8。 */
+	.vx-form-item__label--top {
+		min-height: 0px;
+		width: 100%;
+		margin-right: 0px;
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.vx-form-item__label-text {
+		flex-shrink: 0;
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		white-space: nowrap;
+	}
+
+	.vx-form-item__label-text--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-form-item__label-text--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 星号跟标题同字号，只染色不加粗；跟在标题末尾，和文字留 4。 */
+	.vx-form-item__required {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-xs);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-danger);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+	}
+
+	.vx-form-item__required--sm {
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.vx-form-item__required--lg {
+		font-size: var(--vx-font-control-lg);
+		line-height: var(--vx-line-lg);
+	}
+
+	/* 内容区自己排：控件在上，说明 / 错误行在下。 */
+	.vx-form-item__body {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 左侧标签时吃掉剩余宽度；宽度归零再交给 flex，长内容才不会被撑出父级。 */
+	.vx-form-item__body--left {
+		flex: 1;
+		width: 0px;
+	}
+
+	.vx-form-item__content {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+	}
+
+	/* 说明和错误共用一行，固定 13 / 20 单行省略；上间距 4，不预留空行。 */
+	.vx-form-item__message {
+		flex-direction: row;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		margin-top: var(--vx-space-xs);
+	}
+
+	.vx-form-item__message-text {
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		font-size: var(--vx-font-control-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.vx-form-item__message-text--error {
+		color: var(--vx-color-danger);
+	}
+
+	.vx-form-item__message-text--help {
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 读屏专用的隐藏播报层：视觉上不占位、不接点击；文档站的 Vue 预览也认这段普通 CSS。 */
+	/* #ifdef WEB */
+	.vx-form-item__live {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.vx-form-item__live-text {
+		font-size: 1px;
+		line-height: 1px;
+	}
+	/* #endif */
+</style>

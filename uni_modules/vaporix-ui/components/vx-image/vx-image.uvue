@@ -1,0 +1,254 @@
+<template>
+	<!-- 图片底座：加载中铺占位底色，成功后淡入，失败只回落一次。
+	     预览、长按保存和裁剪分别属于 vx-gallery、业务和裁剪件，这里只抛事件。 -->
+	<!-- 失败态不重试也不加节流；重试由业务换 src（改值或换 key 都行）。 -->
+	<view :class="rootClass" :style="rootStyle" @click="onClick">
+		<image v-if="status !== 'error'" :class="imageClass" :src="src" :mode="imageMode" :lazy-load="lazyLoad"
+			@load="onLoad" @error="onError" />
+
+		<view v-if="status === 'error'" class="vx-image__fallback">
+			<vx-icon :name="errorIcon" size="md" color="var(--vx-color-disabled-text)" />
+			<text v-if="errorText.length > 0" class="vx-image__fallback-text">{{ errorText }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup>
+	import { VxImageMode, VxImageProps } from './props'
+
+	const props = withDefaults(defineProps<VxImageProps>(), {
+		src: '',
+		mode: 'aspectFill',
+		width: '100%',
+		height: '',
+		ratio: 0,
+		radius: 'none',
+		placeholder: true,
+		errorIcon: 'image',
+		errorText: '',
+		bgColor: '',
+		lazyLoad: false,
+		fade: true
+	})
+
+	const emit = defineEmits<{
+		load: []
+		error: []
+		click: []
+	}>()
+
+	// 加载中 / 成功 / 失败三态；空串直接算失败，不经过图片节点。
+	const status = ref<'loading' | 'success' | 'error'>(props.src.length > 0 ? 'loading' : 'error')
+
+	// ratio 只在能换算成 px 时生效；只提示一次，避免每次重算都刷控制台。
+	let ratioWarned = false
+
+	// 只用 image 支持的四档模式，其它值回落到裁剪填满。
+	const imageMode = computed((): VxImageMode => {
+		if (props.mode === 'aspectFit' || props.mode === 'scaleToFill' || props.mode === 'center') return props.mode
+		return 'aspectFill'
+	})
+
+	// 宽度空串按 100% 处理；值带不带单位由业务保证，组件只透传。
+	const widthValue = computed((): string => {
+		const text = props.width.trim()
+		return text.length > 0 ? text : '100%'
+	})
+
+	// 长度换算成像素：只认 px 和 rpx，其余（百分比、auto、var()）一律返回 0。
+	// rpx 必须排在 px 前面判断：'240rpx' 的结尾也是 'px'，先判 px 会把它当成长度 240r 的数字。
+	// rpx 按 750 基准换算，读不到窗口宽度时按 375 兜底。
+	const lengthToPx = (value: string): number => {
+		const text = value.trim().toLowerCase()
+		let numberText = ''
+		let unit = ''
+		if (text.length > 3 && text.substring(text.length - 3) === 'rpx') {
+			numberText = text.substring(0, text.length - 3)
+			unit = 'rpx'
+		} else if (text.length > 2 && text.substring(text.length - 2) === 'px') {
+			numberText = text.substring(0, text.length - 2)
+			unit = 'px'
+		} else {
+			return 0
+		}
+		const size = Number(numberText)
+		if (isNaN(size) || size <= 0) return 0
+		if (unit === 'px') return size
+		const windowInfo = uni.getSystemInfoSync()
+		const windowWidth = windowInfo.windowWidth > 0 ? windowInfo.windowWidth : 375
+		return size * windowWidth / 750
+	}
+
+	// 按 width / ratio 算出高度；宽是百分比或 auto 时返回 0，不改写高度。
+	// 换算只做一次，首次渲染就落在最终高度上，不写 createSelectorQuery 量宽。
+	const ratioHeight = (): number => {
+		const value = props.ratio
+		if (isNaN(value) || value <= 0) return 0
+		const widthPx = lengthToPx(widthValue.value)
+		if (widthPx <= 0) return 0
+		const height = widthPx / value
+		return Math.round(height * 100) / 100
+	}
+
+	// 高度优先级：height → ratio 换算 → 父级（100%）。
+	const resolvedHeight = computed((): string => {
+		const custom = props.height.trim()
+		if (custom.length > 0) return custom
+		const value = ratioHeight()
+		if (value > 0) return `${value}px`
+		return '100%'
+	})
+
+	// ratio 配百分比或 auto 宽度时不生效，开发阶段提示一次；不影响渲染。
+	const warnRatio = () => {
+		if (ratioWarned) return
+		if (props.ratio <= 0 || props.height.trim().length > 0) return
+		if (ratioHeight() > 0) return
+		ratioWarned = true
+		console.warn(`[vx-image] ratio 只在 width 为 px 或 rpx 时生效；当前 width="${widthValue.value}"，高度回落到父级。`)
+	}
+
+	// 占位底色：传了 bgColor 就一直是它；否则加载中和失败铺 default-soft，成功且关了 placeholder 时透明。
+	const hasFill = computed((): boolean => {
+		if (props.bgColor.length > 0) return true
+		if (status.value === 'error') return true
+		return props.placeholder
+	})
+
+	// class 顺序：基础 → 圆角 → 底色。和样式表一致，后写的盖过先写的。
+	const rootClass = computed((): string => {
+		let name = 'vx-image'
+		if (props.radius === 'sm' || props.radius === 'md' || props.radius === 'lg' || props.radius === 'circle') {
+			name += ` vx-image--radius-${props.radius}`
+		}
+		if (hasFill.value && props.bgColor.length === 0) name += ' vx-image--fill'
+		return name
+	})
+
+	const rootStyle = computed((): string => {
+		let style = `width: ${widthValue.value}; height: ${resolvedHeight.value};`
+		if (props.bgColor.length > 0) style += ` background-color: ${props.bgColor};`
+		return style
+	})
+
+	// fade 关掉时不挂过渡也不挂淡入前的透明度，图片一出现就是完整的。
+	// fade 打开时先 0，加载完成后加 --ready 到 1；不支持过渡的平台直接落位。
+	const imageClass = computed((): string => {
+		if (!props.fade) return 'vx-image__img vx-image__img--no-fade'
+		if (status.value === 'success') return 'vx-image__img vx-image__img--ready'
+		return 'vx-image__img'
+	})
+
+	// src 变化要回到加载中：失败记录清掉，旧图的淡入态一起收掉。
+	watch((): string => props.src, (value: string) => {
+		status.value = value.length > 0 ? 'loading' : 'error'
+	})
+
+	// 先写样式再量高度，首次渲染就能提示不支持组合的 ratio。
+	onMounted(() => {
+		warnRatio()
+	})
+
+	watch((): string => `${widthValue.value}|${props.ratio}|${props.height}`, () => {
+		warnRatio()
+	})
+
+	// 只在成功那一次抛；失败由 error 抛，两者互斥。
+	const onLoad = () => {
+		if (status.value === 'error') return
+		status.value = 'success'
+		emit('load')
+	}
+
+	// 失败只记一次，之后不再渲染 image，也就不会反复触发 error。
+	const onError = () => {
+		if (status.value === 'error') return
+		status.value = 'error'
+		emit('error')
+	}
+
+	// 失败态也抛点击：要不要换图、要不要重试由业务决定。
+	const onClick = () => {
+		emit('click')
+	}
+</script>
+
+<style>
+	/* 外框固定尺寸并裁掉四角，图片和占位都落在这一层里。
+	   flex-shrink 归零，放进横向 flex 时不被相邻元素压扁。
+	   底色默认透明，占位和失败态由 --fill 补 default-soft。 */
+	.vx-image {
+		display: flex;
+		position: relative;
+		box-sizing: border-box;
+		flex-direction: row;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		width: 100%;
+		height: 100%;
+		background-color: transparent;
+	}
+
+	/* 圆角只作用于外框；图片由外框的 overflow 裁切，不再单独写圆角。 */
+	.vx-image--radius-sm {
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.vx-image--radius-md {
+		border-radius: var(--vx-radius-md);
+	}
+
+	.vx-image--radius-lg {
+		border-radius: var(--vx-radius-lg);
+	}
+
+	.vx-image--radius-circle {
+		border-radius: var(--vx-radius-pill);
+	}
+
+	/* 加载中和失败态的占位底色；不跟随语义色，也不用骨架屏令牌。 */
+	.vx-image--fill {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 图片铺满外框，mode 决定裁切方式；淡入前的透明度只写在图片上，占位底色始终不透明。 */
+	.vx-image__img {
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+		transition-property: opacity;
+		transition-duration: 200ms;
+	}
+
+	.vx-image__img--ready {
+		opacity: 1;
+	}
+
+	/* fade 关闭时直接出现，也不挂过渡。 */
+	.vx-image__img--no-fade {
+		opacity: 1;
+	}
+
+	/* 失败态：图标在上、文案在下，整体居中；空间不够时由外框裁掉。 */
+	.vx-image__fallback {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
+	}
+
+	/* 文案用正文色：default-soft 上的次要灰只有 4.2:1，不到正文 4.5:1 的门槛；
+	   占位图标才是 disabled-text——它只是装饰，不承载状态文字。 */
+	.vx-image__fallback-text {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+		text-align: center;
+		color: var(--vx-color-text);
+	}
+</style>

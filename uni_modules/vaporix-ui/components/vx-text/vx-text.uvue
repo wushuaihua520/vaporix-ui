@@ -379,8 +379,14 @@
 		align-self: flex-start;
 		flex-shrink: 0;
 		box-sizing: border-box;
+	}
+
+	/* App 的 max-width 只接受数字和 px；百分比放到非 App，App 由父级宽度约束。 */
+	/* #ifndef APP */
+	.vx-text {
 		max-width: 100%;
 	}
+	/* #endif */
 
 	/* 块级铺满父级。min-width 收成 0，否则 flex 子项的最小宽度是整段文字，省略号出不来。 */
 	.vx-text--block {

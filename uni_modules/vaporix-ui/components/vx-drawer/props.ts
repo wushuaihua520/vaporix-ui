@@ -22,6 +22,6 @@ export type VxDrawerProps = {
 	maskColor?: string
 	/** 自定义面板底色，字面值；不传时用 --vx-color-surface。 */
 	bgColor?: string
-	/** 浮层层级，默认 90，和操作菜单、日期时间选择器、日历弹层同档。 */
+	/** 浮层层级，默认 1000，和操作菜单、日期时间选择器、日历弹层同档。 */
 	zIndex?: number
 }

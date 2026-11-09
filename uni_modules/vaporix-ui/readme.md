@@ -25,6 +25,8 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 // #endif
 ```
 
+App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css` 在 App 分支里内嵌 base64，字体随样式一起进包，不依赖 `uni_modules` 下 static 目录的同步。Web 用包内 ttf，小程序内嵌 base64。
+
 3. 页面根节点加 `vx-theme-light` 或 `vx-theme-dark`。
 4. 组件目录符合 easycom 规范，`autoscan` 会自动注册，不需要写 `custom` 正则。同时安装 `vaporix-ui-pro` 时也不要写一条 `^vx-(.*)`，否则所有 `vx-` 标签都会指向其中一个目录。
 
@@ -84,6 +86,10 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 <vx-input v-model="keyword" placeholder="请输入关键词" clearable />
 <vx-input v-model="ratio" label="百分比" label-width="80px" align="right" unit="%" type="digit" />
 <vx-input v-model="region" label="地区" label-width="80px" readonly arrow @click="pickRegion" />
+
+<vx-input v-model="query" variant="search" clearable placeholder="搜索商品、品牌或订单"
+	@search="onSearch" @cancel="onSearchCancel" />
+<vx-input v-model="query" variant="search" size="lg" clearable placeholder="大号搜索框" />
 ```
 
 | 属性 | 类型 | 默认值 | 说明 |
@@ -91,7 +97,7 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 | modelValue | string | `''` | 输入值，支持 `v-model` |
 | type | `text` \| `number` \| `digit` \| `tel` \| `idcard` | `text` | 键盘类型 |
 | size | `sm` \| `md` \| `lg` | `md` | 控件尺寸，对应 `--vx-control-height-*` |
-| variant | `outline` \| `line` | `outline` | 描边盒，或只保留底部分割线的表单行 |
+| variant | `outline` \| `line` \| `search` | `outline` | 描边盒、只保留底部分割线的表单行，或浅底胶囊搜索框 |
 | shape | `rounded` \| `pill` \| `square` | `rounded` | 外轮廓，`line` 形态不参与 |
 | placeholder | string | `''` | 占位文案 |
 | password | boolean | `false` | 密码输入 |
@@ -100,7 +106,7 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 | readonly | boolean | `false` | 只读展示，不唤起键盘，常用于选择器行 |
 | maxlength | number | `-1` | 最大长度，`-1` 不限制 |
 | invalid | boolean | `false` | 校验失败，只改描边 |
-| confirmType | `done` \| `send` \| `search` \| `next` \| `go` | `done` | 键盘确认键 |
+| confirmType | `done` \| `send` \| `search` \| `next` \| `go` | 按变体 | 键盘确认键；不传时 `search` 用 `search`，其余变体用 `done` |
 | label | string | `''` | 输入区左侧标题 |
 | labelWidth | string | `''` | 标题宽度，需带单位，如 `80px`；不传时按文字自适应 |
 | required | boolean | `false` | 标题前显示必填星号 |
@@ -113,6 +119,8 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 | input | 输入中，参数为当前字符串 |
 | change | 失焦或确认，参数为当前字符串 |
 | confirm | 点击确认键，参数为当前字符串 |
+| search | 点击确认键，参数为当前字符串；只在 `variant="search"` 下抛 |
+| cancel | 点击取消，无参数；`variant="search"` 下先清空并收起键盘再抛 |
 | clear | 点击清除，无参数 |
 | focus / blur | 焦点变化，无参数 |
 | click | 点击整行时触发，只读选择行用它打开选择器 |
@@ -127,6 +135,11 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 - 清除和选择箭头使用 `vx-icon` 的 `close` / `chevron-right`，尺寸随输入框档位。
 - 清除、箭头和后缀图标对齐右侧基线；单位与内容留 8px，箭头再补 4px 抵掉字形留白。
 - `shape` 只作用于 `variant="outline"`；`line` 只保留下边框，适合成组的表单行。
+- `variant="search"` 是输入框的搜索语义：浅底 `default-soft`、胶囊圆角、不画可见描边，前置 `search` 图标，左右内边距 12 / 16 / 16。默认不画描边，聚焦补 1px `primary`、`invalid` 补 1px `danger`，1px 透明边框让状态切换不跳行高。
+- 搜索变体不渲染 `label` / `required` / `unit`，同时传了会在开发环境提示一次；搜索框没有标题位，标题和单位放到外面。`disabled` / `readonly` 照常生效。
+- 搜索变体的键盘确认键默认是 `search`（放大镜 /「搜索」字样），点它照常抛 `confirm` 和 `search`，值正确；显式传 `confirmType` 时以传入值为准，`outline` / `line` 不传仍是 `done`。变体从 `search` 切回 `outline` / `line` 时键面跟着回到「完成」，不会残留。
+- 搜索变体的取消按钮固定在右侧，`--vx-font-control-*`、`--vx-color-text-secondary`，有值或聚焦时出现，其余时候不占位；`disabled` 时仍显示但点不动，`readonly` 不出现。「取消」会清空 `v-model`、收起键盘后抛 `cancel`。
+- 搜索变体的清除图标仍在取消左侧，`clearable` 打开且有值时出现。搜索图标沿用 `vx-icon` 的 `sm` / `md` 两档（14 / 18），`lg` 与 `md` 同档，不新增第四种图标尺寸；前置图标由组件画，不要再传 `prefix`。
 - 同一屏的表单行建议统一 `label-width`，让输入起点对齐。
 - `unit` 只作为展示，实际值仍是 `modelValue`；需要校验单位时在业务侧处理。
 
@@ -218,7 +231,7 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 ```css
 .row {
 	flex-direction: row;
-	align-items: baseline;
+	align-items: center;
 }
 
 .row__label {
@@ -419,7 +432,7 @@ import '@/uni_modules/vaporix-ui/libs/style/icons-extend.css'
 - `core` 只放高频常用图标，长尾/专业图标进 `extend`；不要为了少引入一个 CSS 把 core 撑大。
 - 用到 `extend` 图标必须引入 `icons-extend.css`，否则扩展字形不会加载；core 组件（如 `vx-input` 的 close / chevron）不依赖它。
 - 图标名与码点是公开契约：只追加、不改名、不复用。新增图标由维护者构建后随版本发布，不改运行时字体路径。
-- 四套字体在 App 读包内 ttf，H5 读相对路径，小程序内嵌 base64；不依赖网络字体。
+- 四套字体随组件库分发：App 端在样式里内嵌 base64，随代码一起进包，不依赖 static 目录；H5 用包内 ttf 的相对路径，小程序内嵌 base64；都不依赖网络字体。
 - 图标来源 Phosphor 2.1.2（MIT），core / extend 各 regular / fill；许可证全文在 `libs/icons/LICENSE`。
 
 ## vx-badge
@@ -1167,6 +1180,145 @@ const onSave = () => {
 - 页面边距只留一次：页面已经有 16 时，再套 `lg` 就是 32；通栏区块可以用它把内容拉回页面边距。
 - 从 ThorUI `tui-wing-blank` 迁移：`size` 的 `small` / `default` / `large` 换成 `sm` / `md` / `lg`；`gap` 保留，值要带单位（ThorUI 的 `64` 写成 `64rpx`）。`background` / `radius` 交给外层容器，`marginTop` / `marginBottom` 交给 `vx-white-space` 或页面布局，`click` 交给插槽里的内容。
 
+## vx-divider
+
+分割线。横向占满宽度，纵向由父级 flex 排布；支持虚线、中间文字和自定义间距。没有插槽、箭头、图标和点击态——它就是一条线。
+
+```vue
+<vx-divider />
+
+<vx-divider text="分组标题" />
+
+<vx-divider text="最近更新" align="left" />
+
+<vx-divider dashed />
+
+<vx-divider dashed text="更多内容" />
+
+<vx-divider :spacing="0" />
+
+<vx-divider spacing="24px" />
+
+<vx-divider text="品牌分隔" color="var(--vx-color-primary)" />
+
+<view class="stat-row">
+	<view class="stat-row__item">...</view>
+	<vx-divider direction="vertical" />
+	<view class="stat-row__item">...</view>
+</view>
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| direction | `horizontal` \| `vertical` | `horizontal` | 方向；纵向由父级 flex 排布 |
+| text | string | `''` | 横线中间的文字；空串就是一条线 |
+| align | `left` \| `center` \| `right` | `center` | 有文字时的位置；不认识的值按 `center` 处理 |
+| dashed | boolean | `false` | 1px 虚线 |
+| spacing | string \| number | `''` | 间距：数字按 px，字符串需带单位；横向是上下外边距，纵向是左右外边距；空串横向 12、纵向 16 |
+| color | string | `''` | 字面值，覆盖线色与文字色 |
+| height | string | `''` | 纵向线高度，需带单位；空串时撑满父级 |
+
+- 横线 1px，默认 `--vx-color-border`；不用 `divider` 令牌，那个只给列表行内的分割线。
+- 带文字时两侧各画一段等宽线（各占一半剩余宽度），`align` 决定文字位置：`left` 只画右侧线，`right` 只画左侧线，`center` 两侧都画。文字 13 / 20 / 400 次要灰，和线之间各留 12。
+- 虚线只换 `border-style: dashed`，不画背景渐变；1px 虚线的实线部分比实线淡，重要分隔用实线或换 `color`，不要加粗到 2px。
+- 竖线宽 1px，`align-self: stretch` 撑满父级那一行；`height` 传了才固定高度。组件不自动水平居中，父级怎么排就怎么落。
+- `spacing` 数字按 px；字符串原样透传，必须带单位。数字 0 会写成 `0px`，负值按外边距规则处理。
+- `color` 是字面值，同时改线色和文字色，不跟随主题；跟主题时传 `var(--vx-color-*)`。它不表达状态，状态由文案和周围内容表达。
+- 没有插槽、图标、箭头和点击态；需要图标或点击时用 `vx-list-cell`、`vx-section` 或业务自己的一行，不要往分割线里塞内容。
+- 外边距会叠加在相邻元素之后，页面节奏仍由 `vx-white-space` 或外层间距决定；不要用分割线代替区块留白。
+- 纵向线放进横向 flex 行；父级高度由内容撑开时它跟着撑满，父级 `align-items: center` 时也照样撑满。父级被压成固定高度时才需要传 `height`。
+
+## vx-safe-area
+
+安全区占位。顶部让开状态栏与刘海，底部让开手势条；不传 `height` 时读 `--uni-safe-area-inset-top` / `--uni-safe-area-inset-bottom`，传了就直接写高度。只做纵向，左右安全区由页面自己处理。
+
+```vue
+<view class="page">
+	<view class="page__body">...</view>
+	<view class="page__bar">...</view>
+	<vx-safe-area />
+</view>
+
+<vx-safe-area edge="top" bg-color="var(--vx-color-primary-soft)" />
+
+<vx-safe-area height="24px" bg-color="var(--vx-color-default-soft)" />
+
+<vx-safe-area edge="bottom" fixed height="44px" bg-color="var(--vx-color-surface)" />
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| edge | `top` \| `bottom` | `bottom` | 贴哪一边；不认识的边按 `bottom` 处理 |
+| height | string | `''` | 带单位；传了就不再读系统安全区 |
+| bgColor | string | `''` | 字面值，默认透明 |
+| fixed | boolean | `false` | 固定到窗口对应边，层级 1，与固定页脚同层 |
+
+- 不传 `height` 时，整条高度由 `padding-top` / `padding-bottom` 读 `var(--uni-safe-area-inset-top, 0px)` / `var(--uni-safe-area-inset-bottom, 0px)`。App 为状态栏 / 手势条高度；Web 上这两个变量取页面相对窗口的留白——有原生导航栏时顶部等于导航栏高度，有原生 tabBar 时底部等于 tabBar 高度，两者都没有时才为 0。已经让开原生导航栏或 tabBar 的页面不要再叠对应方向。
+- 传了 `height` 就直接写高度，不再读系统值；单位和值由业务保证。`height` 和 padding 不会叠加。
+- `fixed` 时贴住对应边，`z-index: 1`，与固定页脚同层；不加分割线、不做毛玻璃、不做渐变，也不放内容。
+- 固定条不占文档流：页面底部要自己留出高度，否则最后一段内容会被盖住。放在页面根节点，和滚动容器平级，不要放进 `scroll-view`。
+- `bgColor` 是字面值，默认透明；跟主题时传 `var(--vx-color-*)`。它只铺这一条，不表达状态，也不改系统状态栏的前景。
+- 不管左右安全区：横屏的左右刘海由页面或 `vx-navigation-bar` / `vx-status-bar` 的横屏留白处理。
+- 状态栏和导航栏页面仍用 `vx-navigation-bar` 的 `statusBar` 或 `vx-status-bar`，不要在最上面再叠一条安全区；这条只给普通页面做占位。
+- 组件没有插槽、事件、圆角、描边和阴影；需要底栏时把底栏放在它前面，不要让它兼任底栏。
+
+### 平台支持
+
+| 平台 | 系统安全区 | fixed |
+| --- | --- | --- |
+| Web | 自定义导航且无 tabBar 时 0；有原生导航栏 / tabBar 时等于对应高度 | 固定定位；不拦点击（`pointer-events: none`） |
+| App（Android / iOS / 鸿蒙） | 状态栏 / 刘海和手势条高度 | 固定定位，层级 1 |
+| 微信小程序 | 由宿主注入；变量为 0 时这条不占高度 | 固定定位，层级 1 |
+
+## vx-avatar
+
+头像。`src` 有值时先加载图片，失败后按 `text` 首字 → `icon` → `user` 图标逐级回落；`src` 变化会重新尝试。首字按 code point 取，emoji 不会被截成半个。描边画在外框内侧，不改变 32 / 40 / 48 的外框尺寸。
+
+```vue
+<vx-avatar src="/static/demo/card/avatar-cs.png" />
+
+<vx-avatar text="汽" />
+
+<vx-avatar icon="camera" type="primary" />
+
+<vx-avatar text="😀" size="lg" ring type="primary" />
+
+<vx-avatar shape="square" type="success" text="元" />
+
+<vx-avatar :src="avatarUrl" text="汽" @error="onAvatarError" @click="openProfile" />
+
+<vx-avatar text="元" bg-color="#1f2a44" color="#ffffff" />
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| src | string | `''` | 图片地址；空串直接走首字，不经过图片节点 |
+| text | string | `''` | 首字，先 `trim` 再按 code point 取第一个字符 |
+| icon | string | `''` | 字体图标名，取 `libs/icons/codepoints.ts` 里已有的名字；空值回落到 `user` |
+| size | `sm` \| `md` \| `lg` | `md` | 外框 32 / 40 / 48 |
+| shape | `circle` \| `rounded` \| `square` | `circle` | 圆形 / 小圆角 / 直角 |
+| type | `default` \| `primary` \| `success` \| `warning` \| `danger` \| `info` | `default` | 首字与图标的浅底和前景 |
+| ring | boolean | `false` | 2px 内描边，画在外框内侧，不改变外框尺寸 |
+| bgColor | string | `''` | 字面值，覆盖 `type` 的底色；图片态也铺 |
+| color | string | `''` | 字面值，覆盖首字和图标的前景色 |
+| mode | `aspectFill` \| `aspectFit` | `aspectFill` | 透传给原生 `image` 的填充方式 |
+
+| 事件 | 说明 | 参数 |
+| --- | --- | --- |
+| error | 图片加载失败时触发一次；`src` 为空不抛事件 | 无 |
+| click | 点击头像时触发；没有监听时不加按下态和指针 | 无 |
+
+- 回落链：`src` → `text` 首字 → `icon` → `user`。图片失败只记一次，不重试、不节流；`src` 变化后复位，重新走一遍图片。
+- 首字先 `trim`，取第一个 code unit；如果它是 `0xD800`–`0xDBFF` 的高位代理，连取两个 code unit。`😀` 这类 emoji 和中文首字都不会乱码。
+- 尺寸：外框 32 / 40 / 48，首字 12 / 14 / 16，图标 14 / 16 / 18；图标不走 `vx-icon` 的 14 / 18 / 22 三档。
+- 形状：`circle` 用 `--vx-radius-pill`；`rounded` 按档取 `--vx-radius-sm` / `md` / `lg`；`square` 为 0。图片由外框 `overflow: hidden` 裁切，不在 `<image>` 上加圆角。
+- 配色：底色取对应的 `*-soft`，前景取 `*-pressed`，`warning` 取 `warning-ink`，`default` 取正文色。图片态不铺底色，除非传了 `bgColor`。
+- `ring` 是绝对定位的内层 2px 描边，颜色固定 `surface`，半径跟外框一致；外框不加 `border`，32 / 40 / 48 不会变成 34 / 42 / 50。
+- 有 `@click` 监听时才加 `--vx-opacity-pressed` 按下态和 Web 指针；没有监听时不挂 `hover-class`，也不加指针。
+- 图片绝对定位铺满，`mode` 原样透传；加载中不显示占位动画，占位和骨架分别属于 `vx-image` 与 Pro 的骨架屏。
+- 没有 `badge`、在线状态点和 `disabled`：徽章用 `vx-badge` 的 `absolute` 包一层，状态点由业务用绝对定位的小圆点加；不做头像组、裁剪上传、点击放大和长按保存。
+- Web 端首字和图标设置了 `user-select: none`，拖选时不会把首字选走。
+
 ## vx-grid
 
 宫格容器。负责排列、外框和四角裁切，列数、尺寸、内容和点击都在 `vx-grid-item` 上。`variant="card"` 是默认的描边卡片；`plain` 只保留 `surface` 底，适合放进已有卡片或浅色区块。
@@ -1421,6 +1573,66 @@ const onSave = () => {
 - 组件不加外框、底色、阴影和外部间距；单行不写死宽度，图片靠左排，多行时铺满父级。页面左右边距和组间距由外层负责。
 - 只承载缩略图和点击，不放标题、数量、说明和主操作；标题、「查看全部」和删除等操作由外面的卡片、列表行或页面区块承担。
 - 从 ThorUI `tui-image-group` 迁移：`imageList` → `items`，`width` / `height` → `size`（只保留正方形三档），`radius` → `shape`（三档），`distance` → `offset`（px），`multiLine` → `wrap`，`borderWidth` / `borderColor` → `ring` / `ringColor`（固定 2px）。`isGroup` 不再需要，组件本身就是组合；`lazyLoad`、`fadeShow`、`webp`、`longpress` 和默认插槽不提供，这些平台属性和图内装饰由业务按需包一层；`@errorEvent` → `@error`，`@loaded` 不再提供，`@click` 回传 `index` 和完整 `item`。
+
+## vx-image
+
+图片底座。加载中铺占位底色，成功后 200ms 淡入，失败只回落一次；圆角只作用于外框，图片一起裁切。点击、加载和失败都只抛事件，预览、长按保存和裁剪不属于这一件。
+
+```vue
+<vx-image src="/static/demo/card/cover.jpg" width="240px" :ratio="1.78" radius="md" />
+
+<vx-image src="/static/demo/card/thumb-1.jpg" width="120px" height="80px" radius="sm" />
+
+<vx-image src="/static/demo/card/avatar-cs.png" width="64px" height="64px" radius="circle" />
+
+<vx-image src="/static/demo/card/missing.jpg" height="120px" error-text="图片加载失败"
+	@error="onImageError" />
+
+<vx-image :src="cover" height="180px" :fade="false" lazy-load @load="onImageLoad" @click="openGallery" />
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| src | string | `''` | 图片地址；空串直接走失败态 |
+| mode | `aspectFill` \| `aspectFit` \| `scaleToFill` \| `center` | `aspectFill` | 透传给原生 `image` 的 `mode`，其它值回落到 `aspectFill` |
+| width | string | `'100%'` | 宽度，需带单位 |
+| height | string | `''` | 高度，需带单位；空串时由 `ratio` 或父级高度决定 |
+| ratio | number | `0` | 宽 / 高，例如 `1.78`；`0` 表示不按比例，只在 `width` 是 px 或 rpx 时生效 |
+| radius | `none` \| `sm` \| `md` \| `lg` \| `circle` | `none` | 外框圆角；`circle` 取 `--vx-radius-pill` |
+| placeholder | boolean | `true` | 加载中铺占位底色；失败态始终铺 |
+| errorIcon | string | `'image'` | 失败态图标，取 `libs/icons/codepoints.ts` 里已有的名字；extend 图标要先引入 `icons-extend.css` |
+| errorText | string | `''` | 失败态文案；空串只显示图标 |
+| bgColor | string | `''` | 占位与失败态的底色，字面值；传了盖过 `--vx-color-default-soft`；成功态也留在外框上，`aspectFit` 的留白落在它上面 |
+| lazyLoad | boolean | `false` | 懒加载，仅 Web 和小程序生效；App 端由平台决定 |
+| fade | boolean | `true` | 加载完成后 200ms 淡入；关闭后直接出现 |
+
+| 事件 | 说明 | 参数 |
+| --- | --- | --- |
+| load | 图片加载完成时触发一次 | 无 |
+| error | 地址读不到时触发一次；`src` 为空直接显示失败态，不抛事件 | 无 |
+| click | 点击图片时触发，失败态也触发 | 无 |
+
+- 三态：加载中只铺占位底色（`placeholder=false` 时透明），成功显示图片并按 `fade` 淡入，失败显示 `errorIcon` 和 `errorText`，图标在上、文案在下，整组在框内垂直居中。
+- 占位底色优先级：`bgColor` → `--vx-color-default-soft`；失败态同色。不读骨架屏令牌，占位只表达「还没加载完」。
+- 尺寸优先级：`height` → `ratio` 换算 → `100%`。前两者都没有时高度由父级决定，父级必须有确定高度，否则盒子高度为 0。
+- `ratio` 只在 `width` 是 px 或 rpx 时生效：px 直接算，rpx 按 750 基准用 `uni.getSystemInfoSync().windowWidth` 换算成 px 再算。`width` 是百分比、`auto` 或 `var()` 时忽略并回落到父级高度，只 `console.warn` 一次。
+- `ratio` 在渲染时算好，不写 `createSelectorQuery` 量父级宽度，第一帧不会跳。横竖屏切换后改 `ratio` / `width` 或换 `:key` 才会重算。
+- `radius` 只写在外框上，外框 `overflow: hidden`，图片一起裁切；`circle` 取 `--vx-radius-pill`，其余取 `--vx-radius-sm` / `md` / `lg`。
+- `src` 变化会重置成加载中，旧图的淡入态一起清掉；同一个地址重新赋值不会重挂节点，也就不会触发新的 `load`，需要重播时换 `:key`。
+- 失败只回落一次：不重试、不加节流、不自动清空 `src`。重试由业务换 `src`（改值或换 `:key` 都行）。
+- `fade` 只作用在图片上，占位底色始终不透明；不支持过渡的平台直接落位，不会停在透明状态。
+- `errorText` 用 `--vx-font-sm` / `--vx-color-text`（`default-soft` 上的次要灰不到 4.5:1）；图标用 `disabled-text`。空间不够时由外框裁掉，不要把长说明塞进小图。
+- `bgColor` 是字面值，失败态的图标和文案不跟着变色，对比度由业务保证；跟主题时传 `var(--vx-color-*)`。
+- 只承载图片本身：不提供 `preview`、长按保存、裁剪、骨架扫光和占位插槽。点击预览由业务跳 Pro 的 `vx-gallery`，需要骨架时用 Pro 的 `vx-skeleton`。
+- `vx-card` / `vx-image-group` / `vx-upload` / `vx-waterfall` 里的裸 `<image>` 本版不迁移，它们是行为改动，另开一版处理。
+
+### 平台支持
+
+| 平台 | ratio | lazyLoad | fade |
+| --- | --- | --- | --- |
+| Web | `width` 为 px / rpx 时按脚本换算；百分比和 auto 不生效 | 生效 | `opacity` 过渡 200ms |
+| App（Android / iOS / 鸿蒙） | 同上 | 由平台处理，安卓默认懒加载 | 支持过渡时淡入，否则直接落位 |
+| 微信小程序 | 同上 | 生效 | `opacity` 过渡 200ms |
 
 ## vx-loading
 
@@ -2220,6 +2432,103 @@ const steps = [
 - 进度条是 `view` / `text` 组合，Web 端不进入 Tab 顺序；需要读屏时在 `label` 或旁边给出文字说明，`0%` 和 `100%` 也显示数值。
 - 从 ThorUI `tui-progress` 迁移：`showInfo` → `showText`，`activeColor` → `bgColor`，`backgroundColor` → `trackColor`，`width` → `size` / `height`，`radius` → `shape`；`duration` 从「每 1% 毫秒」改为「整段毫秒」，`activeend` → `end`。`percentWidth` 由 `--vx-progress-value-min-*` 接管，`size` / `color` 保留但分别改为尺寸档位和数值颜色。
 
+## vx-popup
+
+弹出层。遮罩铺满页面，面板按 `placement` 从一条边滑出或悬在中间；只圆朝向页面的那一侧，进出场只改位移和透明度。内容由业务给，组件不带标题栏、动作列表和滚动容器。
+
+```vue
+<vx-popup v-model:show="bottomVisible" closeable>
+	<view class="popup-panel">
+		<text class="popup-panel__title">筛选</text>
+		<vx-checkbox-group v-model="filters" layout="list">...</vx-checkbox-group>
+	</view>
+</vx-popup>
+
+<vx-popup v-model:show="menuVisible" placement="left" width="86%" closeable>
+	<vx-list-view title="全部菜单">...</vx-list-view>
+</vx-popup>
+
+<vx-popup v-model:show="shareVisible" placement="top" height="280px">
+	<view class="popup-panel">分享</view>
+</vx-popup>
+
+<vx-popup ref="popupRef" v-model:show="confirmVisible" placement="center" :mask-closable="false">
+	<view class="popup-panel">
+		<text class="popup-panel__title">删除这条记录？</text>
+		<vx-button block type="danger" text="删除" @click="onDelete" />
+	</view>
+</vx-popup>
+```
+
+```ts
+const bottomVisible = ref(false)
+const menuVisible = ref(false)
+const shareVisible = ref(false)
+const confirmVisible = ref(false)
+const filters = ref<string[]>([])
+
+// 组件实例类型按组件名生成，和 easycom 组件一样直接用，不需要 import。
+const popupRef = ref<VxPopupComponentPublicInstance | null>(null)
+
+const openConfirm = () => {
+	popupRef.value?.open?.()
+}
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| show | boolean | `false` | 显示弹出层，支持 `v-model:show`；点可关闭的遮罩或关闭叉回写 `false` |
+| placement | `top` \| `bottom` \| `left` \| `right` \| `center` | `bottom` | 弹出方向 |
+| width | string | `''` | 左右贴边和居中的宽度，需带单位，如 `320px`、`86%`；不传时左右用 `--vx-popup-width`，居中按内容并收在 `--vx-popup-max-width` 内 |
+| height | string | `''` | 上下贴边的高度，需带单位，如 `320px`、`60%`；不传时按内容高度排 |
+| round | `none` \| `sm` \| `md` \| `lg` | `lg` | 圆角档位；只圆朝向页面的那一侧，贴边那条边保持直角，居中四角全圆 |
+| closeable | boolean | `false` | 内容上方显示一行关闭叉，点击收起并抛 `close` |
+| maskClosable | boolean | `true` | 点击遮罩收起并抛 `close`；关掉后点遮罩只抛 `click-mask` |
+| maskColor | string | `''` | 自定义遮罩色，字面值 |
+| safeArea | boolean | `true` | 上下贴边时由面板内边距让开顶部或底部安全区；左右和居中的侧边安全区始终让开 |
+| zIndex | number | `90` | 浮层层级 |
+| duration | number | `220` | 进出场时长，单位毫秒；`0` 直接切换，Web 上跟随系统的减少动效 |
+| lockScroll | boolean | `true` | 打开时锁住页面滚动；只在 Web 生效，见「平台支持」 |
+
+| 事件 | 说明 | 参数 |
+| --- | --- | --- |
+| open | 面板开始入场时触发，`v-model:show` 改 `true` 和调 `open()` 都算；首次渲染就显示时不触发 | 无 |
+| close | 用户点可关闭的遮罩或关闭叉时触发；默认先收起 | 无 |
+| click-mask | 点遮罩总是触发；`maskClosable=false` 时只触发它，不关闭 | 无 |
+| update:show | `v-model:show` 同步，收起时回传 `false` | boolean |
+
+| 插槽 | 说明 |
+| --- | --- |
+| default | 面板内容；组件不内置内边距、标题栏、动作区和滚动容器 |
+
+| 方法 | 说明 |
+| --- | --- |
+| open() | 打开弹出层 |
+| close() | 立刻收起，不抛 `close` |
+| toggle() | 打开或收起 |
+
+- 上下贴边占满宽度，高度由内容或 `height` 决定；左右贴边占满高度、宽 280（`--vx-popup-width`），`width` 必须带单位；居中按内容宽度排、最宽 480（`--vx-popup-max-width`），四周留 24。
+- 贴住屏幕的一侧不圆角，朝向页面的两角取 `round`；居中四角全圆。`round` 只改外轮廓，内容不跟着裁圆角。
+- 面板用 `surface` 底，不加阴影；遮罩用 `--vx-color-mask`，只压页面。居中面板四周加 1px `border`，从遮罩里分出边界。
+- 面板不预留内容内边距：内容自己留 16；上下贴边由面板内边距让开顶部或底部安全区，左右面板两头都让，横屏的左右安全区每档都让。
+- 关闭叉在内容上方单占一行，行高沿用列表行 44、图标 18；贴顶时不会钻进状态栏，也不会压住业务内容。
+- 点可关闭的遮罩收起并抛 `close`；`maskClosable=false` 时点遮罩只抛 `click-mask`，要保留关闭叉或内容里的关闭按钮。`close()` 只收起，不抛 `close`。
+- 只过渡 `transform` 和 `opacity`：贴边面板从所在边滑入，居中面板只淡入。`duration` 默认 220，`0` 直接切换；Web 上系统打开「减少动效」时按 0 处理。
+- 关闭动画走完（`duration` 加一帧）才卸载内容；关闭过程中再打开会从当前位置回到终点，不会叠出第二个面板，也不会卡在中间态。
+- 内容超过一屏时先给 `height`，再在内容里放 `scroll-view` 接管滚动；组件不内置滚动容器，也不接管焦点。
+- 层级默认 90，和抽屉、操作菜单同档；低于数字键盘 95、消息提示 100、弹框 110、加载浮层 150 和轻提示 200。组件不自动叠加，嵌套两个时由业务自己传 `zIndex`。
+- 挂在页面根节点，和滚动容器平级；不要放进 `scroll-view`、卡片或 `fixed` 容器。同一屏只开一个。
+- Web 端遮罩标 `aria-hidden`，关闭叉带可读标签；内容区不抢焦点，键盘出口由业务提供。
+- 弹出层只承载内容，不做动作列表、标题栏、跟手拖动和路由；这些用操作菜单、抽屉和弹框。
+
+### 平台支持
+
+| 平台 | 滚动锁 | 进出场 | 说明 |
+| --- | --- | --- | --- |
+| Web | 打开时给页面根节点加 `.vx-scroll-lock`（`overflow: hidden`），收起后移除 | `transform` 和 `opacity` 过渡 | 系统打开「减少动效」时按 `duration=0` 处理 |
+| App | 不锁页面滚动 | 同一段过渡；不支持过渡时直接落位 | 需要整页固定时，页面用 `scroll-view` 包内容，再用 `v-if` 控制页面结构 |
+| 微信小程序 | 只拦遮罩上的手势 | 同一段过渡 | 页面根节点拿不到；整页锁定要页面自己用 `page-meta` 或滚动容器处理 |
+
 ## vx-actionsheet
 
 操作菜单。底部弹层，用 `items` 列动作；可选的标题、说明和取消按钮，支持主操作、危险操作、禁用和选中态。
@@ -2814,6 +3123,155 @@ const marks = ref([
 - `fixedHeight` 不再需要：行数按当月占几周算，网格不按屏幕宽度算高度。`isActiveCurrent` 固定打开（今天只换数字颜色），`isChange` 改成独立的 `monthChange`。
 - `radius` / `color` / `activeColor` / `rangeColor` / `monthArrowColor` / `yearArrowColor` / `btnBgColor` 不再需要：字号、颜色和圆角都走令牌，换品牌色用 `type` 的语义色。`status` 换成按日期匹配的 `marks`，`tui-iconfont` 换成 `vx-icon`。
 
+## vx-form
+
+表单容器。把一组 `vx-form-item` 收进来，按注册顺序串行校验；`validate()` 失败时可以把页面滚到第一个错误项。组件不托管数据，也不内置提交按钮：业务的值仍在各控件的 `v-model` 上，提交由页面调 `validate()` 后自己处理。
+
+```vue
+<template>
+	<view class="page vx-theme-light">
+		<vx-form ref="formRef" label-width="72px" label-position="left" size="md" :scroll-to-error="true">
+			<vx-form-item prop="phone" :value="model.phone" :rules="phoneRules">
+				<template #default="{ invalid }">
+					<vx-input v-model="model.phone" label="手机号" label-width="72px" type="number"
+						:invalid="invalid" required clearable placeholder="请输入手机号" />
+				</template>
+			</vx-form-item>
+			<vx-form-item prop="notify" label="接收通知" :value="model.notify" :rules="notifyRules">
+				<vx-switch v-model="model.notify" />
+			</vx-form-item>
+		</vx-form>
+		<vx-button block type="primary" text="提交" @click="onSubmit" />
+	</view>
+</template>
+
+<script setup>
+	import { VxFormRule } from '@/uni_modules/vaporix-ui/libs/form'
+
+	const formRef = ref(null)
+	const model = ref({ phone: '', notify: false })
+	const phoneRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入手机号' },
+		{ type: 'phone' }
+	]
+	const notifyRules: Array<VxFormRule> = [{ required: true, message: '请先开启通知' }]
+
+	const onSubmit = async () => {
+		const form = formRef.value
+		if (form == null) return
+		const passed = await form.validate()
+		if (!passed) return
+		// 校验通过，业务自己发请求、跳转或埋点。
+	}
+</script>
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| labelWidth | string | `'72px'` | 整组标签宽，必须带单位，纯数字或空串在开发阶段提示一次；只影响 `labelPosition="left"` 且有 `label` 的项 |
+| labelPosition | `left` \| `top` | `left` | 标签在左还是在上；`top` 时标签独占一行 |
+| size | `sm` \| `md` \| `lg` | `md` | 标签的字号和行距档位，下发给每个 `vx-form-item` |
+| disabled | boolean | `false` | 整组禁用：校验跳过，星号仍显示；控件自己的禁用态由业务传给控件 |
+| scrollToError | boolean | `true` | 校验失败后滚到第一个错误项；量不到位置时静默跳过 |
+
+| 方法 | 说明 |
+| --- | --- |
+| validate() | 按注册顺序串行校验，遇到第一个失败立即停止并返回 `false`；`scrollToError` 打开时滚过去 |
+| validateField(prop) | 只校验一项，返回 `Promise<boolean>`；不自动滚动，适合输入框的 `change` / `blur`；prop 没有匹配项时开发阶段提示一次，仍返回 `true` |
+| clearValidate(prop?) | 不传清全部，只清错误态，不碰业务数据；受控 `error` 仍由父级改 prop 收起 |
+
+- 不提供 `@submit` / `@fail`：表单不含提交按钮，事件没有触发源，只留方法。
+- 不接收 `model`：`vx-form-item` 只认 `value`，值仍在各控件的 `v-model` 上。
+- 项在 `onMounted` 向容器注册 `{ prop, order, validate, clearValidate }`，在 `onUnmounted` 摘除；`prop` 为空只做布局。同一个 `prop` 只认先注册者，控制台提示一次。
+- `validate()` 串行、不并发：前一项失败时不启动后一项，错误定位也不会被后面的项抢走。
+- 整组 `disabled` 时，该项跳过校验（禁用的字段不该挡住提交），星号仍显示；字段单独不可编辑时，业务不要给它 `rules`，或把它从校验里去掉。
+- 容器不画底色、描边、圆角和外部间距；项与项之间的距离由页面、卡片或 `vx-white-space` 决定。
+
+### 平台支持
+
+- Web：错误文案另有一层隐藏的 `aria-live="polite"` 播报层；`scrollToError` 走 `uni.pageScrollTo`，滚动的是 window。
+- Android / iOS / 鸿蒙：没有 aria 属性；页面滚动由最外层 `scroll-view` 模拟时 `pageScrollTo` 才会跟着滚，页面嵌在内部 `scroll-view` 里时静默跳过。
+- 微信小程序：`pageScrollTo` 支持 `scrollTop`；`aria-live` 不生效。
+- 除 Web 的 `aria-live` 外没有平台专属属性和选择器；选择器只用一个 class 和标签名，蒸汽模式可以编译。
+
+## vx-form-item
+
+表单项。只负责标题、必填星号、常驻说明和错误行；控件放进默认插槽，插槽暴露 `{ invalid, error }`，把 `invalid` 传给控件的同名属性即可。校验规则由 `libs/form.ts` 的 `runFormRules` 执行。
+
+```vue
+<!-- 输入类控件：标题在控件内部，form-item 不再传 label，只接错误行 -->
+<vx-form-item prop="email" :value="email" :rules="emailRules" help="用于接收发货通知">
+	<template #default="{ invalid }">
+		<vx-input v-model="email" label="邮箱" label-width="72px" :invalid="invalid" required
+			placeholder="name@example.com" />
+	</template>
+</vx-form-item>
+
+<!-- 非输入类控件：没有标题位，label 交给 form-item，星号也由它画 -->
+<vx-form-item prop="notify" label="接收通知" :value="notify" :rules="notifyRules">
+	<vx-switch v-model="notify" />
+</vx-form-item>
+
+<!-- 受控错误：服务端回包后写 error，清空后回到本地校验结果 -->
+<vx-form-item prop="phone" :value="phone" :rules="phoneRules" :error="serverError" help="示例：13800138000">
+	<template #default="{ invalid }">
+		<vx-input v-model="phone" label="手机号" label-width="72px" :invalid="invalid" required />
+	</template>
+</vx-form-item>
+```
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| prop | string | `''` | 字段键，同组唯一；为空时只做布局，不参与校验 |
+| value | string \| number \| boolean \| string[] | `''` | 要校验的值，和控件的 `v-model` 绑同一份数据 |
+| rules | VxFormRule[] | `[]` | 见下方规则表；空数组表示只做布局 |
+| label | string | `''` | 只有非输入类控件才传；输入类控件的标题在控件内部 |
+| required | boolean \| null | `null` | 不传时按 `rules` 里有没有 `required: true` 推断；显式 `false` 可关掉星号 |
+| help | string | `''` | 常驻说明，次要色；出现错误时被错误文案替换 |
+| error | string | `''` | 受控错误文案，非空时以它为准，忽略本地校验结果 |
+
+| 事件 | 说明 | 参数 |
+| --- | --- | --- |
+| validate | 单项校验结束就抛一次，用于埋点和联动 | `(ok: boolean, message: string)` |
+
+| 插槽 | 说明 |
+| --- | --- |
+| 默认插槽 | 控件内容，作用域 `{ invalid, error }`；把 `invalid` 传给控件的 `invalid` |
+
+### rules
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| required | boolean | 必填。空值只跑这一项，不再继续跑格式规则 |
+| min | number | 下限：字符串按长度、数字按数值、数组按元素个数 |
+| max | number | 上限：同上 |
+| len | number | 定长：字符串按长度、数字按数值相等、数组按元素个数 |
+| pattern | string | 字符串正则，内部走 `new RegExp`；不直接传 RegExp 实例 |
+| type | `phone` \| `email` \| `idcard` \| `url` \| `number` | 内置格式 |
+| message | string | 失败文案；不传时用内置中文文案 |
+| validator | `(value) => string \| Promise<string>` | 返回 `''` 通过，返回文案即失败；抛异常按失败处理 |
+
+| 内置 type | 判定 |
+| --- | --- |
+| phone | `^1[3-9]\d{9}$`，默认「手机号格式不正确」 |
+| email | `^[^\s@]+@[^\s@]+\.[^\s@]{2,}$`，默认「邮箱格式不正确」 |
+| idcard | `^\d{17}[\dXx]$`，默认「身份证号格式不正确」 |
+| url | `^https?:\/\/\S+$`，默认「链接格式不正确」 |
+| number | `parseFloat` 后 `isFinite`，且整串必须是数字；默认「请输入数字」 |
+
+- 空值：`''`、`null`、`undefined`、`false`（未勾选的开关 / 协议）、空数组和 `NaN`；`0` 是有效数值，不算空。空值只看 `required`，非必填直接通过，避免空字段报「格式不对」。
+- 非空值依次跑 `len` → `min` / `max` → `type` → `pattern` → `validator`，第一个失败即返回。`min` / `max` / `len` 对不同类型分别按长度、数值大小和元素个数计算。
+- `pattern` 写错（`new RegExp` 抛异常）按失败处理，用 `message` 或「格式不正确」，不把配置错误抛给页面。
+- `validator` 可以同步返回字符串，也可以返回 Promise；抛异常时用异常的 `message`，拿不到就用「校验未通过」。
+- 受控 `error` 非空时跳过本地规则，直接显示它，`validate()` 返回 `false`；父级把 `error` 清成空串后，本地错误一起收掉。
+- 标题归属只有一条规则：有标题位的控件（`vx-input`、`vx-textarea`，以及 `vx-picker` / `vx-datetime` 的只读触发行）标题在控件内部，表单项**不传** `label`；`vx-switch`、`vx-checkbox-group`、`vx-radio-group`、`vx-rate`、`vx-number-box`、上传、图片这类没有标题位的控件**传** `label`，由表单项画标题行并吃 `labelWidth`。两个都出现时以表单项为准，标题在文档里约定，不在运行时重复。
+- `labelPosition="top"` 时标签独占一行、`labelWidth` 不生效；左侧标签的最小高度等于控件高度，单行标题和控件垂直居中。
+- 星号在标题末尾，颜色 `--vx-color-danger`；项没有 `label` 时不画星号，交给控件自己的 `required`。
+- `help` 和错误共用一行：有错误显示错误，错误消失后说明回来；两者都没有时不占高度，不预留空行。错误行固定 13 / 20，单行省略，上间距 4。
+- `size` 改标题的字号、行距和左侧标签的最小高度；错误行固定 `--vx-font-control-sm`，不跟着放大。
+- 禁用的项跳过校验，`@validate` 仍抛一次 `true`；控件自己的禁用态由业务传给控件。
+- 默认插槽内容自己带尺寸和颜色；插槽里需要独立操作的控件自己 `@click.stop`。
+
 ## vx-tabs
 
 页签切换。同一屏放 2–5 个等宽页签，选中项加字重，再用短线、浅底胶囊或反色条标出位置。`v-model` 是当前索引，`items` 按顺序渲染。
@@ -2828,6 +3286,14 @@ const marks = ref([
 <vx-tabs v-model="active" :items="tabs" bg-color="var(--vx-color-primary)"
 	color="var(--vx-color-on-primary)" variant="inverse" />
 <vx-tabs v-model="active" :items="tabs" :divider="false" />
+
+<!-- 竖排：每项一整行，右侧内容由业务按 active 渲染 -->
+<view class="side">
+	<vx-tabs v-model="active" :items="sections" direction="vertical" />
+	<view class="side__body">…</view>
+</view>
+<vx-tabs v-model="active" :items="sections" direction="vertical" variant="soft" :vertical-width="120" />
+<vx-tabs v-model="active" :items="sections" direction="vertical" :vertical-width="0" />
 ```
 
 ```ts
@@ -2844,7 +3310,9 @@ const tabs = [
 | --- | --- | --- | --- |
 | items | `VxTabItem[]` | `[]` | 页签，按顺序等宽排列；空数组不渲染 |
 | modelValue | number | `0` | 当前索引，支持 `v-model`；负数或越界不选中，非整数四舍五入 |
-| variant | `line` \| `soft` \| `inverse` | `line` | 下划线、浅底胶囊、反色条 |
+| variant | `line` \| `soft` \| `inverse` | `line` | 下划线、浅底胶囊、反色条；竖排不支持 `inverse` |
+| direction | `horizontal` \| `vertical` | `horizontal` | 横向等宽页签，或纵向整行的侧边导航 |
+| verticalWidth | number | `96` | 竖排宽度，单位 px；小于等于 0 时跟随容器撑满 |
 | size | `sm` \| `md` \| `lg` | `md` | 高度、字号和角标档位 |
 | type | `primary` \| `success` \| `info` \| `warning` \| `danger` \| `default` | `primary` | 选中文字、下划线和浅底胶囊的语义色 |
 | divider | boolean | `true` | 底部 1px 分割线；`inverse` 始终不画 |
@@ -2868,6 +3336,9 @@ const tabs = [
 | update:modelValue | `v-model` 同步当前索引 | 索引 number |
 
 - 高度沿用列表行 44 / 52 / 60；选中胶囊 28 / 32 / 36；下划线固定 24 / 32 / 40 × 2px，有分割线时下移 1px 盖住底边（`--vx-tabs-indicator-out`）；导航行左右各留 12px。令牌 `--vx-tabs-indicator-*` 亮色、暗色各一份。
+- `direction="vertical"` 是页签的另一种排布，不是新组件：每项占一整行，行高仍是 44 / 52 / 60，宽度默认 96px（`verticalWidth`，传 0 跟随容器）。竖排把底部下划线换成左侧 2px 竖条，高度取行高的 60%、垂直居中，颜色仍跟 `type`；选中项整行铺 `default-soft` 浅底（`soft` 外观铺对应的 `*-soft`），文字取 `*-pressed` 并加到 600 字重。
+- 竖排的角标改成行内排布：文案和角标排在同一行，角标跟在文案后面、垂直居中，右侧留在 12px 内边距内侧，不再绝对定位、不压上一行的分割线；文案占满剩余宽度并单行省略，角标完整保留，`verticalWidth=96` 时四字文案省略也不会盖住文字。`badge` 超过 `badgeMax` 显示 `max+`、`dot` 优先于计数的规则与横向一致，仍由 `vx-badge` 处理。
+- 竖排的 `divider` 从底部一条通栏底线变成项与项之间的 1px 横线，最后一项不画，右侧也不画竖线；竖排不支持 `variant="inverse"`，传了会按 `soft` 渲染并在开发环境提示一次。竖排不含内容区，右侧内容由业务按 `active` 自己放，`v-model` 和 `change` 语义与横向完全一致。
 - `line` 只换文字和短线；`soft` 用 `*-soft` 浅底，选中文字取对应的 `*-pressed`；`inverse` 用正文色铺满整条，选中项浮一个 `surface` 胶囊，且不画分割线。`inverse` 一屏最多一条，只给顶层入口。
 - `type` 表达状态，普通导航保持 `primary`；`warning` 选中文字用 `warning-ink`，下划线用 `warning-pressed`；`soft` 的选中文字用对应的 `*-pressed`。
 - `items[].disabled` 只停该页签的点击：文字转灰且保持不透明，角标单独降透明度，仍占位；反色条上的未选中禁用项只降透明度，保留反色文字。点击停在页签上。不要把当前项设为禁用；禁用不要用来掩盖权限问题。
@@ -3768,5 +4239,12 @@ const onClose = () => {
 | vx-checkbox-group | 多项选择器分组 | 0.58.0 |
 | vx-checkbox | 多项选择器 | 0.58.0 |
 | vx-switch | 开关选择器 | 0.58.0 |
+| vx-form | 表单容器 | 0.62.0 |
+| vx-form-item | 表单项 | 0.62.0 |
+| vx-popup | 弹出层 | 0.63.0 |
+| vx-image | 图片 | 0.64.0 |
+| vx-divider | 分割线 | 0.64.0 |
+| vx-safe-area | 安全区 | 0.64.0 |
+| vx-avatar | 头像 | 0.65.0 |
 
 付费组件在 `vaporix-ui-pro`。当前提供 `vx-gallery` 图片预览（1.0.0）、`vx-loader` 加载动画（1.1.0）、`vx-index-list` 索引列表（1.5.0）、`vx-circular-progress` 环形进度条（1.6.0）、`vx-msg` 提示页（1.7.0）、`vx-slider` 滑动选择器（1.8.0）、`vx-segmented-control` 分段器（1.10.0）、`vx-divide-list` 分隔列表（1.11.0）、`vx-select` 选择框（1.12.0）、`vx-data-checkbox` 数据选择器（1.15.0）、`vx-code-input` 验证码输入框（1.16.0）、`vx-upload` 图片上传（1.21.0）、`vx-skeleton` 骨架屏（1.22.0）、`vx-landscape` 压屏窗（1.23.0）、`vx-pagination` 分页器（1.24.0）、`vx-waterfall` 瀑布流（1.25.0）、`vx-keyboard` 数字键盘（1.26.0）、`vx-keyboard-input` 数字键盘输入框（1.26.0）、`vx-tree-view` 树型菜单（1.27.0），用法和 API 见该模块的 `readme.md` 与文档站；`vx-gallery` 用免费库 0.37.1 起的 `--vx-gallery-*` / `--vx-color-viewer-*` 令牌，`vx-loader` 用 0.38.0 起的 `--vx-loader-*` 令牌，`vx-index-list` 用 0.42.0 起的 `--vx-index-*` 令牌，`vx-circular-progress` 的尺寸与 0.44.0 起的 `--vx-circular-progress-*` 令牌同值，`vx-msg` 用 0.45.0 起的 `--vx-msg-*` 令牌，`vx-slider` 用 0.46.0 起的 `--vx-slider-*` 令牌，`vx-segmented-control` / `vx-data-checkbox` 也不新增令牌，`vx-divide-list` 用 0.49.0 起的令牌，`vx-select` 用 0.50.0 起的令牌，`vx-code-input` 用 0.54.0 起的 `--vx-code-*` 令牌，`vx-skeleton` 用 0.59.0 起的 `--vx-skeleton-*` 令牌，`vx-keyboard` / `vx-keyboard-input` 用 0.60.0 起的 `--vx-keyboard-*` 令牌，`vx-tree-view` 用 0.61.0 起的 `--vx-tree-*` 令牌，`vx-landscape` / `vx-pagination` / `vx-waterfall` 也不新增令牌。0.56.0 起 `vx-row`、`vx-col`、`vx-status-bar`，0.57.0 起 `vx-text`、`vx-link`，0.58.0 起 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch` 已迁入免费库，不再依赖付费模块。

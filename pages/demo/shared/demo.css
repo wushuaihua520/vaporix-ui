@@ -4027,3 +4027,160 @@
 	font-size: var(--vx-font-sm);
 	line-height: var(--vx-line-sm);
 }
+
+/* ---------- 弹出层实验室 ---------- */
+
+/* 面板本身不带内边距，内容由业务自己留白；简单面板统一用这一层补 16。 */
+.demo-popup-body {
+	flex-direction: column;
+	padding: var(--vx-space-lg);
+}
+
+.demo-popup-title {
+	margin-bottom: var(--vx-space-xs);
+	color: var(--vx-color-text);
+	font-size: var(--vx-font-lg);
+	line-height: var(--vx-line-lg);
+	font-weight: var(--vx-weight-semibold);
+}
+
+.demo-popup-text {
+	margin-bottom: var(--vx-space-lg);
+	color: var(--vx-color-text-secondary);
+	font-size: var(--vx-font-md);
+	line-height: var(--vx-line-md);
+}
+
+/* 状态行：左边写当前值，右边标出对应的属性或事件，和组件里的浅底同档。 */
+.demo-popup-status {
+	flex-direction: row;
+	align-items: center;
+	box-sizing: border-box;
+	width: 100%;
+	margin-top: var(--vx-space-md);
+	padding: var(--vx-space-sm) var(--vx-space-md);
+	background-color: var(--vx-color-default-soft);
+	border-radius: var(--vx-radius-sm);
+}
+
+.demo-popup-status__text {
+	flex: 1;
+	min-width: 0;
+	color: var(--vx-color-text);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+}
+
+.demo-popup-status__meta {
+	flex-shrink: 0;
+	margin-left: var(--vx-space-md);
+	color: var(--vx-color-text-secondary);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+}
+
+/* 安全区演示：按钮行贴着面板底边，手势条的留白由面板内边距补在下面。 */
+.demo-popup-safe {
+	flex-direction: column;
+	padding: var(--vx-space-lg);
+}
+
+.demo-popup-safe__row {
+	flex-direction: row;
+}
+
+.demo-popup-safe__item {
+	flex: 1;
+	margin-right: var(--vx-space-sm);
+}
+
+.demo-popup-safe__item--last {
+	margin-right: 0;
+}
+
+/* 固定高度面板分三段：头部和底栏不收缩，中间的正文吃剩余高度并自己滚。
+   height: 0 先把 flex 基准压成 0，App 的 scroll-view 才会按分到的空间滚。 */
+.demo-popup-panel {
+	flex: 1;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.demo-popup-panel__head {
+	flex-shrink: 0;
+	box-sizing: border-box;
+	width: 100%;
+	padding: var(--vx-space-lg);
+	padding-top: var(--vx-space-sm);
+}
+
+.demo-popup-panel__title {
+	color: var(--vx-color-text);
+	font-size: var(--vx-font-lg);
+	line-height: var(--vx-line-lg);
+	font-weight: var(--vx-weight-semibold);
+}
+
+.demo-popup-panel__desc {
+	margin-top: var(--vx-space-xs);
+	color: var(--vx-color-text-secondary);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+}
+
+.demo-popup-panel__body {
+	flex: 1;
+	width: 100%;
+	height: 0;
+	min-height: 0;
+}
+
+.demo-popup-panel__foot {
+	flex-shrink: 0;
+	box-sizing: border-box;
+	width: 100%;
+	padding: var(--vx-space-md) var(--vx-space-lg);
+	border-top-width: var(--vx-border-width);
+	border-top-style: solid;
+	border-top-color: var(--vx-color-divider);
+}
+
+/* 商品行：左边名称和价格，右边筛选入口，复刻商品页里的真实用法。 */
+.demo-popup-product {
+	flex-direction: row;
+	align-items: center;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.demo-popup-product__copy {
+	flex: 1;
+	min-width: 0;
+	flex-direction: column;
+}
+
+.demo-popup-product__title {
+	color: var(--vx-color-text);
+	font-size: var(--vx-font-md);
+	line-height: var(--vx-line-md);
+	font-weight: var(--vx-weight-medium);
+}
+
+.demo-popup-product__meta {
+	margin-top: var(--vx-space-xs);
+	color: var(--vx-color-text-secondary);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+}
+
+/* 开关行和按钮之间的间距：开关自带行高，不额外收边。 */
+.demo-popup-open {
+	box-sizing: border-box;
+	width: 100%;
+	margin-top: var(--vx-space-md);
+}
+
+/* 筛选面板按内容撑高：头、选项、底栏依次排，不预留空白。 */
+.demo-popup-filter {
+	flex-direction: column;
+}

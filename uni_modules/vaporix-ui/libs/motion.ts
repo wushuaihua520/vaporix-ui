@@ -6,6 +6,14 @@
 export const VX_PRESSED_STAY_TIME = 120
 
 /**
+ * 浮层打开后忽略遮罩点击的时长，单位毫秒。
+ * 打开那一下手指还没抬起时，浮层已经挂上；抬起的触摸会落到遮罩上，
+ * 走 onMaskTap 把刚打开的浮层立刻关掉，看起来就是「点一下闪一下」。
+ * 这段时间内的遮罩点击直接丢掉；关掉叉和底部按钮不受影响。
+ */
+export const VX_POPUP_MASK_GUARD = 250
+
+/**
  * 加载旋转一圈的时长，单位毫秒。
  * 十二瓣的延迟按这个值等分，和 variables.css 的 --vx-duration-spin 手工保持一致。
  */
@@ -66,3 +74,21 @@ export const VX_NOTICE_BAR_SETTLE = 50
 
 /** 测量文字宽度失败时的重试间隔，单位毫秒。 */
 export const VX_NOTICE_BAR_MEASURE_DELAY = 50
+
+/**
+ * 页签滑动指示线测量失败后的重试间隔，单位毫秒。
+ * 首次排版、字重还没落定时量不出位置，过一帧再量；和 vx-notice-bar 的重试间隔一致。
+ */
+export const VX_TABS_MEASURE_DELAY = 50
+
+/**
+ * 标签栏选中回弹的收起帧间隔，单位毫秒。
+ * 图标位先收一档再弹回，两帧分开渲染过渡才会从收起点起跳；和 vx-notice-bar 的落位帧同值。
+ */
+export const VX_TABBAR_POP_SETTLE = 50
+
+/**
+ * 标签栏选中回弹的时长，单位毫秒。
+ * 和 variables.css 的 --vx-duration-normal 手工保持一致；App 没有关键帧，两段接力同一条 transform 过渡。
+ */
+export const VX_TABBAR_POP_DURATION = 220

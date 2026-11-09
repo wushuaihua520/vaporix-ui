@@ -42,6 +42,8 @@
 	})
 
 	// class 顺序：基础 → 换行 → 水平排列 → 垂直对齐。和样式表一致，后写的盖过先写的。
+	// stretch 也显式挂类：App 端只写基础类的 align-items 时，部分布局路径不会把
+	// 自定义组件根节点拉到行高；显式类让列能同时补 align-self（见 vx-col）。
 	const rootClass = computed((): string => {
 		let name = 'vx-row'
 		if (!props.wrap) name += ' vx-row--nowrap'
@@ -53,6 +55,7 @@
 		if (props.align === 'start') name += ' vx-row--align-start'
 		else if (props.align === 'center') name += ' vx-row--align-center'
 		else if (props.align === 'end') name += ' vx-row--align-end'
+		else name += ' vx-row--align-stretch'
 		return name
 	})
 
@@ -63,10 +66,62 @@
 		windowWidth.value = readWindowWidth()
 	})
 
+	// App 端自定义组件根节点接不住父级的 align-items: stretch（实测列高仍是内容高）。
+	// 等首帧布局完成后量一次所有列，把最高列的高度写回每一列；列里的 flex: 1 再把卡片撑满。
+	const instance = getCurrentInstance()
+	const instanceId = 'vx-row-' + Math.floor(Math.random() * 1000000)
+	const stretchHeight = ref(0)
+	let stretchTimer = 0
+
+	const measureStretch = () => {
+		stretchTimer = 0
+		if (props.align !== 'stretch') return
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) return
+		uni.createSelectorQuery()
+			.in(proxy)
+			.selectAll('.vx-col--row-' + instanceId)
+			.boundingClientRect()
+			.exec((result) => {
+				if (result.length === 0) return
+				const rects = result[0] as Array<NodeInfo>
+				if (rects == null) return
+				let max = 0
+				for (let index = 0; index < rects.length; index++) {
+					const rect = rects[index]
+					if (rect == null) continue
+					const height = rect.height
+					if (height != null && height > max) max = height
+				}
+				if (max > 0 && (stretchHeight.value <= 0 || Math.abs(max - stretchHeight.value) > 0.5)) {
+					stretchHeight.value = max
+				}
+			})
+	}
+
+	const scheduleStretch = () => {
+		if (props.align !== 'stretch') return
+		if (stretchTimer !== 0) clearTimeout(stretchTimer)
+		stretchTimer = setTimeout(measureStretch, 60)
+	}
+
+	onMounted(() => {
+		nextTick(() => scheduleStretch())
+	})
+
+	onUnmounted(() => {
+		if (stretchTimer === 0) return
+		clearTimeout(stretchTimer)
+		stretchTimer = 0
+	})
+
 	const context: VxRowContext = {
 		inset: (): number => gutter.value / 2,
 		lineGutter: (): number => lineGutter.value,
-		windowWidth: (): number => windowWidth.value
+		windowWidth: (): number => windowWidth.value,
+		align: (): string => props.align,
+		stretchHeight: (): number => stretchHeight.value,
+		id: (): string => instanceId
 	}
 
 	provide(VX_ROW_CONTEXT, context)
@@ -128,5 +183,10 @@
 
 	.vx-row--align-end {
 		align-items: flex-end;
+	}
+
+	/* 显式写出 stretch：基础类里已经有一份，这里再挂一次，避免被平台默认值盖掉。 */
+	.vx-row--align-stretch {
+		align-items: stretch;
 	}
 </style>

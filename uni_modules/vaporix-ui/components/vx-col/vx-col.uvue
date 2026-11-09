@@ -101,15 +101,25 @@
 			if (inset > 0) style += ` padding-right: ${inset}px; padding-left: ${inset}px;`
 			const lineGutter = row.lineGutter()
 			if (lineGutter > 0) style += ` margin-top: ${lineGutter}px;`
+			// App 端 stretch 的兜底：行把最高列的高度量出来，所有列用同一个像素高度。
+			const stretchHeight = row.stretchHeight()
+			if (stretchHeight > 0 && row.align() === 'stretch') style += ` height: ${stretchHeight}px;`
 		}
 		return style
 	})
 
-	// class 顺序：基础 → 位移 → 隐藏。隐藏时不挂位移：display: none 下 left 没有意义。
+	// 行要求 stretch 时列自己再声明一次：App 端自定义组件根节点有时接不住父级
+	// align-items，显式 align-self 才能让列和同行最高列等高。
+	const stretch = computed((): boolean => {
+		return row != null && row.align() === 'stretch'
+	})
+
+	// class 顺序：基础 → 位移 → 拉伸 → 隐藏。隐藏时不挂位移：display: none 下 left 没有意义。
 	const rootClass = computed((): string => {
 		if (hidden.value) return 'vx-col vx-col--hidden'
 		let name = 'vx-col'
 		if (shiftUnits.value !== 0) name += ' vx-col--shift'
+		if (stretch.value && row != null) name += ' vx-col--stretch vx-col--row-' + row.id()
 		return name
 	})
 </script>
@@ -117,12 +127,11 @@
 <style>
 	/* 宽度、偏移和间距由内联样式给。
 	   Web 默认 content-box，百分比宽度再加左右内边距会把最后一列挤下去，所以固定 border-box。
-	   静态定位写在基础 class 上，位移 class 拿掉后 relative 不会留在 App 上。
+	   App 的 position 只认 relative/absolute/fixed，基础列不写；需要 left 的位移列再单独设 relative。
 	   min-width 压成 0，长文案在列里换行，不会把列撑过份数。
 	   flex-shrink 归 1：行关掉换行时，超出的列按比例压缩，不会撑出父级。
 	   overflow 可见：push / pull 画出列框，裁切会把内容切掉。 */
 	.vx-col {
-		position: static;
 		flex-direction: column;
 		flex-shrink: 1;
 		box-sizing: border-box;
@@ -133,6 +142,11 @@
 	/* 位移是视觉上的左右移动，不改变占位；left 的百分比按行宽算，和 24 栅格同一套单位。 */
 	.vx-col--shift {
 		position: relative;
+	}
+
+	/* 等高行：列拉伸到这一行的行高，列里的内容再用 flex: 1 填满。 */
+	.vx-col--stretch {
+		align-self: stretch;
 	}
 
 	/* 当前宽度下占 0 列：整列不显示，但仍留在页面里，切回宽屏时不用重建。 */

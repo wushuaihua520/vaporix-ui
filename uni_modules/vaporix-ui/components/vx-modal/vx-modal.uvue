@@ -40,6 +40,7 @@
 	import { VxIconName } from '../../libs/icons/codepoints'
 	import { VxSemantic } from '../../libs/types/common'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_MODAL_LAYER } from '../../libs/overlay'
 	import { VxModalAction, VxModalActionVariant, VxModalProps } from './props'
 
 	const props = withDefaults(defineProps<VxModalProps>(), {
@@ -63,7 +64,7 @@
 		titleColor: '',
 		contentColor: '',
 		maskColor: '',
-		zIndex: 110
+		zIndex: VX_OVERLAY_MODAL_LAYER
 	})
 
 	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
@@ -297,9 +298,15 @@
 		hide()
 	}
 
+	// 系统返回键等页面级出口：按取消处理，和点取消、关闭叉走同一条链路。
+	const cancel = () => {
+		onCancel()
+	}
+
 	defineExpose({
 		open,
-		close
+		close,
+		cancel
 	})
 </script>
 
@@ -308,7 +315,7 @@
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
 	/* 定位层铺满页面，面板居中。左右和上下留 24，窄屏上面板不会贴边。
-	   层级写在行内，默认 110，低于加载浮层（150）和轻提示（200）。
+	   层级写在行内，默认 1020，低于加载浮层（1050）和轻提示（1100）。
 	   App 默认 overflow 是 hidden，面板阴影画出这层会被裁掉。
 	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
 	.vx-modal {

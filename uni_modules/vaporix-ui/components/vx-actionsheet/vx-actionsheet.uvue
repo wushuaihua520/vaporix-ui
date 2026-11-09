@@ -40,6 +40,7 @@
 <script setup>
 	import { VxActionSheetItem, VxActionSheetItemType, VxActionSheetProps } from './props'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxActionSheetProps>(), {
 		items: (): Array<VxActionSheetItem> => [],
@@ -52,7 +53,7 @@
 		maskColor: '',
 		titleColor: '',
 		descriptionColor: '',
-		zIndex: 90
+		zIndex: VX_OVERLAY_LAYER
 	})
 
 	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
@@ -194,9 +195,15 @@
 		show.value = false
 	}
 
+	// 系统返回键等页面级出口：按用户取消处理，和点遮罩、点取消走同一条链路。
+	const cancel = () => {
+		onCancelTap()
+	}
+
 	defineExpose({
 		open,
-		close
+		close,
+		cancel
 	})
 </script>
 
@@ -204,7 +211,7 @@
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
-	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 90，低于消息提示 100、弹框 110、加载浮层 150 和轻提示 200。 */
+	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 1000，低于消息提示 1010、弹框 1020、加载浮层 1050 和轻提示 1100。 */
 	.vx-actionsheet {
 		position: fixed;
 		top: 0;

@@ -7,6 +7,7 @@
 <style>
 	/* #ifndef WEB */
 	@import "@/uni_modules/vaporix-ui/libs/style/variables.css";
+	@import "@/uni_modules/vaporix-ui/libs/style/icons-extend.css";
 	@import "@/pages/demo/shared/demo.css";
 	/* #endif */
 </style>

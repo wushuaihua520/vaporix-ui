@@ -502,9 +502,9 @@
 	})
 
 	const prevPath: string = '/pages/demo/picker/picker'
-	const nextPath: string = '/pages/demo/tips/tips'
+	const nextPath: string = '/pages/demo/form/form'
 	const prevName = '联动选择'
-	const nextName = '消息提示'
+	const nextName = '表单'
 
 	const goCatalog = () => {
 		const pages = getCurrentPages()

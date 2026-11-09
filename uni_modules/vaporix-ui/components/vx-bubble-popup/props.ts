@@ -66,6 +66,6 @@ export type VxBubblePopupProps = {
 	outsideClosable?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
-	/** 浮层层级，默认 90，和操作菜单、抽屉同档。 */
+	/** 浮层层级，默认 1000，和操作菜单、抽屉同档。 */
 	zIndex?: number
 }

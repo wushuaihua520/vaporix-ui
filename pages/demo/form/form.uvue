@@ -1,0 +1,931 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" :scroll-top="demoScrollTop"
+			scroll-with-animation @scroll="onDemoScroll">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">表单</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-form · vx-form-item</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="list-checks" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">表单</text>
+								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">不托管数据，只按注册顺序串行校验；错误落在控件下方，必要时滚到第一项。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">表单</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-form · vx-form-item</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">登录表单</text>
+							<text class="demo-section__desc">手机号、密码和协议三项一起校验，按钮跟随 loading。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="loginFormRef" label-width="72px">
+							<view class="demo-field">
+								<vx-form-item prop="phone" :value="loginPhone" :rules="loginPhoneRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="loginPhone" label="手机号" label-width="72px" type="number"
+											:maxlength="11" :invalid="invalid" required clearable
+											placeholder="请输入手机号" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="password" :value="loginPassword" :rules="loginPasswordRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="loginPassword" label="密码" label-width="72px" password
+											:invalid="invalid" required placeholder="请输入 6 位密码" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="agreement" :value="loginAgree" :rules="loginAgreeRules">
+									<template #default="{ invalid }">
+										<vx-checkbox v-model="loginAgree" label="我已阅读并同意《用户协议》"
+											:border-color="invalid ? 'var(--vx-color-danger)' : ''" />
+									</template>
+								</vx-form-item>
+							</view>
+							<vx-button block type="primary" :text="signingIn ? '登录中…' : '登录'" :loading="signingIn"
+								@click="onLoginSubmit" />
+						</vx-form>
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ loginStatus }}</text>
+							<text class="demo-datetime-status__meta">validate()</text>
+						</view>
+						<text class="demo-hint">三项按注册顺序串行校验，第一项失败就停下。协议是布尔值，required 把 false 当空值。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">规则一览</text>
+							<text class="demo-section__desc">required、len、min/max、pattern、type 五条规则各来一项。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="ruleFormRef" label-width="72px">
+							<view class="demo-field">
+								<vx-form-item prop="required" :value="ruleRequired" :rules="ruleRequiredRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="ruleRequired" label="必填" label-width="72px" :invalid="invalid"
+											required clearable placeholder="required">
+											<template #suffix>
+												<vx-button size="sm" type="primary" variant="link" text="校验"
+													@click="onRuleCheck('required', '必填')" />
+											</template>
+										</vx-input>
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="length" :value="ruleLength" :rules="ruleLengthRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="ruleLength" label="定长" label-width="72px" :invalid="invalid"
+											required clearable placeholder="len 6">
+											<template #suffix>
+												<vx-button size="sm" type="primary" variant="link" text="校验"
+													@click="onRuleCheck('length', '定长')" />
+											</template>
+										</vx-input>
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="range" :value="ruleRange" :rules="ruleRangeRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="ruleRange" label="范围" label-width="72px" :invalid="invalid"
+											clearable placeholder="3–8 个字">
+											<template #suffix>
+												<vx-button size="sm" type="primary" variant="link" text="校验"
+													@click="onRuleCheck('range', '范围')" />
+											</template>
+										</vx-input>
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="pattern" :value="rulePattern" :rules="rulePatternRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="rulePattern" label="工号" label-width="72px" :invalid="invalid"
+											clearable placeholder="AB1234">
+											<template #suffix>
+												<vx-button size="sm" type="primary" variant="link" text="校验"
+													@click="onRuleCheck('pattern', '工号')" />
+											</template>
+										</vx-input>
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item prop="email" :value="ruleEmail" :rules="ruleEmailRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="ruleEmail" label="邮箱" label-width="72px" :invalid="invalid"
+											clearable placeholder="name@example.com">
+											<template #suffix>
+												<vx-button size="sm" type="primary" variant="link" text="校验"
+													@click="onRuleCheck('email', '邮箱')" />
+											</template>
+										</vx-input>
+									</template>
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ ruleStatus }}</text>
+							<text class="demo-datetime-status__meta">validateField(prop)</text>
+						</view>
+						<text class="demo-hint">每项右侧的「校验」只跑自己：必填为空、定长 6、范围 3–8、工号两个大写字母加四位数字、邮箱格式。改完再点一次就能看到通过。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">错误定位</text>
+							<text class="demo-section__desc">第三个字段故意不合法，submit 时滚到第一个错误项。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="scrollFormRef" label-width="72px" :scroll-to-error="true">
+							<view class="demo-field">
+								<vx-form-item prop="name" :value="scrollName" :rules="scrollNameRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="scrollName" label="收货人" label-width="72px" :invalid="invalid"
+											required clearable placeholder="请输入收货人" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="phone" :value="scrollPhone" :rules="scrollPhoneRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="scrollPhone" label="手机号" label-width="72px" type="number"
+											:maxlength="11" :invalid="invalid" required clearable
+											placeholder="请输入手机号" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item prop="email" :value="scrollEmail" :rules="scrollEmailRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="scrollEmail" label="邮箱" label-width="72px" :invalid="invalid"
+											required clearable placeholder="请输入邮箱" />
+									</template>
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<vx-button block type="primary" text="提交并定位错误" @click="onScrollSubmit" />
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ scrollStatus }}</text>
+							<text class="demo-datetime-status__meta">scrollToError</text>
+						</view>
+						<text class="demo-hint">前两项合法、第三项不合法：validate() 停在第三项。vx-form 内部用 pageScrollTo，只作用于页面滚动；演示页外面是 scroll-view，这里由演示页补一次滚动，让定位效果可见。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">非输入类字段</text>
+							<text class="demo-section__desc">开关、评分、多选组没有标题位，label 交给表单项。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="controlFormRef" label-width="88px">
+							<view class="demo-field">
+								<vx-form-item prop="notify" label="接收通知" :value="controlNotify"
+									:rules="controlNotifyRules">
+									<vx-switch v-model="controlNotify" />
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="score" label="服务评分" :value="controlScore" :required="true"
+									:rules="controlScoreRules">
+									<vx-rate v-model="controlScore" />
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item prop="interests" label="兴趣标签" :value="controlInterests"
+									:rules="controlInterestRules">
+									<vx-checkbox-group v-model="controlInterests">
+										<vx-checkbox value="design" label="设计" />
+										<vx-checkbox value="code" label="开发" />
+										<vx-checkbox value="data" label="数据" />
+									</vx-checkbox-group>
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<vx-button block type="primary" text="校验三项" @click="onControlValidate" />
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ controlStatus }}</text>
+							<text class="demo-datetime-status__meta">label + required</text>
+						</view>
+						<text class="demo-hint">星号落在表单项标题末尾，控件自己不画；评分用 min: 1 拦住 0 分，显式 required 只负责星号。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">标签位置</text>
+							<text class="demo-section__desc">左侧一列吃 labelWidth，顶部独占一行。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" :type="labelPosition === 'left' ? 'primary' : 'default'"
+									text="左侧" @click="onLabelPosition('left')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" :type="labelPosition === 'top' ? 'primary' : 'default'"
+									text="顶部" @click="onLabelPosition('top')" />
+							</view>
+						</view>
+						<vx-form :label-position="labelPosition" label-width="88px">
+							<view class="demo-field">
+								<vx-form-item label="接收推送" :value="positionNotify">
+									<vx-switch v-model="positionNotify" />
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item label="自动切换主题" :value="positionTheme">
+									<vx-switch v-model="positionTheme" />
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<text class="demo-hint">labelPosition 由表单统一下发；顶部时 labelWidth 不生效，标签和控件之间留 8。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">尺寸三档</text>
+							<text class="demo-section__desc">sm / md / lg 只改标签的字号、行高和标签最小高度。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-form size="sm" label-width="80px">
+								<vx-form-item label="小号标签" required :value="sizeSmNotify">
+									<vx-switch v-model="sizeSmNotify" size="sm" />
+								</vx-form-item>
+							</vx-form>
+						</view>
+						<view class="demo-field">
+							<vx-form size="md" label-width="80px">
+								<vx-form-item label="中号标签" required :value="sizeMdNotify">
+									<vx-switch v-model="sizeMdNotify" size="md" />
+								</vx-form-item>
+							</vx-form>
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-form size="lg" label-width="80px">
+								<vx-form-item label="大号标签" required :value="sizeLgNotify">
+									<vx-switch v-model="sizeLgNotify" size="lg" />
+								</vx-form-item>
+							</vx-form>
+						</view>
+						<text class="demo-hint">控件高度由控件自己的 size 决定，表单项不替控件选高度；标签的最小高度跟着档位走，单行标题和控件居中。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">禁用态</text>
+							<text class="demo-section__desc">整组 disabled，校验直接跳过，星号仍显示。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="disabledFormRef" disabled label-width="88px">
+							<view class="demo-field">
+								<vx-form-item prop="disabledPhone" :value="disabledPhone"
+									:rules="disabledPhoneRules">
+									<vx-input v-model="disabledPhone" label="手机号" label-width="88px" required disabled
+										placeholder="整组禁用" />
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item prop="disabledNotify" label="接收通知" :value="disabledNotify"
+									:rules="disabledNotifyRules">
+									<vx-switch v-model="disabledNotify" disabled />
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<vx-button block type="default" text="validate()（禁用的项应跳过）"
+							@click="onDisabledValidate" />
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ disabledStatus }}</text>
+							<text class="demo-datetime-status__meta">disabled</text>
+						</view>
+						<text class="demo-hint">表单只负责跳过校验，不会替业务把控件改灰；控件的禁用态仍由各自的 disabled 传入。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">受控错误</text>
+							<text class="demo-section__desc">外部 error 非空时以它为准，清掉后回到本地结果。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="controlledFormRef" label-width="88px">
+							<view class="demo-field">
+								<vx-form-item prop="serverPhone" :value="serverPhone"
+									:rules="serverPhoneRules" :error="serverError"
+									help="外部错误优先于本地校验结果。">
+									<template #default="{ invalid }">
+										<vx-input v-model="serverPhone" label="手机号" label-width="88px"
+											type="number" :maxlength="11" :invalid="invalid" required clearable
+											placeholder="请输入手机号" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item prop="helpEmail" :value="helpEmail"
+									:rules="helpEmailRules" help="举例：name@example.com">
+									<template #default="{ invalid }">
+										<vx-input v-model="helpEmail" label="邮箱" label-width="88px"
+											:invalid="invalid" clearable placeholder="留下邮箱方便联系" />
+									</template>
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="设置外部错误"
+									@click="onSetServerError" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="清除外部错误"
+									@click="onClearServerError" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="校验说明行"
+									@click="onHelpValidate" />
+							</view>
+						</view>
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ controlledStatus }}</text>
+							<text class="demo-datetime-status__meta">error · help</text>
+						</view>
+						<text class="demo-hint">error 受控：有值时忽略本地结果，清成空串后本地错误才回来。help 常驻，出错时被错误替换。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法与事件</text>
+							<text class="demo-section__desc">validate()、validateField()、clearValidate() 和 @validate。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="methodFormRef" label-width="72px">
+							<view class="demo-field">
+								<vx-form-item prop="methodPhone" :value="methodPhone"
+									:rules="methodPhoneRules" @validate="onMethodPhoneValidate">
+									<template #default="{ invalid }">
+										<vx-input v-model="methodPhone" label="手机号" label-width="72px"
+											type="number" :maxlength="11" :invalid="invalid" required clearable
+											placeholder="请输入手机号" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item prop="methodEmail" :value="methodEmail"
+									:rules="methodEmailRules" @validate="onMethodEmailValidate">
+									<template #default="{ invalid }">
+										<vx-input v-model="methodEmail" label="邮箱" label-width="72px"
+											:invalid="invalid" required clearable placeholder="请输入邮箱" />
+									</template>
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="validate()"
+									@click="onMethodValidate" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="validateField()"
+									@click="onMethodField" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="clearValidate()"
+									@click="onMethodClear" />
+							</view>
+						</view>
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ methodEvent }}</text>
+							<text class="demo-datetime-status__meta">ref + @validate</text>
+						</view>
+						<text class="demo-hint">@validate：{{ methodValidateEvent }}</text>
+						<text class="demo-hint">@validate 每次单项校验结束就抛，参数是 ok 和 message；validate() 按注册顺序停；clearValidate() 只清错误，不动业务值。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">完整表单</text>
+							<text class="demo-section__desc">收货地址：输入、选择、多行和开关，一次提交走完。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-form ref="addressFormRef" label-width="88px">
+							<view class="demo-field">
+								<vx-form-item prop="receiver" :value="addressReceiver"
+									:rules="addressReceiverRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="addressReceiver" label="收件人" label-width="88px"
+											:invalid="invalid" required clearable placeholder="请输入收件人" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="phone" :value="addressPhone" :rules="addressPhoneRules">
+									<template #default="{ invalid }">
+										<vx-input v-model="addressPhone" label="手机号" label-width="88px"
+											type="number" :maxlength="11" :invalid="invalid" required clearable
+											placeholder="请输入手机号" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="region" :value="addressRegionValues"
+									:rules="addressRegionRules">
+									<template #default="{ invalid }">
+										<vx-input :model-value="addressRegionText" label="省市区"
+											label-width="88px" :invalid="invalid" required readonly arrow
+											placeholder="请选择省市区" @click="addressRegionVisible = true" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field">
+								<vx-form-item prop="detail" :value="addressDetail" :rules="addressDetailRules">
+									<template #default="{ invalid }">
+										<vx-textarea v-model="addressDetail" label="详细地址"
+											label-width="88px" :invalid="invalid" required
+											placeholder="街道、门牌号" :maxlength="60" />
+									</template>
+								</vx-form-item>
+							</view>
+							<view class="demo-field demo-field--last">
+								<vx-form-item label="设为默认" :value="addressDefault">
+									<vx-switch v-model="addressDefault" />
+								</vx-form-item>
+							</view>
+						</vx-form>
+						<vx-button block type="primary" text="保存收货地址" @click="onAddressSubmit" />
+						<view class="demo-datetime-status">
+							<text class="demo-datetime-status__text">{{ addressStatus }}</text>
+							<text class="demo-datetime-status__meta">complete form</text>
+						</view>
+						<text class="demo-hint">省市区用数组做 value，空数组就是没选；详细地址是 textarea，开关没有标题位所以用表单项的 label。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.62.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 省市区挂在页面根上，遮罩才盖得住滚动容器和固定页脚。 -->
+		<vx-picker v-model="addressRegionValues" v-model:show="addressRegionVisible" :options="regionOptions"
+			title="选择省市区" @confirm="onAddressRegionConfirm" />
+	</view>
+</template>
+
+<script setup>
+	import { VxFormRule } from '@/uni_modules/vaporix-ui/libs/form'
+	import { VxPickerResult } from '@/uni_modules/vaporix-ui/libs/picker'
+	import { regionOptions } from '@/pages/demo/shared/picker-data'
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// 只声明要用的三个方法，模板里的 ref 拿到的是组件的公开实例。
+	type FormApi = {
+		validate: () => Promise<boolean>
+		validateField: (prop: string) => Promise<boolean>
+		clearValidate: (prop?: string) => void
+	}
+
+	const loginFormRef = ref<FormApi | null>(null)
+	const ruleFormRef = ref<FormApi | null>(null)
+	const scrollFormRef = ref<FormApi | null>(null)
+	const controlFormRef = ref<FormApi | null>(null)
+	const controlledFormRef = ref<FormApi | null>(null)
+	const disabledFormRef = ref<FormApi | null>(null)
+	const methodFormRef = ref<FormApi | null>(null)
+	const addressFormRef = ref<FormApi | null>(null)
+
+	// 演示页用 scroll-view 承载，pageScrollTo 碰不到它；这里自己量一次并写回 scroll-top。
+	const demoScrollTop = ref(0)
+	let demoScrollPosition = 0
+
+	const onDemoScroll = (event: UniScrollEvent) => {
+		demoScrollPosition = event.detail.scrollTop
+	}
+
+	// 01 登录
+	const loginPhone = ref('')
+	const loginPassword = ref('')
+	const loginAgree = ref(false)
+	const signingIn = ref(false)
+	const loginStatus = ref('等待提交')
+
+	const loginPhoneRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入手机号' },
+		{ type: 'phone' }
+	]
+	const loginPasswordRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入密码' },
+		{ len: 6, message: '密码为 6 位' }
+	]
+	const loginAgreeRules: Array<VxFormRule> = [
+		{ required: true, message: '请阅读并同意《用户协议》' }
+	]
+
+	// 02 规则一览
+	const ruleRequired = ref('')
+	const ruleLength = ref('12345')
+	const ruleRange = ref('元汽UI')
+	const rulePattern = ref('ab12')
+	const ruleEmail = ref('hi@vaporix')
+	const ruleStatus = ref('点右侧「校验」单独触发一条规则')
+
+	const ruleRequiredRules: Array<VxFormRule> = [{ required: true, message: '请填写昵称' }]
+	const ruleLengthRules: Array<VxFormRule> = [
+		{ required: true, message: '请填写订单号' },
+		{ len: 6, message: '订单号需为 6 位' }
+	]
+	const ruleRangeRules: Array<VxFormRule> = [{ min: 3, max: 8, message: '请输入 3–8 个字' }]
+	const rulePatternRules: Array<VxFormRule> = [
+		{ pattern: '^[A-Z]{2}\\d{4}$', message: '工号格式：两个大写字母 + 四位数字' }
+	]
+	const ruleEmailRules: Array<VxFormRule> = [{ type: 'email' }]
+
+	// 03 错误定位
+	const scrollName = ref('王小明')
+	const scrollPhone = ref('13800138000')
+	const scrollEmail = ref('hi@vaporix')
+	const scrollStatus = ref('等待提交')
+
+	const scrollNameRules: Array<VxFormRule> = [{ required: true, message: '请填写收货人' }]
+	const scrollPhoneRules: Array<VxFormRule> = [
+		{ required: true, message: '请填写手机号' },
+		{ type: 'phone' }
+	]
+	const scrollEmailRules: Array<VxFormRule> = [{ type: 'email' }]
+
+	// 04 非输入类字段
+	const controlNotify = ref(false)
+	const controlScore = ref(0)
+	const controlInterests = ref<Array<string>>([])
+	const controlStatus = ref('等待校验')
+
+	const controlNotifyRules: Array<VxFormRule> = [{ required: true, message: '请先开启通知' }]
+	const controlScoreRules: Array<VxFormRule> = [{ min: 1, message: '请先给服务打分' }]
+	const controlInterestRules: Array<VxFormRule> = [{ required: true, message: '至少选择一个标签' }]
+
+	// 05 标签位置
+	const labelPosition = ref<'left' | 'top'>('left')
+	const positionNotify = ref(true)
+	const positionTheme = ref(false)
+
+	// 06 尺寸三档
+	const sizeSmNotify = ref(true)
+	const sizeMdNotify = ref(true)
+	const sizeLgNotify = ref(true)
+
+	// 07 禁用态
+	const disabledPhone = ref('')
+	const disabledNotify = ref(false)
+	const disabledStatus = ref('等待校验')
+
+	const disabledPhoneRules: Array<VxFormRule> = [{ required: true }]
+	const disabledNotifyRules: Array<VxFormRule> = [{ required: true, message: '请开启通知' }]
+
+	// 08 受控错误
+	const serverPhone = ref('')
+	const serverError = ref('')
+	const helpEmail = ref('')
+	const controlledStatus = ref('受控错误：未设置')
+
+	const serverPhoneRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入手机号' },
+		{ type: 'phone' }
+	]
+	const helpEmailRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入邮箱' },
+		{ type: 'email' }
+	]
+
+	// 09 方法与事件
+	const methodPhone = ref('')
+	const methodEmail = ref('hi@vaporix')
+	const methodEvent = ref('还没有调用')
+	const methodValidateEvent = ref('还没有触发')
+
+	const methodPhoneRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入手机号' },
+		{ type: 'phone' }
+	]
+	const methodEmailRules: Array<VxFormRule> = [
+		{ required: true, message: '请输入邮箱' },
+		{ type: 'email' }
+	]
+
+	// 10 完整表单
+	const addressReceiver = ref('')
+	const addressPhone = ref('')
+	const addressRegionValues = ref<Array<string>>([])
+	const addressRegionText = ref('')
+	const addressRegionVisible = ref(false)
+	const addressDetail = ref('')
+	const addressDefault = ref(true)
+	const addressStatus = ref('等待保存')
+
+	const addressReceiverRules: Array<VxFormRule> = [{ required: true, message: '请填写收件人' }]
+	const addressPhoneRules: Array<VxFormRule> = [
+		{ required: true, message: '请填写手机号' },
+		{ type: 'phone' }
+	]
+	const addressRegionRules: Array<VxFormRule> = [{ required: true, message: '请选择省市区' }]
+	const addressDetailRules: Array<VxFormRule> = [
+		{ required: true, message: '请填写详细地址' },
+		{ min: 5, message: '详细地址至少 5 个字' }
+	]
+
+	const onLoginSubmit = async () => {
+		if (signingIn.value) return
+		const form = loginFormRef.value
+		if (form == null) return
+		signingIn.value = true
+		const passed = await form.validate()
+		if (!passed) {
+			signingIn.value = false
+			loginStatus.value = '校验未通过，请检查红色文案'
+			return
+		}
+		// 演示登录请求：校验通过后短暂 loading，再收起。
+		setTimeout(() => {
+			signingIn.value = false
+			loginStatus.value = '校验通过 · 演示不发请求'
+		}, 600)
+	}
+
+	const onRuleCheck = async (prop: string, label: string) => {
+		const form = ruleFormRef.value
+		if (form == null) return
+		const passed = await form.validateField(prop)
+		ruleStatus.value = `${label} · ${passed ? '通过' : '未通过'}`
+	}
+
+	const onScrollSubmit = async () => {
+		const form = scrollFormRef.value
+		if (form == null) return
+		// 先把其他表单的错误收起来：页面级只找第一个错误项，避免滚到别的段落。
+		clearOtherForms()
+		const passed = await form.validate()
+		scrollStatus.value = passed ? '校验通过' : '停在第三个字段 · 已定位到第一个错误项'
+		if (passed) return
+		nextTick(() => {
+			scrollDemoToInvalid()
+		})
+	}
+
+	const clearOtherForms = () => {
+		const forms: Array<FormApi | null> = [
+			loginFormRef.value,
+			ruleFormRef.value,
+			controlFormRef.value,
+			controlledFormRef.value,
+			disabledFormRef.value,
+			methodFormRef.value,
+			addressFormRef.value
+		]
+		for (let index = 0; index < forms.length; index++) {
+			const form = forms[index]
+			if (form != null) form.clearValidate()
+		}
+	}
+
+	// 只给演示页用：把错误项滚到 scroll-view 顶部下方 8px，和组件里页面滚动的落点一致。
+	const scrollDemoToInvalid = () => {
+		if (typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') return
+		uni.createSelectorQuery()
+			.select('.vx-form-item--invalid')
+			.boundingClientRect()
+			.select('.demo-scroll')
+			.boundingClientRect()
+			.exec((result) => {
+				if (result.length < 2) return
+				const invalid = result[0] as NodeInfo | null
+				const scroller = result[1] as NodeInfo | null
+				if (invalid == null || scroller == null) return
+				const top = invalid.top
+				const scrollerTop = scroller.top
+				if (top == null || scrollerTop == null) return
+				let target = demoScrollPosition + top - scrollerTop - 8
+				if (target < 0) target = 0
+				// scroll-view 收到和上次相同的 scroll-top 不会动；差 1px 就能重新触发，落点看不出来。
+				if (target === demoScrollTop.value) target = target > 0 ? target - 1 : 1
+				demoScrollTop.value = target
+			})
+	}
+
+	const onControlValidate = async () => {
+		const form = controlFormRef.value
+		if (form == null) return
+		const passed = await form.validate()
+		controlStatus.value = passed ? '三项都通过' : '有字段未通过，看红色文案'
+		if (passed) form.clearValidate()
+	}
+
+	const onLabelPosition = (position: 'left' | 'top') => {
+		labelPosition.value = position
+	}
+
+	const onDisabledValidate = async () => {
+		const form = disabledFormRef.value
+		if (form == null) return
+		const passed = await form.validate()
+		disabledStatus.value = passed ? '校验通过 · 2 项已跳过' : '校验未通过'
+	}
+
+	const onSetServerError = () => {
+		serverError.value = '该手机号已被其他账号绑定'
+		controlledStatus.value = `受控错误：${serverError.value}`
+	}
+
+	const onClearServerError = () => {
+		serverError.value = ''
+		const form = controlledFormRef.value
+		if (form != null) form.clearValidate()
+		controlledStatus.value = '受控错误：未设置'
+	}
+
+	const onHelpValidate = async () => {
+		const form = controlledFormRef.value
+		if (form == null) return
+		const passed = await form.validateField('helpEmail')
+		controlledStatus.value = passed ? '邮箱说明行：通过' : '邮箱说明行：未通过'
+	}
+
+	const onMethodValidate = async () => {
+		const form = methodFormRef.value
+		if (form == null) return
+		const passed = await form.validate()
+		methodEvent.value = `validate() → ${passed ? '通过' : '未通过'}`
+	}
+
+	const onMethodField = async () => {
+		const form = methodFormRef.value
+		if (form == null) return
+		const passed = await form.validateField('methodEmail')
+		methodEvent.value = `validateField('methodEmail') → ${passed ? '通过' : '未通过'}`
+	}
+
+	const onMethodClear = () => {
+		const form = methodFormRef.value
+		if (form == null) return
+		form.clearValidate()
+		methodEvent.value = 'clearValidate() 清掉全部错误'
+	}
+
+	const onMethodPhoneValidate = (ok: boolean, message: string) => {
+		methodValidateEvent.value = `methodPhone · ${ok ? '通过' : '未通过：'}${message}`
+	}
+
+	const onMethodEmailValidate = (ok: boolean, message: string) => {
+		methodValidateEvent.value = `methodEmail · ${ok ? '通过' : '未通过：'}${message}`
+	}
+
+	const onAddressRegionConfirm = (result: VxPickerResult) => {
+		addressRegionText.value = result.text
+		addressRegionValues.value = result.values
+	}
+
+	const onAddressSubmit = async () => {
+		const form = addressFormRef.value
+		if (form == null) return
+		const passed = await form.validate()
+		addressStatus.value = passed ? '地址已保存 · 演示不发请求' : '有字段未通过，请看红色文案'
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/calendar/calendar'
+	const nextPath: string = '/pages/demo/tips/tips'
+	const prevName = '日历'
+	const nextName = '消息提示'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

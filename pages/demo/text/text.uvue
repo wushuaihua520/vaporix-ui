@@ -405,10 +405,11 @@
 		margin-top: var(--vx-space-sm);
 	}
 
+	/* 标签和值按中线对齐；App 的 align-items 不支持 baseline。 */
 	.demo-tx-row {
 		flex-direction: row;
 		flex-wrap: wrap;
-		align-items: baseline;
+		align-items: center;
 		margin-top: var(--vx-space-sm);
 	}
 
@@ -445,7 +446,7 @@
 
 	.demo-tx-card__row {
 		flex-direction: row;
-		align-items: baseline;
+		align-items: center;
 		padding-top: 6px;
 		padding-bottom: 6px;
 	}

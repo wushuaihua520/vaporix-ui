@@ -18,6 +18,7 @@
 <script setup>
 	import { VxToastProps } from './props'
 	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+	import { VX_OVERLAY_TOAST_LAYER } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxToastProps>(), {
 		text: '',
@@ -27,7 +28,7 @@
 		image: '',
 		variant: 'regular',
 		showIcon: true,
-		zIndex: 200,
+		zIndex: VX_OVERLAY_TOAST_LAYER,
 		bgColor: '',
 		bgOpacity: 0.9,
 		color: ''

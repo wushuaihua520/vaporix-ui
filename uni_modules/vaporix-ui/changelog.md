@@ -1,3 +1,92 @@
+## 0.66.2（2026-11-06）
+
+- 修复 `vx-tabs` 竖排角标压行：竖排的行只有文字高，角标仍绝对定位在文案右上角，会顶出本行压到上一行的分割线，`soft` 外观下还盖住文案。改成行内排布——文案和角标放进同一个 flex 行，角标跟在文案后面、垂直居中，右侧落在 12px 内边距内侧，不再绝对定位。
+- 竖排文案 `flex: 1` + `min-width: 0` + 单行省略，角标 `flex-shrink: 0`：`verticalWidth=96` 时四字文案省略、角标完整；`badge` 超过 `badgeMax` 显示 `max+`、`dot` 优先于计数仍由 `vx-badge` 处理，没有重写角标。
+- 横排一个 class、一条偏移量都没动：绝对定位、`:offset-y="-4"`、DOM 结构和 `vx-tabs__badge` 全部保持原样，新增样式只挂在 `vx-tabs__item--vertical-chip` / `--vertical-content` / `--vertical-text` / `--vertical-badge` 上。
+- 修复 `vx-input` 搜索变体的键盘确认键：`confirmType` 默认值从 `'done'` 改成 `''`（空串表示没传），组件内新增计算值——显式传了用传入值，`search` 变体默认 `'search'`，其余变体仍是 `'done'`；模板改绑计算值，`variant` 从 `search` 切回 `outline` / `line` 时键面跟着回到「完成」。
+- 不改任何 class、焦点态、取消按钮和清除图标逻辑，`outline` / `line` 分支的视觉与行为不变；`confirm` / `search` 的触发时机也不变，点搜索键仍会先抛 `confirm` 再抛 `search`。
+- 不新增 `--vx-*` 令牌，也不新增组件：免费仍 60 件（按目录 62），Pro 仍 29 件。
+- 版本号统一到 0.66.2：组件包、`manifest.json`（versionCode 6602）、演示工程首页、标签页和输入框两个演示页页脚、文档站（含站点页眉 / 页脚 / 组件页 meta）。readme 补竖排角标规则和 search 的 confirm-type 默认值；DESIGN 补标签页竖排角标、输入框 search 的键盘键面；文档站中英 tab / input 页补同样两句，`pnpm build` 通过（98 个静态页）。
+- 真机验证：XiaoMi 14 / Android 13 / HBuilderX 5.34，标签页 09 两处角标完整可见、01–08 与改动前一致，输入框 09 的搜索键面变成放大镜 /「搜索」、01–08 的普通输入框仍是「完成」。
+
+## 0.66.1（2026-11-06）
+
+- 修复 App 端图标全部显示成方框：HBuilderX 5.34 的 dev 运行没有稳定把 `uni_modules` 下 static 里的 ttf 同步到设备（巡检那轮设备上就没有字体文件；clean 构建能带上，增量构建和中断过的同步会丢），`@font-face` 拿不到文件，字形就落成方框；失败时 logcat 里能看到 `local font not found`。
+- 方案：App 分支的 `@font-face` 改成内嵌 base64，字体跟样式一起进包，不再依赖 static 同步；`variables.css` 只内嵌 core 两个字重（约 +70 KB），`icons-extend.css` 内嵌 extend 两个字重（约 +694 KB，只有引入扩展 CSS 的项目才付这份体积）。
+- Web 端不动：`#ifdef WEB` 仍用包内 ttf 的相对路径；小程序继续走原来的 base64。`vx-icon` 的 props / 事件 / 插槽、`codepoints.ts` 的码点和 tier、字体文件本身都没有改。
+- 探针结论：App 端 `uni.loadFontFace` 存在，传 `/uni_modules/...` 路径也能加载成功，但运行时注册的 family 不会被 uvue `text` 的 `font-family` 解析（class 和行内 style 都回落）；`@font-face` 写在 App.uvue 根样式里、或从 `variables.css` 引入，只要 ttf 在包内都能正常出图，多 URL 叠 `format('truetype')` 的写法本身没有问题。真正缺的是字体文件。
+- 构建工具：新增 `tools/icons/font_css.py`（@font-face 块模板）和 `tools/icons/write-css.py`（只重写样式、不重建字体）；`build.py` 改为调用同一份模板，重建字体后 App 的 base64 会跟着更新，不用手工粘贴。
+- 文档站构建加了 `stripAppOnlyCss` 插件，把 App 独占的 base64 块从 Web 产物里去掉：文档站 CSS 体积和改动前一致，图标页渲染不变。
+- 真机验证：XiaoMi 14 / Android 13 / HBuilderX 5.34，Pro 演示工程 `tag`、`rate`、`steps`、`badge`、`keyboard`、`tree-view` 六页图标正常；免费工程同轮编译通过。巡检页跑到 `landscape`（压屏窗）时应用崩溃过一次，单开该页正常，崩溃日志里 11 月 4 日也有同签名记录，按既有问题记录，不算本次改动引入。
+- 版本号统一到 0.66.1：组件包、`manifest.json`（versionCode 6601）、演示工程首页与页脚、文档站。
+
+## 0.66.0（2026-11-06）
+
+- `vx-input` 新增 `variant="search"`：搜索框是输入框的语义扩展，不新开组件。浅底 `default-soft`、胶囊圆角、默认不画可见描边，前置 `search` 图标，左右内边距 12 / 16 / 16，高度仍是控件三档 32 / 40 / 48。
+- 搜索变体的取消按钮固定在右侧，文案「取消」，`--vx-font-control-*`、`--vx-color-text-secondary`；有值或聚焦时出现，其余时候不占位。点取消先清空 `v-model`、收起键盘，再抛 `cancel`；`disabled` 时仍显示但不响应，`readonly` 不出现。
+- 搜索变体不渲染 `label` / `required` / `unit`，同时传了在开发环境提示一次。新增 `search` 事件（键盘确认，参数为当前文本）和 `cancel` 事件（无参数）；`confirm` / `change` / `clear` 等原有事件不变。
+- `outline` / `line` 分支的 class 名、DOM 结构和默认值一个都没动：新样式全部落在 `vx-input--search`、`vx-input--search-sm` 和 `vx-input__search-*` 上。清除图标在搜索下收成图标宽，排在取消左侧。
+- 搜索图标沿用 `vx-icon` 的 `sm` / `md` 两档（14 / 18），`lg` 与 `md` 同档：图标只有三档，不为 16 新增第四种尺寸。默认无描边，聚焦补 1px `primary`、`invalid` 补 1px `danger`，1px 透明边框保住焦点可见性，也不让状态切换跳行高。
+- `vx-tabs` 新增 `direction="vertical"` 和 `verticalWidth`：侧边导航是页签的另一种排布，不新开组件。每项占一整行，行高沿用列表行 44 / 52 / 60，宽度默认 96px，传 0 跟随容器撑满。
+- 竖排把底部下划线换成左侧 2px 竖条（高 60%、垂直居中、颜色跟 `type`），选中项整行铺 `default-soft`（`soft` 外观铺对应的 `*-soft`），文字取 `*-pressed` 并加到 600 字重；`divider` 变成项之间的 1px 横线，最后一项不画，右侧也不画竖线。
+- 竖排不支持 `variant="inverse"`：传了按 `soft` 渲染并在开发环境提示一次。横向分支的 class 名、指示器计算和整条反色都没动；`v-model`、`change` 和 `items` 结构完全不变。
+- 不新增 `--vx-*` 令牌：搜索框复用 `default-soft`、`--vx-radius-pill`、`--vx-icon-*` 和控件三档；竖排复用列表行高度、`*-soft` 浅底、`--vx-border-width-strong` 和 `--vx-color-divider`。
+- 演示工程输入框页追加「搜索变体」、标签页追加「竖向标签」，各 1 组新区块；版本号统一到 0.66.0：组件包、manifest、首页、两个演示页页脚和文档站。
+- readme 补两节属性、事件和说明；DESIGN 输入框条目补 search、标签页条目补 vertical，Do / Don't 各加一句。免费组件仍 60 件（按目录 62），Pro 仍 29 件，变体不增件数。
+- 本版不做 `vx-search` / `vx-sidebar` 新组件，不做搜索历史、联想和扫码入口，不给页签加内容区、拖动排序和竖排反色。
+
+## 0.65.0（2026-11-05）
+
+- 新增免费组件 `vx-avatar`：`src` / `text` / `icon` 三态回落，图片失败 → 首字 → 图标 → `user`；失败只记一次，`src` 变化复位重试，空 `src` 不经过图片节点。
+- 首字先 `trim` 再按 code point 取，第一个 code unit 是高位代理时连取两个 code unit；`😀` 不会被 `slice(0, 1)` 截成半个，中文首字正常。
+- 三档外框 32 / 40 / 48，首字 12 / 14 / 16，图标 14 / 16 / 18；`shape` 三档，`ring` 用 `inset: 0` 的内层 2px 描边、不改外框，`mode` 只透传 `aspectFill` / `aspectFit`。
+- 六种 `type` 复用 `*-soft` 浅底和 `*-pressed` / `warning-ink` 前景；`bgColor` / `color` 是字面值，图片态不铺底色，只有传入 `@click` 时才挂按下态和指针。
+- 新增 9 个尺寸令牌 `--vx-avatar-*`、`--vx-avatar-font-*`、`--vx-avatar-icon-*`，亮暗各一份；不新增颜色令牌。
+- 演示工程新增头像演示页 7 组示例；组件目录、路由、翻页链（安全区 → 头像）、首页版本和页脚一起更新。
+- readme 新增一节用法、属性、事件和说明；DESIGN 补充分层计数、组件条目、配色 / 尺寸 / 形状 / 图标和 Do / Don't；README 授权段补上头像。
+- 免费层到 60 件（按目录 62），展示族到 14；uView 的广度对标到此结束。版本号统一到 0.65.0：组件包、manifest、演示页页脚。
+- 本版不改 `vx-card` / `vx-image-group` / `vx-list-cell` 里的头像实现，也不做徽章内嵌、在线状态点、裁剪和长按保存。
+
+## 0.64.0（2026-11-05）
+
+- 新增免费组件 `vx-image`：加载中 / 成功 / 失败三态，`src` 空串直接走失败态；`placeholder` 控制加载中的占位底色，失败态用 `errorIcon` / `errorText` 回落，只回落一次、不重试。
+- `vx-image` 根节点显式声明 `display: flex`，失败态图标在上、文案在下，整组在固定高度里垂直居中；`vx-divider` 也显式声明 flex 行，不依赖宿主默认的 view 布局。
+- `vx-image` 支持 `width` / `height` / `ratio` 三种定尺寸方式：`height` 优先，没传时按 `ratio` 和 `width` 换算，两者都没有时高度取 100%；`ratio` 只在 `width` 是 px 或 rpx 时生效，rpx 按 750 基准换算，百分比和 `auto` 下只提示一次。
+- `vx-image` 提供 `radius` 五档（`circle` 取胶囊）、`bgColor` 覆盖占位与失败底色、`lazyLoad` 和 200ms 的 `fade` 淡入；`src` 变化重置成加载中，点击 / 加载 / 失败只抛事件，不内置预览。
+- 新增免费组件 `vx-divider`：`direction` 横竖两向、`dashed` 1px 虚线、`text` 配 `align` 三种文字位置、`spacing` 数字按 px（空串横向 12 / 纵向 16）、`color` 同时覆盖线色与文字色、竖线 `height` 覆盖；没有插槽、图标、箭头和点击态。
+- 新增免费组件 `vx-safe-area`：`edge` 顶部 / 底部、`height` 覆盖、`bgColor` 和 `fixed`；不传高度时用 `padding` 读 `var(--uni-safe-area-inset-top/bottom, 0px)`，固定态层级 1、不加分割线 / 毛玻璃 / 渐变，只处理纵向。
+- 演示工程新增图片、分割线、安全区三个演示页，分别 7 / 5 / 4 组示例；组件目录、路由翻页链、首页版本和页脚一起更新，弹出层的「下一个」接到图片。
+- 演示工程在全局样式里引入 `icons-extend.css`，组件目录的扩展图标（含本版三件）不再缺字形。
+- readme 新增三节用法、属性、事件和平台支持；DESIGN 补充三件的配色、排版、尺寸、形状、层级、动效和 Do / Don't，分层表改到 59（按目录 61）；README 授权段的免费组件清单补上三件。
+- 本版不新增令牌：占位底色复用 `--vx-color-default-soft`，线色复用 `--vx-color-border`，安全区复用 `--uni-safe-area-inset-*`。
+- 不迁移 `vx-card` / `vx-image-group` / `vx-upload` / `vx-waterfall` 里的裸 `<image>`；点击预览、长按保存、裁剪和骨架扫光也都不在本版。
+- 免费组件数从 56 增到 59（按目录 58 增到 61），展示族从 12 增到 13、布局族从 8 增到 10；版本号统一到 0.64.0：组件包、manifest、演示页页脚和文档站一起更新。
+
+## 0.63.0（2026-11-05）
+
+- 新增弹层底座 `libs/overlay.ts`：六档层级常量（90 / 95 / 100 / 110 / 150 / 200）、进出场时长、贴边方向到安全区的映射、圆角档位到 px 的换算和滚动锁类名；只放常量和纯函数，读写状态留在组件里，后面几个免费弹层逐个迁移过来。
+- 新增免费组件 `vx-popup`：`placement` 支持四向贴边和居中，`width` / `height` / `round` / `closeable` / `maskClosable` / `maskColor` / `safeArea` / `zIndex` / `duration` / `lockScroll` 十个选项；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()` / `toggle()`。
+- 进出场只改 `transform` 和 `opacity`，贴边面板从所在边滑入、居中面板只淡入；关闭动画走完（`duration` 加一帧）才卸载，关闭过程中再打开会从当前位置回到终点；`duration=0` 和 Web 的「减少动效」都直接切换。
+- 面板只圆朝向页面的那一侧，贴边那条边保持直角，居中四角全圆；贴边面板不加阴影也不加描边，居中面板四周加 1px 描边；关闭叉在内容上方单占一行 44，贴顶时不会钻进状态栏。
+- 安全区由面板内边距承担：上下贴边让开所在边的状态栏或手势条，左右面板两头都让，横屏的左右安全区每档都让；`safeArea=false` 只影响上下贴边。
+- 新增令牌 `--vx-popup-width`（280px）和 `--vx-popup-max-width`（480px），亮暗各一份；左右贴边不传宽度时用前者，居中按内容宽度收在后者以内。
+- 新增全局样式 `.vx-scroll-lock`：Web 上 `lockScroll` 打开时给页面根节点加这个 class 停住页面滚动，收起后移除；组件样式带 `[data-v-*]` 作用域够不到页面根节点，所以放在全局令牌表里。App 不锁页面滚动，小程序只拦遮罩上的手势，差异写进 readme 的平台支持。
+- 演示工程新增弹出层演示页：四向与居中、圆角四档、关闭方式、安全区、宽高、长内容、方法与层级、业务组合共 8 组；组件目录、路由翻页链、首页版本和页脚一起更新。
+- readme 新增一节用法、属性、事件、插槽、方法和平台支持；DESIGN 补充弹层层级表，以及弹出层的配色、排版、尺寸、形状、层级、动效和 Do / Don't；README 授权段的免费组件清单补上弹出层。
+- 免费组件数从 55 增到 56（按目录 57 增到 58），反馈族从 12 增到 13；版本号统一到 0.63.0：组件包、manifest、演示页页脚和文档站一起更新。
+
+## 0.62.0（2026-11-05）
+
+- 新增免费组件 `vx-form` 和 `vx-form-item`：容器负责登记与串行校验，表单项负责标题、星号、说明和错误行；不托管数据，不内置提交按钮、loading 和 Toast。
+- 新增纯函数规则引擎 `libs/form.ts`：`required` / `len` / `min` / `max` / `pattern` / `type` / `validator` 七项能力；空值只看必填，非空按定长 → 范围 → 格式 → 正则 → 自定义的顺序判定；内置手机号、邮箱、身份证号、链接和数字五种格式。
+- 表单项支持 `prop` / `value` / `rules` / `label` / `required`（不传时从 rules 自动推断）/ `help` / `error`，默认插槽暴露 `{ invalid, error }`，校验结束抛 `@validate(ok, message)`。
+- 容器支持 `validate()` / `validateField()` / `clearValidate()`；`validate()` 按注册顺序串行、第一个失败即停，`scrollToError` 用 `createSelectorQuery` 量失败项后 `pageScrollTo`；`disabled` 时跳过校验，重复 `prop` 以先注册者为准并在控制台提示。
+- 标题归属写成一条规则：输入类控件的标题在控件内部，表单项不再传 `label`；开关、评分、多选这类控件由表单项画标题和星号；`labelPosition="top"` 时标题独占一行、`labelWidth` 不生效。
+- 演示工程新增表单演示页：登录、规则一览、错误定位、非输入类字段、标签位置、尺寸三档、禁用态、受控错误、方法与完整收货地址共 10 组；组件目录、路由翻页链和页脚版本一起更新。
+- readme 新增两节用法、属性、事件、插槽、规则表和平台支持；DESIGN 补充表单的配色、排版、尺寸、形状、层级、动效、标题归属和 Do / Don't；README 授权段的免费组件清单补上表单。
+- 不新增 `--vx-*` 令牌：标签宽度、字号、间距和错误色都取现有令牌；亮暗两套主题不需要各写一份。
+- 免费组件数从 53 增到 55（按目录 57），表单族从 8 增到 10；版本号统一到 0.62.0：组件包、manifest、演示页页脚和文档站一起更新。
+
 ## 0.61.0（2026-11-03）
 
 - 新增树型菜单令牌 `--vx-tree-row-sm/md/lg`（36 / 44 / 52）、`--vx-tree-indent-sm/md/lg`（16 / 20 / 24）和 `--vx-tree-marker-sm/md/lg`（20 / 24 / 28），亮暗各一份。

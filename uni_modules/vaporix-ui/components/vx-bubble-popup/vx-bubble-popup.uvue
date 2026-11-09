@@ -68,6 +68,7 @@
 <script setup>
 	import { VxIconName } from '../../libs/icons/codepoints'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
 	import {
 		VxBubblePopupAlign,
 		VxBubblePopupItem,
@@ -95,7 +96,7 @@
 		mask: false,
 		outsideClosable: true,
 		maskColor: '',
-		zIndex: 90
+		zIndex: VX_OVERLAY_LAYER
 	})
 
 	// 收起都写回 false，业务用 v-model:show 时状态能跟着变。

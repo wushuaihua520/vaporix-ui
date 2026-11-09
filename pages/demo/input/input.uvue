@@ -26,7 +26,7 @@
 						<view class="demo-hero__heading">
 							<view class="demo-hero__title-wrap">
 								<text class="demo-hero__title">输入框</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
 							</view>
 						</view>
 					</view>
@@ -280,6 +280,42 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">搜索变体</text>
+							<text class="demo-section__desc">浅底胶囊、前置图标；有值或聚焦才出现取消，键盘确认抛 search。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-field">
+							<vx-input v-model="searchQuery" variant="search" clearable placeholder="搜索商品、品牌或订单"
+								@search="onSearchConfirm" @cancel="onSearchCancel" />
+						</view>
+						<view class="demo-field">
+							<vx-input v-model="searchLargeValue" variant="search" size="lg" clearable
+								placeholder="大号搜索框 · 48" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-input v-model="searchSmallValue" variant="search" size="sm" clearable
+								placeholder="小号搜索框 · 32" />
+						</view>
+						<text class="demo-hint">搜索框没有标题位：label / required / unit 在 search 下不渲染。</text>
+					</view>
+					<view class="demo-card demo-card--spaced">
+						<view class="demo-field">
+							<vx-input model-value="元汽UI" variant="search" disabled placeholder="禁用" />
+						</view>
+						<view class="demo-field demo-field--last">
+							<vx-input model-value="只读展示" variant="search" readonly />
+						</view>
+						<text class="demo-hint">{{ searchEventText }}</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -297,7 +333,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.66.2</text>
 				</view>
 			</view>
 		</scroll-view>
@@ -383,6 +419,14 @@
 
 	const loginPassword = ref('')
 
+	const searchQuery = ref('')
+
+	const searchLargeValue = ref('')
+
+	const searchSmallValue = ref('')
+
+	const searchEventText = ref('键盘确认抛 search，点取消清空并抛 cancel。')
+
 	const sendingCode = ref(false)
 
 	const signingIn = ref(false)
@@ -415,6 +459,14 @@
 
 	const onSearch = () => {
 		uni.showToast({ title: '演示：开始搜索', icon: 'none' })
+	}
+
+	const onSearchConfirm = (value: string) => {
+		searchEventText.value = value.length > 0 ? `search：${value}` : 'search：空值'
+	}
+
+	const onSearchCancel = () => {
+		searchEventText.value = 'cancel：已清空并收起键盘'
 	}
 
 	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。

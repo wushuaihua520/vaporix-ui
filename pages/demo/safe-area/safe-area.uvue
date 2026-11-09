@@ -1,0 +1,435 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-safe-area</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="smartphone" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">安全区</text>
+								<text class="demo-hero__title demo-hero__title--accent">4 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">顶部与底部安全区占位，替代各组件内部自己补 --uni-safe-area-inset-*；不管左右安全区。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-safe-area</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">底部占位</text>
+							<text class="demo-section__desc">放在底栏之后，高度取 --uni-safe-area-inset-bottom；App 为手势条高度，Web 本页没有 tabBar，所以为 0。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-safe-title-row">
+							<text class="demo-safe-title">模拟页面底部</text>
+							<text class="demo-safe-value">系统值 {{ systemBottom }}px</text>
+						</view>
+						<view class="demo-safe-mock">
+							<view class="demo-safe-mock__body">
+								<text class="demo-safe-mock__eyebrow">APP SCREEN</text>
+								<text class="demo-safe-mock__name">商品详情</text>
+								<text class="demo-safe-mock__text">页面内容一直排到底栏上方，手势条区域由安全区占位让开。</text>
+							</view>
+							<view class="demo-safe-mock__bar">
+								<text class="demo-safe-mock__bar-text">模拟底部操作栏</text>
+							</view>
+							<vx-safe-area edge="bottom" bg-color="var(--vx-color-default-soft)" />
+						</view>
+						<text class="demo-hint demo-safe-hint">Web 上没有手势条；这个演示页也没有 tabBar，所以这条占位是 0 高。App 上会撑出系统安全区，并且不画分割线、不做毛玻璃。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">顶部占位</text>
+							<text class="demo-section__desc">放在导航栏之前，高度取 --uni-safe-area-inset-top；页面用原生导航栏时不要在顶部再叠一条。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-safe-title-row">
+							<text class="demo-safe-title">模拟页面顶部</text>
+							<text class="demo-safe-value">--uni-safe-area-inset-top</text>
+						</view>
+						<view class="demo-safe-mock">
+							<vx-safe-area edge="top" bg-color="var(--vx-color-primary-soft)" />
+							<view class="demo-safe-nav">
+								<vx-icon name="chevron-left" size="md" />
+								<text class="demo-safe-nav__title">页面标题</text>
+								<vx-icon name="search" size="md" />
+							</view>
+							<view class="demo-safe-mock__body">
+								<text class="demo-safe-mock__name">导航栏从安全区下方开始</text>
+								<text class="demo-safe-mock__text">顶部安全区只留高和底色，不替代 vx-navigation-bar 和 vx-status-bar。</text>
+							</view>
+						</view>
+						<text class="demo-hint demo-safe-hint">App 读状态栏高度；Web 没有状态栏，使用原生导航栏时这个变量等于导航栏高度，自定义导航时为 0。固定导航栏的页面把这条放在页面最上方即可；带状态栏的页面仍用 vx-navigation-bar 的 statusBar。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">height 覆盖</text>
+							<text class="demo-section__desc">height 传了带单位的值，就直接写高度，不再读系统安全区。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-safe-height">
+							<view class="demo-safe-height__head">
+								<text class="demo-safe-height__name">height="24px"</text>
+								<text class="demo-safe-height__meta">固定 24</text>
+							</view>
+							<vx-safe-area height="24px" bg-color="var(--vx-color-default-soft)" />
+						</view>
+						<view class="demo-safe-height">
+							<view class="demo-safe-height__head">
+								<text class="demo-safe-height__name">height="44px"</text>
+								<text class="demo-safe-height__meta">和列表行同高</text>
+							</view>
+							<vx-safe-area height="44px" bg-color="var(--vx-color-primary-soft)" />
+						</view>
+						<view class="demo-safe-height demo-safe-height--last">
+							<view class="demo-safe-height__head">
+								<text class="demo-safe-height__name">height="64rpx"</text>
+								<text class="demo-safe-height__meta">随屏宽换算</text>
+							</view>
+							<vx-safe-area height="64rpx" bg-color="var(--vx-color-default-soft)" />
+						</view>
+					</view>
+					<text class="demo-hint demo-safe-hint">height 必须带单位；固定间距用 px，只有确实要随屏宽变化时才用 rpx。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">fixed 与背景色</text>
+							<text class="demo-section__desc">固定到窗口对应边，层级 1 和页脚同档；背景色只铺这一条。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<text class="demo-safe-body">打开后，一条 44 高的安全区贴住窗口底边；它没有内容和插槽，Web 上也不拦点击。</text>
+						<view class="demo-safe-actions">
+							<view class="demo-safe-actions__item">
+								<vx-button size="sm" :type="fixedVisible ? 'danger' : 'primary'" variant="soft"
+									:text="fixedVisible ? '收起固定条' : '显示固定条'" @click="toggleFixed" />
+							</view>
+							<text class="demo-safe-actions__meta">当前：{{ fixedVisible ? '已固定 · 44px' : '未固定' }}</text>
+						</view>
+						<view class="demo-safe-preview">
+							<text class="demo-safe-preview__text">页面内容区域</text>
+							<text class="demo-safe-preview__meta">固定条不占文档流，页面底部要自己留出高度，否则最后一段内容会被盖住。</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-safe-hint">固定时不上分割线、不做毛玻璃、不做渐变；顶部固定时同样只铺一条底色。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.64.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 固定条贴住窗口底边，和页面内容同级；打开后由按钮收起。 -->
+		<vx-safe-area v-if="fixedVisible" edge="bottom" fixed height="44px"
+			bg-color="var(--vx-color-primary-soft)" />
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/divider/divider'
+	const nextPath: string = '/pages/demo/avatar/avatar'
+	const prevName = '分割线'
+	const nextName = '头像'
+
+	// 底部系统插入值：App 有值、Web 为 0；页面就绪后再读，避免拿到未渲染的窗口信息。
+	// 顶部只标注变量名：Web 使用原生导航栏时，变量等于导航栏高度，和 safeAreaInsets 不是同一个值。
+	const systemBottom = ref(0)
+	const fixedVisible = ref(false)
+
+	const refreshSystemInsets = () => {
+		const windowInfo = uni.getWindowInfo()
+		// 个别小程序端拿不到 safeAreaInsets；读不到就按 0 显示，演示页不报错。
+		try {
+			systemBottom.value = Math.round(windowInfo.safeAreaInsets.bottom)
+		} catch (error) {
+			systemBottom.value = 0
+		}
+	}
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	const toggleFixed = () => {
+		fixedVisible.value = !fixedVisible.value
+	}
+
+	onReady(() => {
+		refreshSystemInsets()
+	})
+
+	onShow(() => {
+		syncDemoTheme()
+		refreshSystemInsets()
+	})
+</script>
+
+<style>
+	.demo-safe-hint {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-safe-title-row {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.demo-safe-title {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-safe-value {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 模拟一块手机屏幕：描边、圆角并裁掉溢出的安全区条。 */
+	.demo-safe-mock {
+		overflow: hidden;
+		width: 100%;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-safe-mock__body {
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+	}
+
+	.demo-safe-mock__eyebrow {
+		font-size: 12px;
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		letter-spacing: 1px;
+		color: var(--vx-color-primary);
+	}
+
+	.demo-safe-mock__name {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-safe-mock__text {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-safe-mock__bar {
+		align-items: center;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-safe-mock__bar-text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-safe-nav {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-top: var(--vx-space-sm);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-sm);
+		padding-left: var(--vx-space-md);
+		border-bottom-width: var(--vx-border-width);
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-color-divider);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-safe-nav__title {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-safe-height {
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-safe-height--last {
+		margin-bottom: 0;
+	}
+
+	.demo-safe-height__head {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-safe-height__name {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-safe-height__meta {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-safe-body {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-safe-actions {
+		flex-direction: row;
+		align-items: center;
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-safe-actions__item {
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-safe-actions__meta {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-safe-preview {
+		margin-top: var(--vx-space-md);
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		padding-left: var(--vx-space-md);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.demo-safe-preview__text {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-safe-preview__meta {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

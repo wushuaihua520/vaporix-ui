@@ -55,8 +55,8 @@ export const DEMO_COMPONENTS: DemoComponent[] = [
 		en: 'vx-input',
 		icon: 'edit',
 		category: '表单',
-		desc: '标题、必填、清除、单位和前后缀。',
-		sections: 8
+		desc: '标题、必填、清除、单位、前后缀和搜索变体。',
+		sections: 9
 	},
 	{
 		key: 'textarea',
@@ -155,6 +155,15 @@ export const DEMO_COMPONENTS: DemoComponent[] = [
 		icon: 'calendar',
 		category: '表单',
 		desc: '单日、区间、农历与标记。',
+		sections: 10
+	},
+	{
+		key: 'form',
+		name: '表单',
+		en: 'vx-form · vx-form-item',
+		icon: 'list-checks',
+		category: '表单',
+		desc: '校验、错误定位、标签与说明。',
 		sections: 10
 	},
 	{
@@ -334,8 +343,8 @@ export const DEMO_COMPONENTS: DemoComponent[] = [
 		en: 'vx-tabs',
 		icon: 'layout-dashboard',
 		category: '布局',
-		desc: 'line、soft、inverse 三种外观。',
-		sections: 8
+		desc: 'line、soft、inverse 外观与竖向标签。',
+		sections: 9
 	},
 	{
 		key: 'sticky',
@@ -444,6 +453,51 @@ export const DEMO_COMPONENTS: DemoComponent[] = [
 		category: '导航与展示',
 		desc: '单行、换行与滚动，语义色、关闭和插槽。',
 		sections: 11
+	},
+	{
+		key: 'popup',
+		name: '弹出层',
+		en: 'vx-popup',
+		icon: 'files',
+		category: '反馈',
+		desc: '四向贴边或居中，圆角、安全区与进出场。',
+		sections: 8
+	},
+	{
+		key: 'image',
+		name: '图片',
+		en: 'vx-image',
+		icon: 'image',
+		category: '布局',
+		desc: '占位、失败回落、圆角与按比例。',
+		sections: 7
+	},
+	{
+		key: 'divider',
+		name: '分割线',
+		en: 'vx-divider',
+		icon: 'rows',
+		category: '布局',
+		desc: '横竖两向，虚线与带文字。',
+		sections: 5
+	},
+	{
+		key: 'safe-area',
+		name: '安全区',
+		en: 'vx-safe-area',
+		icon: 'app-window',
+		category: '布局',
+		desc: '顶部与底部安全区占位。',
+		sections: 4
+	},
+	{
+		key: 'avatar',
+		name: '头像',
+		en: 'vx-avatar',
+		icon: 'user',
+		category: '导航与展示',
+		desc: '图片、首字、图标三态回落。',
+		sections: 7
 	},
 ]
 

@@ -1,34 +1,95 @@
 <template>
 	<!-- 页签只切换视图，页面内容、路由和埋点由业务处理。 -->
-	<!-- 一屏 2–5 个，等宽排列；不横向滚动，长文案先缩短。 -->
+	<!-- 一屏 2–5 个，等宽排列；不横向滚动，长文案先缩短。
+	     scrollable 解除等宽约束：页签按文案宽度排，超出容器横向滑，选中项滚入可视区。 -->
 	<view v-if="items.length > 0" :class="rootClass" :style="rootStyle">
-		<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
-			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
-			<view :class="row.chipClass">
-				<!-- vx-badge 打开 absolute 后 align-self 是 flex-start，直接放进胶囊会在高胶囊里贴顶。
-				     包一层等高容器，胶囊仍按整行居中，角标也还能伸出文字右上角。 -->
-				<view v-if="row.hasBadge" :class="row.badgeClass">
-					<!-- 行高比字号多出的一半约 4px。圆心默认落在行盒角上，上移 4 才压到字形。
-					     offset 只接受数字，不能写负的 var()。 -->
-					<vx-badge absolute :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
-						:type="badgeType" :offset-y="-4">
-						<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
-					</vx-badge>
+		<!-- 可滚动形态：scroll-view 接管横向滑动；两个分支的页签格子内容保持一致，只差外层容器。
+		     滑动区里再套一层 track（参照 vx-scroll-list）：Web 端 scroll-view 的内容层是 block，
+		     不套一行式容器页签会竖着堆。 -->
+		<scroll-view v-if="isScrollable" class="vx-tabs__scroller" direction="horizontal" :show-scrollbar="false"
+			:scroll-into-view="scrollIntoView">
+			<view class="vx-tabs__track">
+				<view v-for="row in rows" :key="row.index" :id="row.itemId" :class="row.itemClass"
+					:hover-class="row.hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
+					@click.stop="onClick(row.index)">
+					<view :class="row.chipClass">
+						<view v-if="row.hasBadge && isVertical" :class="row.verticalContentClass">
+							<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+							<view :class="row.badgeClass">
+								<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+									:type="badgeType" />
+							</view>
+						</view>
+						<view v-else-if="row.hasBadge" :class="row.badgeClass">
+							<vx-badge absolute :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+								:type="badgeType" :offset-y="-4">
+								<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+							</vx-badge>
+						</view>
+						<text v-else :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+					</view>
+					<view v-if="row.indicatorClass.length > 0" :class="row.indicatorClass"></view>
 				</view>
-				<text v-else :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+				<!-- 单条滑动指示线挂在轨道里：页签不等宽，格子缩成零宽的定位点，
+				     x 由脚本实测；线在格子内以 50% 居中，正好落在选中项的中心上，
+				     页签滚动时跟着轨道一起动。 -->
+				<view v-if="sliderVisible" class="vx-tabs__slider vx-tabs__slider--scroll" :style="sliderStyle">
+					<view :class="indicatorLineClass"></view>
+				</view>
 			</view>
-			<view v-if="row.indicatorClass.length > 0" :class="row.indicatorClass"></view>
-		</view>
+		</scroll-view>
+
+		<template v-else>
+			<!-- 单条滑动指示线：外框对齐根节点让出来的内容区，格子占一格宽、整格平移，
+			     选中项变了就从上一格滑到当前格；几何全是百分比，不测量也不怕容器变宽变窄。
+			     必须排在页签之前：App 的同一层子节点按倒序命中，absolute 覆盖层排在后面会把
+			     整排页签的点击全吞掉（Web 上用 pointer-events: none 兜住）。 -->
+			<view v-if="sliderVisible" class="vx-tabs__slider-frame">
+				<view class="vx-tabs__slider" :style="sliderStyle">
+					<view :class="indicatorLineClass"></view>
+				</view>
+			</view>
+			<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
+				:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
+				<view :class="row.chipClass">
+					<!-- 竖排每行只有文字高，角标再绝对定位就会压到上一行或盖住文案：
+					     改成行内排布，文案和角标同处一个 flex 行，角标跟在文案后面、垂直居中。
+					     文案占满剩余宽度并单行省略，角标不参与压缩，宽度 96 时也能完整显示。 -->
+					<view v-if="row.hasBadge && isVertical" :class="row.verticalContentClass">
+						<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+						<view :class="row.badgeClass">
+							<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+								:type="badgeType" />
+						</view>
+					</view>
+					<!-- 横排仍是绝对定位：vx-badge 打开 absolute 后 align-self 是 flex-start，直接放进胶囊会在高胶囊里贴顶。
+					     包一层等高容器，胶囊仍按整行居中，角标也还能伸出文字右上角。 -->
+					<view v-else-if="row.hasBadge" :class="row.badgeClass">
+						<!-- 行高比字号多出的一半约 4px。圆心默认落在行盒角上，上移 4 才压到字形。
+						     offset 只接受数字，不能写负的 var()。 -->
+						<vx-badge absolute :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+							:type="badgeType" :offset-y="-4">
+							<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+						</vx-badge>
+					</view>
+					<text v-else :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+				</view>
+				<view v-if="row.indicatorClass.length > 0" :class="row.indicatorClass"></view>
+			</view>
+		</template>
 	</view>
 </template>
 
 <script setup>
 	import { VxTabsProps, VxTabItem } from './props'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_PRESSED_STAY_TIME, VX_TABS_MEASURE_DELAY } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxTabsProps>(), {
 		items: (): Array<VxTabItem> => [],
 		variant: 'line',
+		direction: 'horizontal',
+		verticalWidth: 96,
+		scrollable: false,
 		size: 'md',
 		type: 'primary',
 		divider: true,
@@ -50,7 +111,9 @@
 	type TabsRow = {
 		index: number
 		itemClass: string
+		itemId: string
 		chipClass: string
+		verticalContentClass: string
 		textClass: string
 		textStyle: string
 		indicatorClass: string
@@ -73,7 +136,176 @@
 		return value
 	})
 
+	// 竖排是侧边导航：每项占一整行，选中标记换成左侧竖条。
+	const isVertical = computed((): boolean => {
+		return props.direction === 'vertical'
+	})
+
+	// 可滚动只在横向生效，纵向时等同关闭（和 vx-swiper 的 card 同一套处理）。
+	const isScrollable = computed((): boolean => {
+		return props.scrollable && !isVertical.value
+	})
+
+	// scroll-into-view 的 id 要在页面内唯一：同一页可能有多个页签实例，拼上实例级随机段。
+	const instanceId = 'vx-tabs-' + Math.floor(Math.random() * 1000000)
+
+	const itemOf = (index: number): string => {
+		return instanceId + '-item-' + index
+	}
+
+	// 选中项变了就声明式滚入可视区；-1（未选中）清掉目标，停在原地。
+	const scrollIntoView = ref('')
+
+	const syncScrollIntoView = (index: number): void => {
+		if (!isScrollable.value) {
+			scrollIntoView.value = ''
+			return
+		}
+		scrollIntoView.value = index >= 0 ? itemOf(index) : ''
+	}
+
+	watch(activeIndex, (value: number) => {
+		syncScrollIntoView(value)
+		// 失效后先摘线，等重新选中再接管：挂着旧的 x 会在原地闪一下。
+		if (value < 0) sliderMeasured.value = false
+		scheduleSliderMeasure()
+	})
+
+	onMounted(() => {
+		// 初次渲染按业务传入的选中项定位一次。
+		syncScrollIntoView(activeIndex.value)
+		scheduleSliderMeasure()
+	})
+
+	// —— 滑动指示线 ——
+	// 横向 line 才有下划线：整条只画一条，选中项变了就从上一格滑到当前格。
+	// soft / inverse 没有下划线，竖排的左侧竖条另算，都不走这套。
+	const sliderActive = computed((): boolean => {
+		return !isVertical.value && variant.value === 'line'
+	})
+
+	// 可滚动形态要先量出选中项的中心 x，线才挂得上去；量不到就退回逐项渲染的老样子。
+	const sliderMeasured = ref(false)
+
+	// 量出来的中心 x，相对滑动轨道；页签跟着内容滚，线挂在轨道里会一起动。
+	const sliderX = ref(0)
+
+	// 线交给滑动条接管的时机：等宽形态的几何是纯百分比，不用测量，直接接管；
+	// 可滚动形态等首次测量成功。接管前仍由选中项自己画线，位置本来就对，衔接不跳。
+	const sliderMounted = computed((): boolean => {
+		if (!sliderActive.value) return false
+		if (!isScrollable.value) return true
+		return sliderMeasured.value
+	})
+
+	const sliderVisible = computed((): boolean => {
+		return sliderMounted.value && activeIndex.value >= 0
+	})
+
+	// 等宽形态：格子占一格宽，按格数整格平移；几何全是百分比，容器变宽变窄都不用重算。
+	// 可滚动形态：格子是零宽的定位点，行内给量出来的中心 x，线在格子内以 50% 居中正好落点上。
+	const sliderStyle = computed((): string => {
+		const current = activeIndex.value
+		if (current < 0) return ''
+		if (isScrollable.value) {
+			return `transform: translateX(${Math.round(sliderX.value * 100) / 100}px);`
+		}
+		// 宽度只留四位小数，避免长浮点尾巴写进样式。
+		const cell = Math.round(10000 * 100 / props.items.length) / 10000
+		return `width: ${cell}%; transform: translateX(${current * 100}%);`
+	})
+
+	// 可滚动形态的测量：页签按文案宽度排，落点没法用百分比表达。
+	// 选中项和轨道两条 rect 同一批取样，差值和滚动位置无关，滑动进行中量也准。
+	const instance = getCurrentInstance()
+
+	const canMeasure = (): boolean => {
+		return typeof uni !== 'undefined' && typeof uni.createSelectorQuery === 'function'
+	}
+
+	let sliderMeasureTimer = 0
+	// 连续切换把序号往前拨，对不上的回调直接丢掉。
+	let sliderMeasureId = 0
+	let sliderMeasureTries = 0
+
+	const stopSliderMeasure = () => {
+		sliderMeasureId += 1
+		if (sliderMeasureTimer === 0) return
+		clearTimeout(sliderMeasureTimer)
+		sliderMeasureTimer = 0
+	}
+
+	const measureSlider = () => {
+		sliderMeasureTimer = 0
+		if (!sliderActive.value || !isScrollable.value) return
+		const proxy = instance != null ? instance.proxy : null
+		if (!canMeasure() || proxy == null) return
+		const current = activeIndex.value
+		if (current < 0) return
+		const id = ++sliderMeasureId
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('#' + itemOf(current))
+			.boundingClientRect()
+			.select('.vx-tabs__track')
+			.boundingClientRect()
+			.exec((result) => {
+				if (id !== sliderMeasureId) return
+				const itemRect = result[0] as NodeInfo | null
+				const trackRect = result[1] as NodeInfo | null
+				if (itemRect == null || trackRect == null) {
+					retrySliderMeasure()
+					return
+				}
+				if (itemRect.left == null || itemRect.width == null || trackRect.left == null) {
+					retrySliderMeasure()
+					return
+				}
+				// 首次排版还没落定时先别下结论，过一帧再量；三次仍量不到就保持逐项渲染。
+				if (itemRect.width <= 0) {
+					retrySliderMeasure()
+					return
+				}
+				sliderX.value = itemRect.left + itemRect.width / 2 - trackRect.left
+				sliderMeasured.value = true
+			})
+	}
+
+	const retrySliderMeasure = () => {
+		if (sliderMeasureTries >= 3) return
+		sliderMeasureTries++
+		sliderMeasureTimer = setTimeout(measureSlider, VX_TABS_MEASURE_DELAY)
+	}
+
+	const scheduleSliderMeasure = () => {
+		if (!sliderActive.value || !isScrollable.value) return
+		stopSliderMeasure()
+		sliderMeasureTries = 0
+		nextTick(() => {
+			measureSlider()
+		})
+	}
+
+	// 可滚动开关变了：关掉立即按百分比接管，打开等重新测量。
+	watch(isScrollable, () => {
+		sliderMeasured.value = false
+		scheduleSliderMeasure()
+	})
+
+	onUnmounted(() => {
+		stopSliderMeasure()
+	})
+
+	// 竖向宽度只认 px 数字；小于等于 0 时返回 0，让根节点跟随容器撑满。
+	const verticalWidthValue = computed((): number => {
+		const value = props.verticalWidth
+		if (!(value > 0)) return 0
+		return Math.round(value)
+	})
+
 	const variant = computed((): string => {
+		// 竖排不支持反色：按 soft 渲染，横向分支的整条反色不受影响。
+		if (isVertical.value && props.variant === 'inverse') return 'soft'
 		return props.variant === 'soft' || props.variant === 'inverse' ? props.variant : 'line'
 	})
 
@@ -83,6 +315,8 @@
 		return 'md'
 	})
 
+	// 横向的角标上移 4 压在字形右上角；竖排改用行内排布，不再需要偏移量。
+	// （横向分支的偏移量在模板里写死 -4，和改动前一致。）
 	// 不认识的语义色按 default 处理，文字、下划线和浅底胶囊用同一档。
 	const typeName = computed((): string => {
 		const type = props.type
@@ -111,9 +345,43 @@
 		return 'default'
 	})
 
+	// 下划线本身的一套 class：尺寸定宽、语义配色、分割线上再下移 1px。
+	// 滑动指示线和逐项渲染（竖排左条、可滚动测量失败的兜底）共用，改一处两端同步。
+	const indicatorLineClass = computed((): string => {
+		const style = variant.value
+		const size = sizeName.value
+		const semantic = typeName.value
+		const vertical = isVertical.value
+		let name = 'vx-tabs__indicator'
+		// 竖排的标记是左侧竖条，宽度、位置和高度都另算，不吃横向三档。
+		if (!vertical && size !== 'md') name += ` vx-tabs__indicator--${size}`
+		name += ` vx-tabs__indicator--${semantic}`
+		// inverse 不画线。有分割线才下移，否则线会伸出组件 1px。
+		if (!vertical && props.divider && style !== 'inverse') name += ' vx-tabs__indicator--on-divider'
+		if (vertical) name += ' vx-tabs__indicator--vertical'
+		return name
+	})
+
+	// 方向、尺寸、数量和文案都会改页签的落点；收成一个键，变化后再量一次。
+	// 等宽形态调度里自己挡掉，量这一步只发生在可滚动形态。
+	// watch 注册时会先求一次键，这段要放在 sizeName 声明之后，不然按 TDZ 直接抛错。
+	const sliderMeasureKey = computed((): string => {
+		const texts = props.items.map((item: VxTabItem): string => {
+			return item.text != null ? item.text : ''
+		}).join('|')
+		return `${props.direction}|${sizeName.value}|${props.items.length}|${texts}`
+	})
+
+	watch(sliderMeasureKey, () => {
+		scheduleSliderMeasure()
+	})
+
 	const rootClass = computed((): string => {
 		let name = 'vx-tabs'
 		if (sizeName.value !== 'md') name += ` vx-tabs--${sizeName.value}`
+		if (isVertical.value) name += ' vx-tabs--vertical'
+		// 可滚动形态去掉根节点左右内边距，滑动要能贴到容器边缘。
+		if (isScrollable.value) name += ' vx-tabs--scroll'
 		if (variant.value === 'inverse') name += ' vx-tabs--inverse'
 		// inverse 整条已经是反色底，不再画分割线；其余形态按 divider 开关。
 		if (!props.divider || variant.value === 'inverse') name += ' vx-tabs--no-divider'
@@ -121,8 +389,11 @@
 	})
 
 	const rootStyle = computed((): string => {
-		if (props.bgColor.length === 0) return ''
-		return `background-color: ${props.bgColor};`
+		let style = ''
+		// 竖排默认 96px，传 0 时由容器决定宽度。
+		if (isVertical.value && verticalWidthValue.value > 0) style += `width: ${verticalWidthValue.value}px;`
+		if (props.bgColor.length === 0) return style
+		return style + `background-color: ${props.bgColor};`
 	})
 
 	const rows = computed((): Array<TabsRow> => {
@@ -132,7 +403,9 @@
 		const style = variant.value
 		const size = sizeName.value
 		const semantic = typeName.value
-		const tone = style === 'soft' ? softTone.value : activeTone.value
+		const vertical = isVertical.value
+		// 竖排的选中项整行压在浅底上，文字一律取 pressed 档才够 4.5:1。
+		const tone = style === 'soft' || vertical ? softTone.value : activeTone.value
 		const count = source.length
 		const customColor = props.color.length > 0 ? `color: ${props.color};` : ''
 
@@ -142,6 +415,8 @@
 		else if (size === 'lg') textBase += ' vx-tabs__text--lg'
 		const textInverse = style === 'inverse' ? textBase + ' vx-tabs__text--inverse' : textBase
 		const textActive = textInverse + ` vx-tabs__text--active-${tone}`
+		// 竖排选中项再重一档，和横向的 500 拉开。
+		const textVerticalActive = textActive + ' vx-tabs__text--vertical-active'
 
 		// line 的选中项只换文字色，不加胶囊；soft / inverse 才需要高度和左右留白。
 		let chipBase = 'vx-tabs__chip'
@@ -151,11 +426,7 @@
 			else chipBase += ' vx-tabs__chip--surface'
 		}
 
-		let indicatorBase = 'vx-tabs__indicator'
-		if (size !== 'md') indicatorBase += ` vx-tabs__indicator--${size}`
-		indicatorBase += ` vx-tabs__indicator--${semantic}`
-		// inverse 不画线。有分割线才下移，否则线会伸出组件 1px。
-		if (props.divider && style !== 'inverse') indicatorBase += ' vx-tabs__indicator--on-divider'
+		let indicatorBase = indicatorLineClass.value
 
 		for (let index = 0; index < count; index++) {
 			const entry = source[index]
@@ -168,19 +439,41 @@
 
 			let itemClass = 'vx-tabs__item'
 			if (disabled) itemClass += ' vx-tabs__item--disabled'
+			// 可滚动的页签按文案宽度排，不再吃 flex: 1；首末项补回根节点让出来的边距。
+			if (isScrollable.value) {
+				itemClass += ' vx-tabs__item--scroll'
+				if (index === 0) itemClass += ' vx-tabs__item--scroll-first'
+				if (index === count - 1) itemClass += ' vx-tabs__item--scroll-last'
+			}
+
+			// 竖排每项占一整行：高度跟档位，选中项铺浅底，项之间画横线。
+			if (vertical) {
+				itemClass += ' vx-tabs__item--vertical'
+				if (size !== 'md') itemClass += ` vx-tabs__item--vertical-${size}`
+				if (active) {
+					itemClass += style === 'soft'
+						? ` vx-tabs__item--vertical-soft-${semantic}`
+						: ' vx-tabs__item--vertical-active'
+				}
+				if (props.divider && index < count - 1) itemClass += ' vx-tabs__item--vertical-divided'
+			}
 
 			// 胶囊只在选中时加高度和左右留白；未选中保持透明，文字仍在整格中间。
+			// 竖排的选中底由整行承担，不叠胶囊；胶囊撑满整行内容区，文案才能靠左省略。
 			let chipClass = chipBase
-			if (!active) chipClass = 'vx-tabs__chip'
+			if (!active || vertical) chipClass = 'vx-tabs__chip'
+			if (vertical) chipClass += ' vx-tabs__item--vertical-chip'
 
 			let textClass = textInverse
-			if (active) textClass = textActive
+			if (active) textClass = vertical ? textVerticalActive : textActive
 			// 反色条上的未选中项在深底上靠反色文字；选中后在 surface 胶囊上，用普通禁用色。
 			if (disabled) {
 				textClass += style === 'inverse' && !active
 					? ' vx-tabs__text--inverse-disabled'
 					: ' vx-tabs__text--disabled'
 			}
+			// 竖排文案单行省略：宽度不够时先收文案，角标完整保留。
+			if (vertical) textClass += ' vx-tabs__item--vertical-text'
 
 			// 自定义文字色只盖未选中项，选中态仍跟 type；行 / 浅底形态的禁用项保持自己的灰度。
 			// 反色条的禁用项只降透明度，保留自定义文字色才不会在深底上消失。
@@ -192,12 +485,18 @@
 			list.push({
 				index: index,
 				itemClass: itemClass,
+				itemId: itemOf(index),
 				chipClass: chipClass,
+				// 竖排角标和文案同一行：这层横向容器只决定排布，不画底。
+				verticalContentClass: vertical ? 'vx-tabs__item--vertical-content' : '',
 				textClass: textClass,
 				textStyle: textStyle,
-				indicatorClass: active && style === 'line' ? indicatorBase : '',
+				// 横向 line 的线已交给滑动条接管，这里只剩竖排左条和测量失败的兜底。
+				indicatorClass: active && (vertical || (style === 'line' && !sliderMounted.value)) ? indicatorBase : '',
 				// 透明度写在 vx-badge 的标记上。写在这一层会连文字一起淡，反色禁用再乘一次。
-				badgeClass: disabled ? 'vx-tabs__badge vx-tabs__badge--disabled' : 'vx-tabs__badge',
+				// 竖排多一档 4px 左边距，让角标和文案分开；横排不加这个 class。
+				badgeClass: (disabled ? 'vx-tabs__badge vx-tabs__badge--disabled' : 'vx-tabs__badge')
+					+ (vertical ? ' vx-tabs__item--vertical-badge' : ''),
 				// 空字符串关不掉按下态，要写 none。
 				hoverClass: disabled ? 'none' : 'vx-tabs__item--pressed',
 				hasBadge: hasBadge,
@@ -207,6 +506,39 @@
 			})
 		}
 		return list
+	})
+
+	// 竖排的反色按 soft 渲染，开发阶段提示一次；不影响渲染。
+	let warnedVerticalInverse = false
+
+	const warnVerticalInverse = () => {
+		if (warnedVerticalInverse) return
+		if (!isVertical.value || props.variant !== 'inverse') return
+		warnedVerticalInverse = true
+		console.warn('[vx-tabs] 竖排不支持 variant="inverse"，已按 soft 渲染。')
+	}
+
+	// 竖排整行占宽，没有横向滑动的空间；scrollable 打开时按纵向渲染并提示一次。
+	let warnedVerticalScrollable = false
+
+	const warnVerticalScrollable = () => {
+		if (warnedVerticalScrollable) return
+		if (!isVertical.value || !props.scrollable) return
+		warnedVerticalScrollable = true
+		console.warn('[vx-tabs] 纵向不支持 scrollable，已按纵向渲染。')
+	}
+
+	watch((): string => `${props.direction}|${props.variant}`, () => {
+		warnVerticalInverse()
+	})
+
+	watch((): string => `${props.direction}|${props.scrollable ? 'scroll' : 'fixed'}`, () => {
+		warnVerticalScrollable()
+	})
+
+	onMounted(() => {
+		warnVerticalInverse()
+		warnVerticalScrollable()
 	})
 
 	// 停在页签上，外层卡片不会再收到同一次点击。
@@ -226,8 +558,10 @@
 	/* 页签是导航行，高度沿用列表行 44 / 52 / 60；选中胶囊用紧凑高度 28 / 32 / 36。
 	   宽度跟随父级，左右各留 12：角标压在首末项上也不会伸出行外。
 	   Web 默认 content-box，不写 border-box 时底边会把高度撑出列表行。
-	   App 默认 overflow 是 hidden，角标伸出会被裁；Android 拍平后 visible 不生效，这层不要加 flatten。 */
+	   App 默认 overflow 是 hidden，角标伸出会被裁；Android 拍平后 visible 不生效，这层不要加 flatten。
+	   相对定位给滑动指示线的外框当基准，Web 上绝对定位才有得挂。 */
 	.vx-tabs {
+		position: relative;
 		flex-direction: row;
 		align-items: stretch;
 		box-sizing: border-box;
@@ -248,6 +582,48 @@
 
 	.vx-tabs--lg {
 		height: var(--vx-list-height-lg);
+	}
+
+	/* 可滚动形态：解除等宽约束，页签按文案宽度排在 scroll-view 里横向滑。
+	   根节点让出左右内边距，滑动才贴得到容器边缘；边距改由首末项自己补。 */
+	.vx-tabs--scroll {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	/* 滑动区占满根节点；show-scrollbar 关掉后，App 与 Web 都不出滚动条。 */
+	.vx-tabs__scroller {
+		flex: 1;
+		min-width: 0;
+		height: 100%;
+	}
+
+	/* 滑动区里的一行：页签在这层横向排。高度撑满，页签的 height: 100% 才有基准。
+	   相对定位给滑动指示线的零宽格子当基准，Web 上绝对定位才有得挂。 */
+	.vx-tabs__track {
+		position: relative;
+		flex-direction: row;
+		flex-shrink: 0;
+		height: 100%;
+	}
+
+	/* #ifdef WEB */
+	/* Web 的块级布局会把 track 拉满容器宽，页签溢出是否计入 scrollWidth 因浏览器而异；
+	   直接按内容宽度撑开，横向可滚动距离就准确了。 */
+	.vx-tabs__track {
+		width: max-content;
+	}
+	/* #endif */
+
+	/* 竖排是侧边导航：整条竖着排，高度由项数撑开，左右内边距交给每一项。
+	   底部那条通栏分割线不再画，分割线按项画在项之间。 */
+	.vx-tabs--vertical {
+		flex-direction: column;
+		align-items: stretch;
+		height: auto;
+		padding-left: 0;
+		padding-right: 0;
+		border-bottom-width: 0;
 	}
 
 	/* 反色条用正文色铺满整条，选中项浮一个 surface 胶囊；品牌底色由 bgColor 覆盖。 */
@@ -273,6 +649,80 @@
 
 	.vx-tabs__item--pressed {
 		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 可滚动形态的页签：按文案宽度排，不再吃 flex: 1；首末项补回根节点让出来的边距。
+	   写在基础 item 之后：同优先级的覆盖靠样式表顺序，放前面会被 flex: 1 盖掉。 */
+	.vx-tabs__item--scroll {
+		flex: none;
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-tabs__item--scroll-first {
+		padding-left: var(--vx-space-lg);
+	}
+
+	.vx-tabs__item--scroll-last {
+		padding-right: var(--vx-space-lg);
+	}
+
+	/* 竖排每项占一整行，行高沿用列表行 44 / 52 / 60。
+	   flex 要关掉：横向的 flex: 1 在列方向会把基准高度压成 0。 */
+	.vx-tabs__item--vertical {
+		flex: none;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--vx-list-height-md);
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
+	}
+
+	.vx-tabs__item--vertical-sm {
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-tabs__item--vertical-lg {
+		height: var(--vx-list-height-lg);
+	}
+
+	/* 选中项整行铺浅底：默认用中性浅底，soft 跟着 type 换语义浅底。 */
+	.vx-tabs__item--vertical-active {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	.vx-tabs__item--vertical-soft-primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.vx-tabs__item--vertical-soft-success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.vx-tabs__item--vertical-soft-info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.vx-tabs__item--vertical-soft-warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.vx-tabs__item--vertical-soft-danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	.vx-tabs__item--vertical-soft-default {
+		background-color: var(--vx-color-default-soft);
+	}
+
+	/* 竖排的分割线落在项之间，最后一项不画，不另画右侧竖线。 */
+	.vx-tabs__item--vertical-divided {
+		border-bottom-width: var(--vx-border-width);
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-color-divider);
 	}
 
 	/* 未选中时胶囊是透明的，文案直接落在整条底色上；选中后由尺寸 class 撑出胶囊。 */
@@ -331,7 +781,38 @@
 		background-color: var(--vx-color-surface);
 	}
 
-	/* 角标外壳只负责把文字托到居中位置；vx-badge 自己处理定位和裁切。 */
+	/* 竖排的胶囊撑满整行内容区：文案靠左、可以省略，角标跟在后面。
+	   选中底由整行承担，胶囊本身不画底也不加高度。 */
+	.vx-tabs__item--vertical-chip {
+		flex: 1;
+		min-width: 0;
+		justify-content: flex-start;
+	}
+
+	/* 竖排角标和文案同一行：这层横向容器把角标托到垂直居中，角标不再绝对定位。
+	   宽度留给文案收窄，容器本身吃满胶囊。 */
+	.vx-tabs__item--vertical-content {
+		flex: 1;
+		min-width: 0;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 竖排文案单行省略：占满剩余宽度，角标完整保留。
+	   和横向文案的区别只有这三条，字号、字重和颜色仍走 vx-tabs__text。 */
+	.vx-tabs__item--vertical-text {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* 竖排角标跟在文案后面，留 4px；竖向宽度 96 时文案省略、角标不被压缩。 */
+	.vx-tabs__item--vertical-badge {
+		margin-left: var(--vx-space-xs);
+	}
+
+	/* 角标外壳：横向时把胶囊和文字托到居中位置，竖排时只托住角标；vx-badge 自己处理定位和裁切。 */
 	.vx-tabs__badge {
 		flex-direction: row;
 		align-items: center;
@@ -419,6 +900,11 @@
 		font-weight: var(--vx-weight-medium);
 	}
 
+	/* 竖排选中项再重一档：整行是选中底，字重要比横向更容易扫到。 */
+	.vx-tabs__text--vertical-active {
+		font-weight: var(--vx-weight-semibold);
+	}
+
 	/* 禁用写在选中态后面，选中又被禁用时文字仍转灰。 */
 	.vx-tabs__text--disabled {
 		color: var(--vx-color-disabled-text);
@@ -479,6 +965,51 @@
 	/* 写在类型色后面，只改位置，不把底色盖回去。App 不能写负的 var()。 */
 	.vx-tabs__indicator--on-divider {
 		bottom: var(--vx-tabs-indicator-out);
+	}
+
+	/* 竖排把底部下划线换到左侧：2px 宽、行高的 60%，颜色仍跟 type。
+	   上下各留 20%（(100% - 60%) / 2）就正好垂直居中；横向的 left / transform 一起盖掉，
+	   不写 auto，也不依赖绝对定位的过约束。 */
+	.vx-tabs__indicator--vertical {
+		left: 0;
+		bottom: 20%;
+		width: var(--vx-border-width-strong);
+		height: 60%;
+		transform: translateX(0);
+	}
+
+	/* —— 滑动指示线 ——
+	   整条只画一条线：外框对齐根节点左右让出来的内容区（页签的等宽就排在这个范围里），
+	   格子的百分比宽以这层为基准才和页签一格对得上。绝对定位不占布局，挡不住页签自己排。 */
+	.vx-tabs__slider-frame {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: var(--vx-space-md);
+		right: var(--vx-space-md);
+		overflow: visible;
+		/* 指示线只负责画，不参与点击；节点顺序已把它压到页签下面，这一条兜住支持指针事件的端。 */
+		pointer-events: none;
+	}
+
+	/* 滑动的格子：transform 变化时从上一格滑到当前格，时长和缓动与开关、进度条同一档。
+	   线以 50% 挂在格子中间，格子落到哪格，线就在哪格中间。 */
+	.vx-tabs__slider {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		overflow: visible;
+		pointer-events: none;
+		transition-property: transform;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	/* 可滚动形态的格子：页签不等宽，百分比表达不了落点，缩成零宽的定位点挂进轨道，
+	   left 固定 0，x 全部交给行内 transform 的实测值。 */
+	.vx-tabs__slider--scroll {
+		left: 0;
+		width: 0;
 	}
 
 	/* #ifdef WEB */

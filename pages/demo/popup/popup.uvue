@@ -1,0 +1,661 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">反馈</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-popup</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="files" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">弹出层</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">通用浮层：四向贴边或居中，只圆朝向页面的那一侧；安全区、滚动锁和进出场都走同一套底座。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">反馈</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-popup</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">四向与居中</text>
+							<text class="demo-section__desc">top / bottom / left / right / center，五个方向各开一次。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="顶部弹出" @click="onPlace('top')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="底部弹出" @click="onPlace('bottom')" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="左侧弹出" @click="onPlace('left')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="右侧弹出" @click="onPlace('right')" />
+							</view>
+						</view>
+						<vx-button block size="sm" type="default" text="居中弹出" @click="onPlace('center')" />
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">当前方向：{{ placeText }}</text>
+							<text class="demo-popup-status__meta">placement</text>
+						</view>
+						<text class="demo-hint">上下占满宽度、左右占满高度，居中四周留 24；同一个实例改 placement，内容不变。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">圆角</text>
+							<text class="demo-section__desc">none / sm / md / lg 四档，贴边那条边始终是直角。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="平角" @click="onRound('none')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="sm 6" @click="onRound('sm')" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="md 8" @click="onRound('md')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="lg 12" @click="onRound('lg')" />
+							</view>
+						</view>
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">当前圆角：{{ roundText }}</text>
+							<text class="demo-popup-status__meta">round</text>
+						</view>
+						<text class="demo-hint">底部面板只圆上面两角，居中面板四角全圆；贴住屏幕的那条边不圆角。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">关闭方式</text>
+							<text class="demo-section__desc">closeable 和 maskClosable 两个开关，点遮罩会记一次日志。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-switch v-model="closeableOn" layout="list" label="显示关闭叉" description="closeable"
+							divider />
+						<vx-switch v-model="maskClosableOn" layout="list" label="点遮罩可关闭"
+							description="maskClosable" :divider="false" />
+						<view class="demo-popup-open">
+							<vx-button block type="default" text="试试关闭方式" @click="closeVisible = true" />
+						</view>
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">{{ maskLog }}</text>
+							<text class="demo-popup-status__meta">@click-mask · @close</text>
+						</view>
+						<text class="demo-hint">遮罩不可点击时，点它只抛 click-mask、不关闭；关闭叉和内容里的按钮仍能退出。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">安全区</text>
+							<text class="demo-section__desc">底部面板里放一行按钮，验证手势条不压内容。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-switch v-model="safeAreaOn" layout="list" label="让开底部安全区" description="safeArea"
+							:divider="false" />
+						<view class="demo-popup-open">
+							<vx-button block type="default" text="底部面板 · 两个按钮" @click="safeVisible = true" />
+						</view>
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">safeArea：{{ safeAreaOn ? '打开' : '关闭' }}</text>
+							<text class="demo-popup-status__meta">padding-bottom</text>
+						</view>
+						<text class="demo-hint">安全区由面板内边距承担到手势条外；Web 上底部为 0，App 真机才看得出差别。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">宽高</text>
+							<text class="demo-section__desc">width 只作用于左右和居中，height 只作用于上下，都要带单位。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="右侧默认"
+									@click="onSize('right', '', '', '右侧 · 280px')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="右侧 86%"
+									@click="onSize('right', '86%', '', '右侧 · 86%')" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="底部按内容"
+									@click="onSize('bottom', '', '', '底部 · 按内容')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="底部 320px"
+									@click="onSize('bottom', '', '320px', '底部 · 320px')" />
+							</view>
+						</view>
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">当前：{{ sizeLabel }}</text>
+							<text class="demo-popup-status__meta">width · height</text>
+						</view>
+						<text class="demo-hint">不传宽度时左右用 --vx-popup-width 280，居中按内容并收在 480 以内；不传高度时上下按内容排。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">长内容</text>
+							<text class="demo-section__desc">面板固定高度，正文在内部滚动，头尾不动。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="订单面板 · 列表滚动" @click="orderVisible = true" />
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">{{ orderSelected }}</text>
+							<text class="demo-popup-status__meta">@click</text>
+						</view>
+						<text class="demo-hint">弹出层不提供滚动容器：传 height 之后，由内容里的 scroll-view 吃满剩余高度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">方法与层级</text>
+							<text class="demo-section__desc">ref 上的三个方法，以及和弹框、抽屉同屏时的层级。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="open()" @click="onMethodOpen" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="toggle()" @click="onMethodToggle" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="close()" @click="onMethodClose" />
+							</view>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="弹出层 + 弹框"
+									@click="onLayerModal" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="弹出层 + 抽屉"
+									@click="onLayerDrawer" />
+							</view>
+						</view>
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">{{ methodLog }}</text>
+							<text class="demo-popup-status__meta">open · close</text>
+						</view>
+						<text class="demo-hint">close() 只收起，不抛 close；弹框 110 压在弹出层 90 上，抽屉同档、后开的在上面。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">业务组合</text>
+							<text class="demo-section__desc">商品页的筛选面板：复选组加底部两个按钮。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-popup-product">
+							<view class="demo-popup-product__copy">
+								<text class="demo-popup-product__title">旅行双肩包</text>
+								<text class="demo-popup-product__meta">¥329 · 包邮 · 现货</text>
+							</view>
+							<vx-button size="sm" type="default" text="筛选" @click="filterVisible = true" />
+						</view>
+						<view class="demo-popup-status">
+							<text class="demo-popup-status__text">{{ filterSummary }}</text>
+							<text class="demo-popup-status__meta">共 {{ filterAppliedResult }} 件</text>
+						</view>
+						<text class="demo-hint">入口在页面里，面板挂页面根节点；筛选结果和数量由页面状态维护，组件只负责显示和收起。</text>
+					</view>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.63.0</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 弹出层同样挂在页面根上，遮罩才盖得住滚动容器和固定页脚；一组示例一个实例，同一时刻只开一个。 -->
+		<vx-popup v-model:show="placeVisible" :placement="placeCurrent" closeable>
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">{{ placeText }}</text>
+				<text class="demo-popup-text">上下占满宽度、左右占满高度，居中四周留 24；换个 placement 再看一次圆角。</text>
+				<vx-button block type="primary" text="关闭弹出层" @click="placeVisible = false" />
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="roundVisible" placement="bottom" :round="roundCurrent">
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">{{ roundText }}</text>
+				<text class="demo-popup-text">贴边那一条边保持直角，朝向页面的两角用当前档位；居中时四角全圆。</text>
+				<vx-button block type="default" text="关闭弹出层" @click="roundVisible = false" />
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="closeVisible" :closeable="closeableOn" :mask-closable="maskClosableOn"
+			@click-mask="onPopupMask" @close="onPopupClose">
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">关闭方式</text>
+				<text class="demo-popup-text">关闭叉走 close；点遮罩先抛 click-mask，maskClosable 打开时再抛 close。</text>
+				<vx-button block type="default" text="内容里的关闭按钮" @click="closeVisible = false" />
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="safeVisible" :safe-area="safeAreaOn" placement="bottom" closeable>
+			<view class="demo-popup-safe">
+				<text class="demo-popup-title">确认修改</text>
+				<text class="demo-popup-text">这一行按钮贴着面板底边，安全区的留白由面板内边距补在下面。</text>
+				<view class="demo-popup-safe__row">
+					<view class="demo-popup-safe__item">
+						<vx-button block type="default" text="取消" @click="safeVisible = false" />
+					</view>
+					<view class="demo-popup-safe__item demo-popup-safe__item--last">
+						<vx-button block type="primary" text="确认" @click="safeVisible = false" />
+					</view>
+				</view>
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="sizeVisible" :placement="sizePlacement" :width="sizeWidth"
+			:height="sizeHeight" closeable>
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">{{ sizeLabel }}</text>
+				<text class="demo-popup-text">宽度和高度都必须带单位；不传时左右用 280，上下按内容排。</text>
+				<vx-button block type="default" text="关闭弹出层" @click="sizeVisible = false" />
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="orderVisible" placement="bottom" height="62%" closeable>
+			<view class="demo-popup-panel">
+				<view class="demo-popup-panel__head">
+					<text class="demo-popup-panel__title">我的订单</text>
+					<text class="demo-popup-panel__desc">头部和底栏不动，只有中间的列表在滚。</text>
+				</view>
+				<scroll-view class="demo-popup-panel__body" direction="vertical">
+					<vx-list-view variant="plain">
+						<vx-list-cell v-for="(row, index) in orderRows" :key="row" :title="row"
+							:value="`${index + 1} 笔`" arrow :divider="index < orderRows.length - 1"
+							@click="onOrderTap(row)" />
+					</vx-list-view>
+				</scroll-view>
+				<view class="demo-popup-panel__foot">
+					<vx-button block size="sm" type="default" text="全部订单" @click="orderVisible = false" />
+				</view>
+			</view>
+		</vx-popup>
+
+		<vx-popup ref="methodRef" v-model:show="methodVisible" @open="onPopupOpenEvent"
+			@close="onPopupCloseEvent">
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">方法与事件</text>
+				<text class="demo-popup-text">页面上的按钮调 open() / toggle() / close()；点遮罩收起时抛 close。</text>
+				<vx-button block type="default" text="关闭弹出层" @click="methodVisible = false" />
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="filterVisible" placement="bottom" closeable>
+			<view class="demo-popup-filter">
+				<view class="demo-popup-panel__head">
+					<text class="demo-popup-panel__title">筛选</text>
+					<text class="demo-popup-panel__desc">勾选后点查看，数量由页面算。</text>
+				</view>
+				<vx-checkbox-group v-model="filterValues" layout="list">
+					<vx-checkbox v-for="option in filterOptions" :key="option.value" :value="option.value"
+						:label="option.label" :description="option.description" />
+				</vx-checkbox-group>
+				<view class="demo-popup-panel__foot">
+					<view class="demo-actions">
+						<view class="demo-actions__item">
+							<vx-button block size="sm" type="default" text="重置" @click="onFilterReset" />
+						</view>
+						<view class="demo-actions__item demo-actions__item--last">
+							<vx-button block size="sm" type="primary" :text="`查看 ${filterResultCount} 件`"
+								@click="onFilterApply" />
+						</view>
+					</view>
+				</view>
+			</view>
+		</vx-popup>
+
+		<!-- 层级自查用：弹框（110）和抽屉（90）都挂页面根节点，和弹出层同屏时各走各的档位。 -->
+		<vx-modal v-model:show="layerModalVisible" title="弹出层之上"
+			content="弹框默认层级 110，压在弹出层 90 上；关掉弹框，弹出层还在。" />
+		<vx-drawer v-model:show="layerDrawerVisible" title="同屏的抽屉" closable>
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-text">抽屉和弹出层同档 90，后开的在上层；两者各自收起，互不干扰。</text>
+				<vx-button block type="default" text="关闭抽屉" @click="layerDrawerVisible = false" />
+			</view>
+		</vx-drawer>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	type PopupPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	type PopupRound = 'none' | 'sm' | 'md' | 'lg'
+
+	type PopupApi = {
+		open?: () => void
+		close?: () => void
+		toggle?: () => void
+	}
+
+	type FilterOption = {
+		value: string
+		label: string
+		description: string
+	}
+
+	// 01 四向与居中
+	const placeVisible = ref(false)
+	const placeCurrent = ref<PopupPlacement>('bottom')
+
+	// 02 圆角
+	const roundVisible = ref(false)
+	const roundCurrent = ref<PopupRound>('lg')
+
+	// 03 关闭方式
+	const closeVisible = ref(false)
+	const closeableOn = ref(true)
+	const maskClosableOn = ref(true)
+	const maskCount = ref(0)
+	const closeCount = ref(0)
+
+	// 04 安全区
+	const safeVisible = ref(false)
+	const safeAreaOn = ref(true)
+
+	// 05 宽高
+	const sizeVisible = ref(false)
+	const sizePlacement = ref<PopupPlacement>('right')
+	const sizeWidth = ref('')
+	const sizeHeight = ref('')
+	const sizeLabel = ref('右侧 · 280px')
+
+	// 06 长内容
+	const orderVisible = ref(false)
+	const orderSelected = ref('还没有点过列表行')
+	const orderRows: string[] = [
+		'订单 20261105 · 已发货',
+		'订单 20261104 · 待付款',
+		'订单 20261103 · 已完成',
+		'订单 20261102 · 退款中',
+		'订单 20261101 · 已收货',
+		'订单 20261031 · 已完成',
+		'订单 20261030 · 待发货',
+		'订单 20261029 · 已完成',
+		'订单 20261028 · 已取消',
+		'订单 20261027 · 已完成',
+		'订单 20261026 · 已发货',
+		'订单 20261025 · 已完成',
+		'订单 20261024 · 待付款',
+		'订单 20261023 · 已完成'
+	]
+
+	// 07 方法与层级
+	const methodVisible = ref(false)
+	const methodRef = ref<PopupApi | null>(null)
+	const methodAction = ref('还没有操作')
+	const methodEvent = ref('还没有事件')
+	const layerModalVisible = ref(false)
+	const layerDrawerVisible = ref(false)
+
+	// 08 业务组合
+	const filterVisible = ref(false)
+	const filterValues = ref<string[]>(['free'])
+	const filterApplied = ref(1)
+	const filterOptions: FilterOption[] = [
+		{ value: 'free', label: '包邮', description: '卖家承担运费' },
+		{ value: 'stock', label: '仅看现货', description: '今天下单今天发' },
+		{ value: 'new', label: '新品', description: '上架 30 天内' },
+		{ value: 'seven', label: '七天无理由', description: '支持无理由退货' },
+		{ value: 'gift', label: '赠品', description: '随包附赠小样' }
+	]
+
+	const placeText = computed((): string => {
+		const placement = placeCurrent.value
+		if (placement === 'top') return '顶部'
+		if (placement === 'left') return '左侧'
+		if (placement === 'right') return '右侧'
+		if (placement === 'center') return '居中'
+		return '底部'
+	})
+
+	const roundText = computed((): string => {
+		const round = roundCurrent.value
+		if (round === 'none') return '平角'
+		if (round === 'sm') return 'sm 6px'
+		if (round === 'md') return 'md 8px'
+		return 'lg 12px'
+	})
+
+	const maskLog = computed((): string => {
+		if (maskCount.value === 0 && closeCount.value === 0) return '还没有点过遮罩'
+		return `click-mask × ${maskCount.value}，close × ${closeCount.value}`
+	})
+
+	const filterResultCount = computed((): number => {
+		return 128 - filterValues.value.length * 18
+	})
+
+	// 状态行展示的是上一次点「查看」时落定的条件，草稿改到一半不影响它。
+	const filterAppliedResult = computed((): number => {
+		return 128 - filterApplied.value * 18
+	})
+
+	const filterSummary = computed((): string => {
+		return `已应用 ${filterApplied.value} 个条件`
+	})
+
+	// 动作和事件分开记：关闭按钮和 close() 都不抛 close，这一行能直接看出来。
+	const methodLog = computed((): string => {
+		return `${methodAction.value} · ${methodEvent.value}`
+	})
+
+	const onPlace = (placement: PopupPlacement) => {
+		placeCurrent.value = placement
+		placeVisible.value = true
+	}
+
+	// 顶部和底部最能看清贴边侧的直角，圆角对比固定从底部开。
+	const onRound = (round: PopupRound) => {
+		roundCurrent.value = round
+		roundVisible.value = true
+	}
+
+	const onPopupMask = () => {
+		maskCount.value += 1
+	}
+
+	const onPopupClose = () => {
+		closeCount.value += 1
+	}
+
+	const onSize = (placement: PopupPlacement, width: string, height: string, label: string) => {
+		sizePlacement.value = placement
+		sizeWidth.value = width
+		sizeHeight.value = height
+		sizeLabel.value = label
+		sizeVisible.value = true
+	}
+
+	const onOrderTap = (title: string) => {
+		orderSelected.value = `已选：${title}`
+		orderVisible.value = false
+	}
+
+	const onMethodOpen = () => {
+		methodAction.value = 'open()'
+		methodRef.value?.open?.()
+	}
+
+	const onMethodToggle = () => {
+		methodAction.value = 'toggle()'
+		methodRef.value?.toggle?.()
+	}
+
+	const onMethodClose = () => {
+		methodAction.value = 'close()'
+		methodRef.value?.close?.()
+	}
+
+	const onPopupOpenEvent = () => {
+		methodEvent.value = 'open 事件'
+	}
+
+	const onPopupCloseEvent = () => {
+		methodEvent.value = 'close 事件'
+	}
+
+	// 弹框和抽屉都挂页面根节点，和弹出层同屏，才能看出各自的层级。
+	const onLayerModal = () => {
+		methodAction.value = 'open() + 弹框'
+		methodVisible.value = true
+		layerModalVisible.value = true
+	}
+
+	const onLayerDrawer = () => {
+		methodAction.value = 'open() + 抽屉'
+		methodVisible.value = true
+		layerDrawerVisible.value = true
+	}
+
+	const onFilterReset = () => {
+		filterValues.value = []
+	}
+
+	const onFilterApply = () => {
+		filterApplied.value = filterValues.value.length
+		filterVisible.value = false
+	}
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/notice-bar/notice-bar'
+	const nextPath: string = '/pages/demo/image/image'
+	const prevName = '通告栏'
+	const nextName = '图片'
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>

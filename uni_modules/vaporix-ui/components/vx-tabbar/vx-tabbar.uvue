@@ -16,9 +16,10 @@
 			<view :class="rowClass">
 				<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
 					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
-					<view class="vx-tabbar__stack">
-						<!-- 凸起项也留同高的图标位，标签才和普通项落在同一条线上。 -->
-						<view v-if="hasMedia" :class="row.mediaClass">
+					<view class="vx-tabbar__stack" :style="row.stackStyle">
+						<!-- 凸起项也留同高的图标位，标签才和普通项落在同一条线上。
+						     刚换成当前项时图标位在这里先收一档再弹回，不弹的项行内样式为空。 -->
+						<view v-if="hasMedia" :class="row.mediaClass" :style="row.mediaStyle">
 							<template v-if="row.barMediaVisible">
 								<vx-icon v-if="row.iconVisible" :name="row.iconName" :size="row.iconSize"
 									:variant="row.iconVariant" :color="row.iconColor" />
@@ -57,7 +58,7 @@
 	import { VxTabbarProps, VxTabbarItem } from './props'
 	import { VxIconVariant, VxSemantic, VxSize } from '../../libs/types/common'
 	import { VxIconName } from '../../libs/icons/codepoints'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_PRESSED_STAY_TIME, VX_TABBAR_POP_SETTLE, VX_TABBAR_POP_DURATION } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxTabbarProps>(), {
 		items: (): Array<VxTabbarItem> => [],
@@ -67,6 +68,7 @@
 		placeholder: true,
 		safeArea: true,
 		divider: true,
+		animated: true,
 		bgColor: '',
 		color: '',
 		badgeMax: 99,
@@ -90,6 +92,8 @@
 		index: number
 		itemClass: string
 		mediaClass: string
+		mediaStyle: string
+		stackStyle: string
 		bubbleClass: string
 		markClass: string
 		textClass: string
@@ -225,6 +229,76 @@
 		return name
 	})
 
+	// —— 选中回弹 ——
+	// 刚换成当前项时，图标位先收一档再弹回，文案同时从下方轻微上浮归位；静止后外观和从前完全一致。
+	// App 没有 CSS 关键帧，两段接力同一条 transform 过渡：收起帧不给时长、当帧直接落位，
+	// 弹回帧由行内带上时长，过渡才从收起点起跳（同 vx-notice-bar 的复位和起跑分两帧）。
+	const popIndex = ref(-1)
+	const popSettled = ref(false)
+
+	let popTimer = 0
+
+	const stopPop = () => {
+		if (popTimer === 0) return
+		clearTimeout(popTimer)
+		popTimer = 0
+	}
+
+	// 失效索引、action 项和凸起项不弹：action 没有选中态，凸起圆钮按规范不缩放。
+	const restartPop = (index: number) => {
+		stopPop()
+		if (!props.animated || index < 0 || index >= props.items.length) {
+			popIndex.value = -1
+			return
+		}
+		const entry = props.items[index]
+		if (entry == null || entry.action === true || index === raisedIndex.value) {
+			popIndex.value = -1
+			return
+		}
+		popIndex.value = index
+		popSettled.value = false
+		popTimer = setTimeout(() => {
+			popTimer = 0
+			// 连续切换把目标往前拨了就不再弹，由最后一次切换自己排。
+			if (popIndex.value !== index) return
+			popSettled.value = true
+		}, VX_TABBAR_POP_SETTLE)
+	}
+
+	watch(activeIndex, (value: number) => {
+		restartPop(value)
+	})
+
+	onUnmounted(() => {
+		stopPop()
+	})
+
+	const popStyleOf = (scale: number): string => {
+		return popSettled.value
+			? `transform: scale(1); transition-duration: ${VX_TABBAR_POP_DURATION}ms;`
+			: `transform: scale(${scale});`
+	}
+
+	// 图标位收得多一点，读得出「落进来」；纯文案栏没有图标位，整组轻微收放。
+	const popMediaStyle = computed((): string => {
+		if (!props.animated || popIndex.value < 0) return ''
+		return popStyleOf(0.82)
+	})
+
+	const popStackStyle = computed((): string => {
+		if (!props.animated || popIndex.value < 0) return ''
+		return popStyleOf(0.96)
+	})
+
+	// 文案上浮和图标回弹同一条时间轴，交接感更完整；结束停在 0，外观不变。
+	const popTextRise = computed((): string => {
+		if (!props.animated || popIndex.value < 0) return ''
+		return popSettled.value
+			? `transform: translateY(0); transition-duration: ${VX_TABBAR_POP_DURATION}ms;`
+			: 'transform: translateY(3px);'
+	})
+
 	const spacerClass = computed((): string => {
 		let name = 'vx-tabbar__spacer-bar'
 		if (sizeName.value !== 'md') name += ` vx-tabbar__spacer-bar--${sizeName.value}`
@@ -306,6 +380,8 @@
 			// 自定义颜色只盖未选中项；选中态跟 type，禁用态跟 disabled-text。
 			let textStyle = ''
 			if (!active && !disabled && customColor.length > 0) textStyle = `color: ${customColor};`
+			// 刚换成当前项的文案从下方上浮归位，和图标回弹同一条时间轴。
+			if (props.animated && index === popIndex.value) textStyle += popTextRise.value
 
 			const imageClass = disabled ? 'vx-tabbar__image vx-tabbar__image--disabled' : 'vx-tabbar__image'
 			const markClass = disabled ? 'vx-tabbar__mark vx-tabbar__mark--disabled' : 'vx-tabbar__mark'
@@ -314,6 +390,9 @@
 				index: index,
 				itemClass: itemClass,
 				mediaClass: mediaClass.value,
+				// 刚换成当前项才带回弹样式：有图标位弹图标位，纯文案栏弹整组。
+				mediaStyle: props.animated && index === popIndex.value && hasMedia.value ? popMediaStyle.value : '',
+				stackStyle: props.animated && index === popIndex.value && !hasMedia.value ? popStackStyle.value : '',
 				bubbleClass: bubbleClass,
 				markClass: markClass,
 				textClass: textClass,
@@ -463,6 +542,16 @@
 
 	.vx-tabbar__row--raised-lg {
 		height: var(--vx-tabbar-row-raised-lg);
+	}
+
+	/* —— 选中回弹 ——
+	   图标位和整组只声明过渡的属性和缓动，时长由弹回那一帧行内给：
+	   收起帧没有时长、当帧直接落位，弹回帧才从收起点滑回 1。
+	   App 没有 CSS 关键帧，靠这两帧接力出回弹；平时没有 transform，外观和从前一致。 */
+	.vx-tabbar__media,
+	.vx-tabbar__stack {
+		transition-property: transform;
+		transition-timing-function: var(--vx-ease-standard);
 	}
 
 	/* 每一列都是热区，凸起圆钮的活动范围也算在这一列里。

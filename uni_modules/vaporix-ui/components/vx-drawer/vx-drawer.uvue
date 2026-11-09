@@ -52,6 +52,7 @@
 <script setup>
 	import { VxDrawerPosition, VxDrawerProps } from './props'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxDrawerProps>(), {
 		position: 'right',
@@ -63,7 +64,7 @@
 		maskClosable: true,
 		maskColor: '',
 		bgColor: '',
-		zIndex: 90
+		zIndex: VX_OVERLAY_LAYER
 	})
 
 	// 关闭都写回 false，业务用 v-model:show 时状态能跟着变。
@@ -174,7 +175,7 @@
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
-	/* 定位层铺满页面，主轴上端贴边或下端贴边。层级写在行内，默认 90。
+	/* 定位层铺满页面，主轴上端贴边或下端贴边。层级写在行内，默认 1000。
 	   宽高再写一遍：只靠四边定位时，子项百分比高度在 App 上会落成 auto。
 	   App 默认 overflow 是 hidden，面板阴影画出这层会被裁掉，需要 visible。
 	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */

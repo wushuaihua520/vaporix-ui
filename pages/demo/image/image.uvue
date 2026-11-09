@@ -1,0 +1,709 @@
+<template>
+	<view :class="pageClass">
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<view class="demo-shell">
+				<view class="demo-pagebar">
+					<view class="demo-crumb">
+						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
+							<vx-icon name="chevron-left" size="sm" />
+							<text class="demo-crumb__back-text">组件</text>
+						</view>
+						<text class="demo-crumb__sep">/</text>
+						<text class="demo-crumb__current">布局</text>
+					</view>
+					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
+						@click="toggleDemoPageTheme">
+						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
+					</view>
+				</view>
+
+				<view class="demo-hero">
+					<text class="demo-hero__eyebrow">VAPORIX UI · vx-image</text>
+					<view class="demo-hero__top">
+						<view class="demo-hero__icon">
+							<vx-icon name="image" size="lg" type="primary" />
+						</view>
+						<view class="demo-hero__heading">
+							<view class="demo-hero__title-wrap">
+								<text class="demo-hero__title">图片</text>
+								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hero__lead">占位底色、失败回落、四档圆角和按比例排布；加载、失败和点击只抛事件。</text>
+					<view class="demo-hero__chips">
+						<view class="demo-chip">
+							<text class="demo-chip__text">布局</text>
+						</view>
+						<view class="demo-chip demo-chip--neutral">
+							<text class="demo-chip__text demo-chip__text--neutral">vx-image</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">01</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">基础用法</text>
+							<text class="demo-section__desc">加载中铺占位底色，加载完成后 200ms 淡入；重新加载会回到占位态。</text>
+						</view>
+					</view>
+					<view class="demo-card demo-img-basic">
+						<view class="demo-img-basic__media">
+							<vx-image :key="basicKey" src="/static/demo/card/cover.jpg" width="240px" :ratio="1.78"
+								radius="md" @load="onBasicLoad" @error="onBasicError" />
+						</view>
+						<view class="demo-img-basic__copy">
+							<text class="demo-img-basic__title">封面图</text>
+							<text class="demo-img-basic__meta">宽 240、比例 1.78，高度按宽度换算成 135px。</text>
+						</view>
+						<view class="demo-img-basic__actions">
+							<view class="demo-img-basic__button">
+								<vx-button size="sm" type="primary" variant="soft" text="重新加载" @click="replayBasic" />
+							</view>
+							<text class="demo-img-basic__state">{{ basicState }}</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-img-hint">占位底色取 default-soft；本地图几乎瞬开，淡入只有 200ms，想再看一次就点「重新加载」。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">02</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">失败态</text>
+							<text class="demo-section__desc">地址读不到和 src 传空串都走失败态，只回落一次，不重试。</text>
+						</view>
+					</view>
+					<view class="demo-img-grid">
+						<view class="demo-img-grid__item">
+							<view class="demo-img-grid__media">
+								<vx-image src="/static/demo/card/missing.jpg" height="120px" radius="md"
+									error-icon="image" error-text="图片加载失败" />
+							</view>
+							<text class="demo-img-grid__label">读不到地址</text>
+							<text class="demo-img-grid__meta">图标 + 文案</text>
+						</view>
+						<view class="demo-img-grid__item demo-img-grid__item--last">
+							<view class="demo-img-grid__media">
+								<vx-image src="" height="120px" radius="md" />
+							</view>
+							<text class="demo-img-grid__label">src 传空串</text>
+							<text class="demo-img-grid__meta">只显示图标</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-img-hint">失败后换 src 才会重新加载；errorText 留空时只显示 errorIcon，图标名取 codepoints 里已有的值。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">03</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">圆角四档</text>
+							<text class="demo-section__desc">sm / md / lg 取 --vx-radius-*，circle 取胶囊圆角；只裁外框。</text>
+						</view>
+					</view>
+					<view class="demo-img-lab">
+						<view class="demo-img-lab__item">
+							<view class="demo-img-lab__media">
+								<vx-image src="/static/demo/card/grid-1.jpg" width="64px" height="64px" radius="sm" />
+							</view>
+							<text class="demo-img-lab__name">sm</text>
+							<text class="demo-img-lab__meta">6px</text>
+						</view>
+						<view class="demo-img-lab__item">
+							<view class="demo-img-lab__media">
+								<vx-image src="/static/demo/card/grid-2.jpg" width="64px" height="64px" radius="md" />
+							</view>
+							<text class="demo-img-lab__name">md</text>
+							<text class="demo-img-lab__meta">8px</text>
+						</view>
+						<view class="demo-img-lab__item">
+							<view class="demo-img-lab__media">
+								<vx-image src="/static/demo/card/grid-3.jpg" width="64px" height="64px" radius="lg" />
+							</view>
+							<text class="demo-img-lab__name">lg</text>
+							<text class="demo-img-lab__meta">12px</text>
+						</view>
+						<view class="demo-img-lab__item demo-img-lab__item--last">
+							<view class="demo-img-lab__media">
+								<vx-image src="/static/demo/card/avatar-cs.png" width="64px" height="64px"
+									radius="circle" />
+							</view>
+							<text class="demo-img-lab__name">circle</text>
+							<text class="demo-img-lab__meta">pill</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-img-hint">圆角写在外框上，图片一起裁；avatar-cs.png 是透明底，circle 下边缘不会被方角切到。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">04</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">固定宽高</text>
+							<text class="demo-section__desc">width / height 传带单位的值；两个都给时盒子就是这两个值。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-img-size-row">
+							<view class="demo-img-size__box">
+								<vx-image src="/static/demo/card/thumb-1.jpg" width="120px" height="80px" radius="sm" />
+							</view>
+							<view class="demo-img-size__copy">
+								<text class="demo-img-size__name">120 × 80</text>
+								<text class="demo-img-size__meta">列表缩略图，固定宽高，默认 aspectFill。</text>
+							</view>
+						</view>
+						<view class="demo-img-size-row">
+							<view class="demo-img-size__box">
+								<vx-image src="/static/demo/card/thumb-2.jpg" width="80px" height="80px"
+									radius="circle" />
+							</view>
+							<view class="demo-img-size__copy">
+								<text class="demo-img-size__name">80 × 80</text>
+								<text class="demo-img-size__meta">正方形配 circle，就是一张头像。</text>
+							</view>
+						</view>
+						<view class="demo-img-size-row demo-img-size-row--last">
+							<view class="demo-img-size__box demo-img-size__box--wide">
+								<vx-image src="/static/demo/card/cover.jpg" height="120px" radius="md" />
+							</view>
+							<view class="demo-img-size__copy">
+								<text class="demo-img-size__name">100% × 120</text>
+								<text class="demo-img-size__meta">只给高度，宽度跟随父级。</text>
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-img-hint">width 默认 100%；height 空串且 ratio 为 0 时高度取 100%，由父级容器决定。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">05</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">按比例</text>
+							<text class="demo-section__desc">width 240px + ratio 1 / 1.78 / 0.75；最后一行用 240rpx，随屏宽换算。</text>
+						</view>
+					</view>
+					<view class="demo-img-ratio">
+						<view class="demo-img-ratio__row">
+							<view class="demo-img-ratio__copy">
+								<text class="demo-img-ratio__name">1 : 1</text>
+								<text class="demo-img-ratio__meta">240 × 240</text>
+							</view>
+							<view class="demo-img-ratio__media">
+								<vx-image src="/static/demo/card/grid-4.jpg" width="240px" :ratio="1" radius="md" />
+							</view>
+						</view>
+						<view class="demo-img-ratio__row">
+							<view class="demo-img-ratio__copy">
+								<text class="demo-img-ratio__name">1.78 : 1</text>
+								<text class="demo-img-ratio__meta">240 × 135</text>
+							</view>
+							<view class="demo-img-ratio__media">
+								<vx-image src="/static/demo/card/cover.jpg" width="240px" :ratio="1.78" radius="md" />
+							</view>
+						</view>
+						<view class="demo-img-ratio__row">
+							<view class="demo-img-ratio__copy">
+								<text class="demo-img-ratio__name">0.75 : 1</text>
+								<text class="demo-img-ratio__meta">240 × 320</text>
+							</view>
+							<view class="demo-img-ratio__media">
+								<vx-image src="/static/demo/card/grid-5.jpg" width="240px" :ratio="0.75" radius="md" />
+							</view>
+						</view>
+						<view class="demo-img-ratio__row demo-img-ratio__row--last">
+							<view class="demo-img-ratio__copy">
+								<text class="demo-img-ratio__name">240rpx · 1.78</text>
+								<text class="demo-img-ratio__meta">随屏宽换算</text>
+							</view>
+							<view class="demo-img-ratio__media">
+								<vx-image src="/static/demo/card/grid-7.jpg" width="240rpx" :ratio="1.78" radius="md" />
+							</view>
+						</view>
+					</view>
+					<text class="demo-hint demo-img-hint">ratio 只在 width 是 px 或 rpx 时生效：px 直接算，rpx 按 750 基准换算；百分比宽度下不生效，开发时会提示一次。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">mode 四档</text>
+							<text class="demo-section__desc">同一张 1200 × 640 的横图放进 140 × 140 的盒子，裁切方式一眼能分开。</text>
+						</view>
+					</view>
+					<view class="demo-img-modes">
+						<view class="demo-img-modes__item">
+							<view class="demo-img-modes__media">
+								<vx-image src="/static/demo/card/cover.jpg" width="140px" height="140px" radius="md" />
+							</view>
+							<text class="demo-img-modes__name">aspectFill</text>
+							<text class="demo-img-modes__meta">裁切填满</text>
+						</view>
+						<view class="demo-img-modes__item">
+							<view class="demo-img-modes__media">
+								<vx-image src="/static/demo/card/cover.jpg" width="140px" height="140px" radius="md"
+									mode="aspectFit" />
+							</view>
+							<text class="demo-img-modes__name">aspectFit</text>
+							<text class="demo-img-modes__meta">完整显示</text>
+						</view>
+						<view class="demo-img-modes__item">
+							<view class="demo-img-modes__media">
+								<vx-image src="/static/demo/card/cover.jpg" width="140px" height="140px" radius="md"
+									mode="scaleToFill" />
+							</view>
+							<text class="demo-img-modes__name">scaleToFill</text>
+							<text class="demo-img-modes__meta">拉伸填满</text>
+						</view>
+						<view class="demo-img-modes__item">
+							<view class="demo-img-modes__media">
+								<vx-image src="/static/demo/card/cover.jpg" width="140px" height="140px" radius="md"
+									mode="center" />
+							</view>
+							<text class="demo-img-modes__name">center</text>
+							<text class="demo-img-modes__meta">不缩放取中间</text>
+						</view>
+					</view>
+					<text class="demo-hint demo-img-hint">aspectFit 的留白落在占位底色上；默认 aspectFill，其它值一律回落到 aspectFill。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">事件与淡入</text>
+							<text class="demo-section__desc">load / error / click 只抛事件；fade=false 去掉 200ms 淡入。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-img-event__media">
+							<vx-image :key="eventKey" :src="eventSrc" height="120px" radius="md" :fade="fadeEnabled"
+								@load="onEventLoad" @error="onEventError" @click="onEventClick" />
+						</view>
+						<view class="demo-img-event__bar">
+							<view class="demo-img-event__actions">
+								<view class="demo-img-event__action">
+									<vx-button size="sm" type="primary" variant="soft" text="换一张" @click="switchSource" />
+								</view>
+								<view class="demo-img-event__action">
+									<vx-button size="sm" type="default" variant="soft"
+										:text="fadeEnabled ? '关掉淡入' : '打开淡入'" @click="toggleFade" />
+								</view>
+							</view>
+							<text class="demo-img-event__state">最近事件：{{ lastEvent }}</text>
+							<text class="demo-img-event__meta">fade = {{ fadeEnabled ? 'true' : 'false' }}</text>
+						</view>
+						<view class="demo-img-event__fade">
+							<vx-image src="/static/demo/card/grid-6.jpg" height="96px" radius="md" :fade="false" />
+						</view>
+						<text class="demo-img-event__caption">下面这组固定 fade=false：不挂过渡，加载完直接出现。</text>
+					</view>
+					<text class="demo-hint demo-img-hint">点图片只会抛 click，不会打开预览；预览、长按保存和裁剪分别属于 vx-gallery、业务和裁剪件。</text>
+				</view>
+
+				<view class="demo-page-nav">
+					<view class="demo-page-nav__item"
+						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goPrev">
+						<text class="demo-page-nav__label">上一个</text>
+						<text class="demo-page-nav__name">{{ prevName }}</text>
+					</view>
+					<view class="demo-page-nav__item demo-page-nav__item--next"
+						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
+						hover-class="demo-page-nav__item--pressed" @click="goNext">
+						<text class="demo-page-nav__label">下一个</text>
+						<text class="demo-page-nav__name">{{ nextName }}</text>
+					</view>
+				</view>
+
+				<view class="demo-footer">
+					<text class="demo-footer__text">元汽UI · MIT</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.64.0</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	const isDark = demoIsDark
+
+	const pageClass = computed((): string => {
+		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
+	})
+
+	const prevPath: string = '/pages/demo/popup/popup'
+	const nextPath: string = '/pages/demo/divider/divider'
+	const prevName = '弹出层'
+	const nextName = '分割线'
+
+	// 重新挂载 = 重新走一遍加载中 → 成功；key 变一次就够。
+	const basicKey = ref(0)
+	const basicState = ref('等待加载')
+
+	// 事件演示：换图会重置成加载中，fade 开关只影响淡入。
+	const eventKey = ref(0)
+	const eventSrc = ref('/static/demo/card/grid-1.jpg')
+	const eventCount = ref(0)
+	const lastEvent = ref('还没有触发')
+	const fadeEnabled = ref(true)
+
+	const goCatalog = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.switchTab({ url: '/pages/index/index' })
+	}
+
+	const goPrev = () => {
+		if (prevPath === '') return
+		uni.redirectTo({ url: prevPath })
+	}
+
+	const goNext = () => {
+		if (nextPath === '') return
+		uni.redirectTo({ url: nextPath })
+	}
+
+	const onBasicLoad = () => {
+		basicState.value = '加载完成'
+	}
+
+	const onBasicError = () => {
+		basicState.value = '加载失败'
+	}
+
+	const replayBasic = () => {
+		basicKey.value += 1
+		basicState.value = '加载中…'
+	}
+
+	const onEventLoad = () => {
+		lastEvent.value = 'load · 图片已加载'
+	}
+
+	const onEventError = () => {
+		lastEvent.value = 'error · 地址读不到'
+	}
+
+	const onEventClick = () => {
+		eventCount.value += 1
+		lastEvent.value = 'click · 第 ' + eventCount.value + ' 次点击'
+	}
+
+	const switchSource = () => {
+		eventSrc.value = eventSrc.value.indexOf('grid-1') >= 0
+			? '/static/demo/card/grid-2.jpg'
+			: '/static/demo/card/grid-1.jpg'
+		eventKey.value += 1
+	}
+
+	const toggleFade = () => {
+		fadeEnabled.value = !fadeEnabled.value
+	}
+
+	onShow(() => {
+		syncDemoTheme()
+	})
+</script>
+
+<style>
+	.demo-img-hint {
+		margin-top: var(--vx-space-sm);
+	}
+
+	.demo-img-basic {
+		width: 100%;
+	}
+
+	.demo-img-basic__media {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-bg);
+	}
+
+	.demo-img-basic__copy {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-img-basic__title {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-basic__meta {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-basic__actions {
+		flex-direction: row;
+		align-items: center;
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-img-basic__button {
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-img-basic__state {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-grid {
+		flex-direction: row;
+		width: 100%;
+	}
+
+	.demo-img-grid__item {
+		flex: 1;
+		min-width: 0;
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-img-grid__item--last {
+		margin-right: 0;
+	}
+
+	.demo-img-grid__media {
+		width: 100%;
+	}
+
+	.demo-img-grid__label {
+		margin-top: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-grid__meta {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-lab {
+		flex-direction: row;
+		width: 100%;
+	}
+
+	.demo-img-lab__item {
+		flex: 1;
+		min-width: 0;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.demo-img-lab__item--last {
+		margin-right: 0;
+	}
+
+	.demo-img-lab__media {
+		width: 64px;
+		height: 64px;
+	}
+
+	.demo-img-lab__name {
+		margin-top: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-lab__meta {
+		font-size: 12px;
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-size-row {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-img-size-row--last {
+		margin-bottom: 0;
+	}
+
+	.demo-img-size__box {
+		flex-shrink: 0;
+		margin-right: var(--vx-space-md);
+	}
+
+	.demo-img-size__box--wide {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.demo-img-size__copy {
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+	}
+
+	.demo-img-size__name {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-size__meta {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-ratio {
+		flex-direction: row;
+		flex-wrap: wrap;
+		width: 100%;
+	}
+
+	.demo-img-ratio__row {
+		flex-direction: column;
+		width: 100%;
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-img-ratio__row--last {
+		margin-bottom: 0;
+	}
+
+	.demo-img-ratio__copy {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.demo-img-ratio__name {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-ratio__meta {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 图片宽度固定为 240，比内容区窄时居中落位。 */
+	.demo-img-ratio__media {
+		align-items: center;
+	}
+
+	.demo-img-modes {
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.demo-img-modes__item {
+		width: 140px;
+		margin-bottom: var(--vx-space-lg);
+	}
+
+	.demo-img-modes__media {
+		width: 140px;
+		height: 140px;
+	}
+
+	.demo-img-modes__name {
+		margin-top: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-modes__meta {
+		font-size: 12px;
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-event__media {
+		width: 100%;
+	}
+
+	.demo-img-event__bar {
+		margin-top: var(--vx-space-md);
+	}
+
+	.demo-img-event__actions {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.demo-img-event__action {
+		margin-right: var(--vx-space-sm);
+	}
+
+	.demo-img-event__state {
+		margin-top: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-medium);
+		color: var(--vx-color-text);
+	}
+
+	.demo-img-event__meta {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	.demo-img-event__fade {
+		width: 100%;
+		margin-top: var(--vx-space-lg);
+	}
+
+	.demo-img-event__caption {
+		margin-top: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

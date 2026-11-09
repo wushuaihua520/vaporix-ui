@@ -26,7 +26,7 @@
 						<view class="demo-hero__heading">
 							<view class="demo-hero__title-wrap">
 								<text class="demo-hero__title">标签页</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
 							</view>
 						</view>
 					</view>
@@ -217,6 +217,41 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">竖向标签</text>
+							<text class="demo-section__desc">每项一整行，左侧竖条标出当前项；宽度默认 96，可传数字改。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-tabs-vertical">
+							<vx-tabs v-model="tabsVerticalActive" :items="tabsVerticalEntries" direction="vertical" />
+							<view class="demo-tabs-vertical__body">
+								<text class="demo-tabs-vertical__title">{{ tabsVerticalPanel.title }}</text>
+								<text class="demo-tabs-vertical__copy">{{ tabsVerticalPanel.body }}</text>
+							</view>
+						</view>
+						<text class="demo-hint demo-tabs-hint">竖排只负责切视图，右侧内容按索引由业务渲染。</text>
+					</view>
+					<view class="demo-card demo-card--spaced">
+						<view class="demo-tabs-group">
+							<text class="demo-tabs-label">soft · vertical-width 120</text>
+							<vx-tabs v-model="tabsVerticalSoftActive" :items="tabsVerticalEntries" direction="vertical"
+								variant="soft" :vertical-width="120" />
+						</view>
+						<view class="demo-tabs-group demo-tabs-group--last">
+							<text class="demo-tabs-label">lg · 分割线与禁用项</text>
+							<vx-tabs v-model="tabsVerticalLgActive" :items="tabsVerticalStateEntries" direction="vertical"
+								size="lg" />
+						</view>
+						<text class="demo-hint demo-tabs-hint">宽度按 px 数字传，传 0 时跟随容器撑满；竖排不支持 inverse，会按 soft 渲染。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -234,7 +269,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.66.2</text>
 				</view>
 			</view>
 		</scroll-view>
@@ -284,6 +319,30 @@
 		{ text: '明日预告' }
 	]
 
+	// 竖排示例用分类名：每项要能塞进 96px 宽的一整行。
+	const tabsVerticalEntries: TabsDemoItem[] = [
+		{ text: '推荐' },
+		{ text: '当季新品', badge: 3 },
+		{ text: '限时特惠' },
+		{ text: '会员专享' },
+		{ text: '猜你喜欢' }
+	]
+
+	const tabsVerticalStateEntries: TabsDemoItem[] = [
+		{ text: '全部' },
+		{ text: '待处理', badge: 2 },
+		{ text: '已完成' },
+		{ text: '禁用状态', disabled: true }
+	]
+
+	const tabsVerticalPanels: TabsDemoPanel[] = [
+		{ title: '推荐', body: '按浏览和下单记录排的默认分组。' },
+		{ title: '当季新品', body: '本周上新 3 件，会员可提前 1 小时看。' },
+		{ title: '限时特惠', body: '今天 20:00 结束，库存还剩 12 件。' },
+		{ title: '会员专享', body: '黄金会员起可下单，按等级差价。' },
+		{ title: '猜你喜欢', body: '根据近 30 天的浏览记录推荐。' }
+	]
+
 	const tabsComposePanels: TabsDemoPanel[] = [
 		{ title: '正在疯抢', body: '还剩 12 件，今天 20:00 结束。' },
 		{ title: '即将开始', body: '明早 10:00 开抢，提前 5 分钟提醒。' },
@@ -320,6 +379,12 @@
 
 	const tabsComposeActive = ref(0)
 
+	const tabsVerticalActive = ref(0)
+
+	const tabsVerticalSoftActive = ref(1)
+
+	const tabsVerticalLgActive = ref(1)
+
 	const tabsLastChange = ref('还没有切换')
 
 	const onTabsChange = (index: number) => {
@@ -329,6 +394,11 @@
 	const tabsComposePanel = computed((): TabsDemoPanel => {
 		const panel = tabsComposePanels[tabsComposeActive.value]
 		return panel != null ? panel : tabsComposePanels[0]
+	})
+
+	const tabsVerticalPanel = computed((): TabsDemoPanel => {
+		const panel = tabsVerticalPanels[tabsVerticalActive.value]
+		return panel != null ? panel : tabsVerticalPanels[0]
 	})
 
 	const isDark = demoIsDark
@@ -365,3 +435,36 @@
 		syncDemoTheme()
 	})
 </script>
+
+<style>
+	/* 竖排页签和右侧内容并排：页签自己定宽，内容吃剩下的宽度，外框由这层卡片提供。 */
+	.demo-tabs-vertical {
+		flex-direction: row;
+		align-items: stretch;
+		overflow: hidden;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	.demo-tabs-vertical__body {
+		flex: 1;
+		padding: var(--vx-space-lg);
+	}
+
+	.demo-tabs-vertical__title {
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.demo-tabs-vertical__copy {
+		margin-top: var(--vx-space-xs);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>
