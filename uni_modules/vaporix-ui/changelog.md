@@ -1,10 +1,10 @@
 ## 0.67.0（2026-11-12）
 
-- 弹层在真机上会整层不画：`position: fixed` 的子树里用 `v-if` 反复创建原生 `scroll-view` / `input` / `picker-view`，几次开关之后遮罩和面板一起消失，等 8.5 秒也不补画。真机记录在 `vaporix-ui/pages/probe/fixed-vif-probe.uvue` 文件头：XiaoMi 14 / Android 13 / HBuilderX 5.34，B 组（带 `scroll-view`）第 7 次、C 组（带 `input`）第 5 次、D 组（带 `picker-view`）第 3 次开始看不到「罩」和「面板在」；A 组（只有 `view` / `text`）30/30 正常，页面本身没有失活。
+- 弹层在真机上会整层不画：`position: fixed` 的子树里用 `v-if` 反复创建原生 `scroll-view` / `input` / `picker-view`，几次开关之后遮罩和面板一起消失，等 8.5 秒也不补画。真机复测（XiaoMi 14 / Android 13 / HBuilderX 5.34）：B 组（带 `scroll-view`）第 7 次、C 组（带 `input`）第 5 次、D 组（带 `picker-view`）第 3 次开始看不到「罩」和「面板在」；A 组（只有 `view` / `text`）30/30 正常，页面本身没有失活。
 - 五个弹层改成首开后常驻：`vx-popup`、`vx-modal`、`vx-drawer`、`vx-picker`、`vx-calendar` 的根节点只从「不在」变成「在」，关闭动画走完或 `duration=0` 时只加隐藏 class（`display: none`），不再卸载。探针 E 组（同样内容改成首次打开后不销毁、关闭用 `display: none`）和 F 组（`vx-popup` 里放纵向 `scroll-view`）都是 30/30 正常。
 - Web 的入场关键帧不靠重新挂载：`display: none` 会终止动画，去掉隐藏类后浏览器从头再播一遍，和第一次打开一致。
 - `vx-datetime` 的滚轮改成下一帧挂载：`picker-view` 和 `fixed` 根节点同一帧创建时 App 端会拒绝创建，先画同尺寸占位，`nextTick` 后再换成滚轮；下标由 `prepare()` 当场备好，不会给空 `value`。挂上后常驻，列数变化仍由 `wheelKey` 整只换。
-- 新增探针页 `pages/probe/fixed-vif-probe`：不进 `pages/demo/shared/catalog.ts`，演示目录和首页看不到入口，只在 `pages.json` 留路由。真机记录和 Web 冒烟说明都写在文件头。
+- 新增一次性探针页（已移除）：不进 `pages/demo/shared/catalog.ts`，演示目录和首页看不到入口，只在 `pages.json` 留路由。真机记录和 Web 冒烟结论见上面弹层几条。
 
 - 操作菜单动作超过一屏会把取消栏顶出屏幕：不再写 `max-height: 100%`，打开时在本组件作用域里量 `.vx-actionsheet` 根节点的高度减 24 写行内上限，量不到才退回 `getWindowInfo().windowHeight` 减 24，两者都拿不到就不写上限。`panel` 补 `flex-shrink: 1`、动作区补 `min-height: 0`：App 不会把 `sheet` 的 `max-height` 分给子项，子项不写收缩就按内容高撑出去，取消栏被裁在屏幕下面。多出来的动作仍在动作区被裁，动作行不收缩，52 的行高（App 上加上下各 12 内边距 76）不被压扁。`items` 超过 8 条仍只警告一次，规范是 2–6 条。真机验证：XiaoMi 14 / Android 13 / HBuilderX 5.34，12 条动作时取消栏完整在窗口内可点、顶部留白 24dp、改 `wm size` 后不再多吃 32px；2–6 条版式和改前一致，证据在 `pages/demo/actionsheet/actionsheet.uvue` 文件头。
 - 弹框动作在短屏或键盘弹起后会出屏：面板按 `getWindowInfo().windowHeight` 减上下各 24 写 `max-height`，头部和底栏保持不收缩，只缩正文（`flex-shrink: 1` + `min-height: 0` + `overflow: hidden`）。窗口高度每次打开重读，键盘收起后再打开上限跟着走；不再把 `uni.onWindowResize` 当成必需，先判是不是函数再挂（Web 听 `window.resize`）。
