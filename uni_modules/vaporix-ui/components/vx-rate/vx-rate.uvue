@@ -207,6 +207,8 @@
 	// 手势状态只用来算下一次提交，不参与渲染，用普通变量就够了。
 	let dragging = false
 	let dragBase = 0
+	// 按下时的模型。中途变成只读或禁用时整笔手势作废，退回这个值。
+	let dragOrigin = 0
 	let dragStartX = 0
 	let dragStartY = 0
 	let dragMoved = false
@@ -229,6 +231,17 @@
 		emit('change', next)
 	}
 
+	// 这一笔已经开始，但现在不能再改分：清掉手势，并把拖动中写过的分值退回去。
+	const discardDrag = () => {
+		dragging = false
+		dragMoved = false
+		dragCancelled = false
+		suppressUntil = Date.now() + VX_RATE_CLICK_GUARD
+		if (modelValue.value === dragOrigin) return
+		modelValue.value = dragOrigin
+		emit('change', dragOrigin)
+	}
+
 	// 鼠标点击和真机的 click 都走这里；已经由 touch / mouseup 提交过的，由 suppressUntil 挡掉。
 	const onPick = (value: number) => {
 		if (!interactive.value) return
@@ -240,6 +253,7 @@
 		if (!interactive.value) return
 		dragging = true
 		dragBase = value
+		dragOrigin = modelValue.value
 		dragStartX = pageX
 		dragStartY = pageY
 		dragMoved = false
@@ -260,11 +274,21 @@
 			if (Math.abs(distance) < VX_RATE_DRAG_THRESHOLD) return
 			dragMoved = true
 		}
+		// 起手时还能改。拖到中途变成只读或禁用，这一笔不再写入，后面的移动也不接着改。
+		if (!interactive.value) {
+			discardDrag()
+			return
+		}
 		commit(dragBase + distance / starStep.value)
 	}
 
 	const finish = () => {
 		if (!dragging) return
+		// 按下后、松手前被改成只读或禁用：点按不提交，拖动中写过的分也退回。
+		if (!interactive.value) {
+			discardDrag()
+			return
+		}
 		dragging = false
 		// 点按已经按按下的半区提交。抬起到另一半区时补发的 click 会改写分值，一起挡住。
 		suppressUntil = Date.now() + VX_RATE_CLICK_GUARD
@@ -281,10 +305,19 @@
 		begin(value, touches[0].pageX, touches[0].pageY)
 	}
 
+	// 横向接管后这一笔不再交给外层滚动或滑动；纵向往滚动放行时不能拦。
+	const stopTouch = (event: UniTouchEvent) => {
+		event.stopPropagation()
+		if (event.cancelable) event.preventDefault()
+	}
+
 	const onTouchMove = (event: UniTouchEvent) => {
+		// 没在拖时，只读和禁用不接管。已经按下的这一笔还要进来，中途不可交互才能丢掉。
+		if (!dragging && !interactive.value) return
 		const touches = event.touches
 		if (touches.length === 0) return
 		moveBy(touches[0].pageX, touches[0].pageY)
+		if (dragMoved && !dragCancelled) stopTouch(event)
 	}
 
 	const onTouchEnd = () => {

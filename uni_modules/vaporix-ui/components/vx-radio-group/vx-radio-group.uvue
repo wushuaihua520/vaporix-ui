@@ -31,46 +31,70 @@
 		change: [value: string]
 	}>()
 
-	// 项挂载顺序就是 DOM 顺序，最后一项据此不画分割线，业务不用手写 index。
-	const ids = ref<Array<string>>([])
-
-	const hasId = (list: Array<string>, id: string): boolean => {
-		for (let index = 0; index < list.length; index++) {
-			if (list[index] === id) return true
-		}
-		return false
+	// 登记顺序默认当挂载顺序。全部都带 index 时才改按最大 index 认最后一项。
+	type VxRadioEntry = {
+		id: string
+		index: number | null
 	}
 
-	const appendId = (list: Array<string>, id: string): Array<string> => {
-		const next: Array<string> = []
-		for (let index = 0; index < list.length; index++) {
-			next.push(list[index])
+	// 名单原地改。每次换成新数组会让每一项的分割线都重算，挂载是 O(N²)。
+	const entries = ref<Array<VxRadioEntry>>([])
+	// 子项只读这一项。最后一项没换人时不赋值，其余行的分割线不跟着重算。
+	const lastId = ref('')
+
+	// 有一项 index 是 null，后挂载的不能代表视觉上的最后一项，退回登记顺序。
+	const refreshLastId = () => {
+		const list = entries.value
+		let next = ''
+		if (list.length > 0) {
+			let indexed = true
+			let maxIndex = 0
+			let maxId = ''
+			for (let cursor = 0; cursor < list.length; cursor++) {
+				const order = list[cursor].index
+				if (order == null) {
+					indexed = false
+					break
+				}
+				if (cursor === 0 || order >= maxIndex) {
+					maxIndex = order
+					maxId = list[cursor].id
+				}
+			}
+			next = indexed ? maxId : list[list.length - 1].id
 		}
-		next.push(id)
-		return next
+		if (lastId.value !== next) lastId.value = next
 	}
 
-	const removeId = (list: Array<string>, id: string): Array<string> => {
-		const next: Array<string> = []
-		for (let index = 0; index < list.length; index++) {
-			if (list[index] !== id) next.push(list[index])
+	const register = (id: string, index: number | null) => {
+		const list = entries.value
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id !== id) continue
+			if (list[cursor].index === index) return
+			list[cursor].index = index
+			refreshLastId()
+			return
 		}
-		return next
-	}
-
-	const register = (id: string) => {
-		if (hasId(ids.value, id)) return
-		ids.value = appendId(ids.value, id)
+		list.push({ id: id, index: index })
+		refreshLastId()
 	}
 
 	const unregister = (id: string) => {
-		if (!hasId(ids.value, id)) return
-		ids.value = removeId(ids.value, id)
+		const list = entries.value
+		let at = -1
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id === id) {
+				at = cursor
+				break
+			}
+		}
+		if (at < 0) return
+		list.splice(at, 1)
+		refreshLastId()
 	}
 
 	const isLast = (id: string): boolean => {
-		const list = ids.value
-		return list.length > 0 && list[list.length - 1] === id
+		return lastId.value.length > 0 && lastId.value === id
 	}
 
 	const isChecked = (value: string): boolean => {

@@ -28,4 +28,6 @@ export type VxAvatarProps = {
 	color?: string
 	/** 图片填充方式，默认 aspectFill。 */
 	mode?: VxAvatarMode
+	/** 头像可点：按下变淡并抛 click。只写 @click 不传也算可点；显式 false 时才关掉。 */
+	clickable?: boolean
 }

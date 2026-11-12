@@ -48,8 +48,9 @@
 	})
 
 	// 数据和纠错级别变了才要重算模块；色值和尺寸不参与编码。
+	// withDefaults 只在 undefined 时填空串；:text="null" 会原样进 props，先收成 '' 再编码，空内容仍走 empty。
 	const result = computed(() => {
-		return vxQrcodeEncode(props.text, props.level)
+		return vxQrcodeEncode(props.text ?? '', props.level)
 	})
 
 	const hasMatrix = computed((): boolean => {
@@ -74,8 +75,10 @@
 	const customWidth = computed((): number => {
 		// 宽高由模板里的数字直接传进来时也能收住，不因为不是 string 抛错。
 		const raw = `${props.width}`.trim()
-		if (raw.length < 3) return 0
-		if (raw.slice(raw.length - 2) !== 'px') return 0
+		// rpx 必须排在 px 前面判断：'200rpx' 的结尾也是 'px'，先判 px 会被 parseFloat 成 200。
+		// 这里不把 rpx 换算成像素，直接回落到档位边长。
+		if (raw.length > 3 && raw.slice(raw.length - 3) === 'rpx') return 0
+		if (raw.length < 3 || raw.slice(raw.length - 2) !== 'px') return 0
 		const parsed = parseFloat(raw)
 		if (isNaN(parsed) || parsed <= 0) return 0
 		return Math.round(parsed)
@@ -108,29 +111,31 @@
 		cell: number
 		pad: number
 		inner: number
-		logoBox: number
 	}
 
 	// 模块必须落在整数像素上，否则相邻两行之间会透出发丝一样的缝。
 	// 边长不够一格时退成小数，让内容完整留在盒子里，由业务保证可扫的尺寸。
+	// logoScale 不进这里：cells 读的是整份 geometry，放进来改 logoSize 会重拼全部模块 style。
 	const geometry = computed((): VxQrcodeGeometry => {
 		const box = customWidth.value > 0 ? customWidth.value : VX_QRCODE_SIZE[sizeKey.value]
 		const matrix = result.value.matrix
-		if (matrix === null) return { box: box, cell: 0, pad: 0, inner: 0, logoBox: 0 }
+		if (matrix === null) return { box: box, cell: 0, pad: 0, inner: 0 }
 
 		const total = matrix.size + margin.value * 2
 		const fitted = Math.floor(box / total)
 		const cell = fitted >= 1 ? fitted : Math.round((box / total) * 100) / 100
 		const inner = cell * matrix.size
 		const pad = Math.floor((box - inner) / 2)
-		const logoBox = Math.round(inner * logoScale.value)
 		return {
 			box: box,
 			cell: cell,
 			pad: pad > 0 ? pad : 0,
-			inner: inner,
-			logoBox: logoBox
+			inner: inner
 		}
+	})
+
+	const logoBox = computed((): number => {
+		return Math.round(geometry.value.inner * logoScale.value)
 	})
 
 	const rootClass = computed((): string => {
@@ -164,7 +169,8 @@
 
 	const hasLogo = computed((): boolean => {
 		// 盒子小于 16 时，去掉四周的挖空就放不下图片了，直接不画。
-		return !logoFailed.value && props.logo.length > 0 && geometry.value.logoBox >= 16
+		// :logo="null" 同样不走默认值，先收成 '' 再读长度，避免对 null 取 length。
+		return !logoFailed.value && (props.logo ?? '').length > 0 && logoBox.value >= 16
 	})
 
 	const onLogoError = () => {
@@ -173,13 +179,14 @@
 
 	const logoStyle = computed((): string => {
 		const grid = geometry.value
-		const left = Math.round((grid.box - grid.logoBox) / 2)
+		const box = logoBox.value
+		const left = Math.round((grid.box - box) / 2)
 		const background = lightColor.value.length > 0 ? ` background-color: ${lightColor.value};` : ''
-		return `left: ${left}px; top: ${left}px; width: ${grid.logoBox}px; height: ${grid.logoBox}px;${background}`
+		return `left: ${left}px; top: ${left}px; width: ${box}px; height: ${box}px;${background}`
 	})
 
 	type VxQrcodeCell = {
-		key: string
+		key: number
 		style: string
 	}
 
@@ -211,7 +218,9 @@
 		for (let index = 0; index < runList.length; index++) {
 			const run = runList[index]
 			list.push({
-				key: `${run.row}-${run.col}`,
+				// 蒸汽模式按 key 对比原生节点。坐标随内容几乎全变，整批 view 会被删掉重建。
+				// 模块可以互换，按下标复用，位置写在 style 里。
+				key: index,
 				style: cellStyle(pad + run.col * cell, pad + run.row * cell, run.cols * cell, run.rows * cell, color)
 			})
 		}

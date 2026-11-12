@@ -212,16 +212,21 @@
 		emit('change', value)
 	})
 
-	// 首屏的字体、图片常常晚于挂载落位；第一次滚动补测一次，把位置基准对齐。
-	// 之后只由 refresh() 触发，滚动过程中不再反复测量。
+	// 已经量成功就直接返回，滚动中途再量会改掉吸顶线。
+	// 还没量到时只补一轮：三次重试用完的隐藏容器，第一次滚动把次数清掉再试。
 	let remeasuredOnScroll = false
 	watch(resolvedScrollTop, () => {
-		if (remeasuredOnScroll) return
+		if (measured.value || remeasuredOnScroll) return
 		remeasuredOnScroll = true
-		// 挂载时的三次重试可能已经用完，第一次滚动另给一轮。
 		retryCount = 0
 		clearRetry()
 		measure()
+	})
+
+	// 看夹紧后的距离：负数都是 0，来回改负数不必重测。
+	// 导航栏 ready 后业务改 offsetTop 时重测锚点，吸顶线才让到导航栏下面。
+	watch(offset, () => {
+		refresh()
 	})
 
 	defineExpose({

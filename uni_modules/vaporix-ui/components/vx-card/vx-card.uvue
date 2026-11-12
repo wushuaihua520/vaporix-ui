@@ -1,8 +1,8 @@
 <template>
 	<!-- 卡片只提供结构和边界，内容由业务组合。 -->
-	<!-- 点击停在卡片上，外层不会再收到同一次点击。 -->
+	<!-- 可点时点击停在卡片上；静态卡片不拦点击，交给外层列表行。 -->
 	<view :class="rootClass" :hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
-		@click.stop="onClick">
+		@click="onClick($event)">
 		<!-- 标题、图片、右侧文字和头部插槽都为空时不渲染头部，正文直接顶到卡片上沿。 -->
 		<view
 			v-if="title.length > 0 || meta.length > 0 || avatar.length > 0 || $slots['prefix'] != null || $slots['extra'] != null"
@@ -144,10 +144,10 @@
 		return props.clickable ? 'vx-card--pressed' : 'none'
 	})
 
-	// 静态卡片不抛 click。卡片里要单独操作时，那个操作自己 stop。
-	// 模板上的 .stop 把点击留在卡片内；静态卡片不抛 click，只负责收住事件。
-	const onClick = () => {
+	// 静态不抛 click，也不 stop，点击继续冒泡。卡片里要单独操作时，那个操作自己 stop。
+	const onClick = (event: UniEvent) => {
 		if (!props.clickable) return
+		event.stopPropagation()
 		emit('click')
 	}
 </script>
@@ -288,14 +288,14 @@
 		margin-right: var(--vx-space-lg);
 	}
 
-	/* 头像由外层裁圆角，图片本身铺满；底色给加载中和失败留一块稳定区域。 */
+	/* 头像由外层裁圆角，跟 size 取 6 / 8 / 10；图片本身铺满。底色给加载中和失败留一块稳定区域。 */
 	.vx-card__avatar {
 		flex-shrink: 0;
 		overflow: hidden;
 		width: var(--vx-card-avatar-md);
 		height: var(--vx-card-avatar-md);
 		margin-right: var(--vx-space-md);
-		border-radius: var(--vx-radius-sm);
+		border-radius: var(--vx-control-radius-md);
 		background-color: var(--vx-color-default-soft);
 	}
 
@@ -303,12 +303,14 @@
 		width: var(--vx-card-avatar-sm);
 		height: var(--vx-card-avatar-sm);
 		margin-right: var(--vx-space-sm);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
 	.vx-card__avatar--lg {
 		width: var(--vx-card-avatar-lg);
 		height: var(--vx-card-avatar-lg);
 		margin-right: var(--vx-space-lg);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
 	.vx-card__avatar--circle {

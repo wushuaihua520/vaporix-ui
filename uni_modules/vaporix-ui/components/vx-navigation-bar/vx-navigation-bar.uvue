@@ -81,7 +81,8 @@
 	let windowWidth = windowInfo.windowWidth
 	let windowHeight = windowInfo.windowHeight
 	let measured = false
-	let readySent = false
+	// 上次随 ready 发出的条高。-1 表示还没发过；差不超过 0.5px 不再重复抛。
+	let lastReadyHeight = -1
 	let barTop = 0
 
 	// 占位和渐显距离读这两个值，所以是 ref。
@@ -301,8 +302,9 @@
 					clearCapsule()
 				}
 
-				if (readySent) return
-				readySent = true
+				// refresh() 可能改到字体、胶囊或槽，高度变了外面的占位和 sticky offset 才需要再收一次。
+				if (Math.abs(nextHeight - lastReadyHeight) <= 0.5) return
+				lastReadyHeight = nextHeight
 				emit('ready', {
 					width: barWidth.value,
 					height: barHeight.value,
@@ -433,7 +435,7 @@
 		padding-right: var(--uni-safe-area-inset-right, 0px);
 	}
 
-	/* 标题行 44：左右各留 8，返回和右侧动作的热区都按行高做。
+	/* 标题行高仍用 --vx-navigation-bar-height。左右各留 8。
 	   两侧不伸缩，空着也各留一个热区的宽度，中间 flex: 1 的标题才落在中间；
 	   一侧放两个动作时标题会跟着偏一点，更多动作放进 extra。 */
 	.vx-navigation-bar__main {
@@ -446,14 +448,14 @@
 		padding-right: var(--vx-space-sm);
 	}
 
-	/* border-box 后，胶囊 padding 算进最小宽度，左右外宽才一致。 */
+	/* 行高跟导航栏；最小宽度跟返回热区，空着也留出同宽。border-box 后，胶囊 padding 算进最小宽度。 */
 	.vx-navigation-bar__side {
 		box-sizing: border-box;
 		flex-shrink: 0;
 		flex-direction: row;
 		align-items: center;
 		justify-content: flex-start;
-		min-width: var(--vx-navigation-bar-height);
+		min-width: var(--vx-hit-size);
 		height: var(--vx-navigation-bar-height);
 	}
 
@@ -473,13 +475,13 @@
 		overflow: hidden;
 	}
 
-	/* 返回热区等于行高；图标仍用图标三档里的 lg。 */
+	/* 返回热区用 --vx-hit-size；行高仍是 --vx-navigation-bar-height。图标仍用图标三档里的 lg。 */
 	.vx-navigation-bar__back {
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		width: var(--vx-navigation-bar-height);
-		height: var(--vx-navigation-bar-height);
+		width: var(--vx-hit-size);
+		height: var(--vx-hit-size);
 	}
 
 	.vx-navigation-bar__back--pressed {

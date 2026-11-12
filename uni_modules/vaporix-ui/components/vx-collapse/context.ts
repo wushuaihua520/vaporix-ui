@@ -16,8 +16,8 @@ export type VxCollapseContext = {
 	toggle: (name: string) => void
 	/** 按实例 id 判断是不是最后一项，最后一项不画分割线。 */
 	isLast: (id: string) => boolean
-	/** 面板挂载时登记实例 id，用来算最后一项。 */
-	register: (id: string) => void
+	/** 面板挂载时登记实例 id。index 为 null 表示这项没传位置。 */
+	register: (id: string, index: number | null) => void
 	/** 面板卸载时注销实例 id。 */
 	unregister: (id: string) => void
 	/** 当前档位，由容器统一决定。 */

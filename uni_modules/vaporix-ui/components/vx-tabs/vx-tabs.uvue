@@ -9,12 +9,12 @@
 		<scroll-view v-if="isScrollable" class="vx-tabs__scroller" direction="horizontal" :show-scrollbar="false"
 			:scroll-into-view="scrollIntoView">
 			<view class="vx-tabs__track">
-				<view v-for="row in rows" :key="row.index" :id="row.itemId" :class="row.itemClass"
+				<view v-for="row in rows" :key="row.index" :id="row.itemId" :class="itemClassOf(row)"
 					:hover-class="row.hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
 					@click.stop="onClick(row.index)">
-					<view :class="row.chipClass">
+					<view :class="chipClassOf(row)">
 						<view v-if="row.hasBadge && isVertical" :class="row.verticalContentClass">
-							<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+							<text :class="textClassOf(row)" :style="textStyleOf(row)">{{ row.text }}</text>
 							<view :class="row.badgeClass">
 								<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
 									:type="badgeType" />
@@ -23,12 +23,12 @@
 						<view v-else-if="row.hasBadge" :class="row.badgeClass">
 							<vx-badge absolute :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
 								:type="badgeType" :offset-y="-4">
-								<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+								<text :class="textClassOf(row)" :style="textStyleOf(row)">{{ row.text }}</text>
 							</vx-badge>
 						</view>
-						<text v-else :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+						<text v-else :class="textClassOf(row)" :style="textStyleOf(row)">{{ row.text }}</text>
 					</view>
-					<view v-if="row.indicatorClass.length > 0" :class="row.indicatorClass"></view>
+					<view v-if="rowIndicatorOf(row).length > 0" :class="rowIndicatorOf(row)"></view>
 				</view>
 				<!-- 单条滑动指示线挂在轨道里：页签不等宽，格子缩成零宽的定位点，
 				     x 由脚本实测；线在格子内以 50% 居中，正好落在选中项的中心上，
@@ -49,14 +49,14 @@
 					<view :class="indicatorLineClass"></view>
 				</view>
 			</view>
-			<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
+			<view v-for="row in rows" :key="row.index" :class="itemClassOf(row)" :hover-class="row.hoverClass"
 				:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
-				<view :class="row.chipClass">
+				<view :class="chipClassOf(row)">
 					<!-- 竖排每行只有文字高，角标再绝对定位就会压到上一行或盖住文案：
 					     改成行内排布，文案和角标同处一个 flex 行，角标跟在文案后面、垂直居中。
 					     文案占满剩余宽度并单行省略，角标不参与压缩，宽度 96 时也能完整显示。 -->
 					<view v-if="row.hasBadge && isVertical" :class="row.verticalContentClass">
-						<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+						<text :class="textClassOf(row)" :style="textStyleOf(row)">{{ row.text }}</text>
 						<view :class="row.badgeClass">
 							<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
 								:type="badgeType" />
@@ -69,12 +69,12 @@
 						     offset 只接受数字，不能写负的 var()。 -->
 						<vx-badge absolute :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
 							:type="badgeType" :offset-y="-4">
-							<text :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+							<text :class="textClassOf(row)" :style="textStyleOf(row)">{{ row.text }}</text>
 						</vx-badge>
 					</view>
-					<text v-else :class="row.textClass" :style="row.textStyle">{{ row.text }}</text>
+					<text v-else :class="textClassOf(row)" :style="textStyleOf(row)">{{ row.text }}</text>
 				</view>
-				<view v-if="row.indicatorClass.length > 0" :class="row.indicatorClass"></view>
+				<view v-if="rowIndicatorOf(row).length > 0" :class="rowIndicatorOf(row)"></view>
 			</view>
 		</template>
 	</view>
@@ -110,12 +110,18 @@
 
 	type TabsRow = {
 		index: number
-		itemClass: string
+		// 随选中变的五样各留选中 / 未选中两份，模板按当前下标挑一份，挑选时不拼字符串。
+		// 行对象只跟 items、尺寸、variant、type、竖排和滚动形态走，选中变了不重建。
+		itemOffClass: string
+		itemOnClass: string
 		itemId: string
-		chipClass: string
+		chipOffClass: string
+		chipOnClass: string
 		verticalContentClass: string
-		textClass: string
-		textStyle: string
+		textOffClass: string
+		textOnClass: string
+		textOffStyle: string
+		textOnStyle: string
 		indicatorClass: string
 		badgeClass: string
 		hoverClass: string
@@ -396,14 +402,16 @@
 		return style + `background-color: ${props.bgColor};`
 	})
 
+	// 行对象只跟 items、尺寸、variant、type、竖排和滚动形态走，不读 activeIndex 和 sliderMounted：
+	// 选中变了行数组原地不动，模板从行上预留的两份里挑一份，只有新旧两项的挑选结果变。
 	const rows = computed((): Array<TabsRow> => {
 		const list: Array<TabsRow> = []
 		const source = props.items
-		const current = activeIndex.value
 		const style = variant.value
 		const size = sizeName.value
 		const semantic = typeName.value
 		const vertical = isVertical.value
+		const scrollable = isScrollable.value
 		// 竖排的选中项整行压在浅底上，文字一律取 pressed 档才够 4.5:1。
 		const tone = style === 'soft' || vertical ? softTone.value : activeTone.value
 		const count = source.length
@@ -417,82 +425,91 @@
 		const textActive = textInverse + ` vx-tabs__text--active-${tone}`
 		// 竖排选中项再重一档，和横向的 500 拉开。
 		const textVerticalActive = textActive + ' vx-tabs__text--vertical-active'
+		// 竖排文案单行省略：宽度不够时先收文案，角标完整保留。
+		const textVerticalSuffix = vertical ? ' vx-tabs__item--vertical-text' : ''
 
 		// line 的选中项只换文字色，不加胶囊；soft / inverse 才需要高度和左右留白。
-		let chipBase = 'vx-tabs__chip'
-		if (style !== 'line') {
-			chipBase += ` vx-tabs__chip--${size}`
-			if (style === 'soft') chipBase += ` vx-tabs__chip--soft-${semantic}`
-			else chipBase += ' vx-tabs__chip--surface'
+		// 竖排的选中底由整行承担，胶囊不画底也不加高度，选中与否同款。
+		let chipActiveClass = 'vx-tabs__chip'
+		if (!vertical && style !== 'line') {
+			chipActiveClass += ` vx-tabs__chip--${size}`
+			if (style === 'soft') chipActiveClass += ` vx-tabs__chip--soft-${semantic}`
+			else chipActiveClass += ' vx-tabs__chip--surface'
 		}
+		const chipOffClass = vertical ? 'vx-tabs__chip vx-tabs__item--vertical-chip' : 'vx-tabs__chip'
+		const chipOnClass = vertical ? chipOffClass : chipActiveClass
 
-		let indicatorBase = indicatorLineClass.value
+		const indicatorBase = indicatorLineClass.value
 
 		for (let index = 0; index < count; index++) {
 			const entry = source[index]
 			const disabled = entry.disabled === true
-			const active = index === current
 			const text = entry.text != null ? entry.text : ''
 			const badge = entry.badge != null ? entry.badge : 0
 			const dot = entry.dot === true
 			const hasBadge = dot || badge >= 1
 
-			let itemClass = 'vx-tabs__item'
-			if (disabled) itemClass += ' vx-tabs__item--disabled'
+			// 未选中和选中各拼一份。竖排的选中底是 item 上唯一随选中变的段，横向两份相同。
+			let itemBase = 'vx-tabs__item'
+			if (disabled) itemBase += ' vx-tabs__item--disabled'
 			// 可滚动的页签按文案宽度排，不再吃 flex: 1；首末项补回根节点让出来的边距。
-			if (isScrollable.value) {
-				itemClass += ' vx-tabs__item--scroll'
-				if (index === 0) itemClass += ' vx-tabs__item--scroll-first'
-				if (index === count - 1) itemClass += ' vx-tabs__item--scroll-last'
+			if (scrollable) {
+				itemBase += ' vx-tabs__item--scroll'
+				if (index === 0) itemBase += ' vx-tabs__item--scroll-first'
+				if (index === count - 1) itemBase += ' vx-tabs__item--scroll-last'
 			}
-
+			let itemOffClass = itemBase
+			let itemOnClass = itemBase
 			// 竖排每项占一整行：高度跟档位，选中项铺浅底，项之间画横线。
 			if (vertical) {
-				itemClass += ' vx-tabs__item--vertical'
-				if (size !== 'md') itemClass += ` vx-tabs__item--vertical-${size}`
-				if (active) {
-					itemClass += style === 'soft'
-						? ` vx-tabs__item--vertical-soft-${semantic}`
-						: ' vx-tabs__item--vertical-active'
+				itemOffClass += ' vx-tabs__item--vertical'
+				itemOnClass += ' vx-tabs__item--vertical'
+				if (size !== 'md') {
+					itemOffClass += ` vx-tabs__item--vertical-${size}`
+					itemOnClass += ` vx-tabs__item--vertical-${size}`
 				}
-				if (props.divider && index < count - 1) itemClass += ' vx-tabs__item--vertical-divided'
+				itemOnClass += style === 'soft'
+					? ` vx-tabs__item--vertical-soft-${semantic}`
+					: ' vx-tabs__item--vertical-active'
+				if (props.divider && index < count - 1) {
+					itemOffClass += ' vx-tabs__item--vertical-divided'
+					itemOnClass += ' vx-tabs__item--vertical-divided'
+				}
 			}
 
-			// 胶囊只在选中时加高度和左右留白；未选中保持透明，文字仍在整格中间。
-			// 竖排的选中底由整行承担，不叠胶囊；胶囊撑满整行内容区，文案才能靠左省略。
-			let chipClass = chipBase
-			if (!active || vertical) chipClass = 'vx-tabs__chip'
-			if (vertical) chipClass += ' vx-tabs__item--vertical-chip'
-
-			let textClass = textInverse
-			if (active) textClass = vertical ? textVerticalActive : textActive
 			// 反色条上的未选中项在深底上靠反色文字；选中后在 surface 胶囊上，用普通禁用色。
+			let textOffClass = textInverse
+			let textOnClass = vertical ? textVerticalActive : textActive
 			if (disabled) {
-				textClass += style === 'inverse' && !active
+				textOffClass += style === 'inverse'
 					? ' vx-tabs__text--inverse-disabled'
 					: ' vx-tabs__text--disabled'
+				textOnClass += ' vx-tabs__text--disabled'
 			}
-			// 竖排文案单行省略：宽度不够时先收文案，角标完整保留。
-			if (vertical) textClass += ' vx-tabs__item--vertical-text'
+			textOffClass += textVerticalSuffix
+			textOnClass += textVerticalSuffix
 
 			// 自定义文字色只盖未选中项，选中态仍跟 type；行 / 浅底形态的禁用项保持自己的灰度。
 			// 反色条的禁用项只降透明度，保留自定义文字色才不会在深底上消失。
-			let textStyle = ''
-			if (!active && customColor.length > 0 && (!disabled || style === 'inverse')) {
-				textStyle = customColor
-			}
+			const textOffStyle = customColor.length > 0 && (!disabled || style === 'inverse') ? customColor : ''
 
 			list.push({
 				index: index,
-				itemClass: itemClass,
+				itemOffClass: itemOffClass,
+				itemOnClass: itemOnClass,
 				itemId: itemOf(index),
-				chipClass: chipClass,
+				chipOffClass: chipOffClass,
+				chipOnClass: chipOnClass,
 				// 竖排角标和文案同一行：这层横向容器只决定排布，不画底。
 				verticalContentClass: vertical ? 'vx-tabs__item--vertical-content' : '',
-				textClass: textClass,
-				textStyle: textStyle,
-				// 横向 line 的线已交给滑动条接管，这里只剩竖排左条和测量失败的兜底。
-				indicatorClass: active && (vertical || (style === 'line' && !sliderMounted.value)) ? indicatorBase : '',
+				textOffClass: textOffClass,
+				textOnClass: textOnClass,
+				textOffStyle: textOffStyle,
+				// 选中态的颜色跟 type 走，自定义色不写入。
+				textOnStyle: '',
+				// 线的显隐不写在行上（sliderMounted 不进这份依赖），模板按当前下标挑；
+				// 这里只存线本身的 class，横向 line 的线交给滑动条后逐项的就不再画。
+				indicatorClass: indicatorBase,
 				// 透明度写在 vx-badge 的标记上。写在这一层会连文字一起淡，反色禁用再乘一次。
 				// 竖排多一档 4px 左边距，让角标和文案分开；横排不加这个 class。
 				badgeClass: (disabled ? 'vx-tabs__badge vx-tabs__badge--disabled' : 'vx-tabs__badge')
@@ -507,6 +524,37 @@
 		}
 		return list
 	})
+
+	// 模板按行上预留的两份挑一份，挑的时候不拼字符串（参照 vx-select 的 markerClassOf）：
+	// 选中变了行数组不动，只有新旧两项的挑选结果变，其它页签拿到的还是行上原来那份。
+	const isActiveRow = (row: TabsRow): boolean => {
+		return row.index === activeIndex.value
+	}
+
+	const itemClassOf = (row: TabsRow): string => {
+		return isActiveRow(row) ? row.itemOnClass : row.itemOffClass
+	}
+
+	const chipClassOf = (row: TabsRow): string => {
+		return isActiveRow(row) ? row.chipOnClass : row.chipOffClass
+	}
+
+	const textClassOf = (row: TabsRow): string => {
+		return isActiveRow(row) ? row.textOnClass : row.textOffClass
+	}
+
+	const textStyleOf = (row: TabsRow): string => {
+		return isActiveRow(row) ? row.textOnStyle : row.textOffStyle
+	}
+
+	// 逐项画线的只剩两处：竖排左条一直画在行上；横向 line 在滑动条接管前逐项兜底。
+	// 显隐在这里按当前下标挑，sliderMounted 变化只重挑显隐，不重建行。
+	const rowIndicatorOf = (row: TabsRow): string => {
+		if (!isActiveRow(row)) return ''
+		if (isVertical.value) return row.indicatorClass
+		if (variant.value === 'line' && !sliderMounted.value) return row.indicatorClass
+		return ''
+	}
 
 	// 竖排的反色按 soft 渲染，开发阶段提示一次；不影响渲染。
 	let warnedVerticalInverse = false

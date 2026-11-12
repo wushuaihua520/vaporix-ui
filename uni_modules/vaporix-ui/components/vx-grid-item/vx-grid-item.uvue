@@ -233,7 +233,7 @@
 	}
 
 	/* 圆角写在方框上，图片铺满。App 上图片自己的圆角裁不住。
-	   sm 用 sm 圆角，md / lg 保持 md。
+	   跟 size 取三档元素圆角 6 / 8 / 10。
 	   align-items 盖过 media 的居中，图片才按方框铺满。 */
 	.vx-grid-item__frame {
 		flex-shrink: 0;
@@ -241,23 +241,24 @@
 		overflow: hidden;
 		width: var(--vx-grid-media-md);
 		height: var(--vx-grid-media-md);
-		border-radius: var(--vx-radius-md);
+		border-radius: var(--vx-control-radius-md);
 	}
 
 	.vx-grid-item__frame--sm {
 		width: var(--vx-grid-media-sm);
 		height: var(--vx-grid-media-sm);
-		border-radius: var(--vx-radius-sm);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
 	.vx-grid-item__frame--lg {
 		width: var(--vx-grid-media-lg);
 		height: var(--vx-grid-media-lg);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
 	/* 图片不能改色，禁用时压暗。 */
 	.vx-grid-item__frame--disabled {
-		opacity: 0.4;
+		opacity: var(--vx-opacity-media-disabled);
 	}
 
 	.vx-grid-item__image {

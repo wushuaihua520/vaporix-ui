@@ -21,21 +21,24 @@
 
 			<!-- 箭头包一层 view 再旋转，样式隔离下不会改到 vx-icon 内部的 text。 -->
 			<view v-if="showArrow" :class="arrowClass">
-				<vx-icon name="chevron-down" :size="size" :color="arrowColor" />
+				<vx-icon name="chevron-down" :size="arrowSize" :color="arrowColor" />
 			</view>
 		</view>
 
-		<!-- 自动高度用 max-height 过渡；固定高度用 height 过渡，内容在 scroll-view 里滚动。 -->
+		<!-- 自动高度先量内容，再用和固定高度同一套 height 过渡；量不到才退回 max-height。 -->
+		<!-- 插槽和 scroll-view 等第一次展开才创建，之后留着；body 常驻，收起仍只把高度裁到 0。 -->
 		<view :class="bodyClass" :style="bodyStyle">
-			<scroll-view v-if="fixedHeight" class="vx-collapse-item__scroll" :style="scrollStyle"
-				direction="vertical">
-				<view :class="contentClass">
+			<template v-if="contentMounted">
+				<scroll-view v-if="fixedHeight" class="vx-collapse-item__scroll" :style="scrollStyle"
+					direction="vertical">
+					<view :class="contentClass">
+						<slot></slot>
+					</view>
+				</scroll-view>
+				<view v-else :class="contentClass">
 					<slot></slot>
 				</view>
-			</scroll-view>
-			<view v-else :class="contentClass">
-				<slot></slot>
-			</view>
+			</template>
 		</view>
 
 		<!-- 最后一项不画，避免和卡片底边叠成两条；左右与标题内边距对齐。 -->
@@ -68,6 +71,8 @@
 	// 分割线认实例而不是 name：name 可以重复，两条面板仍要各算各的位置。
 	const uid = 'vx-collapse-item-' + Math.floor(Math.random() * 1000000000)
 	const localOpen = ref(false)
+	// 量高度在 nextTick 里，getCurrentInstance 必须在 setup 同步阶段取。
+	const instance = getCurrentInstance()
 
 	// 容器优先；没有 name 时退回实例 id，单独使用时也能记录展开状态。
 	const openKey = computed((): string => {
@@ -98,9 +103,131 @@
 	// 第一帧不加过渡：默认展开的面板不要从 0 高或 0 透明滑进来。
 	const animated = ref(false)
 	let animatedTimer = 0
+	// 首次展开标记。默认展开时 isOpen 在 setup 里已经是 true，immediate 当场渲染，不等下一次切换。
+	const contentMounted = ref(false)
+	// 刚插入的节点没有上一帧的收起样式，展开类晚一帧，透明度和位移才有过渡。
+	const contentOpen = ref(false)
+	let contentTimer = 0
+	// 自动高度量到的内容高。0 表示还没量到，不能拿去当收起高度。
+	const expandPx = ref(0)
+	// 这次展开正在量。从收起切过来时先把 height 停在 0，别走 0→2000 的 max-height。
+	const awaiting = ref(false)
+	const measureFromClosed = ref(false)
+	let measureTimer = 0
+	let measureGen = 0
+	let measureAttempt = 0
+
+	const clearContentTimer = () => {
+		if (contentTimer === 0) return
+		clearTimeout(contentTimer)
+		contentTimer = 0
+	}
+
+	const clearMeasureTimer = () => {
+		if (measureTimer === 0) return
+		clearTimeout(measureTimer)
+		measureTimer = 0
+	}
+
+	const cancelMeasure = () => {
+		measureGen += 1
+		measureAttempt = 0
+		clearMeasureTimer()
+	}
+
+	const finishMeasure = (gen: number, height: number) => {
+		if (gen !== measureGen || !isOpen.value || fixedHeight.value) return
+		// 量到 0 多半是插槽还没排完，不当成收起高度。
+		if (height <= 0) {
+			if (measureAttempt < 4) {
+				measureAttempt += 1
+				measureTimer = setTimeout(() => {
+					measureTimer = 0
+					readContentHeight(gen)
+				}, 16)
+				return
+			}
+			awaiting.value = false
+			expandPx.value = 0
+			return
+		}
+		measureAttempt = 0
+		expandPx.value = Math.ceil(height)
+		awaiting.value = false
+	}
+
+	const readContentHeight = (gen: number) => {
+		if (gen !== measureGen || !isOpen.value || fixedHeight.value || !contentMounted.value) return
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null || typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') {
+			finishMeasure(gen, 0)
+			return
+		}
+		try {
+			uni.createSelectorQuery()
+				.in(proxy)
+				.select('.vx-collapse-item__content')
+				.boundingClientRect()
+				.exec((result) => {
+					if (gen !== measureGen) return
+					if (result == null || result.length < 1) {
+						finishMeasure(gen, 0)
+						return
+					}
+					const rect = result[0] as NodeInfo | null
+					const height = rect != null && rect.height != null ? rect.height : 0
+					finishMeasure(gen, height)
+				})
+		} catch (error) {
+			finishMeasure(gen, 0)
+		}
+	}
+
+	// 插槽挂上之后再量。查询进当前实例，避免量到别的面板。
+	const scheduleMeasure = () => {
+		if (fixedHeight.value) return
+		cancelMeasure()
+		const gen = measureGen
+		measureFromClosed.value = animated.value
+		awaiting.value = true
+		nextTick(() => {
+			readContentHeight(gen)
+		})
+	}
+
+	watch(isOpen, (open: boolean) => {
+		clearContentTimer()
+		if (!open) {
+			contentOpen.value = false
+			cancelMeasure()
+			awaiting.value = false
+			return
+		}
+		if (contentMounted.value) {
+			contentOpen.value = true
+			scheduleMeasure()
+			return
+		}
+		contentMounted.value = true
+		scheduleMeasure()
+		// 过渡还关着，包括默认展开：直接落到展开样式。
+		if (!animated.value) {
+			contentOpen.value = true
+			return
+		}
+		contentTimer = setTimeout(() => {
+			contentTimer = 0
+			contentOpen.value = true
+		}, 16)
+	}, { immediate: true })
+
+	const orderIndex = (): number | null => {
+		if (props.index == null) return null
+		return props.index
+	}
 
 	onMounted(() => {
-		if (collapse != null) collapse.register(uid)
+		if (collapse != null) collapse.register(uid, orderIndex())
 		registered.value = true
 		nextTick(() => {
 			animatedTimer = setTimeout(() => {
@@ -115,7 +242,18 @@
 			clearTimeout(animatedTimer)
 			animatedTimer = 0
 		}
+		clearContentTimer()
+		cancelMeasure()
 		if (collapse != null) collapse.unregister(uid)
+	})
+
+	// 中间插入会改后面项的下标，挂载后再同步，避免只按第一次登记的位置画线。
+	watch((): number | null => {
+		if (props.index == null) return null
+		return props.index
+	}, (index: number | null) => {
+		if (!registered.value || collapse == null) return
+		collapse.register(uid, index)
 	})
 
 	const showArrow = computed((): boolean => {
@@ -166,6 +304,11 @@
 		return name
 	})
 
+	// 行尾箭头跟列表行：sm / md 用 14，lg 用 18。size 是行高档，不能原样传给图标。
+	const arrowSize = computed((): 'sm' | 'md' => {
+		return size.value === 'lg' ? 'md' : 'sm'
+	})
+
 	const arrowClass = computed((): string => {
 		let name = 'vx-collapse-item__arrow'
 		if (size.value === 'sm') name += ' vx-collapse-item__arrow--sm'
@@ -175,9 +318,16 @@
 		return name
 	})
 
+	// 量到高度后跟固定高度一样走 height。正在从收起展开、还没量到时也走 height，避免先跑 max-height。
+	const driveHeight = computed((): boolean => {
+		if (fixedHeight.value) return true
+		if (expandPx.value > 0) return true
+		return awaiting.value && measureFromClosed.value
+	})
+
 	const bodyClass = computed((): string => {
 		let name = 'vx-collapse-item__body'
-		if (fixedHeight.value) {
+		if (driveHeight.value) {
 			if (animated.value) name += ' vx-collapse-item__body--fixed-animated'
 			return name
 		}
@@ -187,10 +337,17 @@
 		return name
 	})
 
-	// 固定高度由业务给，必须带单位；贴成 inline 高度，0 → 指定高度才能过渡。
+	// 固定高度由业务给，必须带单位。自动高度展开到量到的像素，收起到 0。
+	// 从收起展开时，量完之前停在 0；量不到则丢掉像素高度，退回 max-height，避免整段被裁没。
 	const bodyStyle = computed((): string => {
-		if (!fixedHeight.value) return ''
-		return `height: ${isOpen.value ? props.contentHeight : '0px'};`
+		if (fixedHeight.value) {
+			return `height: ${isOpen.value ? props.contentHeight : '0px'};`
+		}
+		if (awaiting.value && measureFromClosed.value) return 'height: 0px;'
+		if (expandPx.value > 0) {
+			return `height: ${isOpen.value ? expandPx.value : 0}px;`
+		}
+		return ''
 	})
 
 	// scroll-view 在 App 上要有明确高度；父级 body 同时过渡，百分比兜底仍然保留。
@@ -204,7 +361,7 @@
 		if (size.value === 'sm') name += ' vx-collapse-item__content--sm'
 		else if (size.value === 'lg') name += ' vx-collapse-item__content--lg'
 		if (animated.value) name += ' vx-collapse-item__content--animated'
-		if (isOpen.value) name += ' vx-collapse-item__content--open'
+		if (contentOpen.value) name += ' vx-collapse-item__content--open'
 		return name
 	})
 
@@ -355,29 +512,27 @@
 		margin-left: var(--vx-space-sm);
 	}
 
-	/* 正方形，旋转不改变占位。尺寸跟图标三档 14 / 18 / 22。
+	/* 占位和字形同大，绕中心转才不位移。sm / md 用 14，lg 用 18。
 	   class 顺序：基础 → 尺寸 → 过渡 → 展开。 */
 	.vx-collapse-item__arrow {
 		flex-direction: row;
 		flex-shrink: 0;
 		align-items: center;
 		justify-content: center;
-		width: var(--vx-icon-md);
-		height: var(--vx-icon-md);
+		width: var(--vx-icon-sm);
+		height: var(--vx-icon-sm);
 		margin-left: var(--vx-space-md);
 		transform: rotate(0deg);
 		transform-origin: center center;
 	}
 
 	.vx-collapse-item__arrow--sm {
-		width: var(--vx-icon-sm);
-		height: var(--vx-icon-sm);
 		margin-left: var(--vx-space-sm);
 	}
 
 	.vx-collapse-item__arrow--lg {
-		width: var(--vx-icon-lg);
-		height: var(--vx-icon-lg);
+		width: var(--vx-icon-md);
+		height: var(--vx-icon-md);
 	}
 
 	/* 过渡关掉时直接换角度。 */
@@ -402,7 +557,7 @@
 		max-height: 0px;
 	}
 
-	/* 超过 2000px 请改用 contentHeight，在内部滚动。 */
+	/* 只在量不到内容高度时退回这里。量到之后走 height，高于 2000px 也不截。 */
 	.vx-collapse-item__body--auto-open {
 		max-height: 2000px;
 	}

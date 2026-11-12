@@ -184,11 +184,11 @@
 		justify-content: center;
 		box-sizing: border-box;
 		width: 100%;
-		padding: 24px;
+		padding: var(--vx-space-xl);
 	}
 
 	.vx-no-data--sm {
-		padding: 16px;
+		padding: var(--vx-space-lg);
 	}
 
 	.vx-no-data--fill {

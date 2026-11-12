@@ -236,6 +236,8 @@ export async function runFormRules(value: VxFormValue, rules: Array<VxFormRule>)
 		if (pending != null) {
 			try {
 				message = await pending
+				// 与同步分支一致：非 string（含 undefined）按通过，收成空串；异常仍走 catch。
+				if (typeof message !== 'string') message = ''
 			} catch (error) {
 				return errorMessage(error)
 			}

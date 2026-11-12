@@ -107,6 +107,7 @@
 	})
 
 	// 角度和负延迟按 12 等分，第一帧就错开。颜色跟 type，不在模板里拼。
+	// 5.26 的 App 没有关键帧，十二瓣会同样不透明。行内按顺序写递减的 opacity，终点 0.16 与关键帧相同；关键帧跑起来盖过行内值。
 	// 非 bars 直接返回空列表，行内转圈不建这 12 条样式。
 	const bars = computed((): VxLoadingBar[] => {
 		if (props.variant !== 'bars') return []
@@ -115,9 +116,10 @@
 		const count = VX_LOADING_BAR_COUNT
 		for (let index = 0; index < count; index++) {
 			const step = Math.round((index * VX_SPIN_DURATION) / count)
+			const opacity = (1 - (index * (1 - 0.16)) / (count - 1)).toFixed(2)
 			list.push({
 				key: index + 1,
-				style: `transform: rotate(${index * 30}deg); animation-delay: -${step}ms; background-color: ${color};`
+				style: `transform: rotate(${index * 30}deg); animation-delay: -${step}ms; opacity: ${opacity}; background-color: ${color};`
 			})
 		}
 		return list

@@ -8,18 +8,23 @@
 
 <script setup>
 	import { VxFormProps, VxFormLabelPosition } from './props'
-	import { VX_FORM_CONTEXT, VxFormContext, VxFormItemInstance } from './context'
+	import { VX_FORM_CONTEXT, VxFormContext, VxFormItemInstance, VxFormInvalidRect } from './context'
+	import { VX_PAGE_SCROLL, VxPageScroll } from '../../libs/page-scroll'
 	import { VxSize } from '../../libs/types/common'
 
 	const props = withDefaults(defineProps<VxFormProps>(), {
-		labelWidth: '72px',
+		labelWidth: '',
 		labelPosition: 'left',
 		size: 'md',
 		disabled: false,
 		scrollToError: true
 	})
 
-	const instance = getCurrentInstance()
+	// 外面是 vx-page 且开了滚动时才有；没有就走页面自己的 pageScrollTo。
+	const pageScroll = inject(VX_PAGE_SCROLL, null) as VxPageScroll | null
+
+	// 兜底查询要用自己的作用域。小程序里选择器进不了子组件，所以主路径靠失败项自己量。
+	const component = getCurrentInstance()
 
 	// 登记表不参与渲染，用普通数组即可；顺序由 order 记录，动态增删项时也能还原注册先后。
 	const items: Array<VxFormItemInstance> = []
@@ -28,10 +33,14 @@
 	let nextOrder = 0
 	let scrollToken = 0
 
+	// 只有整组 validate() 会让失败项交位置；validateField 单项校验不动页面。
+	let scrollPending = false
+
 	// 失败项滚动到视口时上方留 8px，错误行不会贴住屏幕顶边。
 	const SCROLL_OFFSET = 8
 
-	// labelWidth 必须带单位：纯数字在样式里不是合法宽度，标签列会塌掉。开发阶段提示一次。
+	// 空串是默认值，走 --vx-form-label-width，不警告。
+	// 纯数字在样式里不是合法宽度，标签列会塌掉；开发阶段提示一次。
 	// 逐字符判断，不用正则字面量：库里约定跨端构造只用 new RegExp 加字符串。
 	let warnedLabelWidth = false
 
@@ -49,6 +58,7 @@
 
 	watch(() => props.labelWidth, (width: string) => {
 		if (warnedLabelWidth) return
+		if (width.length === 0) return
 		if (!hasWidthUnit(width)) {
 			warnedLabelWidth = true
 			console.warn(`[vx-form] labelWidth="${width}" 不带单位，标签列宽会失效；请传 "72px" / "88rpx" 这样带单位的值。`)
@@ -103,73 +113,92 @@
 		}
 	}
 
-	// 量第一个错误项的位置，再交给 pageScrollTo。App 上页面滚动由最外层 scroll-view 模拟，
-	// 量不到、位置为空或当前不在可滚动页面时都静默返回，不打断已经失败的校验结果。
-	const scrollToFirstInvalid = () => {
-		if (typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') return
-		const proxy = instance != null ? instance.proxy : null
-		if (proxy == null) return
-		// 后发起的校验覆盖先发起的：前一次的回调不再改滚动位置。
-		const token = ++scrollToken
-		nextTick(() => {
-			if (token !== scrollToken) return
-			try {
-				const query = uni.createSelectorQuery()
-				if (query == null || typeof query.in !== 'function') return
-				const scoped = query.in(proxy)
-				if (scoped == null || typeof scoped.select !== 'function') return
-				const target = scoped.select('.vx-form-item--invalid')
-				if (target == null || typeof target.boundingClientRect !== 'function') return
-				target.boundingClientRect().exec((result) => {
-					if (token !== scrollToken) return
-					if (result == null || result.length < 1) return
-					const rect = result[0] as NodeInfo | null
-					if (rect == null) return
-					const top = rect.top
-					if (top == null) return
+	// 拿到失败项的视口位置后按顺序找接手方：vx-page 的滚动区 → 页面自身滚动 → 静默。
+	const scrollToViewportTop = (token: number, top: number) => {
+		if (token !== scrollToken) return
+		// vx-page 的滚动在内部 scroll-view 上，pageScrollTo 滚不到。容器接手就到此为止。
+		// 传进去的是希望贴到滚动区顶部的视口坐标，上方留白在这里减掉。
+		if (pageScroll != null && pageScroll(top - SCROLL_OFFSET)) return
 
-					// 页面已经滚过一段时 rect.top 只是视口内的位置，补上页面自身的滚动量才是绝对位置。
-					let scrolled = 0
-					try {
-						const viewportQuery = uni.createSelectorQuery()
-						if (viewportQuery != null && typeof viewportQuery.selectViewport === 'function') {
-							const viewport = viewportQuery.selectViewport()
-							if (viewport != null && typeof viewport.scrollOffset === 'function') {
-								viewport.scrollOffset().exec((viewportResult) => {
-									if (token !== scrollToken) return
-									if (viewportResult != null && viewportResult.length > 0) {
-										const info: any = viewportResult[0]
-										if (info != null) {
-											const value = info.scrollTop
-											if (typeof value === 'number' && value > 0) scrolled = value
-										}
-									}
-									scrollPageTo(scrolled + top)
-								})
-								return
+		// 页面已经滚过一段时 top 只是视口内的位置，补上页面自身的滚动量才是绝对位置。
+		let scrolled = 0
+		try {
+			if (typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') {
+				scrollPageTo(top)
+				return
+			}
+			const viewportQuery = uni.createSelectorQuery()
+			if (viewportQuery != null && typeof viewportQuery.selectViewport === 'function') {
+				const viewport = viewportQuery.selectViewport()
+				if (viewport != null && typeof viewport.scrollOffset === 'function') {
+					viewport.scrollOffset().exec((viewportResult) => {
+						if (token !== scrollToken) return
+						if (viewportResult != null && viewportResult.length > 0) {
+							const info: any = viewportResult[0]
+							if (info != null) {
+								const value = info.scrollTop
+								if (typeof value === 'number' && value > 0) scrolled = value
 							}
 						}
-					} catch (error) {
-						// 没有 viewport 查询时按视口位置滚。
-					}
-					scrollPageTo(scrolled + top)
-				})
-			} catch (error) {
-				// 预览环境可能只实现最小的选择器 API：滚动只是增强，不影响校验结果。
+						scrollPageTo(scrolled + top)
+					})
+					return
+				}
 			}
-		})
+		} catch (error) {
+			// 没有 viewport 查询时按视口位置滚。
+		}
+		scrollPageTo(scrolled + top)
 	}
 
-	/** 按注册顺序串行校验，遇到第一个失败就停下；scrollToError 打开时滚过去。 */
+	// 兜底：失败项量不到时再从 form 自己的作用域往下查。Web 的选择器能进子组件，
+	// 小程序和 App 拿不到子组件节点，查不到就不滚，和以前一样静默。
+	const measureOwnInvalid = (token: number) => {
+		const proxy = component != null ? component.proxy : null
+		if (proxy == null || typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') return
+		try {
+			const query = uni.createSelectorQuery()
+			if (query == null || typeof query.in !== 'function') return
+			const scoped = query.in(proxy)
+			if (scoped == null || typeof scoped.select !== 'function') return
+			const target = scoped.select('.vx-form-item--invalid')
+			if (target == null || typeof target.boundingClientRect !== 'function') return
+			target.boundingClientRect().exec((result) => {
+				if (token !== scrollToken) return
+				if (result == null || result.length < 1) return
+				const rect = result[0] as NodeInfo | null
+				if (rect == null || rect.top == null) return
+				scrollToViewportTop(token, rect.top)
+			})
+		} catch (error) {
+			// 预览环境可能只实现最小的选择器 API：滚动只是增强，不影响校验结果。
+		}
+	}
+
+	// 失败项校验完在自己作用域里量根节点，把位置交给容器。
+	// 串行校验遇到第一个失败就停，所以这里拿到的就是注册顺序里第一个错误项。
+	const reportInvalid = (rect: VxFormInvalidRect | null) => {
+		// 后发起的定位覆盖先发起的：前一次的回调不再改滚动位置。
+		const token = ++scrollToken
+		if (rect != null) {
+			scrollToViewportTop(token, rect.top)
+			return
+		}
+		measureOwnInvalid(token)
+	}
+
+	/** 按注册顺序串行校验，遇到第一个失败就停下；失败项自己把位置交给 reportInvalid。 */
 	const validate = async (): Promise<boolean> => {
 		const list = orderedItems()
+		// 只在这一轮里接受失败项交回来的位置；单项校验和单独调用的 validate 不定位。
+		scrollPending = true
 		for (let index = 0; index < list.length; index++) {
 			const passed = await list[index].validate()
 			if (passed) continue
-			// 错误文案在下一帧才落到节点上，滚动查询也等这一帧结束。
-			if (props.scrollToError) scrollToFirstInvalid()
+			scrollPending = false
 			return false
 		}
+		scrollPending = false
 		return true
 	}
 
@@ -213,7 +242,9 @@
 		labelWidth: (): string => props.labelWidth,
 		labelPosition: (): VxFormLabelPosition => positionKey(props.labelPosition),
 		size: (): VxSize => sizeKey(props.size),
-		disabled: (): boolean => props.disabled
+		disabled: (): boolean => props.disabled,
+		scrollToError: (): boolean => props.scrollToError && scrollPending,
+		reportInvalid: reportInvalid
 	}
 
 	provide(VX_FORM_CONTEXT, context)

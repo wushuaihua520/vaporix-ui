@@ -197,10 +197,10 @@
 		opacity: var(--vx-opacity-pressed);
 	}
 
-	/* 可点标题栏补到 44 高，单行标题也有完整的触屏热区。 */
+	/* 可点标题栏补到热区下限，单行标题也有完整的触屏热区。 */
 	.vx-section--clickable {
 		justify-content: center;
-		min-height: 44px;
+		min-height: var(--vx-hit-size);
 	}
 
 	/* 标题、竖线、前缀和右侧操作排一行；标题和说明在中间成列。 */

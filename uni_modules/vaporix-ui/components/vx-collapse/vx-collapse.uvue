@@ -31,8 +31,13 @@
 		change: [name: string, open: boolean]
 	}>()
 
-	// 面板挂载顺序就是 DOM 顺序。最后一项据此不画分割线，不需要业务手写 index。
-	const ids = ref<Array<string>>([])
+	// 登记顺序默认当 DOM 顺序。全部都带 index 时才改按最大 index 认最后一项。
+	type VxCollapseEntry = {
+		id: string
+		index: number | null
+	}
+
+	const entries = ref<Array<VxCollapseEntry>>([])
 
 	const hasName = (list: Array<string>, name: string): boolean => {
 		for (let index = 0; index < list.length; index++) {
@@ -58,19 +63,61 @@
 		return next
 	}
 
-	const register = (id: string) => {
-		if (hasName(ids.value, id)) return
-		ids.value = appendName(ids.value, id)
+	const register = (id: string, index: number | null) => {
+		const list = entries.value
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id !== id) continue
+			if (list[cursor].index === index) return
+			const next: Array<VxCollapseEntry> = []
+			for (let copy = 0; copy < list.length; copy++) {
+				if (list[copy].id === id) next.push({ id: id, index: index })
+				else next.push(list[copy])
+			}
+			entries.value = next
+			return
+		}
+		const next: Array<VxCollapseEntry> = []
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			next.push(list[cursor])
+		}
+		next.push({ id: id, index: index })
+		entries.value = next
 	}
 
 	const unregister = (id: string) => {
-		if (!hasName(ids.value, id)) return
-		ids.value = removeName(ids.value, id)
+		const list = entries.value
+		let found = false
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id === id) found = true
+		}
+		if (!found) return
+		const next: Array<VxCollapseEntry> = []
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id !== id) next.push(list[cursor])
+		}
+		entries.value = next
 	}
 
+	// 有一项 index 是 null，后挂载的不能代表视觉上的最后一项，退回登记顺序。
 	const isLast = (id: string): boolean => {
-		const list = ids.value
-		return list.length > 0 && list[list.length - 1] === id
+		const list = entries.value
+		if (list.length === 0) return false
+		let indexed = true
+		let maxIndex = 0
+		let maxId = ''
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			const order = list[cursor].index
+			if (order == null) {
+				indexed = false
+				break
+			}
+			if (cursor === 0 || order >= maxIndex) {
+				maxIndex = order
+				maxId = list[cursor].id
+			}
+		}
+		if (!indexed) return list[list.length - 1].id === id
+		return maxId === id
 	}
 
 	// 先写回名单，再抛 change。open() / close() 和方法走同一套出口。

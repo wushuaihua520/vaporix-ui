@@ -1,5 +1,16 @@
 import { VxIconName } from '../../libs/icons/codepoints'
 
+// 模块级只读一次：script setup 顶层每个实例一份，列表里会重复打 getWindowInfo。
+// 读不到或不是正数时按 375；不监听旋转。
+let windowWidth = 0
+
+export function vxImageWindowWidth(): number {
+	if (windowWidth > 0) return windowWidth
+	const width = uni.getWindowInfo().windowWidth
+	windowWidth = width > 0 ? width : 375
+	return windowWidth
+}
+
 /** 图片缩放模式，透传给原生 image；只开放常用的四档。 */
 export type VxImageMode = 'aspectFill' | 'aspectFit' | 'scaleToFill' | 'center'
 

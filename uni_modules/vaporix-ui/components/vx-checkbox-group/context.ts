@@ -29,8 +29,8 @@ export type VxCheckboxContext = {
 	divider: () => boolean
 	/** 整组是否禁用。 */
 	disabled: () => boolean
-	/** 项挂载时登记实例 id，用来算最后一项。 */
-	register: (id: string) => void
+	/** 项挂载时登记实例 id。index 为 null 表示这项没传位置。 */
+	register: (id: string, index: number | null) => void
 	/** 项卸载时注销实例 id。 */
 	unregister: (id: string) => void
 	/** 按实例 id 判断是不是最后一项，最后一项不画分割线。 */

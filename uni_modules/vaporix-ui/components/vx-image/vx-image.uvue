@@ -3,7 +3,7 @@
 	     预览、长按保存和裁剪分别属于 vx-gallery、业务和裁剪件，这里只抛事件。 -->
 	<!-- 失败态不重试也不加节流；重试由业务换 src（改值或换 key 都行）。 -->
 	<view :class="rootClass" :style="rootStyle" @click="onClick">
-		<image v-if="status !== 'error'" :class="imageClass" :src="src" :mode="imageMode" :lazy-load="lazyLoad"
+		<image v-if="status !== 'error'" :class="imageClass" :src="imageSrc" :mode="imageMode" :lazy-load="lazyLoad"
 			@load="onLoad" @error="onError" />
 
 		<view v-if="status === 'error'" class="vx-image__fallback">
@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-	import { VxImageMode, VxImageProps } from './props'
+	import { VxImageMode, VxImageProps, vxImageWindowWidth } from './props'
 
 	const props = withDefaults(defineProps<VxImageProps>(), {
 		src: '',
@@ -37,8 +37,10 @@
 		click: []
 	}>()
 
-	// 加载中 / 成功 / 失败三态；空串直接算失败，不经过图片节点。
-	const status = ref<'loading' | 'success' | 'error'>(props.src.length > 0 ? 'loading' : 'error')
+	// 显式 null 不走默认值；空串直接算失败，不经过图片节点。
+	const imageSrc = computed((): string => props.src ?? '')
+
+	const status = ref<'loading' | 'success' | 'error'>(imageSrc.value.length > 0 ? 'loading' : 'error')
 
 	// ratio 只在能换算成 px 时生效；只提示一次，避免每次重算都刷控制台。
 	let ratioWarned = false
@@ -57,7 +59,7 @@
 
 	// 长度换算成像素：只认 px 和 rpx，其余（百分比、auto、var()）一律返回 0。
 	// rpx 必须排在 px 前面判断：'240rpx' 的结尾也是 'px'，先判 px 会把它当成长度 240r 的数字。
-	// rpx 按 750 基准换算，读不到窗口宽度时按 375 兜底。
+	// rpx 按 750 基准换算；窗口宽在 props.ts 里缓存，px 不查窗口。
 	const lengthToPx = (value: string): number => {
 		const text = value.trim().toLowerCase()
 		let numberText = ''
@@ -74,9 +76,7 @@
 		const size = Number(numberText)
 		if (isNaN(size) || size <= 0) return 0
 		if (unit === 'px') return size
-		const windowInfo = uni.getSystemInfoSync()
-		const windowWidth = windowInfo.windowWidth > 0 ? windowInfo.windowWidth : 375
-		return size * windowWidth / 750
+		return size * vxImageWindowWidth() / 750
 	}
 
 	// 按 width / ratio 算出高度；宽是百分比或 auto 时返回 0，不改写高度。
@@ -140,7 +140,7 @@
 	})
 
 	// src 变化要回到加载中：失败记录清掉，旧图的淡入态一起收掉。
-	watch((): string => props.src, (value: string) => {
+	watch(imageSrc, (value: string) => {
 		status.value = value.length > 0 ? 'loading' : 'error'
 	})
 
@@ -219,7 +219,7 @@
 		height: 100%;
 		opacity: 0;
 		transition-property: opacity;
-		transition-duration: 200ms;
+		transition-duration: var(--vx-duration-normal);
 	}
 
 	.vx-image__img--ready {

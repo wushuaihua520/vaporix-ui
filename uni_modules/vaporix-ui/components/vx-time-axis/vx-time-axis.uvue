@@ -10,7 +10,7 @@
 
 			<!-- 节点列高度等于节点直径。有图标时圆底画在这一列上，不再包一层同尺寸的圆。 -->
 			<view :class="row.markerClass">
-				<vx-icon v-if="row.hasIcon" :name="row.icon" :size="iconSize" :variant="row.iconVariant"
+				<vx-icon v-if="row.hasIcon" :name="row.icon" :size="size" :variant="row.iconVariant"
 					:color="row.iconColor" />
 				<view v-else :class="row.dotClass"></view>
 			</view>
@@ -55,11 +55,6 @@
 	const railStyle = computed((): string => {
 		if (props.lineColor.length === 0) return ''
 		return `background-color: ${props.lineColor};`
-	})
-
-	// 图标比节点小一档：sm / md 用 14，lg 用 18。整列共用，不跟每条记录重算。
-	const iconSize = computed((): 'sm' | 'md' => {
-		return props.size === 'lg' ? 'md' : 'sm'
 	})
 
 	// 标题档位只跟 size 走，循环里不再逐条拼。

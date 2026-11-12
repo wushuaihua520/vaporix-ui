@@ -1,11 +1,13 @@
 <template>
 	<view :class="rootClass">
-		<view v-if="line" class="vx-nomore__line" :style="lineStyle"></view>
-		<view v-if="hasMarker" :class="markerClass">
-			<view v-if="dot" class="vx-nomore__dot" :style="dotStyle"></view>
-			<text v-else :class="textClass" :style="textStyle">{{ text }}</text>
+		<view v-if="line || hasMarker" :class="rowClass">
+			<view v-if="line" class="vx-nomore__line" :style="lineStyle"></view>
+			<view v-if="hasMarker" :class="markerClass">
+				<view v-if="dot" class="vx-nomore__dot" :style="dotStyle"></view>
+				<text v-else :class="textClass" :style="textStyle">{{ text }}</text>
+			</view>
+			<view v-if="line" class="vx-nomore__line" :style="lineStyle"></view>
 		</view>
-		<view v-if="line" class="vx-nomore__line" :style="lineStyle"></view>
 	</view>
 </template>
 
@@ -28,6 +30,11 @@
 	// 没有文案、圆点和线时不留上下空白，避免误传成一条占位。
 	const rootClass = computed((): string => {
 		return !props.line && !hasMarker.value ? 'vx-nomore vx-nomore--empty' : 'vx-nomore'
+	})
+
+	// 行容器撑到一行文案的高度，只留线时也和同尺寸的 vx-loadmore 一样高。
+	const rowClass = computed((): string => {
+		return props.size === 'lg' ? 'vx-nomore__row vx-nomore__row--lg' : 'vx-nomore__row'
 	})
 
 	// sm 与 md 都是 13 / 20，只有 lg 跟到 15 / 22。和同尺寸的 vx-loadmore 才能同高。
@@ -71,6 +78,21 @@
 	.vx-nomore--empty {
 		padding-top: 0;
 		padding-bottom: 0;
+	}
+
+	/* 线、文案、圆点都排在这一层。撑到一行文案的高度，只留线时也占满一条尾部行高；
+	   线仍在同一水平线上居中，没有文案时左右两条直接接成一条，中间不留白。 */
+	.vx-nomore__row {
+		box-sizing: border-box;
+		width: 100%;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		min-height: var(--vx-line-sm);
+	}
+
+	.vx-nomore__row--lg {
+		min-height: var(--vx-line-md);
 	}
 
 	/* 两侧细线各占一半，中间让给文案或圆点；没有文案时两条线自然接成一条。 */

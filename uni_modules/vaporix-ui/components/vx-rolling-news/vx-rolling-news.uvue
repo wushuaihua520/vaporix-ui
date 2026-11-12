@@ -376,6 +376,9 @@
 	   写明 overflow：App 默认 hidden、Web 默认 visible，胶囊角才裁得一样。 */
 	.vx-rolling-news {
 		position: relative;
+		/* 收口：内部的 prefix / suffix / 热区用了 2、3。根上不写 z-index 时 Web 不生成层叠上下文，
+		   这三个层级会跟页面的固定页脚（层级 1）放在一起比较，插槽和热区就压到页脚上面。 */
+		z-index: 0;
 		flex-direction: row;
 		align-items: center;
 		box-sizing: border-box;

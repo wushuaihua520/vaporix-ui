@@ -10,6 +10,18 @@
 	import { VxRowProps } from './props'
 	import { VX_ROW_CONTEXT, VxRowContext, readWindowWidth } from './context'
 
+	type VxStretchRect = {
+		id: string | null
+		top: number | null
+		height: number | null
+	}
+
+	type VxStretchGroup = {
+		top: number
+		maxHeight: number
+		marks: Array<number>
+	}
+
 	const props = withDefaults(defineProps<VxRowProps>(), {
 		gutter: 0,
 		lineGutter: 0,
@@ -62,57 +74,285 @@
 	// 同一行只量一次窗口宽度。列没写断点时不读它，旋转和键盘弹起不会让这些列重排。
 	const windowWidth = ref(readWindowWidth())
 
-	onResize(() => {
-		windowWidth.value = readWindowWidth()
-	})
-
-	// App 端自定义组件根节点接不住父级的 align-items: stretch（实测列高仍是内容高）。
-	// 等首帧布局完成后量一次所有列，把最高列的高度写回每一列；列里的 flex: 1 再把卡片撑满。
+	// App 自定义组件根节点接不住父级 align-items: stretch，所以量完再写高度。
+	// Web 的 stretch 本身生效；再写像素会把百分比高度锁死，这里不量。
 	const instance = getCurrentInstance()
 	const instanceId = 'vx-row-' + Math.floor(Math.random() * 1000000)
-	const stretchHeight = ref(0)
+	const VX_ROW_STRETCH_WAIT = 60
+	// 同一行的 top 只差亚像素。超过 1px 就是换行后的下一行。
+	const VX_ROW_STRETCH_LINE = 1
+	const stretchHeights = ref<Array<number>>([])
+	// 正在量的时候高度先拿掉，读到的才是内容高。写上之后再量，只能持平或被内容撑得更高。
+	const measuring = ref(false)
+	let nextMark = 1
+	let columnCount = 0
 	let stretchTimer = 0
+	let stretchEpoch = 0
+	let stretchTries = 0
+	// 写高度会让列再渲染。这一拍里内容回调是自己引起的，不排下一次。
+	let blockStretch = false
+	// 测量过程中列数或窗口又变了，等这一次写完再补量。
+	let stretchAgain = false
+	// 重测结果和上次一样时，短时间丢掉内容回调。清掉高度再写回去会让子节点跟着抖一次。
+	let settleTimer = 0
 
-	const measureStretch = () => {
-		stretchTimer = 0
-		if (props.align !== 'stretch') return
-		const proxy = instance != null ? instance.proxy : null
-		if (proxy == null) return
-		uni.createSelectorQuery()
-			.in(proxy)
-			.selectAll('.vx-col--row-' + instanceId)
-			.boundingClientRect()
-			.exec((result) => {
-				if (result.length === 0) return
-				const rects = result[0] as Array<NodeInfo>
-				if (rects == null) return
-				let max = 0
-				for (let index = 0; index < rects.length; index++) {
-					const rect = rects[index]
-					if (rect == null) continue
-					const height = rect.height
-					if (height != null && height > max) max = height
-				}
-				if (max > 0 && (stretchHeight.value <= 0 || Math.abs(max - stretchHeight.value) > 0.5)) {
-					stretchHeight.value = max
-				}
-			})
-	}
-
-	const scheduleStretch = () => {
-		if (props.align !== 'stretch') return
-		if (stretchTimer !== 0) clearTimeout(stretchTimer)
-		stretchTimer = setTimeout(measureStretch, 60)
-	}
-
-	onMounted(() => {
-		nextTick(() => scheduleStretch())
-	})
-
-	onUnmounted(() => {
+	const clearStretchTimer = () => {
 		if (stretchTimer === 0) return
 		clearTimeout(stretchTimer)
 		stretchTimer = 0
+	}
+
+	const clearSettle = () => {
+		if (settleTimer === 0) return
+		clearTimeout(settleTimer)
+		settleTimer = 0
+	}
+
+	const clearStretchHeights = () => {
+		measuring.value = false
+		blockStretch = false
+		stretchAgain = false
+		clearSettle()
+		if (stretchHeights.value.length === 0) return
+		stretchHeights.value = []
+	}
+
+	const scheduleStretch = () => {
+		// #ifdef WEB
+		return
+		// #endif
+		// #ifndef WEB
+		if (props.align !== 'stretch') return
+		clearStretchTimer()
+		stretchTimer = setTimeout(() => {
+			stretchTimer = 0
+			measureStretch()
+		}, VX_ROW_STRETCH_WAIT)
+		// #endif
+	}
+
+	const requestStretch = () => {
+		// #ifdef WEB
+		return
+		// #endif
+		// #ifndef WEB
+		if (props.align !== 'stretch') return
+		if (measuring.value || blockStretch) {
+			stretchAgain = true
+			return
+		}
+		stretchTries = 0
+		scheduleStretch()
+		// #endif
+	}
+
+	// 内容变化不走 stretchAgain：测量那一拍里子节点会跟着变高变矮，排进去就会不停重测。
+	const notifyContent = () => {
+		// #ifdef WEB
+		return
+		// #endif
+		// #ifndef WEB
+		if (props.align !== 'stretch') return
+		if (measuring.value || blockStretch || settleTimer !== 0) return
+		stretchTries = 0
+		scheduleStretch()
+		// #endif
+	}
+
+	const claimMark = (): number => {
+		const mark = nextMark
+		nextMark += 1
+		columnCount += 1
+		requestStretch()
+		return mark
+	}
+
+	const releaseMark = (mark: number) => {
+		columnCount -= 1
+		if (columnCount < 0) columnCount = 0
+		const current = stretchHeights.value
+		if (mark >= 0 && mark < current.length && current[mark] !== 0) {
+			const next = current.slice()
+			next[mark] = 0
+			stretchHeights.value = next
+		}
+		requestStretch()
+	}
+
+	const stretchHeightOf = (mark: number): number => {
+		// #ifdef WEB
+		return 0
+		// #endif
+		// #ifndef WEB
+		if (props.align !== 'stretch' || measuring.value) return 0
+		const list = stretchHeights.value
+		if (mark < 0 || mark >= list.length) return 0
+		const height = list[mark]
+		return height > 0 ? height : 0
+		// #endif
+	}
+
+	const markOf = (id: string): number => {
+		const prefix = 'vx-c-' + instanceId + '-'
+		if (id.indexOf(prefix) !== 0) return -1
+		const parsed = parseInt(id.substring(prefix.length))
+		if (!(parsed > 0)) return -1
+		return parsed
+	}
+
+	const sameHeights = (next: Array<number>): boolean => {
+		const current = stretchHeights.value
+		if (current.length !== next.length) return false
+		for (let index = 0; index < next.length; index++) {
+			if (Math.abs(current[index] - next[index]) > 0.5) return false
+		}
+		return true
+	}
+
+	const finishStretch = (next: Array<number>) => {
+		const changed = !sameHeights(next)
+		blockStretch = true
+		measuring.value = false
+		if (changed) stretchHeights.value = next
+		else {
+			// 高度没变也清过一次。子节点跟着缩回去再撑开，这段回调不是内容变化。
+			clearSettle()
+			settleTimer = setTimeout(() => {
+				settleTimer = 0
+			}, VX_ROW_STRETCH_WAIT)
+		}
+		nextTick(() => {
+			blockStretch = false
+			if (!stretchAgain) return
+			stretchAgain = false
+			clearSettle()
+			stretchTries = 0
+			scheduleStretch()
+		})
+	}
+
+	const applyStretch = (rects: Array<VxStretchRect>) => {
+		const groups: Array<VxStretchGroup> = []
+		for (let index = 0; index < rects.length; index++) {
+			const rect = rects[index]
+			if (rect == null) continue
+			const height = rect.height
+			const top = rect.top
+			if (height == null || top == null || !(height > 0)) continue
+			const id = rect.id
+			if (id == null || id.length === 0) continue
+			const mark = markOf(id)
+			if (mark < 0) continue
+			let groupIndex = -1
+			for (let groupAt = 0; groupAt < groups.length; groupAt++) {
+				const gap = top - groups[groupAt].top
+				const distance = gap < 0 ? -gap : gap
+				if (distance <= VX_ROW_STRETCH_LINE) {
+					groupIndex = groupAt
+					break
+				}
+			}
+			if (groupIndex < 0) {
+				groups.push({
+					top: top,
+					maxHeight: height,
+					marks: [mark]
+				})
+				continue
+			}
+			const group = groups[groupIndex]
+			group.marks.push(mark)
+			if (height > group.maxHeight) group.maxHeight = height
+		}
+		if (groups.length === 0) {
+			// 列还在、矩形还没排出来。先保持不写高度，过一拍再量。
+			if (columnCount > 0 && stretchTries < 3) {
+				stretchTries += 1
+				scheduleStretch()
+				return
+			}
+			finishStretch([])
+			return
+		}
+		stretchTries = 0
+		// 换行后每一行只用自己的最高列，不用整组最高去撑后面的短卡片。
+		const next: Array<number> = []
+		for (let groupAt = 0; groupAt < groups.length; groupAt++) {
+			const group = groups[groupAt]
+			const marks = group.marks
+			for (let markAt = 0; markAt < marks.length; markAt++) {
+				const mark = marks[markAt]
+				while (next.length <= mark) next.push(0)
+				next[mark] = group.maxHeight
+			}
+		}
+		finishStretch(next)
+	}
+
+	const measureStretch = () => {
+		// #ifdef WEB
+		return
+		// #endif
+		// #ifndef WEB
+		if (props.align !== 'stretch') {
+			clearStretchHeights()
+			return
+		}
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) return
+		// 先拿掉写上的高度再量。否则读到的是上一次的像素，内容变矮也缩不回去。
+		measuring.value = true
+		const epoch = ++stretchEpoch
+		nextTick(() => {
+			uni.createSelectorQuery()
+				.in(proxy)
+				.selectAll('.vx-col--row-' + instanceId)
+				.boundingClientRect()
+				.exec((result) => {
+					if (epoch !== stretchEpoch) return
+					if (props.align !== 'stretch') {
+						clearStretchHeights()
+						return
+					}
+					if (result.length === 0) {
+						applyStretch([])
+						return
+					}
+					const rects = result[0] as Array<VxStretchRect> | null
+					if (rects == null) {
+						applyStretch([])
+						return
+					}
+					applyStretch(rects)
+				})
+		})
+		// #endif
+	}
+
+	onResize(() => {
+		windowWidth.value = readWindowWidth()
+		requestStretch()
+	})
+
+	watch((): string => props.align, (value: string) => {
+		clearStretchTimer()
+		stretchEpoch += 1
+		if (value !== 'stretch') {
+			clearStretchHeights()
+			return
+		}
+		stretchTries = 0
+		scheduleStretch()
+	})
+
+	onMounted(() => {
+		requestStretch()
+	})
+
+	onUnmounted(() => {
+		stretchEpoch += 1
+		clearStretchTimer()
+		clearSettle()
 	})
 
 	const context: VxRowContext = {
@@ -120,7 +360,11 @@
 		lineGutter: (): number => lineGutter.value,
 		windowWidth: (): number => windowWidth.value,
 		align: (): string => props.align,
-		stretchHeight: (): number => stretchHeight.value,
+		stretchHeight: (mark: number): number => stretchHeightOf(mark),
+		claimMark: (): number => claimMark(),
+		releaseMark: (mark: number) => releaseMark(mark),
+		requestStretch: () => requestStretch(),
+		notifyContent: () => notifyContent(),
 		id: (): string => instanceId
 	}
 

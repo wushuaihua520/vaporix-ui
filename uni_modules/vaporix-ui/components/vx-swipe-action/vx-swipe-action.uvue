@@ -18,7 +18,7 @@
 			</view>
 		</view>
 
-		<view :class="contentClass" :style="contentStyle" @touchstart="onTouchStart($event as UniTouchEvent)"
+		<view ref="contentEl" :class="contentClass" :style="contentStyle" @touchstart="onTouchStart($event as UniTouchEvent)"
 			@touchmove="onTouchMove($event as UniTouchEvent)" @touchend="onTouchEnd($event as UniTouchEvent)"
 			@touchcancel="onTouchCancel($event as UniTouchEvent)" @mousedown="onMouseDown($event as UniMouseEvent)"
 			@mousemove="onMouseMove($event as UniMouseEvent)" @mouseup="onMouseUp">
@@ -47,6 +47,7 @@
 		VX_SWIPE_ACTION_FLICK_TIME,
 		VX_SWIPE_ACTION_CLICK_GUARD,
 		vxSwipeActionKey,
+		vxSwipeActionPageGroup,
 		vxRegisterSwipeAction,
 		vxUnregisterSwipeAction,
 		vxSetSwipeActionOpen,
@@ -59,6 +60,7 @@
 		swipeable: true,
 		closeOnSelect: true,
 		multiple: false,
+		group: '',
 		extraWidth: VX_SWIPE_ACTION_EXTRA_WIDTH
 	})
 
@@ -90,6 +92,8 @@
 
 	const slots = useSlots()
 	const peerKey = vxSwipeActionKey()
+	// 只在创建时取一次：这一行跟谁互斥是列表的结构，不会中途换组。
+	const groupKey = props.group.length > 0 ? props.group : vxSwipeActionPageGroup()
 
 	// 小于等于 0、NaN 和缺省都回落到默认宽度，避免动作叠在一起或手势距离算成 0。
 	const readWidth = (value: number | undefined, fallback: number): number => {
@@ -103,7 +107,11 @@
 		return readWidth(props.extraWidth, VX_SWIPE_ACTION_EXTRA_WIDTH)
 	})
 
+	// 没滑开过不挂动作节点。第一次露出后一直留着，收起靠内容盖住，不再每次滑动卸载重建。
+	const menuMounted = ref(false)
+
 	const menuVisible = computed((): boolean => {
+		if (!menuMounted.value) return false
 		return props.actions.length > 0 || slots['extra'] != null
 	})
 
@@ -126,7 +134,12 @@
 	const openState = ref(false)
 	const animated = ref(false)
 	const guarding = ref(false)
+	// 为 true 时位移写在内容节点上。parkedStyle 是按下那一帧的 contentStyle，跟手期间原样留着。
+	const following = ref(false)
+	const parkedStyle = ref('')
 	let guardTimer = 0
+
+	const contentEl = ref<UniElement | null>(null)
 
 	// 坐标和是否横向接管都不进渲染。点按、纵向滚动不改 offset，按下不会把这一行再画一遍。
 	let dragging = false
@@ -140,6 +153,9 @@
 	let dupReady = false
 	let dupX = 0
 	let dupY = 0
+	let followX = 0
+	let wroteTransform = false
+	let followTicket = 0
 	// #ifdef WEB
 	let followWindow = false
 	// #endif
@@ -150,7 +166,21 @@
 		if (revealWidth.value > 0) {
 			offset.value = revealWidth.value
 			revealed.value = true
+			menuMounted.value = true
 		}
+	}
+
+	// 跟手和 contentStyle 共用这一段，避免行内 transform 和绑定的 translateX 差一套数。
+	const offsetTransform = (value: number): string => {
+		return `translateX(-${value}px)`
+	}
+
+	const clampOffset = (value: number): number => {
+		const limit = revealWidth.value
+		let next = Math.round(value)
+		if (next <= 0 || limit <= 0) next = 0
+		else if (next > limit) next = limit
+		return next
 	}
 
 	const contentClass = computed((): string => {
@@ -159,9 +189,11 @@
 	})
 
 	// 收起且没有过渡时不写 transform，列表里没滑过的行不额外建一层。
+	// 跟手时沿用按下那一帧的样式串，重绘不会改节点上的 transform。
 	const contentStyle = computed((): string => {
+		if (following.value) return parkedStyle.value
 		if (offset.value === 0 && !animated.value) return ''
-		return `transform: translateX(-${offset.value}px);`
+		return `transform: ${offsetTransform(offset.value)};`
 	})
 
 	const menuStyle = computed((): string => {
@@ -253,19 +285,78 @@
 	})
 
 	const setOffset = (value: number) => {
-		const limit = revealWidth.value
-		let next = Math.round(value)
-		if (next <= 0 || limit <= 0) next = 0
-		else if (next > limit) next = limit
+		const next = clampOffset(value)
+		if (next > 0 && !menuMounted.value) menuMounted.value = true
 		if (next === offset.value) return
 		offset.value = next
 		const showMenu = next > 0
 		if (revealed.value !== showMenu) revealed.value = showMenu
 	}
 
+	const writeDragTransform = (value: number) => {
+		const node = contentEl.value
+		if (node == null) return
+		node.style.setProperty('transform', offsetTransform(value))
+		wroteTransform = true
+	}
+
+	// 先记下当前样式串再摘过渡。返回 true 表示过渡类还在，这一下先别写 transform。
+	const beginFollow = (): boolean => {
+		if (following.value) return false
+		parkedStyle.value = contentStyle.value
+		following.value = true
+		const waitForClass = animated.value
+		if (animated.value) animated.value = false
+		if (!waitForClass) return false
+		const ticket = ++followTicket
+		nextTick(() => {
+			if (ticket !== followTicket || !following.value) return
+			writeDragTransform(followX)
+		})
+		return true
+	}
+
+	const followFinger = (value: number) => {
+		followX = clampOffset(value)
+		const showMenu = followX > 0
+		// 挂菜单不改位移：宽度已经按 actions 算好，节点晚一帧出现也照这个距离滑。
+		if (showMenu && !menuMounted.value) menuMounted.value = true
+		if (revealed.value !== showMenu) revealed.value = showMenu
+		if (beginFollow()) return
+		writeDragTransform(followX)
+	}
+
+	// 调用前先 setOffset 到终点，并打开过渡。following 清掉后 contentStyle 才是这段位移。
+	const endFollow = () => {
+		if (!following.value && !wroteTransform) return
+		following.value = false
+		followTicket += 1
+		const showMenu = offset.value > 0
+		if (revealed.value !== showMenu) revealed.value = showMenu
+		if (!wroteTransform) return
+		const node = contentEl.value
+		// 样式串会变：先去掉手指上的 transform，这次刷新用 contentStyle 的终点盖上，不会盖回按下的位置。
+		// 鸿蒙蒸汽模式没有 removeProperty，用空字符串删这一条。
+		if (contentStyle.value !== parkedStyle.value) {
+			if (node != null) node.style.setProperty('transform', '')
+			wroteTransform = false
+			return
+		}
+		const ticket = followTicket
+		const end = offset.value
+		nextTick(() => {
+			if (ticket !== followTicket) return
+			const current = contentEl.value
+			if (current == null) return
+			// 样式串没变，绑定不会再写。过渡类挂上后收到和 contentStyle 相同的终点；这时删成空，行会掉到 0。
+			current.style.setProperty('transform', offsetTransform(end))
+			wroteTransform = false
+		})
+	}
+
 	// 程序展开和收起都走这里：先写模型，offset 由调用方一起挪；外部改模型不会回抛 change。
 	const applyOpen = (next: boolean) => {
-		vxSetSwipeActionOpen(peerKey, next)
+		vxSetSwipeActionOpen(peerKey, groupKey, next)
 		if (openState.value === next) return
 		openState.value = next
 		openModel.value = next
@@ -279,7 +370,7 @@
 
 	const openMenu = () => {
 		if (revealWidth.value <= 0) return
-		if (!props.multiple) vxCloseOtherSwipeActions(peerKey)
+		if (!props.multiple) vxCloseOtherSwipeActions(peerKey, groupKey)
 		animateTo(true)
 		applyOpen(true)
 	}
@@ -298,14 +389,14 @@
 		if (openState.value || offset.value > 0) closeMenu()
 	}
 
-	vxRegisterSwipeAction(peerKey, closeFromPeer, openState.value && revealed.value)
-	if (openState.value && revealed.value && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+	vxRegisterSwipeAction(peerKey, groupKey, closeFromPeer, openState.value && revealed.value)
+	if (openState.value && revealed.value && !props.multiple) vxCloseOtherSwipeActions(peerKey, groupKey)
 
 	watch(openModel, (value: boolean) => {
 		if (value === openState.value) return
 		openState.value = value
-		vxSetSwipeActionOpen(peerKey, value)
-		if (value && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+		vxSetSwipeActionOpen(peerKey, groupKey, value)
+		if (value && !props.multiple) vxCloseOtherSwipeActions(peerKey, groupKey)
 		if (dragging || revealWidth.value <= 0) return
 		animateTo(value)
 	})
@@ -320,10 +411,10 @@
 		}
 		if (openState.value) {
 			// 菜单刚出现时直接落位，不从 0 滑出来；已经展开过再改宽度才过渡。
-			if (!revealed.value && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+			if (!revealed.value && !props.multiple) vxCloseOtherSwipeActions(peerKey, groupKey)
 			if (revealed.value) animateTo(true)
 			else setOffset(width)
-			vxSetSwipeActionOpen(peerKey, true)
+			vxSetSwipeActionOpen(peerKey, groupKey, true)
 			return
 		}
 		if (offset.value > width) setOffset(width)
@@ -373,13 +464,12 @@
 			if (Math.abs(distance) < VX_SWIPE_ACTION_DRAG_THRESHOLD) return
 			if (Math.abs(distance) <= Math.abs(vertical)) return
 			horizontal = true
-			if (animated.value) animated.value = false
 			holdShield()
-			if (!props.multiple) vxCloseOtherSwipeActions(peerKey)
+			if (!props.multiple) vxCloseOtherSwipeActions(peerKey, groupKey)
 		}
 
 		lastX = pageX
-		setOffset(startOffset - distance)
+		followFinger(startOffset - distance)
 	}
 
 	const finishGesture = () => {
@@ -395,11 +485,13 @@
 		const distance = lastX - startX
 		const duration = Date.now() - pressStartedAt
 		const flicked = duration <= VX_SWIPE_ACTION_FLICK_TIME && Math.abs(distance) >= VX_SWIPE_ACTION_FLICK_DISTANCE
-		let next = offset.value > width / 2
+		// 跟手没写 offset，过半看这一笔落在哪。
+		let next = followX > width / 2
 		if (flicked) next = distance < 0
 		if (!animated.value) animated.value = true
 		setOffset(next ? width : 0)
-		if (next && !props.multiple) vxCloseOtherSwipeActions(peerKey)
+		endFollow()
+		if (next && !props.multiple) vxCloseOtherSwipeActions(peerKey, groupKey)
 		applyOpen(next)
 	}
 
@@ -413,6 +505,7 @@
 		releaseShield()
 		if (!animated.value) animated.value = true
 		setOffset(openState.value ? revealWidth.value : 0)
+		endFollow()
 	}
 
 	// 横向接管后这一笔不再交给外层滚动；没接管时不能拦，否则列表滑不动。
@@ -525,9 +618,10 @@
 	}
 
 	onUnmounted(() => {
+		followTicket += 1
 		if (guardTimer !== 0) clearTimeout(guardTimer)
 		guardTimer = 0
-		vxUnregisterSwipeAction(peerKey)
+		vxUnregisterSwipeAction(peerKey, groupKey)
 	})
 
 	defineExpose({

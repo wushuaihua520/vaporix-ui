@@ -33,8 +33,10 @@
 		</view>
 
 		<!-- 取消只在搜索变体出现：有值或聚焦时占位，其余时候不渲染也不留白。 -->
+		<!-- Web 上 mousedown 会先让 input 失焦，prevent 保住焦点，空值取消才接得到 click。 -->
 		<view v-if="showSearchCancel" :class="searchCancelClass" :hover-class="searchCancelHoverClass"
-			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onSearchCancel">
+			:hover-stay-time="VX_PRESSED_STAY_TIME" @mousedown.prevent="onSearchCancelDown"
+			@touchstart="onSearchCancelDown" @touchcancel="onSearchCancelUp" @click.stop="onSearchCancel">
 			<text :class="searchCancelTextClass">取消</text>
 		</view>
 
@@ -91,6 +93,10 @@
 	}>()
 
 	const focused = ref(false)
+	// App 点按不会被 preventDefault 留住焦点。按下期间为真，取消按钮在失焦后仍挂着，click 才接得到。
+	// #ifdef APP
+	const cancelPressing = ref(false)
+	// #endif
 
 	// search 是搜索语义：没有标题位，取消按钮跟焦点和值走。
 	const isSearch = computed((): boolean => {
@@ -209,6 +215,9 @@
 	// 有值或聚焦时出现，其余时候不占位；只读行不出取消，避免一个点了没反应的按钮。
 	const showSearchCancel = computed((): boolean => {
 		if (!isSearch.value || props.readonly) return false
+		// #ifdef APP
+		if (cancelPressing.value) return true
+		// #endif
 		return focused.value || modelValue.value.length > 0
 	})
 
@@ -268,13 +277,30 @@
 		emit('blur')
 	}
 
+	// 点清除：有值时写回空串，先抛 clear，再补抛一次 input('')，绑 @input 过滤的业务也能收到空串。
+	// change 仍只走失焦和确认，这里不抛；已经是空串时没有可清的值，不补抛。
 	const onClear = () => {
+		if (modelValue.value.length === 0) return
 		modelValue.value = ''
 		emit('clear')
+		emit('input', '')
+	}
+
+	const onSearchCancelDown = () => {
+		// #ifdef APP
+		cancelPressing.value = true
+		// #endif
+	}
+
+	const onSearchCancelUp = () => {
+		// #ifdef APP
+		cancelPressing.value = false
+		// #endif
 	}
 
 	// 取消：先清空、收起键盘，再抛 cancel。禁用时不响应，只读不出取消。
 	const onSearchCancel = () => {
+		onSearchCancelUp()
 		if (props.disabled) return
 		modelValue.value = ''
 		focused.value = false
@@ -522,7 +548,8 @@
 	.vx-input__clear {
 		flex-direction: row;
 		flex-shrink: 0;
-		width: var(--vx-control-height-md);
+		/* sm / md 图标 14，热区再加左右各 8，合计 30；不再占用整档控件高度。 */
+		width: 30px;
 		align-self: stretch;
 		align-items: center;
 		/* 图标靠右，和箭头、后缀图标落在同一条右侧基线上。 */
@@ -531,11 +558,8 @@
 	}
 
 	.vx-input__clear--lg {
-		width: var(--vx-control-height-lg);
-	}
-
-	.vx-input__clear--sm {
-		width: var(--vx-control-height-sm);
+		/* lg 图标 18，合计 34。 */
+		width: 34px;
 	}
 
 	/* 搜索的清除收成图标宽，和取消挤在同一条右侧基线上。 */

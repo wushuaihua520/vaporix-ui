@@ -1,6 +1,7 @@
 <template>
 	<!-- 列只负责宽度、偏移和间距；底色、描边、圆角和内容都由插槽自己带。 -->
-	<view :class="rootClass" :style="rootStyle">
+	<!-- 非 Web 的 stretch 才写 id，测量结果靠它把矩形对回这一列。 -->
+	<view :id="nodeId" :class="rootClass" :style="rootStyle">
 		<slot></slot>
 	</view>
 </template>
@@ -22,6 +23,10 @@
 
 	// inject 只能在 setup 里调。没有外层行时没有间距，宽度仍按父级的份数算。
 	const row = inject(VX_ROW_CONTEXT, null) as VxRowContext | null
+
+	// 测量标记在 setup 里领，和节点一起出现；卸载再交还。没有行时不登记。
+	let mark = 0
+	if (row != null) mark = row.claimMark()
 
 	// 断点取 Web 上常见的 min-width 数值：576 平板竖屏、768 平板横屏、992 桌面、1200 宽屏。
 	// 蒸汽模式不支持 @media，列宽改用窗口宽度在脚本里算。
@@ -101,9 +106,12 @@
 			if (inset > 0) style += ` padding-right: ${inset}px; padding-left: ${inset}px;`
 			const lineGutter = row.lineGutter()
 			if (lineGutter > 0) style += ` margin-top: ${lineGutter}px;`
-			// App 端 stretch 的兜底：行把最高列的高度量出来，所有列用同一个像素高度。
-			const stretchHeight = row.stretchHeight()
-			if (stretchHeight > 0 && row.align() === 'stretch') style += ` height: ${stretchHeight}px;`
+			// 只有 stretch 才写高度。离开 stretch 时这一支不走，上一轮写上的 height 会从样式里拿掉。
+			// 高度为 0 也不写：Web 不测量，App 还没量到或正在重测时列高跟内容走。
+			if (row.align() === 'stretch') {
+				const stretchHeight = row.stretchHeight(mark)
+				if (stretchHeight > 0) style += ` height: ${stretchHeight}px;`
+			}
 		}
 		return style
 	})
@@ -114,6 +122,17 @@
 		return row != null && row.align() === 'stretch'
 	})
 
+	// 非 Web 的 stretch 才写 id，测量结果才能对回这一列。
+	const nodeId = computed((): string => {
+		if (row == null || hidden.value || !stretch.value) return ''
+		// #ifdef WEB
+		return ''
+		// #endif
+		// #ifndef WEB
+		return 'vx-c-' + row.id() + '-' + mark
+		// #endif
+	})
+
 	// class 顺序：基础 → 位移 → 拉伸 → 隐藏。隐藏时不挂位移：display: none 下 left 没有意义。
 	const rootClass = computed((): string => {
 		if (hidden.value) return 'vx-col vx-col--hidden'
@@ -122,6 +141,140 @@
 		if (stretch.value && row != null) name += ' vx-col--stretch vx-col--row-' + row.id()
 		return name
 	})
+
+	// #ifdef APP
+	let contentObserver: UniResizeObserver | null = null
+	let contentBindTimer = 0
+	let contentBindTries = 0
+
+	const isNestedGrid = (element: UniElement): boolean => {
+		const id = element.id
+		if (id != null && id.indexOf('vx-c-') === 0) return true
+		const names = element.classList
+		if (names == null) return false
+		for (let index = 0; index < names.length; index++) {
+			const name = '' + names[index]
+			if (name === 'vx-col' || name === 'vx-row') return true
+		}
+		return false
+	}
+
+	const watchContent = (element: UniElement) => {
+		if (contentObserver == null) return
+		const children = element.children
+		if (children == null) return
+		for (let index = 0; index < children.length; index++) {
+			const child = children[index]
+			if (child == null) continue
+			// 嵌套栅格自己量。只听它的外框，内容变高时外层这一列才跟着重测。
+			if (isNestedGrid(child)) {
+				contentObserver.observe(child)
+				continue
+			}
+			contentObserver.observe(child)
+			watchContent(child)
+		}
+	}
+
+	const observedHeight = (entry: UniResizeObserverEntry): number => {
+		const borders = entry.borderBoxSize
+		if (borders != null && borders.length > 0) {
+			const border = borders[0]
+			if (border != null && border.blockSize > 0) return border.blockSize
+		}
+		const rect = entry.contentRect
+		if (rect == null || rect.height == null || !(rect.height > 0)) return 0
+		return rect.height
+	}
+
+	const disconnectContent = () => {
+		if (contentBindTimer !== 0) {
+			clearTimeout(contentBindTimer)
+			contentBindTimer = 0
+		}
+		if (contentObserver == null) return
+		contentObserver.disconnect()
+		contentObserver = null
+	}
+
+	const bindContent = () => {
+		if (contentBindTimer !== 0) {
+			clearTimeout(contentBindTimer)
+			contentBindTimer = 0
+		}
+		if (row == null || hidden.value || row.align() !== 'stretch') {
+			disconnectContent()
+			return
+		}
+		if (typeof UniResizeObserver !== 'function') return
+		const id = nodeId.value
+		if (id.length === 0) return
+		const element = uni.getElementById(id)
+		if (element == null) {
+			if (contentBindTries >= 3) return
+			contentBindTries += 1
+			contentBindTimer = setTimeout(bindContent, 60)
+			return
+		}
+		contentBindTries = 0
+		if (contentObserver != null) {
+			contentObserver.disconnect()
+			contentObserver = null
+		}
+		contentObserver = new UniResizeObserver((entries: Array<UniResizeObserverEntry>) => {
+			if (row == null) return
+			const locked = row.stretchHeight(mark)
+			for (let index = 0; index < entries.length; index++) {
+				const entry = entries[index]
+				if (entry == null) continue
+				const height = observedHeight(entry)
+				if (!(height > 0)) continue
+				// 行把列撑高时，被撑开的子节点会再报一次，高度和列高一样。
+				if (locked > 0 && Math.abs(height - locked) <= 0.5) continue
+				row.notifyContent()
+				return
+			}
+		})
+		watchContent(element)
+	}
+	// #endif
+
+	onMounted(() => {
+		// #ifdef APP
+		nextTick(() => bindContent())
+		// #endif
+	})
+
+	onUnmounted(() => {
+		if (row != null) row.releaseMark(mark)
+		// #ifdef APP
+		disconnectContent()
+		// #endif
+	})
+
+	if (row != null) {
+		watch(hidden, (value: boolean) => {
+			row.requestStretch()
+			// #ifdef APP
+			if (value) disconnectContent()
+			else nextTick(() => bindContent())
+			// #endif
+		})
+		// #ifdef APP
+		watch(stretch, (value: boolean) => {
+			if (value && !hidden.value) nextTick(() => bindContent())
+			else disconnectContent()
+		})
+		// #endif
+		// 小程序没有元素尺寸监听。折叠、换文案会让列重新渲染，靠这次补量。
+		// #ifndef APP
+		// #ifndef WEB
+		onUpdated(() => {
+			row.notifyContent()
+		})
+		// #endif
+		// #endif
+	}
 </script>
 
 <style>

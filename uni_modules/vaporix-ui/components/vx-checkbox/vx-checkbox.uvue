@@ -68,15 +68,29 @@
 	const uid = 'vx-checkbox-' + Math.floor(Math.random() * 1000000000)
 	const registered = ref(false)
 
+	const orderIndex = (): number | null => {
+		if (props.index == null) return null
+		return props.index
+	}
+
 	onMounted(() => {
 		if (checkbox == null) return
-		checkbox.register(uid)
+		checkbox.register(uid, orderIndex())
 		registered.value = true
 	})
 
 	onUnmounted(() => {
 		if (checkbox == null) return
 		checkbox.unregister(uid)
+	})
+
+	// 中间插入会改后面项的下标，挂载后再同步，避免只按第一次登记的位置画线。
+	watch((): number | null => {
+		if (props.index == null) return null
+		return props.index
+	}, (index: number | null) => {
+		if (!registered.value || checkbox == null) return
+		checkbox.register(uid, index)
 	})
 
 	const size = computed((): VxSize => {

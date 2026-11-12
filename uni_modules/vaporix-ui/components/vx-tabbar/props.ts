@@ -19,7 +19,7 @@ export type VxTabbarItem = {
 	dot?: boolean
 	/** 禁用后不响应点击，图标和文字转灰。 */
 	disabled?: boolean
-	/** 凸起成圆钮，浮在标签栏上沿；一个标签栏最多一个，多传时只认第一个。 */
+	/** 凸起成圆钮，浮在标签栏上沿；一个标签栏最多一个，多传时只认第一个。只有圆钮接收点击。 */
 	raised?: boolean
 	/** 只做按钮：点击不写 v-model，只抛 click；通常和 raised 一起用。 */
 	action?: boolean

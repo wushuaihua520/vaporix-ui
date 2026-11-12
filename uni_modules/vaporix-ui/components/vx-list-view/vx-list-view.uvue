@@ -2,7 +2,7 @@
 	<!-- 分组只负责标题和外观，列表行由 vx-list-cell 提供；两者也可以分开使用。 -->
 	<view v-if="title.length > 0 || description.length > 0 || $slots['extra'] != null || $slots['default'] != null"
 		class="vx-list-view">
-		<view v-if="title.length > 0 || description.length > 0 || $slots['extra'] != null" class="vx-list-view__head">
+		<view v-if="title.length > 0 || description.length > 0 || $slots['extra'] != null" :class="headClass">
 			<view class="vx-list-view__heading">
 				<text v-if="title.length > 0" class="vx-list-view__title">{{ title }}</text>
 				<text v-if="description.length > 0" :class="descriptionClass">{{ description }}</text>
@@ -24,7 +24,15 @@
 	const props = withDefaults(defineProps<VxListViewProps>(), {
 		title: '',
 		description: '',
+		size: 'md',
 		variant: 'card'
+	})
+
+	// lg 行左右也是 16，只有 sm 把标题收到 12。不把 size 传给里面的 vx-list-cell。
+	const headClass = computed((): string => {
+		let name = 'vx-list-view__head'
+		if (props.size === 'sm') name += ' vx-list-view__head--sm'
+		return name
 	})
 
 	// 标题和说明有一段间距，只有说明时不留空档。
@@ -53,7 +61,7 @@
 		min-width: 0;
 	}
 
-	/* 标题在卡片外，左右各缩进 16，和行内容对齐。 */
+	/* 标题在卡片外。默认和 lg 左右 16，对齐 md / lg 行。 */
 	.vx-list-view__head {
 		flex-direction: row;
 		align-items: center;
@@ -64,6 +72,12 @@
 		padding-left: var(--vx-space-lg);
 		padding-right: var(--vx-space-lg);
 		margin-bottom: var(--vx-space-sm);
+	}
+
+	/* sm 行左右是 12。字号和卡片圆角不跟 size 变。 */
+	.vx-list-view__head--sm {
+		padding-left: var(--vx-space-md);
+		padding-right: var(--vx-space-md);
 	}
 
 	/* 标题和说明上下排。最小宽度压成 0，长标题换行，右侧操作保持自身宽度。

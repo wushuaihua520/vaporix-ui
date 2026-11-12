@@ -1,21 +1,21 @@
 <template>
 	<!-- 标签栏是自定义 tabBar：只负责选中和点击，页面内容、路由和权限交给业务。 -->
-	<!-- 一个标签栏最多一个凸起项，多传时只认最先出现的那一项。凸起按钮仍占它所在的列，点整列都算这一项。 -->
-	<view v-if="items.length > 0" class="vx-tabbar__host">
-		<!-- 固定时补一个等高占位，放在页面末尾才不会被标签栏盖住。凸起项让出的透明区域不计入占位，
-		     那一段是浮在内容上的按钮，不该把正文推下去。 -->
+	<!-- 一个标签栏最多一个凸起项，多传时只认最先出现的那一项。只有圆钮能点，圆钮仍切换这一项。 -->
+	<view v-if="items.length > 0" :class="hostClass">
+		<!-- 固定时补一个等高占位，高度只算普通栏高和安全区。凸起圆钮上方的透明段不占位，
+		     正文铺到栏顶下面，从这段透出来；点透明段落到页面，不切 tab。 -->
 		<view v-if="showSpacer" class="vx-tabbar__spacer">
 			<view :class="spacerClass"></view>
 			<view v-if="safeArea" class="vx-tabbar__spacer-safe"></view>
 		</view>
 
 		<view :class="rootClass" :style="rootStyle">
-			<!-- 底色单独一层：凸起项上方要留透明区，不能让整条铺到屏幕顶端。 -->
+			<!-- 底色单独一层，只铺栏身。栏顶以上的透明段不在这个盒子里。 -->
 			<view :class="surfaceClass" :style="surfaceStyle"></view>
 
 			<view :class="rowClass">
 				<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
-					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
+					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onColumnClick(row.index)">
 					<view class="vx-tabbar__stack" :style="row.stackStyle">
 						<!-- 凸起项也留同高的图标位，标签才和普通项落在同一条线上。
 						     刚换成当前项时图标位在这里先收一档再弹回，不弹的项行内样式为空。 -->
@@ -35,8 +35,9 @@
 							:style="row.textStyle">{{ row.text }}</text>
 					</view>
 
-					<!-- 凸起圆钮挂在这一列里：整列都在标签栏范围内，落在圆钮上的点击不会漏掉。 -->
-					<view v-if="row.raised" :class="row.bubbleClass">
+					<!-- 圆钮伸出栏顶，点击只绑在圆钮上。透明段没有别的 view，点下去落到页面。 -->
+					<view v-if="row.raised" :class="row.bubbleClass" :hover-class="row.bubbleHoverClass"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
 						<view :class="row.mediaClass">
 							<vx-icon v-if="row.iconVisible" :name="row.bubbleIconName" :size="row.bubbleIconSize"
 								:variant="row.bubbleIconVariant" :color="row.bubbleIconColor" />
@@ -118,6 +119,7 @@
 		raised: boolean
 		barMediaVisible: boolean
 		hoverClass: string
+		bubbleHoverClass: string
 	}
 
 	// 负数在取整前就判掉，-0.4 才不会被收成 0。超出末项按未选中处理，不硬夹到最后一个。
@@ -195,6 +197,13 @@
 		return props.fixed && props.placeholder && props.items.length > 0
 	})
 
+	// 未固定时用外边距留出圆钮，外边距不是 view，不接点击。固定时不留这段，正文铺到栏顶下面。
+	const hostClass = computed((): string => {
+		let name = 'vx-tabbar__host'
+		if (!props.fixed && raisedIndex.value >= 0) name += ` vx-tabbar__host--raised-${sizeName.value}`
+		return name
+	})
+
 	const rootClass = computed((): string => {
 		let name = 'vx-tabbar'
 		if (props.fixed) name += ' vx-tabbar--fixed'
@@ -208,10 +217,9 @@
 		return 'z-index: 0;'
 	})
 
-	// 有凸起项时，底色层从凸起按钮的顶部之下开始；上面那一段保持透明，只留给圆钮。
+	// 底色只铺栏身。凸起时栏顶以上不在这个盒子里，那段没有 view。
 	const surfaceClass = computed((): string => {
 		let name = 'vx-tabbar__surface'
-		if (raisedIndex.value >= 0) name += ` vx-tabbar__surface--raised-${sizeName.value}`
 		if (!props.divider) name += ' vx-tabbar__surface--no-divider'
 		return name
 	})
@@ -221,11 +229,10 @@
 		return `background-color: ${props.bgColor};`
 	})
 
-	// 行高是普通栏高，凸起时再加上圆钮伸出的那一段。
+	// 行高始终是栏高。圆钮伸出栏顶，不把行加高，透明段才不会变成热区。
 	const rowClass = computed((): string => {
 		let name = 'vx-tabbar__row'
-		if (raisedIndex.value >= 0) name += ` vx-tabbar__row--raised-${sizeName.value}`
-		else if (sizeName.value !== 'md') name += ` vx-tabbar__row--${sizeName.value}`
+		if (sizeName.value !== 'md') name += ` vx-tabbar__row--${sizeName.value}`
 		return name
 	})
 
@@ -334,9 +341,6 @@
 			else textBase += ' vx-tabbar__text--spaced'
 		}
 
-		let liftClass = ''
-		if (raisedAt >= 0) liftClass = ` vx-tabbar__item--lift-${size}`
-
 		for (let index = 0; index < source.length; index++) {
 			const entry = source[index]
 			const disabled = entry.disabled === true
@@ -365,7 +369,7 @@
 			if (disabled) iconColor = 'var(--vx-color-disabled-text)'
 
 			let itemClass = 'vx-tabbar__item'
-			itemClass += liftClass
+			if (raised) itemClass += ' vx-tabbar__item--raised'
 			if (disabled) itemClass += ' vx-tabbar__item--disabled'
 
 			let bubbleClass = 'vx-tabbar__bubble'
@@ -417,8 +421,9 @@
 				text: text,
 				raised: raised,
 				barMediaVisible: !raised && (iconVisible || imageVisible),
-				// 空字符串关不掉按下态，要写 none。
-				hoverClass: disabled ? 'none' : 'vx-tabbar__item--pressed'
+				// 空字符串关不掉按下态，要写 none。凸起列的栏身不按下，按下态在圆钮上。
+				hoverClass: raised || disabled ? 'none' : 'vx-tabbar__item--pressed',
+				bubbleHoverClass: disabled ? 'none' : 'vx-tabbar__bubble--pressed'
 			})
 		}
 		return list
@@ -438,6 +443,12 @@
 		}
 		emit('click', index, entry)
 	}
+
+	// 凸起列的栏身不切换。圆钮另绑点击；透明段上没有 view，点下去落到页面。
+	const onColumnClick = (index: number) => {
+		if (index === raisedIndex.value) return
+		onClick(index)
+	}
 </script>
 
 <style>
@@ -453,8 +464,22 @@
 		overflow: visible;
 	}
 
-	/* 整条是透明的定位层，底色由 __surface 从凸起项下方开始铺。
-	   App 默认 overflow 是 hidden，圆钮伸出栏外会被裁；这层不要加 flatten。 */
+	/* 未固定时圆钮要留在文档流里，不然会压住上面的内容。
+	   用外边距，不用加高的 view：外边距不接点击。固定时不留，正文铺到栏顶下面。 */
+	.vx-tabbar__host--raised-sm {
+		margin-top: var(--vx-tabbar-raise-lift-sm);
+	}
+
+	.vx-tabbar__host--raised-md {
+		margin-top: var(--vx-tabbar-raise-lift-md);
+	}
+
+	.vx-tabbar__host--raised-lg {
+		margin-top: var(--vx-tabbar-raise-lift-lg);
+	}
+
+	/* 整条是透明的定位层，底色由 __surface 铺满栏身。
+	   App 默认 overflow 是 hidden，圆钮伸出栏顶会被裁；这层不要加 flatten。 */
 	.vx-tabbar {
 		position: relative;
 		flex-direction: column;
@@ -479,8 +504,8 @@
 		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
 	}
 
-	/* 底色层撑满整条，包含底部安全区；顶部 1px 分割线画在这里。
-	   有凸起项时 top 让出圆钮，透明段只在圆钮周围出现。 */
+	/* 底色层撑满栏身，包含底部安全区；顶部 1px 分割线画在这里。
+	   凸起时这一层仍从栏顶铺起。栏顶以上的透明段在盒子外面，正文从底下透出来。 */
 	.vx-tabbar__surface {
 		position: absolute;
 		top: 0;
@@ -494,25 +519,14 @@
 		background-color: var(--vx-color-surface);
 	}
 
-	.vx-tabbar__surface--raised-sm {
-		top: var(--vx-tabbar-raise-lift-sm);
-	}
-
-	.vx-tabbar__surface--raised-md {
-		top: var(--vx-tabbar-raise-lift-md);
-	}
-
-	.vx-tabbar__surface--raised-lg {
-		top: var(--vx-tabbar-raise-lift-lg);
-	}
-
 	/* 写在描边后面，只关掉线宽，底色仍保留。 */
 	.vx-tabbar__surface--no-divider {
 		border-top-width: 0;
 	}
 
-	/* 栏高不含凸起项伸出的那一段：凸起时整行加高，图标位仍落在下半个栏里。
-	   角标会伸出栏顶，这一层也跟着放开裁切。 */
+	/* 行高始终是栏高，凸起也不加高。圆钮用负的 top 伸出栏顶。
+	   加高的话透明段也是 view，App 上会吃掉点击；5.26 不保证 pointer-events，不能靠它让点击穿过。
+	   角标和圆钮画出这一层，overflow 保持 visible，不要加 flatten。 */
 	.vx-tabbar__row {
 		position: relative;
 		z-index: 1;
@@ -532,18 +546,6 @@
 		height: var(--vx-tabbar-height-lg);
 	}
 
-	.vx-tabbar__row--raised-sm {
-		height: var(--vx-tabbar-row-raised-sm);
-	}
-
-	.vx-tabbar__row--raised-md {
-		height: var(--vx-tabbar-row-raised-md);
-	}
-
-	.vx-tabbar__row--raised-lg {
-		height: var(--vx-tabbar-row-raised-lg);
-	}
-
 	/* —— 选中回弹 ——
 	   图标位和整组只声明过渡的属性和缓动，时长由弹回那一帧行内给：
 	   收起帧没有时长、当帧直接落位，弹回帧才从收起点滑回 1。
@@ -554,7 +556,7 @@
 		transition-timing-function: var(--vx-ease-standard);
 	}
 
-	/* 每一列都是热区，凸起圆钮的活动范围也算在这一列里。
+	/* 普通列的热区就是栏高，不含栏顶上面的透明段。凸起列的栏身不切换，热区在圆钮上。
 	   左右各留 4：5 个标签并排时，长文案不会顶到相邻列。 */
 	.vx-tabbar__item {
 		position: relative;
@@ -569,20 +571,6 @@
 		padding-left: var(--vx-space-xs);
 		padding-right: var(--vx-space-xs);
 		overflow: visible;
-	}
-
-	/* 有凸起项时每一列都让出伸出段。只垫凸起那一列的话，其余项会在加高的整行里居中，标签对不齐。
-	   圆钮的 top 相对这一列的边框盒，不受这段 padding 影响，仍从列顶画。 */
-	.vx-tabbar__item--lift-sm {
-		padding-top: var(--vx-tabbar-raise-lift-sm);
-	}
-
-	.vx-tabbar__item--lift-md {
-		padding-top: var(--vx-tabbar-raise-lift-md);
-	}
-
-	.vx-tabbar__item--lift-lg {
-		padding-top: var(--vx-tabbar-raise-lift-lg);
 	}
 
 	.vx-tabbar__item--pressed {
@@ -628,9 +616,9 @@
 		height: 100%;
 	}
 
-	/* 图片不能改色，禁用时压暗。0.4 比 --vx-opacity-disabled 再暗一档，没有 disabled 色可换。 */
+	/* 图片不能改色，禁用时压到 --vx-opacity-media-disabled，没有 disabled 色可换。 */
 	.vx-tabbar__image--disabled {
-		opacity: 0.4;
+		opacity: var(--vx-opacity-media-disabled);
 	}
 
 	/* 角标贴图标右上角，不参与布局；圆心落在角上，和徽章的 absolute 同一条。 */
@@ -725,11 +713,12 @@
 		color: var(--vx-color-disabled-text);
 	}
 
-	/* 凸起圆钮：圆心在标签栏上沿附近，底部和标签留 3px 空隙。
-	   宽高和顶部都在这里写死，和 --vx-tabbar-raise-lift-* 一起改。 */
+	/* 凸起圆钮：圆心在标签栏上沿附近，底部和标签留 3px 空隙。点击只绑在圆钮上。
+	   top 是伸出段的相反数，圆钮才落在栏顶之上。App 不能写负的 var()，这里写死，
+	   和 --vx-tabbar-raise-lift-* 一起改。 */
 	.vx-tabbar__bubble {
 		position: absolute;
-		top: 0;
+		top: -24px;
 		left: 50%;
 		z-index: 2;
 		flex-direction: row;
@@ -744,11 +733,13 @@
 	}
 
 	.vx-tabbar__bubble--sm {
+		top: -22px;
 		width: var(--vx-tabbar-raise-size-sm);
 		height: var(--vx-tabbar-raise-size-sm);
 	}
 
 	.vx-tabbar__bubble--lg {
+		top: -26px;
 		width: var(--vx-tabbar-raise-size-lg);
 		height: var(--vx-tabbar-raise-size-lg);
 	}
@@ -783,7 +774,12 @@
 		background-color: var(--vx-color-disabled-bg);
 	}
 
-	/* 固定时补的占位，只算可见栏高和安全区；凸起圆钮伸出的透明段不占位。 */
+	.vx-tabbar__bubble--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+
+	/* 固定时补的占位，只算可见栏高和安全区。
+	   凸起圆钮上方的透明段不占位，正文铺到栏顶下面，不被再往下推。 */
 	.vx-tabbar__spacer {
 		flex-direction: column;
 		flex-shrink: 0;
@@ -813,7 +809,20 @@
 		cursor: pointer;
 	}
 
+	/* 凸起列的栏身不能点，指针留给圆钮。写在 disabled 前面，禁用仍是 not-allowed。 */
+	.vx-tabbar__item--raised {
+		cursor: default;
+	}
+
 	.vx-tabbar__item--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-tabbar__bubble {
+		cursor: pointer;
+	}
+
+	.vx-tabbar__bubble--disabled {
 		cursor: not-allowed;
 	}
 	/* #endif */

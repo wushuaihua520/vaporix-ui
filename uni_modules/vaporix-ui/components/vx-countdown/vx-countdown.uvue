@@ -15,6 +15,7 @@
 </template>
 
 <script setup>
+	import { onHide, onShow } from '@dcloudio/uni-app'
 	import { VxCountdownProps } from './props'
 
 	const props = withDefaults(defineProps<VxCountdownProps>(), {
@@ -88,16 +89,23 @@
 		return props.showMilliseconds && secondsVisible.value
 	})
 
-	// 秒数按剩余时间向上取整，最后一秒仍显示 1；毫秒位按 100ms 取整到十分位。
+	// 毫秒位按 100ms 取整到十分位。秒段用这个十分位整除，不再按秒进一。
 	const tenthsTotal = computed((): number => {
 		if (remainingMs.value <= 0) return 0
 		return Math.ceil(remainingMs.value / 100)
 	})
 
+	// 先按最小可见单位向上取整，再拆天时分秒。最小是秒时最后一秒仍是 1；到 0 不再进成 1。
 	const displaySeconds = computed((): number => {
 		if (remainingMs.value <= 0) return 0
 		if (millisecondsVisible.value) return Math.floor(tenthsTotal.value / 10)
-		return Math.ceil(remainingMs.value / 1000)
+		let unitSeconds = 1
+		if (!secondsVisible.value) {
+			if (props.showMinutes) unitSeconds = 60
+			else if (props.showHours) unitSeconds = 3600
+			else if (props.showDays) unitSeconds = 86400
+		}
+		return Math.ceil(remainingMs.value / (unitSeconds * 1000)) * unitSeconds
 	})
 
 	const millisecondDigit = computed((): string => {
@@ -343,6 +351,20 @@
 		if (props.autoStart && remainingMs.value > 0) start()
 	})
 
+	// 盖住或退到后台只清定时器。pause 会把 running 清掉，回来后 schedule 续不上。
+	onHide(() => {
+		stopTimer()
+	})
+
+	// 截止时间是绝对值。先写回剩余毫秒，读数立刻对齐；到点时 schedule 里的 finish 补抛 end。
+	onShow(() => {
+		if (running) {
+			remainingMs.value = readLeftMs()
+			emitTick()
+		}
+		schedule()
+	})
+
 	onUnmounted(() => {
 		stopTimer()
 		running = false
@@ -403,7 +425,7 @@
 		border-width: var(--vx-border-width);
 		border-style: solid;
 		border-color: var(--vx-color-border);
-		border-radius: var(--vx-radius-md);
+		border-radius: var(--vx-control-radius-md);
 		background-color: var(--vx-color-surface);
 	}
 
@@ -421,7 +443,7 @@
 	.vx-countdown__value--sm,
 	.vx-countdown__ms--sm {
 		height: var(--vx-countdown-height-sm);
-		border-radius: var(--vx-radius-sm);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
 	.vx-countdown__value--sm {
@@ -432,13 +454,18 @@
 		width: var(--vx-countdown-ms-width-sm);
 	}
 
+	/* lg 单独 10，不跟 md 共用 8。 */
 	.vx-countdown__value--lg,
 	.vx-countdown__ms--lg {
 		height: var(--vx-countdown-height-lg);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
+	/* 三位数在 lg 盒里比 sm / md 更挤，左右加到 8。十分位有固定宽度，不加这层。 */
 	.vx-countdown__value--lg {
 		min-width: var(--vx-countdown-height-lg);
+		padding-left: var(--vx-space-sm);
+		padding-right: var(--vx-space-sm);
 	}
 
 	.vx-countdown__ms--width-lg {

@@ -3,7 +3,7 @@
 	<!-- 纵向线不自己居中，由父级 flex 排布；高度空串时靠 align-self 撑满一行。 -->
 	<view :class="rootClass" :style="rootStyle">
 		<view v-if="showLeadingLine" :class="lineClass" :style="lineStyle"></view>
-		<text v-if="showText" class="vx-divider__text" :style="textStyle">{{ text }}</text>
+		<text v-if="showText" :class="textClass" :style="textStyle">{{ text }}</text>
 		<view v-if="showTrailingLine" :class="lineClass" :style="lineStyle"></view>
 	</view>
 </template>
@@ -67,10 +67,10 @@
 		return true
 	}
 
-	// 空串按方向的默认值：横线上下各 12，竖线左右各 16。
+	// 空串不写行内，默认间距在 class 里走令牌。有值时纯数字补 px，其余原样透传。
 	const spacingValue = computed((): string => {
 		const text = `${props.spacing}`.trim()
-		if (text.length === 0) return isVertical.value ? '16px' : '12px'
+		if (text.length === 0) return ''
 		if (isNumericText(text)) return `${text}px`
 		return text
 	})
@@ -91,17 +91,18 @@
 		return `${name} vx-divider--text`
 	})
 
-	// 间距走外边距：横线是上下、竖线是左右；竖线高度传了才写。
-	// 自定义颜色只在纯线时落在根节点上，带文字时改由线段和文字各自承担。
+	// 间距走外边距：横线是上下、竖线是左右。只有传了 spacing 才写行内，盖过 class 上的默认令牌。
+	// 竖线高度传了才写。自定义颜色只在纯线时落在根节点上，带文字时改由线段和文字各自承担。
 	const rootStyle = computed((): string => {
 		const spacing = spacingValue.value
 		let style = ''
+		if (spacing.length > 0) {
+			if (isVertical.value) style += `margin-left: ${spacing}; margin-right: ${spacing};`
+			else style += `margin-top: ${spacing}; margin-bottom: ${spacing};`
+		}
 		if (isVertical.value) {
-			style += `margin-left: ${spacing}; margin-right: ${spacing};`
 			const height = props.height.trim()
 			if (height.length > 0) style += ` height: ${height};`
-		} else {
-			style += `margin-top: ${spacing}; margin-bottom: ${spacing};`
 		}
 		if (!showText.value && props.color.length > 0) {
 			// 虚线只能改 border-color：背景色会把 1px 的盒子整条填实，虚线间隙也被盖掉。
@@ -124,6 +125,13 @@
 		return `background-color: ${props.color}; border-color: ${props.color};`
 	})
 
+	// left 去掉左侧间距，right 去掉右侧；center 用基类两侧都留。后写的 class 盖过基类同名外边距。
+	const textClass = computed((): string => {
+		if (alignValue.value === 'left') return 'vx-divider__text vx-divider__text--left'
+		if (alignValue.value === 'right') return 'vx-divider__text vx-divider__text--right'
+		return 'vx-divider__text'
+	})
+
 	const textStyle = computed((): string => {
 		if (props.color.length === 0) return ''
 		return `color: ${props.color};`
@@ -143,10 +151,13 @@
 		min-width: 0;
 	}
 
-	/* 竖线宽 1px，高度靠 align-self: stretch 撑满父级那一行；传 height 时内联样式盖过。 */
+	/* 竖线宽 1px，高度靠 align-self: stretch 撑满父级那一行；传 height 时内联样式盖过。
+	   左右默认 --vx-space-lg；传了 spacing 时行内外边距盖过这里。 */
 	.vx-divider--vertical {
 		align-self: stretch;
 		width: var(--vx-border-width);
+		margin-left: var(--vx-space-lg);
+		margin-right: var(--vx-space-lg);
 		background-color: var(--vx-color-border);
 	}
 
@@ -159,8 +170,11 @@
 		border-left-color: var(--vx-color-border);
 	}
 
+	/* 上下默认 --vx-space-md；传了 spacing 时行内外边距盖过这里。 */
 	.vx-divider--horizontal {
 		height: var(--vx-border-width);
+		margin-top: var(--vx-space-md);
+		margin-bottom: var(--vx-space-md);
 		background-color: var(--vx-color-border);
 	}
 
@@ -172,11 +186,14 @@
 		border-top-color: var(--vx-color-border);
 	}
 
-	/* 带文字时根节点只做一行排布，线由两侧的线段画；高度由文字行高撑开。 */
+	/* 带文字时根节点只做一行排布，线由两侧的线段画；高度由文字行高撑开。
+	   上下默认间距和纯横线同一档。 */
 	.vx-divider--text {
 		flex-direction: row;
 		align-items: center;
 		width: 100%;
+		margin-top: var(--vx-space-md);
+		margin-bottom: var(--vx-space-md);
 	}
 
 	/* 两侧线段等宽，各自吃掉一半剩余宽度；内容宽为 0，不需要额外高度。 */
@@ -195,7 +212,7 @@
 		border-top-color: var(--vx-color-border);
 	}
 
-	/* 文字用辅助说明档：13 / 20，左右各留 12 和线段分开。 */
+	/* 文字用辅助说明档：13 / 20。center 左右都留 --vx-space-md，和线段分开。 */
 	.vx-divider__text {
 		flex-shrink: 0;
 		margin-left: var(--vx-space-md);
@@ -204,5 +221,15 @@
 		line-height: var(--vx-line-sm);
 		font-weight: var(--vx-weight-regular);
 		color: var(--vx-color-text-secondary);
+	}
+
+	/* left 没有左侧线，贴左边；间距只留在文字和右侧线之间。 */
+	.vx-divider__text--left {
+		margin-left: 0;
+	}
+
+	/* right 没有右侧线，贴右边；间距只留在左侧线和文字之间。 */
+	.vx-divider__text--right {
+		margin-right: 0;
 	}
 </style>

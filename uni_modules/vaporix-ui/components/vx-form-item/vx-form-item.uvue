@@ -8,7 +8,7 @@
 		</view>
 
 		<view :class="bodyClass">
-			<view class="vx-form-item__content">
+			<view :class="contentClass">
 				<slot :invalid="invalid" :error="displayError"></slot>
 			</view>
 
@@ -29,7 +29,7 @@
 
 <script setup>
 	import { VxFormItemProps } from './props'
-	import { VX_FORM_CONTEXT, VxFormContext, VxFormItemInstance } from '../vx-form/context'
+	import { VX_FORM_CONTEXT, VxFormContext, VxFormItemInstance, VxFormInvalidRect } from '../vx-form/context'
 	import { runFormRules } from '../../libs/form'
 	import { VxSize } from '../../libs/types/common'
 
@@ -53,6 +53,8 @@
 	// 分割线和滚动定位都认实例：同一个 prop 可能出现在两个项里，不能只靠 prop 区分。
 	const uid = 'vx-form-item-' + Math.floor(Math.random() * 1000000000)
 	const localError = ref('')
+	// 异步校验回来后序号对不上就丢弃，避免慢一拍的旧结果盖掉新状态。
+	const validateSeq = ref(0)
 
 	const size = computed((): VxSize => {
 		return form != null ? form.size() : 'md'
@@ -63,7 +65,7 @@
 	})
 
 	const labelWidth = computed((): string => {
-		return form != null ? form.labelWidth() : '72px'
+		return form != null ? form.labelWidth() : ''
 	})
 
 	const isDisabled = computed((): boolean => {
@@ -142,6 +144,13 @@
 		return 'vx-form-item__body'
 	})
 
+	const contentClass = computed((): string => {
+		let name = 'vx-form-item__content'
+		if (size.value === 'sm') name += ' vx-form-item__content--sm'
+		else if (size.value === 'lg') name += ' vx-form-item__content--lg'
+		return name
+	})
+
 	const messageTextClass = computed((): string => {
 		if (displayError.value.length > 0) {
 			return 'vx-form-item__message-text vx-form-item__message-text--error'
@@ -149,13 +158,72 @@
 		return 'vx-form-item__message-text vx-form-item__message-text--help'
 	})
 
-	// 标签宽度只作用于左侧且带标题的项；顶部标签独占一行，labelWidth 不生效。
+	// 空串用 class 上的 --vx-form-label-width，不写行内。
+	// 业务传了带单位的宽度才写行内，盖过 class；顶部标签独占一行，这里不写宽度。
 	const labelStyle = computed((): string => {
 		if (!showLabel.value || labelPosition.value !== 'left') return ''
+		if (labelWidth.value.length === 0) return ''
 		return `width: ${labelWidth.value};`
 	})
 
+	const component = getCurrentInstance()
+
+	// 只量本组件根节点。小程序里父级的 createSelectorQuery 进不了子组件。
+	const measureRect = (done: (rect: VxFormInvalidRect | null) => void) => {
+		const proxy = component != null ? component.proxy : null
+		if (proxy == null || typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') {
+			done(null)
+			return
+		}
+		try {
+			const query = uni.createSelectorQuery()
+			if (query == null || typeof query.in !== 'function') {
+				done(null)
+				return
+			}
+			const scoped = query.in(proxy)
+			if (scoped == null || typeof scoped.select !== 'function') {
+				done(null)
+				return
+			}
+			const target = scoped.select('.vx-form-item')
+			if (target == null || typeof target.boundingClientRect !== 'function') {
+				done(null)
+				return
+			}
+			target.boundingClientRect().exec((result) => {
+				if (result == null || result.length < 1) {
+					done(null)
+					return
+				}
+				const rect = result[0] as NodeInfo | null
+				if (rect == null || rect.top == null) {
+					done(null)
+					return
+				}
+				done({ top: rect.top })
+			})
+		} catch (error) {
+			done(null)
+		}
+	}
+
+	// 只在校验失败这一次量：容器要定位时把根节点的位置交给它，滚动交给容器决定。
+	// 渲染期间不量；单项校验不定位，业务在失焦里调 validateField 时页面不会跳。
+	const reportInvalidRect = () => {
+		if (form == null || !form.scrollToError()) return
+		// 错误行下一帧才占高度，等这一帧结束再量。
+		nextTick(() => {
+			measureRect((rect: VxFormInvalidRect | null) => {
+				form.reportInvalid(rect)
+			})
+		})
+	}
+
 	const validate = async (): Promise<boolean> => {
+		validateSeq.value = validateSeq.value + 1
+		const ticket = validateSeq.value
+
 		// 禁用的字段不该挡住提交：跳过规则、清掉旧错误，星号仍显示。
 		if (isDisabled.value) {
 			localError.value = ''
@@ -165,17 +233,23 @@
 		// 受控错误已经是失败态，不再跑本地规则，避免两份文案来回闪。
 		if (props.error.length > 0) {
 			emit('validate', false, props.error)
+			reportInvalidRect()
 			return false
 		}
 		const message = await runFormRules(props.value, props.rules)
+		if (ticket !== validateSeq.value) {
+			return props.error.length === 0 && localError.value.length === 0
+		}
 		localError.value = message
 		const passed = message.length === 0
 		emit('validate', passed, message)
+		if (!passed) reportInvalidRect()
 		return passed
 	}
 
 	const clearValidate = () => {
 		localError.value = ''
+		validateSeq.value = validateSeq.value + 1
 	}
 
 	const instance: VxFormItemInstance = {
@@ -193,7 +267,6 @@
 
 	const warnDoubleLabel = () => {
 		if (props.label.length === 0 || warnedDoubleLabel) return
-		const component = getCurrentInstance()
 		const proxy: any = component != null ? component.proxy : null
 		const el: any = proxy != null ? proxy.$el : null
 		if (el == null || typeof el.querySelector !== 'function') return
@@ -232,6 +305,10 @@
 	watch(() => props.error, (value: string) => {
 		if (value.length === 0) localError.value = ''
 	})
+
+	watch(() => props.value, () => {
+		validateSeq.value = validateSeq.value + 1
+	})
 </script>
 
 <style>
@@ -255,12 +332,14 @@
 	}
 
 	/* 标签占一列，最小高度等于控件高度，单行标题才和控件垂直居中。
+	   宽度来自令牌；labelWidth 非空时行内 style 写在 class 后面，盖过这里。
 	   超长标题裁在列内，不把控件挤走；需要完整标题时加大 labelWidth。 */
 	.vx-form-item__label {
 		flex-direction: row;
 		flex-shrink: 0;
 		align-items: center;
 		box-sizing: border-box;
+		width: var(--vx-form-label-width);
 		min-height: var(--vx-control-height-md);
 		margin-right: var(--vx-space-md);
 		overflow: hidden;
@@ -337,11 +416,23 @@
 		width: 0px;
 	}
 
+	/* 最小高度和标签列同一档，矮控件在这一层里垂直居中。
+	   比这个高度高的控件把盒子撑开，内容仍从顶部排；整行保持 flex-start，错误行加高时标题停在第一行。 */
 	.vx-form-item__content {
 		flex-direction: column;
+		justify-content: center;
 		box-sizing: border-box;
 		width: 100%;
 		min-width: 0;
+		min-height: var(--vx-control-height-md);
+	}
+
+	.vx-form-item__content--sm {
+		min-height: var(--vx-control-height-sm);
+	}
+
+	.vx-form-item__content--lg {
+		min-height: var(--vx-control-height-lg);
 	}
 
 	/* 说明和错误共用一行，固定 13 / 20 单行省略；上间距 4，不预留空行。 */

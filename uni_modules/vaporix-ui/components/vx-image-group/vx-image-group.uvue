@@ -5,7 +5,7 @@
 		<view v-for="tile in tiles" :key="tile.key" :class="tile.tileClass" :style="tile.tileStyle"
 			:hover-class="hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME" @click="onTileClick(tile, $event)">
 			<image v-if="!tile.broken" class="vx-image-group__image" :src="tile.item.src" :mode="imageMode"
-				@load="onImageLoad(tile.item.src)" @error="onImageError(tile)" />
+				@error="onImageError(tile)" />
 			<vx-icon v-else name="image" :size="glyphSize" color="var(--vx-color-disabled-text)" />
 		</view>
 	</view>
@@ -43,8 +43,8 @@
 		broken: boolean
 	}
 
-	// 读不出来的 src 单独占一个占位图；按 src 记，列表重排后仍然对得上。
-	const failedSources = ref<Array<string>>([])
+	// 失败按格子下标记。同一地址两张图，一张失败不把另一张已经显示的也换成占位。
+	const failedIndexes = ref<Array<number>>([])
 
 	// 不认识的尺寸按 md 处理，class 只拼 sm / lg。
 	const sizeName = computed((): string => {
@@ -121,7 +121,9 @@
 		const wrap = wrapLayout.value
 		for (let index = 0; index < props.items.length; index++) {
 			const item = props.items[index]
-			const broken = item.src.length === 0 || failedSources.value.indexOf(item.src) >= 0
+			// 接口常给 null，默认值不生效；先收成空串再读 length。
+			const source = item.src != null ? item.src : ''
+			const broken = source.length === 0 || failedIndexes.value.indexOf(index) >= 0
 			let tileClass = base
 			if (sizeName.value !== 'md') tileClass += ` ${base}--${sizeName.value}`
 			if (shapeName.value !== 'rounded') tileClass += ` ${base}--${shapeName.value}`
@@ -153,32 +155,22 @@
 
 	// 父级整组换图时清掉上一次的失败记录，重新给一次加载机会；只改 id 或顺序也重新试。
 	watch(() => props.items, () => {
-		if (failedSources.value.length === 0) return
-		failedSources.value = []
+		if (failedIndexes.value.length === 0) return
+		failedIndexes.value = []
 	})
 
-	// 同一张图只记一次；同一个地址反复失败不重复抛 error。
+	// 这一格只记一次，不按地址扩散；失败后 image 被拿掉，不会再收到 load。
 	const onImageError = (tile: ImageGroupTile) => {
-		const source = tile.item.src
-		if (source.length === 0 || failedSources.value.indexOf(source) >= 0) return
-		const next = failedSources.value.slice()
-		next.push(source)
-		failedSources.value = next
+		if (failedIndexes.value.indexOf(tile.index) >= 0) return
+		const next = failedIndexes.value.slice()
+		next.push(tile.index)
+		failedIndexes.value = next
 		emit('error', tile.index, tile.item)
-	}
-
-	// 地址换好了就撤掉占位，同一个 src 重新加载成功也能恢复。
-	const onImageLoad = (source: string) => {
-		const index = failedSources.value.indexOf(source)
-		if (index < 0) return
-		const next = failedSources.value.slice()
-		next.splice(index, 1)
-		failedSources.value = next
 	}
 </script>
 
 <style>
-	/* 图片组合不占外部间距，宽度由内容决定；多行时铺满父级再换行。
+	/* 图片组合不占外部间距，单行宽度由内容决定。
 	   5.26 的 App 不保证 flex gap，偏移用每张图的外边距表达。 */
 	.vx-image-group {
 		flex-direction: row;
@@ -189,7 +181,9 @@
 	.vx-image-group--wrap {
 		flex-wrap: wrap;
 		align-items: flex-start;
-		width: 100%;
+		/* 不用 width: 100%：内容盒被钉死后，负的 margin-right 撑不宽，父宽刚好 n 列时最后一列换行。
+		   stretch 只加宽纵向父级的交叉轴；横排父级要另给 flex: 1，负外边距才收得回最后一列。 */
+		align-self: stretch;
 	}
 
 	.vx-image-group--column {
@@ -213,19 +207,21 @@
 		border-width: 0;
 		border-style: solid;
 		border-color: var(--vx-color-surface);
-		border-radius: var(--vx-radius-md);
+		border-radius: var(--vx-control-radius-md);
 		background-color: var(--vx-color-default-soft);
 	}
 
 	.vx-image-group__tile--sm {
 		width: var(--vx-image-group-size-sm);
 		height: var(--vx-image-group-size-sm);
-		border-radius: var(--vx-radius-sm);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
+	/* lg 单独 10，不跟 md 共用 8。circle / square 在后面覆盖圆角。 */
 	.vx-image-group__tile--lg {
 		width: var(--vx-image-group-size-lg);
 		height: var(--vx-image-group-size-lg);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
 	/* 圆形靠 pill 圆角；平角只去掉圆角，不换底色。 */

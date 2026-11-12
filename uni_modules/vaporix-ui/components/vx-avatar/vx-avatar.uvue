@@ -1,9 +1,10 @@
 <template>
 	<!-- 头像只承载图片、首字和图标三种回落，徽章和在线状态点交给业务在外面组合。 -->
 	<!-- 失败只记一次，src 变化后重新给图片一次机会；图片态不铺占位动画。 -->
+	<!-- 可点时点击停在头像上；静态头像不拦点击，交给外层卡片或列表行。 -->
 	<view :class="rootClass" :style="rootStyle" :hover-class="hoverClass"
-		:hover-stay-time="VX_PRESSED_STAY_TIME" @click="onClick">
-		<image v-if="showImage" class="vx-avatar__image" :src="src" :mode="imageMode"
+		:hover-stay-time="VX_PRESSED_STAY_TIME" @click="onClick($event)">
+		<image v-if="showImage" class="vx-avatar__image" :src="imageSrc" :mode="imageMode"
 			@error="onImageError" />
 
 		<!-- 首字优先于图标；两者都为空时才用默认 user 图标。 -->
@@ -29,6 +30,7 @@
 		shape: 'circle',
 		type: 'default',
 		ring: false,
+		clickable: false,
 		bgColor: '',
 		color: '',
 		mode: 'aspectFill'
@@ -40,7 +42,6 @@
 	}>()
 
 	const instance = getCurrentInstance()
-	const attrs = useAttrs()
 
 	// 图片失败标记只对当前 src 有效；src 变化由 watch 复位。
 	const failed = ref(false)
@@ -71,9 +72,11 @@
 		return props.mode === 'aspectFit' ? 'aspectFit' : 'aspectFill'
 	})
 
-	// 有图片且还没失败才渲染 image；空串直接走首字，不经过图片节点。
+	// 显式 null 不走默认值；空串直接走首字，不经过图片节点。
+	const imageSrc = computed((): string => props.src ?? '')
+
 	const showImage = computed((): boolean => {
-		return props.src.length > 0 && !failed.value
+		return imageSrc.value.length > 0 && !failed.value
 	})
 
 	// trim 后按 code point 取首字；第一个 code unit 是高位代理时连取两个，emoji 不会被切成半个。
@@ -108,12 +111,20 @@
 		return tier === 'extend' ? 'extend' : 'core'
 	})
 
-	// 有 @click 监听才挂按下态和指针；不新增 clickable 属性。
-	const hasClickListener = computed((): boolean => {
+	// 蒸汽模式没有稳定的 attrs，声明过的 @click 只留在 vnode.props 上。
+	// 业务只写 @click 也算可点；显式 clickable=false 时不放行，@click 照旧冒泡。
+	// 拿不到实例就退回 props.clickable，clickable=true 的按下态不受影响。
+	const listenerClickable = computed((): boolean => {
 		const vnode = instance != null ? instance.vnode : null
 		const nodeProps = vnode != null ? vnode.props : null
-		if (nodeProps != null && nodeProps['onClick'] != null) return true
-		return attrs['onClick'] != null
+		if (nodeProps == null || nodeProps['onClick'] == null) return false
+		// clickable 的默认值也是 false，只有 vnode.props 里有这个键才说明是业务显式关掉的。
+		if (nodeProps['clickable'] != null && !props.clickable) return false
+		return true
+	})
+
+	const canClick = computed((): boolean => {
+		return props.clickable || listenerClickable.value
 	})
 
 	// class 顺序：基础 → 尺寸 → 形状 → 类型 → 状态。和样式表一致，后写的盖过先写的。
@@ -123,7 +134,7 @@
 		if (shapeName.value !== 'rounded') name += ` vx-avatar--${shapeName.value}`
 		// 图片态不铺底色；首字和图标态才套类型的浅底。
 		if (!showImage.value) name += ` vx-avatar--${typeName.value}`
-		if (hasClickListener.value) name += ' vx-avatar--clickable'
+		if (canClick.value) name += ' vx-avatar--clickable'
 		return name
 	})
 
@@ -164,11 +175,11 @@
 
 	// uni-app 里空字符串关不掉按下态，要写 none。
 	const hoverClass = computed((): string => {
-		return hasClickListener.value ? 'vx-avatar--pressed' : 'none'
+		return canClick.value ? 'vx-avatar--pressed' : 'none'
 	})
 
 	// src 变化清掉失败记录，重新走一遍图片；相同的 src 不重试。
-	watch((): string => props.src, () => {
+	watch(imageSrc, () => {
 		failed.value = false
 	})
 
@@ -179,8 +190,10 @@
 		emit('error')
 	}
 
-	// 没有监听时 emit 不会落到任何地方，也没有按下反馈。
-	const onClick = () => {
+	// 不可点时点击继续冒泡，交给外层卡片或列表行。
+	const onClick = (event: UniEvent) => {
+		if (!canClick.value) return
+		event.stopPropagation()
 		emit('click')
 	}
 </script>
@@ -201,20 +214,21 @@
 		width: var(--vx-avatar-md);
 		height: var(--vx-avatar-md);
 		background-color: transparent;
-		border-radius: var(--vx-radius-md);
+		border-radius: var(--vx-control-radius-md);
 	}
 
-	/* 尺寸 class 同时改外框和 rounded 的圆角；circle / square 在后面覆盖圆角。 */
+	/* 尺寸 class 同时改外框和 rounded 的圆角，跟三档元素圆角 6 / 8 / 10，不用容器的 12。
+	   circle / square 在后面覆盖圆角。 */
 	.vx-avatar--sm {
 		width: var(--vx-avatar-sm);
 		height: var(--vx-avatar-sm);
-		border-radius: var(--vx-radius-sm);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
 	.vx-avatar--lg {
 		width: var(--vx-avatar-lg);
 		height: var(--vx-avatar-lg);
-		border-radius: var(--vx-radius-lg);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
 	/* 圆形用胶囊圆角；平角只去掉圆角，不换底色。 */
@@ -251,7 +265,7 @@
 		background-color: var(--vx-color-danger-soft);
 	}
 
-	/* 按下只压透明度，和卡片一样；没有 @click 时不挂这个 class。 */
+	/* 按下只压透明度，和卡片一样；不可点时不挂这个 class。 */
 	.vx-avatar--pressed {
 		opacity: var(--vx-opacity-pressed);
 	}
@@ -357,15 +371,15 @@
 		border-width: var(--vx-border-width-strong);
 		border-style: solid;
 		border-color: var(--vx-color-surface);
-		border-radius: var(--vx-radius-md);
+		border-radius: var(--vx-control-radius-md);
 	}
 
 	.vx-avatar__ring--sm {
-		border-radius: var(--vx-radius-sm);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
 	.vx-avatar__ring--lg {
-		border-radius: var(--vx-radius-lg);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
 	.vx-avatar__ring--circle {

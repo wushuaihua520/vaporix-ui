@@ -33,8 +33,16 @@
 		exceed: [max: number]
 	}>()
 
-	// 项挂载顺序就是 DOM 顺序，最后一项据此不画分割线，业务不用手写 index。
-	const ids = ref<Array<string>>([])
+	// 登记顺序默认当挂载顺序。全部都带 index 时才改按最大 index 认最后一项。
+	type VxCheckboxEntry = {
+		id: string
+		index: number | null
+	}
+
+	// 名单原地改。每次换成新数组会让每一项的分割线都重算，挂载是 O(N²)。
+	const entries = ref<Array<VxCheckboxEntry>>([])
+	// 子项只读这一项。最后一项没换人时不赋值，其余行的分割线不跟着重算。
+	const lastId = ref('')
 
 	const includes = (list: Array<string>, value: string): boolean => {
 		return list.indexOf(value) >= 0
@@ -56,19 +64,59 @@
 		return next
 	}
 
-	const register = (id: string) => {
-		if (includes(ids.value, id)) return
-		ids.value = append(ids.value, id)
+	// 有一项 index 是 null，后挂载的不能代表视觉上的最后一项，退回登记顺序。
+	const refreshLastId = () => {
+		const list = entries.value
+		let next = ''
+		if (list.length > 0) {
+			let indexed = true
+			let maxIndex = 0
+			let maxId = ''
+			for (let cursor = 0; cursor < list.length; cursor++) {
+				const order = list[cursor].index
+				if (order == null) {
+					indexed = false
+					break
+				}
+				if (cursor === 0 || order >= maxIndex) {
+					maxIndex = order
+					maxId = list[cursor].id
+				}
+			}
+			next = indexed ? maxId : list[list.length - 1].id
+		}
+		if (lastId.value !== next) lastId.value = next
+	}
+
+	const register = (id: string, index: number | null) => {
+		const list = entries.value
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id !== id) continue
+			if (list[cursor].index === index) return
+			list[cursor].index = index
+			refreshLastId()
+			return
+		}
+		list.push({ id: id, index: index })
+		refreshLastId()
 	}
 
 	const unregister = (id: string) => {
-		if (!includes(ids.value, id)) return
-		ids.value = remove(ids.value, id)
+		const list = entries.value
+		let at = -1
+		for (let cursor = 0; cursor < list.length; cursor++) {
+			if (list[cursor].id === id) {
+				at = cursor
+				break
+			}
+		}
+		if (at < 0) return
+		list.splice(at, 1)
+		refreshLastId()
 	}
 
 	const isLast = (id: string): boolean => {
-		const list = ids.value
-		return list.length > 0 && list[list.length - 1] === id
+		return lastId.value.length > 0 && lastId.value === id
 	}
 
 	// 0 或负数表示不限，小数向下取整；非法数字时不启用上限，不在渲染里抛错。
@@ -78,8 +126,20 @@
 		return Math.floor(limit)
 	}
 
+	// 子项每次刷新都会问一次。先收成表，N 项、M 个选中值才不是每次都扫 N×M。
+	const checkedMap = computed((): Record<string, true> => {
+		const selected: Record<string, true> = {}
+		const list = modelValue.value
+		for (let index = 0; index < list.length; index++) {
+			const value = list[index]
+			if (value.length === 0) continue
+			selected[value] = true
+		}
+		return selected
+	})
+
 	const isChecked = (value: string): boolean => {
-		return value.length > 0 && includes(modelValue.value, value)
+		return value.length > 0 && checkedMap.value[value] === true
 	}
 
 	// 取消勾选永远放行；新增勾选先看上限。被拦下时只抛 exceed，不改模型，也不抛 change。

@@ -8,9 +8,9 @@
 		<view v-if="$slots['default'] != null" class="vx-tag__extra">
 			<slot></slot>
 		</view>
-		<view v-if="closable" class="vx-tag__close" hover-class="vx-tag__close--pressed"
+		<view v-if="closable" :class="closeClass" hover-class="vx-tag__close--pressed"
 			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClose">
-			<vx-icon name="close" :size="iconSize" :color="closeColor" />
+			<vx-icon name="close" size="sm" :color="closeColor" />
 		</view>
 	</view>
 </template>
@@ -92,9 +92,12 @@
 		return `color: ${props.color};`
 	})
 
-	// 关闭图标比标签文字小一档，lg 用 md，其余用 sm。
-	const iconSize = computed((): 'sm' | 'md' => {
-		return props.size === 'lg' ? 'md' : 'sm'
+	// 三档关闭叉都是 sm 14。热区按档加宽，不靠放大图标。
+	const closeClass = computed((): string => {
+		let name = 'vx-tag__close'
+		if (props.size === 'lg') name += ' vx-tag__close--lg'
+		else if (props.size === 'sm') name += ' vx-tag__close--sm'
+		return name
 	})
 
 	// vx-icon 不继承父级颜色。tone 与 --vx-color-* 同名，直接拼变量，不再抄一份色表。
@@ -118,9 +121,9 @@
 		align-self: flex-start;
 		flex-shrink: 0;
 		box-sizing: border-box;
-		height: var(--vx-compact-height-md);
-		padding-left: var(--vx-space-sm);
-		padding-right: var(--vx-space-sm);
+		height: var(--vx-tag-height-md);
+		padding-left: var(--vx-tag-padding-md);
+		padding-right: var(--vx-tag-padding-md);
 		border-width: var(--vx-border-width);
 		border-style: solid;
 		border-color: var(--vx-color-border);
@@ -128,16 +131,16 @@
 		background-color: var(--vx-color-surface);
 	}
 
-	/* 标签比按钮紧一档：md 只留 8，lg 用 12。 */
 	.vx-tag--lg {
-		height: var(--vx-compact-height-lg);
-		padding-left: var(--vx-space-md);
-		padding-right: var(--vx-space-md);
+		height: var(--vx-tag-height-lg);
+		padding-left: var(--vx-tag-padding-lg);
+		padding-right: var(--vx-tag-padding-lg);
 	}
 
-	/* sm 与 md 共用 space-sm，只改高度。 */
 	.vx-tag--sm {
-		height: var(--vx-compact-height-sm);
+		height: var(--vx-tag-height-sm);
+		padding-left: var(--vx-tag-padding-sm);
+		padding-right: var(--vx-tag-padding-sm);
 	}
 
 	.vx-tag--primary {
@@ -245,33 +248,33 @@
 		border-radius: 0;
 	}
 
-	/* 关闭热区右侧已有 4px。sm / md 左侧是 8，根上再留 4。 */
+	/* sm / md 右内边距收到 4。叉和边之间还剩热区里居中的空隙。 */
 	.vx-tag--closable {
 		padding-right: var(--vx-space-xs);
 	}
 
-	/* lg 左侧是 12，根上留 8，加上热区 4 仍是 12。 */
+	/* lg 收到 6。6 没有间距令牌，用标签 sm 内边距。 */
 	.vx-tag--lg-closable {
-		padding-right: var(--vx-space-sm);
+		padding-right: var(--vx-tag-padding-sm);
 	}
 
 	.vx-tag__text {
 		color: var(--vx-color-text);
-		font-size: var(--vx-font-control-md);
-		line-height: var(--vx-line-md);
+		font-size: var(--vx-tag-font-md);
+		line-height: var(--vx-tag-line-md);
 		font-weight: var(--vx-weight-regular);
 		/* App 默认 keep、Web 默认 pre-line，都会在边界换行；高度固定，第二行会被裁掉。 */
 		white-space: nowrap;
 	}
 
 	.vx-tag__text--lg {
-		font-size: var(--vx-font-control-lg);
-		line-height: var(--vx-line-lg);
+		font-size: var(--vx-tag-font-lg);
+		line-height: var(--vx-tag-line-lg);
 	}
 
 	.vx-tag__text--sm {
-		font-size: var(--vx-font-control-sm);
-		line-height: var(--vx-line-sm);
+		font-size: var(--vx-tag-font-sm);
+		line-height: var(--vx-tag-line-sm);
 	}
 
 	.vx-tag__text--on-primary {
@@ -329,16 +332,23 @@
 		margin-left: var(--vx-space-xs);
 	}
 
-	/* 图标本身有宽高，热区跟标签等高；左右各留 4，点按区域比图标大一圈。 */
+	/* 热区跟标签等高，宽度用同一档高度，不窄于标签。14 的叉在里面居中。 */
 	.vx-tag__close {
 		flex-shrink: 0;
 		align-self: stretch;
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
+		width: var(--vx-tag-height-md);
 		margin-left: var(--vx-space-xs);
-		padding-left: var(--vx-space-xs);
-		padding-right: var(--vx-space-xs);
+	}
+
+	.vx-tag__close--sm {
+		width: var(--vx-tag-height-sm);
+	}
+
+	.vx-tag__close--lg {
+		width: var(--vx-tag-height-lg);
 	}
 
 	.vx-tag__close--pressed {

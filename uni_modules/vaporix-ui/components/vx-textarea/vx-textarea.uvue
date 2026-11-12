@@ -199,29 +199,30 @@
 		flex-direction: column;
 		box-sizing: border-box;
 		padding-top: var(--vx-space-md);
-		padding-right: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
 		padding-bottom: var(--vx-space-md);
-		padding-left: var(--vx-space-md);
+		padding-left: var(--vx-space-lg);
 		border-width: var(--vx-border-width);
 		border-style: solid;
 		border-color: var(--vx-color-border);
-		border-radius: var(--vx-radius-md);
+		border-radius: var(--vx-control-radius-md);
 		background-color: var(--vx-color-surface);
 	}
 
 	.vx-textarea--lg {
 		padding-top: var(--vx-space-lg);
-		padding-right: var(--vx-space-lg);
+		padding-right: var(--vx-space-xl);
 		padding-bottom: var(--vx-space-lg);
-		padding-left: var(--vx-space-lg);
+		padding-left: var(--vx-space-xl);
+		border-radius: var(--vx-control-radius-lg);
 	}
 
 	.vx-textarea--sm {
 		padding-top: var(--vx-space-sm);
-		padding-right: var(--vx-space-sm);
+		padding-right: var(--vx-space-md);
 		padding-bottom: var(--vx-space-sm);
-		padding-left: var(--vx-space-sm);
-		border-radius: var(--vx-radius-sm);
+		padding-left: var(--vx-space-md);
+		border-radius: var(--vx-control-radius-sm);
 	}
 
 	.vx-textarea--plain {

@@ -34,6 +34,8 @@ export type VxSwipeActionProps = {
 	closeOnSelect?: boolean
 	/** 允许同时展开多行，默认关闭：展开这一行时收起其他行。 */
 	multiple?: boolean
+	/** 互斥分组，默认按页面：不传时同一页面的行共用一个组，展开一行收起同组其他行。一个页面上多个列表要各管各的，传不同的值。 */
+	group?: string
 	/** extra 插槽的展开宽度，单位 px，默认 80；没有 actions 且插槽存在时生效。两者都没有时不露出菜单。 */
 	extraWidth?: number
 }
