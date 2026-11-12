@@ -780,6 +780,8 @@
 	// 切到平铺时去掉隐藏 class；切到弹层按当前开关决定整层先隐藏还是直接出来。
 	watch(() => props.popup, (popup: boolean) => {
 		if (!popup) {
+			// 平铺模式始终渲染：从没以弹层形式打开过的实例 rendered 还是 false，这里要补上，否则整块不画。
+			rendered.value = true
 			hidden.value = false
 			setPageLock(false)
 			return
