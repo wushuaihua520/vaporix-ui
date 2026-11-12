@@ -212,7 +212,7 @@
 
 	/* 定位层左右拉满，盒子在里面居中，maxWidth 才有一条确定的宽度可用。
 	   left: 50% 再收缩时，可用宽只剩右半边，长文案会在远小于 320 的地方换行。
-	   层级写在行内，默认 100。App 默认 overflow 是 hidden，阴影画出盒子会被这层裁掉。
+	   层级写在行内，默认 1010。App 默认 overflow 是 hidden，阴影画出盒子会被这层裁掉。
 	   Android 拍平后 visible 不生效，这一层不要加 flatten。 */
 	.vx-tips {
 		position: fixed;

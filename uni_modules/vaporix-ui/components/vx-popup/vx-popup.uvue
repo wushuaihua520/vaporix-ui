@@ -1,6 +1,7 @@
 <template>
 	<!-- 弹出层是通用浮层：遮罩铺满页面，面板按 placement 贴边或居中。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
-	<!-- 进出场靠 class 切换，关闭动画走完才卸载；关闭过程中再打开会从当前位置回终点，不会留下两个面板。 -->
+	<!-- 进出场靠 class 切换；第一次打开后根节点常驻，关闭动画走完只切隐藏 class，不再卸载。 -->
+	<!-- 关闭过程中再打开会从当前位置回终点，不会留下两个面板；常驻的原生子树也只创建一次。 -->
 	<view v-if="rendered" :class="rootClass" :style="rootStyle">
 		<!-- 遮罩只压页面，不压面板。点它抛 click-mask，可关闭时收起并抛 close。 -->
 		<!-- Web 上标成装饰层，读屏跳过；App 和鸿蒙不认 aria，编译时整段换成不带属性的版本。 -->
@@ -15,7 +16,7 @@
 		<!-- 外层就是面板：位移、圆角、底色和裁切都在这一层。面板不投影、也不描边，层级由遮罩和留白表达。 -->
 		<view :class="sheetClass" :style="sheetStyle" @click.stop>
 			<!-- 关闭叉在内容上方单占一行：顶部贴边时不会钻进状态栏，也不会压住业务内容。 -->
-			<view v-if="closeable" class="vx-popup__bar">
+			<view v-if="closable" class="vx-popup__bar">
 				<!-- #ifdef WEB -->
 				<view class="vx-popup__close" role="button" aria-label="关闭"
 					hover-class="vx-popup__close--pressed" :hover-stay-time="VX_PRESSED_STAY_TIME"
@@ -35,6 +36,10 @@
 			   这一层不监听 touchmove，里面的 scroll-view 才接得住手势。 -->
 			<slot></slot>
 		</view>
+
+		<!-- 业务自绘的浮层内容：和遮罩、面板同一个根节点，共享这一层的 fixed 落点。
+		     默认不渲染；不要放进 sheet，sheet 的 overflow: hidden 和固定高度会把自绘层裁掉。 -->
+		<slot v-if="$slots['overlay'] != null" name="overlay"></slot>
 	</view>
 </template>
 
@@ -50,14 +55,15 @@
 		vxOverlaySafeEdge,
 		vxUnlockPageScroll
 	} from '../../libs/overlay'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxPopupProps>(), {
 		placement: 'bottom',
 		width: '',
 		height: '',
+		maxWidth: '',
 		round: 'lg',
-		closeable: false,
+		closable: false,
 		maskClosable: true,
 		maskColor: '',
 		safeArea: true,
@@ -78,9 +84,10 @@
 		clickMask: []
 	}>()
 
-	// 挂载和落位分开：rendered 控制根节点在不在，inState 控制面板在不在终点。
-	// 首次渲染就显示时不播放入场，直接落在终点。
+	// 挂载、隐藏和落位分开：rendered 控制根节点在不在（首开后常驻），hidden 控制整层是不是 display: none，
+	// inState 控制面板在不在终点。首次渲染就显示时不播放入场，直接落在终点。
 	const rendered = ref(show.value === true)
+	const hidden = ref(show.value !== true)
 	const inState = ref(show.value === true)
 
 	// setTimeout 在 App 上返回 number，0 表示没有在计时。
@@ -88,6 +95,8 @@
 	let leaveTimer = 0
 	// Web 上这个实例是否已经锁过页面，收起和卸载时只还原自己加的那一次。
 	let pageLocked = false
+	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
+	let openedAt = 0
 
 	// 传进来不认识的方向落回 bottom，class 拼出来才是合法的。
 	const placement = computed((): VxPopupPlacement => {
@@ -123,9 +132,11 @@
 		return vxOverlaySafeEdge(placement.value)
 	})
 
-	// class 顺序：基础 → 方向 → 安全区 → 过渡 → 落位。样式表顺序与此一致。
+	// class 顺序：基础 → 方向 → 隐藏。样式表顺序与此一致。
 	const rootClass = computed((): string => {
-		return `vx-popup vx-popup--${placement.value}`
+		let name = `vx-popup vx-popup--${placement.value}`
+		if (hidden.value) name += ' vx-popup--hidden'
+		return name
 	})
 
 	const maskClass = computed((): string => {
@@ -136,11 +147,21 @@
 		return name
 	})
 
+	// 只对上下贴边生效。不传时不挂，宽度仍是方向类上的 100%。
+	const sheetCapped = computed((): boolean => {
+		if (props.maxWidth.length === 0) return false
+		return placement.value === 'top' || placement.value === 'bottom'
+	})
+
 	const sheetClass = computed((): string => {
 		let name = `vx-popup__sheet vx-popup__sheet--${placement.value}`
 		if (safeEdge.value.length > 0) name += ` vx-popup__sheet--safe-${safeEdge.value}`
+		if (sheetCapped.value) name += ' vx-popup__sheet--capped'
 		if (animateDuration.value > 0) name += ' vx-popup__sheet--animated'
-		if (inState.value) name += ' vx-popup__sheet--in'
+		if (inState.value) {
+			const axis = placement.value === 'top' || placement.value === 'bottom' ? 'y' : 'x'
+			name += ` vx-popup__sheet--in-${axis}`
+		}
 		return name
 	})
 
@@ -197,6 +218,8 @@
 		if (place === 'top' || place === 'bottom') {
 			if (props.height.length > 0) style += ` height: ${props.height};`
 		}
+		// 方向类写了 width: 100%。这里只补 max-width：窄屏仍铺满，宽屏收到这条宽。
+		if (sheetCapped.value) style += ` max-width: ${props.maxWidth};`
 		style += radiusStyle(vxOverlayRadius(props.round))
 		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
 		return style
@@ -224,24 +247,29 @@
 		else vxUnlockPageScroll()
 	}
 
-	// 一开始就是显示状态时不会走进场，滚动锁在这里补一次。
-	if (show.value === true) setPageLock(true)
+	// 一开始就是显示状态时不会走进场，滚动锁和遮罩保护窗在这里补一次。
+	if (show.value === true) {
+		setPageLock(true)
+		openedAt = Date.now()
+	}
 
-	// 打开：先挂载，再等一帧落位，过渡才有起点；还在退场时直接落位，从当前位置回来。
+	// 打开：挂载或去掉隐藏 class，再等一帧落位，过渡才有起点；还在退场时直接落位，从当前位置回来。
 	const enter = () => {
+		openedAt = Date.now()
 		refreshReduceMotion()
 		clearSettle()
 		clearLeave()
-		if (!rendered.value) {
-			rendered.value = true
-			if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+		const justMounted = !rendered.value
+		const wasHidden = hidden.value
+		rendered.value = true
+		hidden.value = false
+		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+			inState.value = true
+		} else if (justMounted || wasHidden) {
+			settleTimer = setTimeout(() => {
+				settleTimer = 0
 				inState.value = true
-			} else {
-				settleTimer = setTimeout(() => {
-					settleTimer = 0
-					inState.value = true
-				}, VX_OVERLAY_FRAME)
-			}
+			}, VX_OVERLAY_FRAME)
 		} else {
 			inState.value = true
 		}
@@ -249,26 +277,26 @@
 		emit('open')
 	}
 
-	// 关闭：先退到终点，等 duration 加一帧再卸载；duration=0 直接移除，不留空壳。
+	// 关闭：先退到终点，duration 加一帧后只加隐藏 class；根节点和原生子树都保留。
+	// duration=0、还没落位就关，都直接隐藏，不卸载。
 	const leave = () => {
 		clearSettle()
 		clearLeave()
 		if (!rendered.value) return
-		// 还没落位就被关掉：没有退场可看，直接卸载。
 		if (!inState.value) {
-			rendered.value = false
+			hidden.value = true
 			setPageLock(false)
 			return
 		}
 		inState.value = false
 		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
-			rendered.value = false
+			hidden.value = true
 			setPageLock(false)
 			return
 		}
 		leaveTimer = setTimeout(() => {
 			leaveTimer = 0
-			rendered.value = false
+			hidden.value = true
 			setPageLock(false)
 		}, animateDuration.value + VX_OVERLAY_FRAME)
 	}
@@ -286,7 +314,9 @@
 	})
 
 	// 点遮罩总是抛 click-mask；maskClosable 打开时先收起再抛 close，父级在事件里改 show 也不会被覆盖。
+	// 打开那一下抬起的触摸会落到刚挂上的遮罩上，保护窗内直接丢掉，连 click-mask 也不抛。
 	const onMaskTap = () => {
+		if (Date.now() - openedAt < VX_POPUP_MASK_GUARD) return
 		const closing = props.maskClosable && show.value
 		if (closing) show.value = false
 		emit('clickMask')
@@ -295,7 +325,7 @@
 
 	// 关闭叉是独立出口，和可关闭的遮罩走同一个 close。
 	const onCloseTap = () => {
-		if (!props.closeable || !show.value) return
+		if (!props.closable || !show.value) return
 		show.value = false
 		emit('close')
 	}
@@ -309,6 +339,13 @@
 		show.value = false
 	}
 
+	// 给页面 onBackPress 用：收起并抛 close。close() 只收起。
+	const cancel = () => {
+		if (show.value !== true) return
+		show.value = false
+		emit('close')
+	}
+
 	const toggle = () => {
 		show.value = !show.value
 	}
@@ -316,6 +353,7 @@
 	defineExpose({
 		open,
 		close,
+		cancel,
 		toggle
 	})
 </script>
@@ -365,6 +403,13 @@
 		align-items: center;
 		justify-content: center;
 		padding: var(--vx-space-xl);
+	}
+
+	/* 首开后根节点常驻。关闭、duration=0、未落位就关都用这个 class 收起：
+	   display: none 只停绘制，原生子树不销毁；下次打开去掉它再走进场。
+	   class 字符串排在最后，这条规则也排在方向类之后。 */
+	.vx-popup--hidden {
+		display: none;
 	}
 
 	/* 遮罩只压页面，不压面板。 */
@@ -442,6 +487,13 @@
 		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
 	}
 
+	/* 上下贴边传了 maxWidth 才挂。父级是纵向 flex，子项默认被拉满；
+	   align-self 盖过拉伸，max-width 才收得住，宽屏左右露出遮罩。
+	   不传时不挂，宽度仍是方向类上的 100%。 */
+	.vx-popup__sheet--capped {
+		align-self: center;
+	}
+
 	/* 只过渡位移和透明度。过渡类只在 duration 大于 0 时挂上，
 	   duration=0 和系统的减少动效都退化成直接切换。 */
 	.vx-popup__mask--animated {
@@ -458,13 +510,19 @@
 		opacity: 1;
 	}
 
-	/* 落位：位移回到 0、透明度到 1。规则必须排在方向和过渡之后，后写的才盖得住。 */
-	.vx-popup__sheet--in {
+	/* 落位分两条轴写：起点和终点的变换函数一致，App 才按同一条轴补间。
+	   top / bottom 用 Y，left / right / center 用 X。规则排在方向之后，后写的才盖得住。 */
+	.vx-popup__sheet--in-y {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	.vx-popup__sheet--in-x {
 		transform: translateX(0);
 		opacity: 1;
 	}
 
-	/* 关闭叉单占一行，行高沿用列表行的 44；右内边距 8，44 的热区缩在面板轮廓内，不顶进圆角。 */
+	/* 关闭叉单占一行。行高用热区令牌，不跟列表行；右内边距 8，热区缩在面板轮廓内，不顶进圆角。 */
 	.vx-popup__bar {
 		flex-direction: row;
 		flex-shrink: 0;
@@ -472,7 +530,7 @@
 		justify-content: flex-end;
 		box-sizing: border-box;
 		width: 100%;
-		min-height: var(--vx-list-height-sm);
+		min-height: var(--vx-hit-size);
 		padding-left: var(--vx-space-lg);
 		padding-right: var(--vx-space-sm);
 	}
@@ -482,8 +540,8 @@
 		flex-shrink: 0;
 		align-items: center;
 		justify-content: center;
-		width: var(--vx-list-height-sm);
-		height: var(--vx-list-height-sm);
+		width: var(--vx-hit-size);
+		height: var(--vx-hit-size);
 	}
 
 	.vx-popup__close--pressed {

@@ -13,10 +13,12 @@ export type VxPopupProps = {
 	width?: string
 	/** 带单位的高度，如 320px、60%；上下贴边使用。不传时按内容高度排。 */
 	height?: string
+	/** 上下贴边时面板最大宽，需带单位，如 480px。不传时仍是 100% 宽；左右和居中不读。 */
+	maxWidth?: string
 	/** 圆角档位，默认 lg；贴边那一侧始终是直角。 */
 	round?: VxPopupRound
 	/** 内容上方单占一行显示关闭叉，点击收起并抛 close。 */
-	closeable?: boolean
+	closable?: boolean
 	/** 点击遮罩收起并抛 close，默认打开；关掉后点遮罩只抛 click-mask，要靠关闭叉或内容里的按钮退出。 */
 	maskClosable?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */

@@ -67,7 +67,7 @@
 
 <script setup>
 	import { VxIconName } from '../../libs/icons/codepoints'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
 	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
 	import {
 		VxBubblePopupAlign,
@@ -205,6 +205,7 @@
 	let measureTimer = 0
 	let measureCount = 0
 	let measureId = 0
+	// 最近一次打开的时刻。遮罩保护窗和 Web 滚动宽限都从这里算。
 	let openedAt = 0
 
 	// App 会把负数之外的来源色算成不透明，这里只挡 NaN；负数内缩是允许的。
@@ -662,8 +663,10 @@
 		emit('close')
 	}
 
+	// 打开那一下抬起的触摸会落到刚挂上的点击层上，保护窗内直接丢掉，否则气泡会一闪就关。
 	const onOutsideTap = () => {
 		if (!props.outsideClosable) return
+		if (Date.now() - openedAt < VX_POPUP_MASK_GUARD) return
 		dismiss()
 	}
 
@@ -689,6 +692,12 @@
 		show.value = false
 	}
 
+	// 给页面 onBackPress 用：收起并抛 close，和点外面同一条路。close() 只收起。inline 没有显隐。
+	const cancel = () => {
+		if (props.inline || !show.value) return
+		dismiss()
+	}
+
 	const toggle = () => {
 		if (props.inline) return
 		show.value = !show.value
@@ -699,6 +708,11 @@
 		if (props.inline) return
 		if (value) preparePosition()
 		else resetPosition()
+		// #ifdef WEB
+		// 全局监听只在打开期间挂着，收起随手摘掉。
+		if (value) bindWindow()
+		else unbindWindow()
+		// #endif
 	})
 
 	// 内容、宽度、方向和描边会改面板尺寸或落点。箭头微调只改样式，分割线不占高度，都不重测。
@@ -737,9 +751,16 @@
 		activePlacement.value = value
 	})
 
+	// 挂载时已经打开的，watch 不会走，保护窗从这一帧算起。
+	if (!props.inline && show.value) openedAt = Date.now()
+
 	onMounted(() => {
 		if (props.inline || !show.value) return
 		preparePosition()
+		// #ifdef WEB
+		// 挂载时已经打开的，watch 不会走，在这里补挂全局监听。
+		bindWindow()
+		// #endif
 	})
 
 	onUnmounted(() => {
@@ -767,25 +788,35 @@
 		dismiss()
 	}
 
-	onMounted(() => {
-		// inline 留在文档流里，一条对话会有很多个，不听页面滚动和键盘。
-		if (props.inline) return
+	// 只在打开期间监听：列表里每行一个气泡时，关着的实例不跟着页面滚动跑回调。
+	// inline 留在文档流里，一条对话会有很多个，始终不挂。
+	let windowBound = false
+
+	const bindWindow = () => {
+		if (windowBound || props.inline) return
+		windowBound = true
 		window.addEventListener('scroll', onWindowScroll, true)
 		window.addEventListener('resize', onWindowResize)
 		window.addEventListener('keydown', onWindowKeydown)
-	})
+	}
 
-	onUnmounted(() => {
-		if (props.inline) return
+	const unbindWindow = () => {
+		if (!windowBound) return
+		windowBound = false
 		window.removeEventListener('scroll', onWindowScroll, true)
 		window.removeEventListener('resize', onWindowResize)
 		window.removeEventListener('keydown', onWindowKeydown)
+	}
+
+	onUnmounted(() => {
+		unbindWindow()
 	})
 	// #endif
 
 	defineExpose({
 		open,
 		close,
+		cancel,
 		toggle,
 		refresh
 	})

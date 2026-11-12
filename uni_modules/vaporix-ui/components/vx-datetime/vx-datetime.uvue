@@ -29,9 +29,10 @@
 
 				<!-- 滚轮的高度和每行高度都由令牌给定，指示器高度必须和行高一致，否则列不会按行对齐。 -->
 				<!-- picker-view 的原生蒙层写死了白色渐变，暗色主题下会发白，这里用 mask-class 去掉。 -->
-				<!-- 先占位、等草稿下标准备好再挂原生滚轮：picker-view 拿到空 value 时在 App 端
-				     会拒绝创建，整棵弹层跟着不落屏（vx-picker 用空状态分支避开了同一个坑）。 -->
-				<view v-if="!wheelReady" class="vx-datetime__picker"></view>
+				<!-- 先占位、等弹层这一帧落屏后再挂原生滚轮：picker-view 和 fixed 根节点同一帧创建时，
+				     App 端会拒绝创建，整棵弹层跟着不落屏（vx-picker 用空状态分支避开了同一个坑）。
+				     下标在 prepare() 里已经备好才换成滚轮，picker-view 不会拿到空 value；挂上后关闭只隐藏，不再卸。 -->
+				<view v-if="!wheelMounted" class="vx-datetime__picker"></view>
 				<picker-view v-else :key="wheelKey" class="vx-datetime__picker" :value="columnIndices"
 					:indicator-style="indicatorStyle" mask-class="vx-datetime__fade" @change="onColumnChange">
 					<picker-view-column v-for="(column, columnIndex) in columns" :key="column.key">
@@ -210,6 +211,9 @@
 		return columns.value.length > 0 && columnIndices.value.length === columns.value.length
 	})
 
+	// 滚轮只在首次打开落屏后的下一拍挂上，之后常驻；关闭走底座的隐藏 class，不再卸掉原生子树。
+	const wheelMounted = ref(false)
+
 	// 模式切换时列数会变，整只换掉滚轮，避免原生列沿用旧下标停在空行。
 	const wheelKey = computed((): string => 'vx-datetime-wheel-' + columns.value.length)
 
@@ -378,11 +382,23 @@
 		onCancelTap()
 	}
 
+	// 打开时先只画占位，等下一拍再挂原生滚轮：picker-view 和 fixed 根节点同一帧创建时，
+	// App 端会创建失败，整棵弹层跟着不落屏。下标由 prepare() 同步备好，挂上时不会给空 value。
+	// 挂上以后不再因关闭卸载；列数变化仍由 wheelKey 整只换滚轮。
+	const mountWheel = () => {
+		if (wheelMounted.value) return
+		nextTick(() => {
+			if (wheelMounted.value || !show.value || !wheelReady.value) return
+			wheelMounted.value = true
+		})
+	}
+
 	// 打开时重新读 value，滚轮挂载时就能停在正确的位置。
 	// 打开期间父级改 value 不跟，避免把正在滚的轮子拽走。
 	watch(show, (visible: boolean) => {
 		if (!visible) return
 		prepare()
+		mountWheel()
 	})
 
 	// 换模式时列变了，下标也要跟着重算。
@@ -428,8 +444,11 @@
 	// picker-view 的 indicator-style 只认行内样式，读不到 CSS 变量，高度跟 VX_DATETIME_ROW 对齐。
 	const indicatorStyle = `height: ${VX_DATETIME_ROW}px;`
 
-	// 挂载时已经打开的，先对齐再出第一帧；关着的等 show 的 watch。
-	if (show.value) prepare()
+	// 挂载时已经打开的，先对齐再出第一帧；滚轮同样等这一帧落屏后再挂。
+	if (show.value) {
+		prepare()
+		mountWheel()
+	}
 
 	// 有的平台在挂载之后才应用 value：这里再对一次下标，值没变就是空操作，不会把滚轮拽走。
 	onMounted(() => {
@@ -474,24 +493,7 @@
 		background-color: var(--vx-color-mask);
 	}
 
-	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
-	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
-	.vx-datetime__sheet {
-		position: relative;
-		z-index: 1;
-		flex-direction: column;
-		flex-shrink: 0;
-		align-self: center;
-		box-sizing: border-box;
-		width: 100%;
-		max-width: var(--vx-datetime-max-width);
-		border-top-left-radius: var(--vx-radius-lg);
-		border-top-right-radius: var(--vx-radius-lg);
-		box-shadow: var(--vx-shadow-lg);
-		overflow: visible;
-	}
-
-	/* 内层裁按压态和底色，圆角与阴影层一致，轮廓才重合。安全区作为内边距，滚轮不压住手势条。 */
+	/* 内层裁按压态和底色。安全区作为内边距，滚轮不压住手势条。 */
 	.vx-datetime__panel {
 		flex-direction: column;
 		box-sizing: border-box;
@@ -681,12 +683,6 @@
 		cursor: pointer;
 	}
 
-	.vx-datetime__sheet {
-		animation-name: vx-datetime-up;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
 	@keyframes vx-datetime-fade {
 		from {
 			opacity: 0;
@@ -697,14 +693,5 @@
 		}
 	}
 
-	@keyframes vx-datetime-up {
-		from {
-			transform: translateY(100%);
-		}
-
-		to {
-			transform: translateY(0);
-		}
-	}
 	/* #endif */
 </style>

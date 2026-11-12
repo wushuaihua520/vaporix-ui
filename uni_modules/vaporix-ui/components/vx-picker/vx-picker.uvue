@@ -2,7 +2,8 @@
 	<!-- 联动选择是底部弹层：遮罩铺满页面，面板贴底。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
 	<!-- 滚轮只改草稿，点确定才写回 v-model；取消、遮罩和 close() 都不动已提交的值。 -->
 	<!-- 触摸只拦遮罩和头部：滚轮本身要接住手势，根节点不能统一 prevent，否则轮子拖不动。 -->
-	<view v-if="show" class="vx-picker" :style="rootStyle">
+	<!-- 第一次打开后根节点常驻，关闭只切隐藏 class，不再卸载；fixed 层里的 picker-view 只创建一次。 -->
+	<view v-if="rendered" :class="rootClass" :style="rootStyle">
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
 		<!-- 外层只负责阴影和滑入；内层裁底色和按下态，避免 overflow 把阴影一起裁掉。 -->
@@ -53,8 +54,8 @@
 		vxPickerSame,
 		vxPickerTree
 	} from '../../libs/picker'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
+	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 	import { VxPickerProps } from './props'
 
 	const props = withDefaults(defineProps<VxPickerProps>(), {
@@ -87,6 +88,11 @@
 		change: [result: VxPickerResult]
 		cancel: []
 	}>()
+
+	// 挂载和隐藏分开：rendered 控制根节点在不在（首开后常驻），hidden 控制整层是不是 display: none。
+	// 首次渲染就显示时直接挂上；之后 rendered 只从 false 变 true，不再回头。
+	const rendered = ref(show.value === true)
+	const hidden = ref(show.value !== true)
 
 	/** 一行滚轮项。选中态不写进行对象，滚动时才能留着同一批行。 */
 	type PickerRow = {
@@ -123,7 +129,7 @@
 	// 上一次抛给业务的路径，滚动回来或树重算时不重复抛同一个值。
 	let lastChangeKey = ''
 
-	// prepare 规整过的那份 options。同一拍里 options 的 watch 看到它就跳过，树只复制一次。
+	// 已经规整过的那份 options：prepare 再看到同一引用就跳过，同一拍里 options 的 watch 也靠它跳过。
 	let normalizedSource: Array<VxPickerOption> | null = null
 
 	const applyOptions = () => {
@@ -144,14 +150,20 @@
 		columnRevisions = next
 	}
 
-	const applyDraft = (next: Array<number>) => {
+	// force：内容没变也换一份新数组。常驻的 picker-view 不会重新挂载，只有收到新的 value
+	// 才重新定位；打开时用它把滚轮拨回草稿。打开期间的滚动仍走「没变就不换」，不和原生事件来回触发。
+	const applyDraft = (next: Array<number>, force: boolean = false) => {
 		const current = draftIndices.value
 		let changed = next.length !== current.length
 		for (let index = 0; index < next.length && !changed; index++) {
 			if (next[index] !== current[index]) changed = true
 		}
-		if (!changed) return
-		draftIndices.value = next
+		if (!changed && !force) return
+		if (changed) {
+			draftIndices.value = next
+			return
+		}
+		draftIndices.value = next.slice()
 	}
 
 	// 选项数组和行版本都没变的列留着原来的行对象。叶子滚动只改下标，不重建整列。
@@ -282,6 +294,12 @@
 
 	const rootStyle = computed((): string => `z-index: ${props.zIndex};`)
 
+	// class 顺序：基础 → 隐藏。样式表顺序与此一致。
+	const rootClass = computed((): string => {
+		if (hidden.value) return 'vx-picker vx-picker--hidden'
+		return 'vx-picker'
+	})
+
 	const currentResult = (): VxPickerResult => {
 		return vxPickerResult(normalizedTree, draftIndices.value, props.separator)
 	}
@@ -292,10 +310,13 @@
 	}
 
 	// 打开时按已选值定位；读不出、值不可选或路径变短时都收口到有效路径。
+	// 每次打开都强制写一次 value：常驻滚轮在隐藏期间可能丢了滚动位置，内容相同也要重新定位。
+	// 还是同一个数组就是已经规整过的那份：全国三级三千多个节点，连开不必重走；
+	// DESIGN 约定原地改数组不通知组件，按引用跳过和原语义一致。
 	const prepare = () => {
-		applyOptions()
+		if (props.options !== normalizedSource) applyOptions()
 		bumpRevisions(0)
-		applyDraft(vxPickerAlign(normalizedTree, values.value))
+		applyDraft(vxPickerAlign(normalizedTree, values.value), true)
 		syncColumns()
 		lastChangeKey = resultKey(currentResult())
 	}
@@ -367,8 +388,10 @@
 	}
 
 	// 遮罩可关闭时按取消处理，和点取消按钮走同一条出口。
+	// 打开那一下抬起的触摸也会落到遮罩上，保护窗内直接丢掉，否则浮层会一闪就关。
 	const onMaskTap = () => {
 		if (!props.maskClosable) return
+		if (Date.now() - openedAt < VX_POPUP_MASK_GUARD) return
 		onCancelTap()
 	}
 
@@ -409,12 +432,42 @@
 		emitDraftChange()
 	}
 
+	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
+	let openedAt = 0
+
+	// 打开期间只记一次。叠了两个弹层时由底座计数，最后一个收起才解锁。
+	let pageLocked = false
+
+	const setPageLock = (locked: boolean) => {
+		if (pageLocked === locked) return
+		pageLocked = locked
+		if (locked) vxLockPageScroll()
+		else vxUnlockPageScroll()
+	}
+
+	// 打开：首次挂上根节点，之后只去掉隐藏 class；fixed 层和滚轮都只创建一次。
+	// prepare 每次打开都跑，把滚轮的 value 拨回当前草稿。
+	const enter = () => {
+		openedAt = Date.now()
+		rendered.value = true
+		hidden.value = false
+		setPageLock(true)
+		prepare()
+	}
+
+	// 关闭：现有实现没有退场，直接切隐藏 class；根节点和滚轮保留，滚动锁跟着解开。
+	const leave = () => {
+		if (!rendered.value) return
+		hidden.value = true
+		setPageLock(false)
+	}
+
 	// 打开时重新读 options 和 v-model，滚轮挂载时就能停在正确的位置。
 	// 打开期间父级改 modelValue 不跟，避免把正在滚的轮子拽走。
 	// 这个 watch 必须写在 options 前面：同一拍打开时 prepare 先规整，下面看到同一份引用就跳过。
 	watch(show, (visible: boolean) => {
-		if (!visible) return
-		prepare()
+		if (visible) enter()
+		else leave()
 	})
 
 	watch(() => props.options, () => {
@@ -423,8 +476,17 @@
 		realignWhileOpen()
 	})
 
-	// 挂载时已经打开的，先对齐再出第一帧。关着的不复制树，页面上多个实例不会各备一份。
-	if (show.value) prepare()
+	// 挂载时已经打开的，rendered 已经为 true，先对齐再出第一帧。关着的不复制树，页面上多个实例不会各备一份。
+	// watch 不会走，遮罩保护窗和滚动锁也从这一帧算起。
+	if (show.value) {
+		openedAt = Date.now()
+		setPageLock(true)
+		prepare()
+	}
+
+	onUnmounted(() => {
+		setPageLock(false)
+	})
 
 	defineExpose({
 		open,
@@ -450,6 +512,12 @@
 		justify-content: flex-end;
 	}
 
+	/* 首开后根节点常驻。关闭只加这个 class：display: none 只停绘制，picker-view 不销毁；
+	   下次打开去掉它再入场。class 字符串排在最后，这条规则也排在基础类之后。 */
+	.vx-picker--hidden {
+		display: none;
+	}
+
 	.vx-picker__mask {
 		position: absolute;
 		top: 0;
@@ -460,8 +528,7 @@
 		background-color: var(--vx-color-mask);
 	}
 
-	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
-	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
+	/* 外层留顶部圆角。全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
 	.vx-picker__sheet {
 		position: relative;
 		z-index: 1;
@@ -473,11 +540,10 @@
 		max-width: var(--vx-picker-max-width);
 		border-top-left-radius: var(--vx-radius-lg);
 		border-top-right-radius: var(--vx-radius-lg);
-		box-shadow: var(--vx-shadow-lg);
 		overflow: visible;
 	}
 
-	/* 内层裁按压态和底色，圆角与阴影层一致，轮廓才重合。安全区作为内边距，滚轮不压住手势条。 */
+	/* 内层裁按压态和底色，圆角与外层一致，轮廓才重合。安全区作为内边距，滚轮不压住手势条。 */
 	.vx-picker__panel {
 		flex-direction: column;
 		box-sizing: border-box;
@@ -661,6 +727,8 @@
 
 	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
 	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	   根节点首开后常驻；隐藏时 display: none 会终止下面的关键帧，
+	   去掉隐藏类后浏览器从头再播一遍，入场不靠重新挂载。
 	   定位层的 touch-action 关掉浏览器默认手势，页面在面板打开期间不跟着滚；
 	   滚轮自己用 JS 接手势，不受影响。 */
 	/* #ifdef WEB */

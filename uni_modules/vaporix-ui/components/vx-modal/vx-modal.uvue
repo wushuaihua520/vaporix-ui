@@ -1,10 +1,12 @@
 <template>
 	<!-- 弹框是居中浮层：遮罩铺满页面，面板居中。挂在页面根节点，不要放进 scroll-view 或卡片。 -->
 	<!-- 默认取消 / 确定两个按钮；传了 actions 就整组替换。取消、关闭叉、可关闭的遮罩和可自动收起动作都会收起。 -->
-	<view v-if="show" class="vx-modal" :style="rootStyle" @touchmove.stop.prevent>
-		<view :class="maskClass" :style="maskStyle" @click="onMaskTap"></view>
+	<!-- 触摸只拦遮罩、头部和底栏：默认插槽里的 scroll-view 要接住手势，这一层和正文不能监听 touchmove。 -->
+	<!-- 第一次打开后根节点常驻，关闭只切隐藏 class，不再卸载；插槽里的原生子树也只创建一次。 -->
+	<view v-if="rendered" :class="rootClass" :style="rootStyle">
+		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
-		<view :class="panelClass" @click.stop>
+		<view :class="panelClass" :style="panelStyle" @click.stop>
 			<!-- 关闭叉是独立出口：热区 44，图标 18，和取消共用 cancel；标题左右各让 24，避免压住热区。 -->
 			<view v-if="closable" class="vx-modal__close" hover-class="vx-modal__close--pressed"
 				:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCloseTap">
@@ -12,7 +14,7 @@
 			</view>
 
 			<!-- 图标圆和标题都可选；都为空时不渲染头部，自定义正文可以直接从面板顶部开始。 -->
-			<view v-if="hasHeader" :class="headerClass">
+			<view v-if="hasHeader" :class="headerClass" @touchmove.stop.prevent>
 				<view v-if="hasIcon" :class="iconClass">
 					<vx-icon :name="iconName" size="lg" :color="iconColor" />
 				</view>
@@ -26,7 +28,7 @@
 			</view>
 
 			<!-- 一个动作铺满，两个并排，三个及以上纵向排列；动作本身复用 vx-button。 -->
-			<view v-if="rows.length > 0" :class="footerClass">
+			<view v-if="rows.length > 0" :class="footerClass" @touchmove.stop.prevent>
 				<view v-for="row in rows" :key="row.key" :class="row.wrapperClass">
 					<vx-button block size="sm" :type="row.type" :variant="row.variant" :shape="actionShape"
 						:text="row.text" :disabled="row.disabled" :loading="row.loading" @click="onActionTap(row)" />
@@ -39,8 +41,8 @@
 <script setup>
 	import { VxIconName } from '../../libs/icons/codepoints'
 	import { VxSemantic } from '../../libs/types/common'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_MODAL_LAYER } from '../../libs/overlay'
+	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_MODAL_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 	import { VxModalAction, VxModalActionVariant, VxModalProps } from './props'
 
 	const props = withDefaults(defineProps<VxModalProps>(), {
@@ -78,6 +80,11 @@
 		cancel: []
 		action: [index: number, action: VxModalAction]
 	}>()
+
+	// 挂载和隐藏分开：rendered 控制根节点在不在（首开后常驻），hidden 控制整层是不是 display: none。
+	// 首次渲染就显示时直接挂上；之后 rendered 只从 false 变 true，不再回头。
+	const rendered = ref(show.value === true)
+	const hidden = ref(show.value !== true)
 
 	type ModalActionKind = 'cancel' | 'confirm' | 'action'
 
@@ -123,6 +130,13 @@
 		return name
 	})
 
+	// class 顺序：基础 → 隐藏。样式表顺序与此一致。
+	const rootClass = computed((): string => {
+		let name = 'vx-modal'
+		if (hidden.value) name += ' vx-modal--hidden'
+		return name
+	})
+
 	const maskClass = computed((): string => {
 		return props.maskClosable ? 'vx-modal__mask vx-modal__mask--closable' : 'vx-modal__mask'
 	})
@@ -130,6 +144,38 @@
 	const panelClass = computed((): string => {
 		return `vx-modal__panel vx-modal__panel--${props.size}`
 	})
+
+	// 定位层是 border-box，上下各 24。max-height: 100% 按边框盒会再叠上这 48，动作仍出屏。
+	// 上限写在面板上，自己让出上下 24。不量正文。
+	const VX_MODAL_EDGE = 24
+
+	const windowHeight = ref(0)
+
+	// 拿不到或不是正数就记 0：上限算成负数，panelStyle 不写 max-height，面板按内容走。
+	const readWindowHeight = () => {
+		if (typeof uni === 'undefined' || typeof uni.getWindowInfo !== 'function') {
+			windowHeight.value = 0
+			return
+		}
+		const info = uni.getWindowInfo()
+		if (info == null) {
+			windowHeight.value = 0
+			return
+		}
+		windowHeight.value = info.windowHeight > 0 ? info.windowHeight : 0
+	}
+
+	readWindowHeight()
+
+	const panelStyle = computed((): string => {
+		const limit = windowHeight.value - VX_MODAL_EDGE - VX_MODAL_EDGE
+		if (limit <= 0) return ''
+		return `max-height: ${limit}px;`
+	})
+
+	const onWindowResize = () => {
+		readWindowHeight()
+	}
 
 	const headerClass = computed((): string => {
 		return props.closable ? 'vx-modal__header vx-modal__header--closable' : 'vx-modal__header'
@@ -284,10 +330,79 @@
 	}
 
 	// 遮罩可关闭时按取消处理，和点取消按钮走同一个出口。
+	// 打开那一下抬起的触摸也会落到遮罩上，保护窗内直接丢掉，否则浮层会一闪就关。
 	const onMaskTap = () => {
 		if (!props.maskClosable) return
+		if (Date.now() - openedAt < VX_POPUP_MASK_GUARD) return
 		onCancel()
 	}
+
+	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
+	let openedAt = 0
+
+	// 打开期间只记一次。叠了两个弹层时由底座计数，最后一个收起才解锁。
+	let pageLocked = false
+
+	const setPageLock = (locked: boolean) => {
+		if (pageLocked === locked) return
+		pageLocked = locked
+		if (locked) vxLockPageScroll()
+		else vxUnlockPageScroll()
+	}
+
+	// 打开：首次挂上根节点，之后只去掉隐藏 class；插槽里的原生子树只创建一次。
+	// 根节点常驻，面板不随重开重建，可视高在这里补读：键盘收起或旋转后再打开，上限才跟着新的高度走。
+	const enter = () => {
+		readWindowHeight()
+		openedAt = Date.now()
+		rendered.value = true
+		hidden.value = false
+		setPageLock(true)
+	}
+
+	// 关闭：现有实现没有退场（Web 的入场是关键帧，关闭时没有对应退场；App 5.26 也没有），
+	// 直接切隐藏 class；根节点和原生子树都保留，滚动锁跟着解开。
+	const leave = () => {
+		if (!rendered.value) return
+		hidden.value = true
+		setPageLock(false)
+	}
+
+	watch(show, (visible: boolean) => {
+		if (visible) enter()
+		else leave()
+	})
+
+	// 挂载时已经打开的，watch 不会走，保护窗和滚动锁从这一帧算起。
+	if (show.value) {
+		openedAt = Date.now()
+		setPageLock(true)
+	}
+
+	// 键盘把可视区压矮时窗口高度会变，上限跟着让出上下 24。
+	// App 基座没有 uni.onWindowResize，先判断是不是函数再挂；Web 听 window 的 resize。
+	onMounted(() => {
+		// #ifdef WEB
+		if (typeof window !== 'undefined') window.addEventListener('resize', onWindowResize)
+		// #endif
+		// #ifndef WEB
+		if (typeof uni !== 'undefined' && typeof uni.onWindowResize === 'function') {
+			uni.onWindowResize(onWindowResize)
+		}
+		// #endif
+	})
+
+	onUnmounted(() => {
+		// #ifdef WEB
+		if (typeof window !== 'undefined') window.removeEventListener('resize', onWindowResize)
+		// #endif
+		// #ifndef WEB
+		if (typeof uni !== 'undefined' && typeof uni.offWindowResize === 'function') {
+			uni.offWindowResize(onWindowResize)
+		}
+		// #endif
+		setPageLock(false)
+	})
 
 	const open = () => {
 		show.value = true
@@ -332,6 +447,12 @@
 		overflow: visible;
 	}
 
+	/* 首开后根节点常驻。关闭只加这个 class：display: none 只停绘制，原生子树不销毁；
+	   下次打开去掉它，遮罩、面板和插槽内容都还在。规则排在基础类之后，才盖得住。 */
+	.vx-modal--hidden {
+		display: none;
+	}
+
 	/* 遮罩垫在面板下面，只压页面，不压面板。 */
 	.vx-modal__mask {
 		position: absolute;
@@ -344,7 +465,7 @@
 	}
 
 	/* 面板用 surface 底、lg 圆角和 lg 阴影，不加描边。
-	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上内边距不会被挤掉。
+	   全屏层是纵向 flex。面板仍不跟着定位层被压扁，短屏上内边距还在；限高之后缩的是正文。
 	   阴影画在这一层。App 会把画出盒子的阴影裁掉，必须 visible。 */
 	.vx-modal__panel {
 		position: relative;
@@ -373,17 +494,17 @@
 		max-width: var(--vx-modal-max-width-lg);
 	}
 
-	/* 关闭叉贴右上角，热区 44 不并入控件高度；没有底色，按下用整体透明度。 */
+	/* 关闭叉离右上各 8，热区用 --vx-hit-size，不并入控件高度；没有底色，按下用整体透明度。 */
 	.vx-modal__close {
 		position: absolute;
-		top: var(--vx-space-xs);
-		right: var(--vx-space-xs);
+		top: var(--vx-space-sm);
+		right: var(--vx-space-sm);
 		z-index: 2;
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		width: var(--vx-modal-close-size);
-		height: var(--vx-modal-close-size);
+		width: var(--vx-hit-size);
+		height: var(--vx-hit-size);
 		border-radius: var(--vx-radius-pill);
 	}
 
@@ -391,7 +512,7 @@
 		opacity: var(--vx-opacity-pressed);
 	}
 
-	/* 纵向 flex 里这一层不收缩，48 的图标圆才不会被短屏压扁。正文和动作同样不收缩。 */
+	/* 纵向 flex 里这一层不收缩，48 的图标圆才不会被短屏压扁。底栏同样不收缩。 */
 	.vx-modal__header {
 		flex-direction: column;
 		flex-shrink: 0;
@@ -465,13 +586,16 @@
 		font-weight: var(--vx-weight-semibold);
 	}
 
-	/* 正文和标题之间留 12；只有正文时从面板内边距开始。 */
+	/* 正文和标题之间留 12；只有正文时从面板内边距开始。
+	   限高之后先缩这一层，多出来的正文裁掉。头部和底栏不缩。 */
 	.vx-modal__body {
 		flex-direction: column;
-		flex-shrink: 0;
+		flex-shrink: 1;
+		min-height: 0;
 		box-sizing: border-box;
 		width: 100%;
 		min-width: 0;
+		overflow: hidden;
 	}
 
 	.vx-modal__body--after-header {

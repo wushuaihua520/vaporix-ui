@@ -2,6 +2,7 @@
 	<!-- 弹层模式铺满页面、面板贴底，挂在页面根节点；平铺模式是普通块，宽度跟随父级，不带底色和描边。 -->
 	<!-- 点选先落在草稿上：弹层模式点确定才写回 v-model；平铺模式没有确定出口，点选当场写回。 -->
 	<!-- 关闭叉、遮罩和 close() 都不动已提交的值。 -->
+	<!-- 弹层第一次打开后根节点常驻，关闭只切隐藏 class，不再卸载；平铺模式始终渲染。 -->
 	<view v-if="rendered" :class="rootClass" :style="rootStyle" @touchmove="onRootTouchMove">
 		<view v-if="popup" :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
@@ -97,7 +98,7 @@
 	} from '../../libs/calendar'
 	import { vxLunarFromSolar } from '../../libs/lunar'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
+	import { VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 	import { VxCalendarMark, VxCalendarProps } from './props'
 
 	const props = withDefaults(defineProps<VxCalendarProps>(), {
@@ -218,7 +219,10 @@
 	// 今天只用来给数字换色，跨零点后由 prepare 再取一次。
 	const todayText = ref(vxCalendarFormat(initialDay.year, initialDay.month, initialDay.day))
 
-	const rendered = computed((): boolean => !props.popup || show.value)
+	// 弹层第一次打开才挂根节点，之后不再卸载：真机上关掉再开偶尔整层不落屏，常驻后不再复现。
+	// 隐藏只在弹层模式用；平铺模式始终渲染，也不带隐藏 class。
+	const rendered = ref(!props.popup || show.value)
+	const hidden = ref(props.popup && !show.value)
 
 	const tone = computed((): string => {
 		const value = props.type
@@ -605,8 +609,11 @@
 		return canConfirm.value ? 'vx-calendar__confirm--pressed' : 'none'
 	})
 
+	// class 顺序：基础 → 弹层 → 隐藏；样式表顺序与此一致。
 	const rootClass = computed((): string => {
-		return props.popup ? 'vx-calendar vx-calendar--popup' : 'vx-calendar'
+		if (!props.popup) return 'vx-calendar'
+		if (hidden.value) return 'vx-calendar vx-calendar--popup vx-calendar--hidden'
+		return 'vx-calendar vx-calendar--popup'
 	})
 
 	const sheetClass = computed((): string => {
@@ -744,11 +751,42 @@
 	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
 	let openedAt = 0
 
+	// 平铺日历留在文档流里，不锁页面。弹层打开期间只记一次。
+	let pageLocked = false
+
+	const setPageLock = (locked: boolean) => {
+		if (pageLocked === locked) return
+		pageLocked = locked
+		if (locked) vxLockPageScroll()
+		else vxUnlockPageScroll()
+	}
+
 	// 打开时重新读模型，草稿和显示月都跟着回到已选位置。
+	// 关闭只切隐藏 class，根节点和子层都留着；下一帧再开去掉 class 就落屏，不等任何过渡结束。
 	watch(show, (visible: boolean) => {
-		if (!props.popup || !visible) return
+		if (!props.popup) return
+		if (!visible) {
+			if (rendered.value) hidden.value = true
+			setPageLock(false)
+			return
+		}
+		rendered.value = true
+		hidden.value = false
+		setPageLock(true)
 		openedAt = Date.now()
 		prepare()
+	})
+
+	// 切到平铺时去掉隐藏 class；切到弹层按当前开关决定整层先隐藏还是直接出来。
+	watch(() => props.popup, (popup: boolean) => {
+		if (!popup) {
+			hidden.value = false
+			setPageLock(false)
+			return
+		}
+		rendered.value = true
+		hidden.value = !show.value
+		setPageLock(show.value)
 	})
 
 	// 平铺模式常驻，父级换值时只同步草稿，不动当前显示的月份。
@@ -778,8 +816,15 @@
 	watch(() => props.maxDate, clampView)
 
 	// 挂载时已经打开的，先对齐再出第一帧；平铺模式也要先读一次模型，否则首帧是空的。
-	if (props.popup && show.value) openedAt = Date.now()
+	if (props.popup && show.value) {
+		openedAt = Date.now()
+		setPageLock(true)
+	}
 	prepare()
+
+	onUnmounted(() => {
+		setPageLock(false)
+	})
 
 	defineExpose({
 		open,
@@ -810,6 +855,12 @@
 		justify-content: flex-end;
 	}
 
+	/* 首开后根节点常驻。关闭只加这个 class：display: none 只停绘制，原生子树不销毁；
+	   重开去掉它，遮罩和面板都还在。规则排在弹层之后，才盖得住。 */
+	.vx-calendar--hidden {
+		display: none;
+	}
+
 	.vx-calendar__mask {
 		position: absolute;
 		top: 0;
@@ -820,8 +871,7 @@
 		background-color: var(--vx-color-mask);
 	}
 
-	/* 外层只留阴影和顶部圆角。App 默认 overflow 是 hidden，会裁掉画出盒子的阴影，这里必须 visible。
-	   全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
+	/* 外层留顶部圆角。全屏层是纵向 flex，默认会压缩子项；关掉压缩，短屏上面板才不会被挤扁。 */
 	.vx-calendar__sheet {
 		position: relative;
 		flex-direction: column;
@@ -837,10 +887,9 @@
 		max-width: var(--vx-calendar-max-width);
 		border-top-left-radius: var(--vx-radius-lg);
 		border-top-right-radius: var(--vx-radius-lg);
-		box-shadow: var(--vx-shadow-lg);
 	}
 
-	/* 内层裁底色，圆角与阴影层一致，轮廓才重合。安全区作为内边距，确定按钮不压住手势条。 */
+	/* 内层裁底色，圆角与外层一致，轮廓才重合。安全区作为内边距，确定按钮不压住手势条。 */
 	.vx-calendar__panel {
 		flex-direction: column;
 		box-sizing: border-box;
@@ -884,7 +933,7 @@
 		text-overflow: ellipsis;
 	}
 
-	/* 关闭叉是 44×44 的热区，和弹框的关闭叉同尺寸；图标 18 居中。 */
+	/* 关闭叉热区用 --vx-hit-size，和弹框关闭叉同尺寸；图标 18 居中。 */
 	.vx-calendar__close {
 		position: absolute;
 		top: var(--vx-space-xs);
@@ -893,8 +942,8 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
+		width: var(--vx-hit-size);
+		height: var(--vx-hit-size);
 	}
 
 	.vx-calendar__close--pressed {
@@ -932,7 +981,7 @@
 		flex-shrink: 0;
 		align-items: center;
 		justify-content: center;
-		width: 40px;
+		width: var(--vx-calendar-arrow);
 		height: 100%;
 	}
 
@@ -945,7 +994,7 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		width: 30px;
+		width: var(--vx-calendar-double);
 	}
 
 	.vx-calendar__nav-title {

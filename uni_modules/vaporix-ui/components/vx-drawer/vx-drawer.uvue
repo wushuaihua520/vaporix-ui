@@ -2,7 +2,8 @@
 	<!-- 抽屉是贴边浮层：遮罩铺满页面，面板从一条边滑出。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
 	<!-- 点遮罩、点关闭叉都收起并抛 close；open() / close() 只改 show。 -->
 	<!-- 触摸只拦遮罩、头部和底栏：正文的 scroll-view 要接住手势，面板不能监听 touchmove。 -->
-	<view v-if="show" :class="rootClass" :style="rootStyle">
+	<!-- 第一次打开后根节点常驻，关闭只切隐藏 class，不再卸载；正文的原生 scroll-view 也只创建一次。 -->
+	<view v-if="rendered" :class="rootClass" :style="rootStyle">
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
 		<!-- 外层只留阴影和圆角，内层裁出四角；App 默认 hidden 会把画出盒子的阴影裁掉。 -->
@@ -51,8 +52,8 @@
 
 <script setup>
 	import { VxDrawerPosition, VxDrawerProps } from './props'
-	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
+	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxDrawerProps>(), {
 		position: 'right',
@@ -77,6 +78,11 @@
 		close: []
 	}>()
 
+	// 挂载和隐藏分开：rendered 控制根节点在不在（首开后常驻），hidden 控制整层是不是 display: none。
+	// 首次渲染就显示时直接挂上；之后 rendered 只从 false 变 true，不再回头。
+	const rendered = ref(show.value === true)
+	const hidden = ref(show.value !== true)
+
 	// 传进来不认识的方向落回 right，class 拼出来才是合法的。
 	const placement = computed((): VxDrawerPosition => {
 		const value = props.position
@@ -84,9 +90,11 @@
 		return 'right'
 	})
 
-	// class 顺序：基础 → 方向。样式表顺序与此一致。
+	// class 顺序：基础 → 方向 → 隐藏。样式表顺序与此一致。
 	const rootClass = computed((): string => {
-		return `vx-drawer vx-drawer--${placement.value}`
+		let name = `vx-drawer vx-drawer--${placement.value}`
+		if (hidden.value) name += ' vx-drawer--hidden'
+		return name
 	})
 
 	const sheetClass = computed((): string => {
@@ -97,7 +105,7 @@
 		return `vx-drawer__panel vx-drawer__panel--${placement.value}`
 	})
 
-	// 有关闭叉时右侧只留 4，44 的热区贴住面板右边；没有时回到正常内边距。
+	// 有关闭叉时右侧留 8，44 的热区右缘离面板 8；没有时回到正常内边距。
 	const headerClass = computed((): string => {
 		if (props.closable) return 'vx-drawer__header'
 		return 'vx-drawer__header vx-drawer__header--plain'
@@ -144,11 +152,57 @@
 	}
 
 	// 点遮罩和点关闭叉走同一个出口：先收起再抛 close，父级在事件里改 show 也不会被覆盖。
+	// 打开那一下抬起的触摸也会落到遮罩上，保护窗内直接丢掉，否则浮层会一闪就关。
 	const onMaskTap = () => {
 		if (!props.maskClosable || !show.value) return
+		if (Date.now() - openedAt < VX_POPUP_MASK_GUARD) return
 		hide()
 		emit('close')
 	}
+
+	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
+	let openedAt = 0
+
+	// 打开期间只记一次。叠了两个弹层时由底座计数，最后一个收起才解锁。
+	let pageLocked = false
+
+	const setPageLock = (locked: boolean) => {
+		if (pageLocked === locked) return
+		pageLocked = locked
+		if (locked) vxLockPageScroll()
+		else vxUnlockPageScroll()
+	}
+
+	// 打开：首次挂上根节点，之后只去掉隐藏 class；正文的原生 scroll-view 只创建一次。
+	const enter = () => {
+		openedAt = Date.now()
+		rendered.value = true
+		hidden.value = false
+		setPageLock(true)
+	}
+
+	// 关闭：现有实现没有退场（Web 的入场是关键帧，关闭时没有对应退场；App 5.26 也没有），
+	// 直接切隐藏 class；根节点和正文的原生子树都保留，滚动锁跟着解开。
+	const leave = () => {
+		if (!rendered.value) return
+		hidden.value = true
+		setPageLock(false)
+	}
+
+	watch(show, (visible: boolean) => {
+		if (visible) enter()
+		else leave()
+	})
+
+	// 挂载时已经打开的，watch 不会走，保护窗和滚动锁从这一帧算起。
+	if (show.value) {
+		openedAt = Date.now()
+		setPageLock(true)
+	}
+
+	onUnmounted(() => {
+		setPageLock(false)
+	})
 
 	const onCloseTap = () => {
 		if (!props.closable || !show.value) return
@@ -165,9 +219,17 @@
 		hide()
 	}
 
+	// 给页面 onBackPress 用：收起并抛 close，和点遮罩、关闭叉同一条路。close() 只收起。
+	const cancel = () => {
+		if (!show.value) return
+		hide()
+		emit('close')
+	}
+
 	defineExpose({
 		open,
-		close
+		close,
+		cancel
 	})
 </script>
 
@@ -212,6 +274,12 @@
 		justify-content: flex-end;
 	}
 
+	/* 首开后根节点常驻。关闭只加这个 class：display: none 只停绘制，正文的原生 scroll-view 不销毁；
+	   下次打开去掉它再入场。class 字符串排在最后，这条规则也排在方向类之后。 */
+	.vx-drawer--hidden {
+		display: none;
+	}
+
 	/* 遮罩垫在面板下面，只压页面，不压面板。 */
 	.vx-drawer__mask {
 		position: absolute;
@@ -223,7 +291,7 @@
 		background-color: var(--vx-color-mask);
 	}
 
-	/* 外层只负责尺寸、阴影和内侧圆角；内层裁底色，避免 overflow 把阴影一起裁掉。
+	/* 外层只负责尺寸和内侧圆角；内层裁底色。
 	   交叉轴写 100%，正文的 scroll-view 才有确定高度。
 	   overflow 是 visible，最小尺寸默认跟内容走；压成 0，长文才不会把面板撑出屏幕。
 	   主轴保留压缩：App 的 max-width 不支持百分比，宽或高大于屏幕时靠压缩收到这一层里。
@@ -238,7 +306,6 @@
 		box-sizing: border-box;
 		min-width: 0;
 		min-height: 0;
-		box-shadow: var(--vx-shadow-lg);
 		overflow: visible;
 	}
 
@@ -325,7 +392,7 @@
 		width: 100%;
 	}
 
-	/* 头部沿用列表行 md 的 52：标题单行省略，右侧留 4 给 44 的关闭叉。 */
+	/* 头部沿用列表行 md 的 52：标题单行省略，右侧留 8 给 44 的关闭叉。 */
 	.vx-drawer__header {
 		flex-direction: row;
 		flex-shrink: 0;
@@ -334,7 +401,7 @@
 		width: 100%;
 		min-height: var(--vx-list-height-md);
 		padding-left: var(--vx-space-lg);
-		padding-right: var(--vx-space-xs);
+		padding-right: var(--vx-space-sm);
 	}
 
 	.vx-drawer__header--plain {
@@ -379,14 +446,14 @@
 		margin-left: var(--vx-space-sm);
 	}
 
-	/* 关闭叉 44×44，和列表行的最小热区同高；图标 18 居中。 */
+	/* 关闭叉用热区令牌，不跟列表行；图标 18 居中。 */
 	.vx-drawer__close {
 		flex-direction: row;
 		flex-shrink: 0;
 		align-items: center;
 		justify-content: center;
-		width: var(--vx-list-height-sm);
-		height: var(--vx-list-height-sm);
+		width: var(--vx-hit-size);
+		height: var(--vx-hit-size);
 	}
 
 	.vx-drawer__close--pressed {
@@ -435,6 +502,8 @@
 	   不支持动画时元素直接按正常样式出现，不会留在透明态。
 	   定位层关掉浏览器默认手势，页面在抽屉打开期间不跟着滚；正文改回纵向滑动。 */
 	/* #ifdef WEB */
+	/* 根节点首开后常驻；隐藏时 display: none 会终止下面这些关键帧，
+	   去掉隐藏类后浏览器从头再播一遍，入场不靠重新挂载。 */
 	.vx-drawer {
 		touch-action: none;
 	}
