@@ -233,7 +233,15 @@
 							<vx-list-cell size="lg" title="大号行 · 60" description="17 / 24，设置页和强调入口"
 								:clickable="false" :divider="false" />
 						</vx-list-view>
-						<text class="demo-hint">行高是下限，双行时由上下内边距自然撑高；sm 已经满足 44 的可点热区。</text>
+						<view class="demo-list-size-gap">
+							<vx-list-view title="小号分组" size="sm">
+								<vx-list-cell size="sm" title="小号行 · 44" description="标题左缘和行文字对齐"
+									:clickable="false" />
+								<vx-list-cell size="sm" title="另一行小号" description="13 / 20，分组 size 不改行高"
+									:clickable="false" :divider="false" />
+							</vx-list-view>
+						</view>
+						<text class="demo-hint">行高是下限，双行时由上下内边距自然撑高；sm 已经满足 44 的可点热区。上面一组仍是默认标题缩进，三档行混在一起。下面 size="sm" 只收标题左右，行高和字号还是各行自己的 size。</text>
 					</view>
 				</view>
 
@@ -342,7 +350,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>
@@ -393,3 +401,10 @@
 		syncDemoTheme()
 	})
 </script>
+
+<style>
+	/* 同一节里两组标题，隔开 24，方便对左缘。 */
+	.demo-list-size-gap {
+		margin-top: var(--vx-space-xl);
+	}
+</style>

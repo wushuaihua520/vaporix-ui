@@ -53,7 +53,7 @@
 					</view>
 					<view class="demo-collapse-stage">
 						<vx-collapse v-model="collapseBasicOpen">
-							<vx-collapse-item v-for="item in collapseFaq" :key="item.name" :name="item.name"
+							<vx-collapse-item v-for="(item, index) in collapseFaq" :key="item.name" :index="index" :name="item.name"
 								:title="item.title">
 								<text class="demo-collapse__body">{{ item.body }}</text>
 							</vx-collapse-item>
@@ -74,7 +74,7 @@
 					</view>
 					<view class="demo-collapse-stage">
 						<vx-collapse v-model="collapseAccordionOpen" accordion @change="onCollapseChange">
-							<vx-collapse-item v-for="item in collapseAccount" :key="item.name" :name="item.name"
+							<vx-collapse-item v-for="(item, index) in collapseAccount" :key="item.name" :index="index" :name="item.name"
 								:title="item.title">
 								<text class="demo-collapse__body">{{ item.body }}</text>
 							</vx-collapse-item>
@@ -101,7 +101,7 @@
 						<view class="demo-collapse__group">
 							<text class="demo-collapse__label">card</text>
 							<vx-collapse v-model="collapseCardOpen">
-								<vx-collapse-item v-for="item in collapseFaq" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseFaq" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -110,7 +110,7 @@
 						<view class="demo-collapse__group demo-collapse__group--divided">
 							<text class="demo-collapse__label">plain</text>
 							<vx-collapse v-model="collapsePlainOpen" variant="plain">
-								<vx-collapse-item v-for="item in collapseAccount" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseAccount" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -134,7 +134,7 @@
 						<view class="demo-collapse__group">
 							<text class="demo-collapse__label">sm · 44</text>
 							<vx-collapse v-model="collapseSizeSmOpen" size="sm">
-								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseShort" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -143,7 +143,7 @@
 						<view class="demo-collapse__group demo-collapse__group--divided">
 							<text class="demo-collapse__label">md · 52</text>
 							<vx-collapse v-model="collapseSizeMdOpen">
-								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseShort" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -152,7 +152,7 @@
 						<view class="demo-collapse__group demo-collapse__group--divided">
 							<text class="demo-collapse__label">lg · 60</text>
 							<vx-collapse v-model="collapseSizeLgOpen" size="lg">
-								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseShort" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -176,7 +176,7 @@
 						<view class="demo-collapse__group">
 							<text class="demo-collapse__label">disabled</text>
 							<vx-collapse v-model="collapseDisabledOpen">
-								<vx-collapse-item v-for="item in collapseDisabledItems" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseDisabledItems" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -188,7 +188,7 @@
 						<view class="demo-collapse__group demo-collapse__group--divided">
 							<text class="demo-collapse__label">arrow=false</text>
 							<vx-collapse v-model="collapseNoArrowOpen" :arrow="false">
-								<vx-collapse-item v-for="item in collapseShort" :key="item.name" :name="item.name"
+								<vx-collapse-item v-for="(item, index) in collapseShort" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
 									<text class="demo-collapse__body">{{ item.body }}</text>
 								</vx-collapse-item>
@@ -318,7 +318,7 @@
 					</view>
 					<view class="demo-collapse-stage">
 						<vx-collapse ref="collapseMethodRef" v-model="collapseMethodOpen" @change="onCollapseChange">
-							<vx-collapse-item v-for="item in collapseFaq" :key="item.name" :name="item.name"
+							<vx-collapse-item v-for="(item, index) in collapseFaq" :key="item.name" :index="index" :name="item.name"
 								:title="item.title">
 								<text class="demo-collapse__body">{{ item.body }}</text>
 							</vx-collapse-item>
@@ -359,7 +359,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>

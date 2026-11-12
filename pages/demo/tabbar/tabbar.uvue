@@ -114,7 +114,7 @@
 								<text class="demo-tabbar-status__text">{{ raisedClickText }}</text>
 							</view>
 						</view>
-						<text class="demo-hint demo-tabbar-hint">一个标签栏最多一个凸起项；圆钮占它所在列，点整列都算这一项。action 项不写 v-model。</text>
+						<text class="demo-hint demo-tabbar-hint">一个标签栏最多一个凸起项；只有圆钮能点，透明带上的点击落到页面。action 项不写 v-model。</text>
 					</view>
 				</view>
 
@@ -324,7 +324,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>

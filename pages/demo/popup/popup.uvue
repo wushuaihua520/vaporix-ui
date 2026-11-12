@@ -119,11 +119,11 @@
 						</view>
 						<view class="demo-section__copy">
 							<text class="demo-section__title">关闭方式</text>
-							<text class="demo-section__desc">closeable 和 maskClosable 两个开关，点遮罩会记一次日志。</text>
+							<text class="demo-section__desc">closable 和 maskClosable 两个开关，点遮罩会记一次日志。</text>
 						</view>
 					</view>
 					<view class="demo-card">
-						<vx-switch v-model="closeableOn" layout="list" label="显示关闭叉" description="closeable"
+						<vx-switch v-model="closableOn" layout="list" label="显示关闭叉" description="closable"
 							divider />
 						<vx-switch v-model="maskClosableOn" layout="list" label="点遮罩可关闭"
 							description="maskClosable" :divider="false" />
@@ -304,13 +304,13 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.63.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>
 
 		<!-- 弹出层同样挂在页面根上，遮罩才盖得住滚动容器和固定页脚；一组示例一个实例，同一时刻只开一个。 -->
-		<vx-popup v-model:show="placeVisible" :placement="placeCurrent" closeable>
+		<vx-popup v-model:show="placeVisible" :placement="placeCurrent" closable>
 			<view class="demo-popup-body">
 				<text class="demo-popup-title">{{ placeText }}</text>
 				<text class="demo-popup-text">上下占满宽度、左右占满高度，居中四周留 24；换个 placement 再看一次圆角。</text>
@@ -326,7 +326,7 @@
 			</view>
 		</vx-popup>
 
-		<vx-popup v-model:show="closeVisible" :closeable="closeableOn" :mask-closable="maskClosableOn"
+		<vx-popup v-model:show="closeVisible" :closable="closableOn" :mask-closable="maskClosableOn"
 			@click-mask="onPopupMask" @close="onPopupClose">
 			<view class="demo-popup-body">
 				<text class="demo-popup-title">关闭方式</text>
@@ -335,7 +335,7 @@
 			</view>
 		</vx-popup>
 
-		<vx-popup v-model:show="safeVisible" :safe-area="safeAreaOn" placement="bottom" closeable>
+		<vx-popup v-model:show="safeVisible" :safe-area="safeAreaOn" placement="bottom" closable>
 			<view class="demo-popup-safe">
 				<text class="demo-popup-title">确认修改</text>
 				<text class="demo-popup-text">这一行按钮贴着面板底边，安全区的留白由面板内边距补在下面。</text>
@@ -351,7 +351,7 @@
 		</vx-popup>
 
 		<vx-popup v-model:show="sizeVisible" :placement="sizePlacement" :width="sizeWidth"
-			:height="sizeHeight" closeable>
+			:height="sizeHeight" closable>
 			<view class="demo-popup-body">
 				<text class="demo-popup-title">{{ sizeLabel }}</text>
 				<text class="demo-popup-text">宽度和高度都必须带单位；不传时左右用 280，上下按内容排。</text>
@@ -359,7 +359,7 @@
 			</view>
 		</vx-popup>
 
-		<vx-popup v-model:show="orderVisible" placement="bottom" height="62%" closeable>
+		<vx-popup v-model:show="orderVisible" placement="bottom" height="62%" closable>
 			<view class="demo-popup-panel">
 				<view class="demo-popup-panel__head">
 					<text class="demo-popup-panel__title">我的订单</text>
@@ -387,15 +387,15 @@
 			</view>
 		</vx-popup>
 
-		<vx-popup v-model:show="filterVisible" placement="bottom" closeable>
+		<vx-popup v-model:show="filterVisible" placement="bottom" closable>
 			<view class="demo-popup-filter">
 				<view class="demo-popup-panel__head">
 					<text class="demo-popup-panel__title">筛选</text>
 					<text class="demo-popup-panel__desc">勾选后点查看，数量由页面算。</text>
 				</view>
 				<vx-checkbox-group v-model="filterValues" layout="list">
-					<vx-checkbox v-for="option in filterOptions" :key="option.value" :value="option.value"
-						:label="option.label" :description="option.description" />
+					<vx-checkbox v-for="(option, index) in filterOptions" :key="option.value" :index="index"
+						:value="option.value" :label="option.label" :description="option.description" />
 				</vx-checkbox-group>
 				<view class="demo-popup-panel__foot">
 					<view class="demo-actions">
@@ -452,7 +452,7 @@
 
 	// 03 关闭方式
 	const closeVisible = ref(false)
-	const closeableOn = ref(true)
+	const closableOn = ref(true)
 	const maskClosableOn = ref(true)
 	const maskCount = ref(0)
 	const closeCount = ref(0)

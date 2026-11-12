@@ -14,7 +14,7 @@
 							</view>
 						</view>
 						<view class="demo-home__actions">
-							<vx-tag type="primary" variant="soft" size="sm" text="v0.66.2" />
+							<vx-tag type="primary" variant="soft" size="sm" text="v0.67.0" />
 							<view class="demo-theme-toggle demo-home__theme" hover-class="demo-theme-toggle--pressed"
 								@click="onToggleTheme">
 								<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
@@ -101,7 +101,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">MIT · Vaporix UI</text>
-					<text class="demo-footer__meta">组件 · 接口 · 我的 · 亮色 / 暗色 · v0.66.2</text>
+					<text class="demo-footer__meta">组件 · 接口 · 我的 · 亮色 / 暗色 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>

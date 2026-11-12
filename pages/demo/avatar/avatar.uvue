@@ -238,22 +238,28 @@
 						</view>
 						<view class="demo-section__copy">
 							<text class="demo-section__title">事件与自定义</text>
-							<text class="demo-section__desc">@click 打日志、@error 计数；bgColor / color 各来一组。</text>
+							<text class="demo-section__desc">clickable 或只写 @click 都算可点；bgColor / color 各来一组。</text>
 						</view>
 					</view>
 					<view class="demo-card">
 						<view class="demo-cluster">
 							<view class="demo-cluster__item">
-								<vx-avatar text="点" type="primary" @click="onAvatarClick" />
+								<vx-avatar text="监" type="warning" @click="onAvatarClick" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar text="点" type="primary" clickable />
 							</view>
 							<view class="demo-cluster__item">
 								<vx-avatar text="静" />
 							</view>
 							<view class="demo-cluster__item">
-								<vx-avatar size="lg" ring type="success" text="😀" @click="onAvatarClick" />
+								<vx-avatar text="关" type="info" :clickable="false" @click="onAvatarClick" />
+							</view>
+							<view class="demo-cluster__item">
+								<vx-avatar size="lg" ring type="success" text="😀" clickable @click="onAvatarClick" />
 							</view>
 						</view>
-						<text class="demo-hint">左边和右边有 @click，按下压到 0.8；中间没有监听，不挂 hover-class，也不加指针。</text>
+						<text class="demo-hint">只写 @click 也算可点，按下压到 0.8，点击停在头像上；显式 clickable=false 不淡也不拦；没写也没监听的点击继续冒泡。</text>
 						<text class="demo-hint">点击：{{ clickLog }} · error 累计 {{ errorCount }} 次（来自失败回落）</text>
 					</view>
 					<view class="demo-card demo-card--spaced">
@@ -292,7 +298,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.65.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>

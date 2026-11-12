@@ -1,3 +1,17 @@
+<!--
+	第 09 节「超长列表」的验证记录：12 条动作看限高和裁切，组件这次改了两处。
+	上限改成打开时在本组件作用域里量 .vx-actionsheet 根节点的高度减 24，量不到才退回 windowHeight − 24；
+	动作区补 min-height: 0，面板补 flex-shrink: 1——App 不把 sheet 的 max-height 分给子项，
+	子项不写 shrink 时按内容高撑出去，取消栏就被裁在屏幕下面。行高、圆角、警告和遮罩都没动。
+
+	真机：XiaoMi 14（1080×2400 / 420dpi / Android 13），HBuilderX 5.34 蒸汽模式  日期：2026-11-12
+	1. 顶部留白与取消：遮罩露出 63px（24dp），面板从 307 起；取消栏 2075–2273（199px，76dp）完整在窗口内，点一下收起。
+	2. 裁切与行高：列表在 2064 处裁断，前 8 条完整，第 9 条「导出」只露 21px；动作行仍是 197px 加 2–3px 分隔线，App 上等于 76，没被压扁。
+	3. 警告条数：1 条。同一次 console.warn 在 logcat 里以 JSConsole 和 console 两个 tag 各出一行；连开 3 次不再增加。
+	4. 2–6 条版式：1 条（基础操作，危险操作同版式）改前改后都是面板顶 1725、高 549；4 条（无提示）都是顶 1266、高 1008；行 76、间隔带 4、取消 76，和改前一致。
+	5. 改 wm size：1080×1800 下先关再开，顶部留白仍是 63px（24dp），取消栏 1475–1673 完整落在窗口内，不再多吃 32px。
+	6. 重启后重开：force-stop 再起，连开两次，上限和上面一致，取消都能点。
+-->
 <template>
 	<view :class="pageClass">
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
@@ -26,7 +40,7 @@
 						<view class="demo-hero__heading">
 							<view class="demo-hero__title-wrap">
 								<text class="demo-hero__title">操作菜单</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
+								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
 							</view>
 						</view>
 					</view>
@@ -177,6 +191,22 @@
 							</view>
 						</view>
 						<text class="demo-hint">open() 打开菜单；close() 只收起，不抛 cancel。自动收起和手动关闭都会同步 v-model:show。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">超长列表</text>
+							<text class="demo-section__desc">规范是 2–6 条，这里故意 12 条，用来看限高和裁切。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="12 条动作" @click="onActionSheetLongList" />
+						<text class="demo-hint">面板最高是可视区高度减 24，顶部一直留着一条遮罩；动作行不压缩，多出来的从列表里裁掉，取消栏始终在屏内。</text>
 					</view>
 				</view>
 
@@ -360,6 +390,27 @@
 
 	const onActionSheetClose = () => {
 		actionSheetRef.value?.close?.()
+	}
+
+	// 12 条只为看限高和裁切，不新建实例，也不改默认尺寸和取消按钮。
+	const onActionSheetLongList = () => {
+		openActionSheet({
+			description: '规范是 2–6 条，这里故意 12 条',
+			items: [
+				{ text: '复制' },
+				{ text: '转发' },
+				{ text: '收藏' },
+				{ text: '置顶' },
+				{ text: '标记' },
+				{ text: '提醒' },
+				{ text: '免打扰' },
+				{ text: '分享' },
+				{ text: '导出' },
+				{ text: '举报' },
+				{ text: '删除' },
+				{ text: '更多' }
+			]
+		})
 	}
 
 	const isDark = demoIsDark

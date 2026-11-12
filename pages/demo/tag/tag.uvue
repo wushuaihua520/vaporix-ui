@@ -85,7 +85,7 @@
 								</vx-tag>
 							</view>
 						</view>
-						<text class="demo-hint">标签使用独立紧凑高度：sm 28、md 32、lg 36；按钮/输入框另用 32 / 40 / 48。</text>
+						<text class="demo-hint">高度 20 / 24 / 28，左右内边距 6 / 8 / 10。不借用页脚和页签的紧凑高度。</text>
 					</view>
 				</view>
 
@@ -135,14 +135,14 @@
 						</view>
 						<view class="demo-section__copy">
 							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">字号跟档位走。sm、md 内边距都是 8，lg 是 12。</text>
+							<text class="demo-section__desc">高度 20 / 24 / 28，字号 12 / 13 / 14，左右内边距 6 / 8 / 10。</text>
 						</view>
 					</view>
 					<view class="demo-card">
 						<view class="demo-size-row">
 							<view class="demo-size-row__key">
 								<text class="demo-size-row__name">sm</text>
-								<text class="demo-size-row__meta">28</text>
+								<text class="demo-size-row__meta">20</text>
 							</view>
 							<view class="demo-size-row__control">
 								<view class="demo-tag-wall demo-tag-wall--flush">
@@ -164,7 +164,7 @@
 						<view class="demo-size-row">
 							<view class="demo-size-row__key">
 								<text class="demo-size-row__name">md</text>
-								<text class="demo-size-row__meta">32</text>
+								<text class="demo-size-row__meta">24</text>
 							</view>
 							<view class="demo-size-row__control">
 								<view class="demo-tag-wall demo-tag-wall--flush">
@@ -186,7 +186,7 @@
 						<view class="demo-size-row demo-size-row--last">
 							<view class="demo-size-row__key">
 								<text class="demo-size-row__name">lg</text>
-								<text class="demo-size-row__meta">36</text>
+								<text class="demo-size-row__meta">28</text>
 							</view>
 							<view class="demo-size-row__control">
 								<view class="demo-tag-wall demo-tag-wall--flush">
@@ -319,7 +319,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
 				</view>
 			</view>
 		</scroll-view>
