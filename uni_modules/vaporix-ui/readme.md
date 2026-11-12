@@ -36,6 +36,16 @@ App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css
 }
 ```
 
+弹层开着时，页面在 `onBackPress` 里调当前这个实例的 `cancel()` 并返回 `true`；没开着就不拦截返回。组件不做「谁在最上层」的栈，业务自己判断当前实例。
+
+```ts
+onBackPress(() => {
+	if (drawerVisible.value !== true) return false
+	drawerRef.value?.cancel?.()
+	return true
+})
+```
+
 ## vx-button
 
 按钮的视觉层级用 `variant` 表达，形状用 `shape` 表达。`plain`、`round` 是旧写法，保留兼容；新代码不要与 `variant` / `shape` 混用。
@@ -116,12 +126,12 @@ App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css
 
 | 事件 | 说明 |
 | --- | --- |
-| input | 输入中，参数为当前字符串 |
+| input | 输入中，参数为当前字符串；点清除时也会收到空串 |
 | change | 失焦或确认，参数为当前字符串 |
 | confirm | 点击确认键，参数为当前字符串 |
 | search | 点击确认键，参数为当前字符串；只在 `variant="search"` 下抛 |
 | cancel | 点击取消，无参数；`variant="search"` 下先清空并收起键盘再抛 |
-| clear | 点击清除，无参数 |
+| clear | 点击清除，无参数；点清除同时抛 `input('')`，不抛 `change` |
 | focus / blur | 焦点变化，无参数 |
 | click | 点击整行时触发，只读选择行用它打开选择器 |
 
@@ -568,7 +578,7 @@ const onFooterLink = (link: FooterLink) => {
 
 ## vx-tag
 
-标签用于状态、分类和筛选结果。实心、浅底、空心三种形态，尺寸、语义色和高度与按钮共用同一套令牌。
+标签用于状态、分类和筛选结果。实心、浅底、空心三种形态。高度、字号和内边距用 `--vx-tag-*`，不跟按钮共用。
 
 ```vue
 <vx-tag text="默认标签" />
@@ -596,7 +606,7 @@ const onFooterLink = (link: FooterLink) => {
 | text | string | `''` | 标签主文案；只放图标时可留空 |
 | type | `primary` \| `success` \| `info` \| `warning` \| `danger` \| `default` | `default` | 语义色 |
 | variant | `solid` \| `soft` \| `plain` | `solid` | 实心、浅底、空心 |
-| size | `sm` \| `md` \| `lg` | `md` | 尺寸，对应 `--vx-compact-height-*` |
+| size | `sm` \| `md` \| `lg` | `md` | 尺寸，对应 `--vx-tag-height-*` |
 | shape | `rounded` \| `pill` \| `half` \| `square` | `rounded` | 小圆角、胶囊、半圆角（左圆右直）、平角 |
 | color | string | `''` | 自定义文字色，同时作用于关闭图标 |
 | bgColor | string | `''` | 自定义背景色，只覆盖底色 |
@@ -612,7 +622,7 @@ const onFooterLink = (link: FooterLink) => {
 | prefix | 文案前的前缀内容，可放图标或圆点；颜色自己带 |
 | default | 文案右侧的补充内容，可放计数或后缀图标；颜色自己带 |
 
-- 标签高度跟按钮、输入框一致：`sm` 28、`md` 32、`lg` 36；水平内边距比按钮紧一档。
+- 标签高度 `sm` 20、`md` 24、`lg` 28，左右内边距 6 / 8 / 10，圆角 6，描边 1。不借用紧凑高度和控件字号。
 - `type` 表达状态；纯分类用 `default` 或 `primary`，不要用警告、失败色区分类别。
 - `color` / `bgColor` / `borderColor` 分别只覆盖一处，没传的继续跟 `type`。实心标签同时传 `bgColor` 和 `color`，对比度由业务保证。
 - 自定义颜色是字面值，不跟随 `vx-theme-light` / `vx-theme-dark` 切换；需要跟随主题时用 `type`。
@@ -667,7 +677,7 @@ const onSave = () => {
 | maxWidth | string | `'320px'` | 浮层最大宽度，需带单位；`top` 忽略 |
 | icon | `VxIconName` | — | 文案前的图标，取值见 `libs/icons/codepoints.ts` |
 | closable | boolean | `false` | 显示关闭图标，点整条关闭并抛 `close` |
-| zIndex | number | `100` | 浮层层级 |
+| zIndex | number | `1010` | 浮层层级 |
 | bgColor | string | `''` | 自定义底色，字面值 |
 | bgOpacity | number | `1` | 底色不透明度，0–1；只作用在底色上 |
 | color | string | `''` | 自定义文字和图标色，字面值 |
@@ -739,7 +749,7 @@ const onSave = () => {
 | image | string | `''` | 自定义图标图片地址，优先于 `icon` |
 | variant | `regular` \| `fill` | `regular` | 字体图标字重；`image` 不受影响 |
 | showIcon | boolean | `true` | 显示图标；关掉后是纯文字提示 |
-| zIndex | number | `200` | 浮层层级 |
+| zIndex | number | `1100` | 浮层层级 |
 | bgColor | string | `''` | 自定义底色，字面值 |
 | bgOpacity | number | `0.9` | 底色不透明度，0–1；只作用在底色上 |
 | color | string | `''` | 自定义文字和字体图标色，字面值 |
@@ -762,7 +772,7 @@ const onSave = () => {
 - `icon` 取 `libs/icons/codepoints.ts` 里的名字，extend 图标要先引入 `icons-extend.css`；`image` 支持网络地址和本地路径，固定 40 × 40 等比展示。
 - `image` 优先于 `icon`；`color` 只改文案和字体图标，不影响图片。
 - `bgColor` / `bgOpacity` 只改底色，`color` 改文案和字体图标；都是字面值，不跟随主题。默认 0.9，文字和图标始终不透明；只传一项时，其余项继续用默认反相底或前景。
-- 层级默认 200，高于加载浮层（150）、弹框（110）、消息提示（100）和固定页脚（1）。同一屏只放一条，重复触发先改 props 再调 `open()`。
+- 层级默认 1100，高于加载浮层（1050）、弹框（1020）、消息提示（1010）和固定页脚（1）。同一屏只放一条，重复触发先改 props 再调 `open()`。
 
 ## vx-rate
 
@@ -846,6 +856,7 @@ const onSave = () => {
 | --- | --- | --- | --- |
 | title | string | `''` | 分组标题，显示在卡片外 |
 | description | string | `''` | 标题下的补充说明 |
+| size | `sm` \| `md` \| `lg` | `md` | 标题区左右内边距。默认和 `lg` 为 16，`sm` 为 12，和同档列表行对齐。不传给里面的行 |
 | variant | `card` \| `plain` | `card` | 描边卡片，或不带描边和圆角的平面分组 |
 
 | 插槽 | 说明 |
@@ -856,7 +867,7 @@ const onSave = () => {
 - 分组只提供标题与外观，不负责行的内容和点击；行用 `vx-list-cell`。
 - `card` 用 `surface` 底、1px 描边和 `md` 圆角；`plain` 去掉描边和圆角，只保留 `surface` 底。
 - 标题用 15 / 22 / 500（`--vx-font-md` / `--vx-line-md` / `--vx-weight-medium`），说明用 `body-small`（13 / 20 / 400）次要色；两者都可选。
-- 标题在卡片外，左右各缩进 16，和行内容对齐；多个分组之间留 24。
+- 标题在卡片外。默认和 `lg` 左右各缩进 16，`size="sm"` 为 12，和同档列表行对齐；行的档位仍由每个 `vx-list-cell` 的 `size` 决定。多个分组之间留 24。
 - 分组最后一行传 `:divider="false"`，避免行内分割线和卡片底边叠成两条。
 - 分组不管外部间距；多个分组之间的距离由页面用 `--vx-space-xl` 决定。
 - 分组不承载按钮、表单和长说明；这些用页面区块或表单行。
@@ -1285,7 +1296,7 @@ const onSave = () => {
 
 <vx-avatar shape="square" type="success" text="元" />
 
-<vx-avatar :src="avatarUrl" text="汽" @error="onAvatarError" @click="openProfile" />
+<vx-avatar :src="avatarUrl" text="汽" clickable @error="onAvatarError" @click="openProfile" />
 
 <vx-avatar text="元" bg-color="#1f2a44" color="#ffffff" />
 ```
@@ -1302,19 +1313,20 @@ const onSave = () => {
 | bgColor | string | `''` | 字面值，覆盖 `type` 的底色；图片态也铺 |
 | color | string | `''` | 字面值，覆盖首字和图标的前景色 |
 | mode | `aspectFill` \| `aspectFit` | `aspectFill` | 透传给原生 `image` 的填充方式 |
+| clickable | boolean | `false` | 可点击：按下变淡并抛 click；只写 `@click` 不传也算可点 |
 
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
 | error | 图片加载失败时触发一次；`src` 为空不抛事件 | 无 |
-| click | 点击头像时触发；没有监听时不加按下态和指针 | 无 |
+| click | 有 `@click` 监听或 `clickable` 为 true 时触发；显式 `clickable=false` 和静态头像不拦外层点击 | 无 |
 
 - 回落链：`src` → `text` 首字 → `icon` → `user`。图片失败只记一次，不重试、不节流；`src` 变化后复位，重新走一遍图片。
 - 首字先 `trim`，取第一个 code unit；如果它是 `0xD800`–`0xDBFF` 的高位代理，连取两个 code unit。`😀` 这类 emoji 和中文首字都不会乱码。
 - 尺寸：外框 32 / 40 / 48，首字 12 / 14 / 16，图标 14 / 16 / 18；图标不走 `vx-icon` 的 14 / 18 / 22 三档。
-- 形状：`circle` 用 `--vx-radius-pill`；`rounded` 按档取 `--vx-radius-sm` / `md` / `lg`；`square` 为 0。图片由外框 `overflow: hidden` 裁切，不在 `<image>` 上加圆角。
+- 形状：`circle` 用 `--vx-radius-pill`；`rounded` 按档取 `--vx-control-radius-*` 6 / 8 / 10；`square` 为 0。图片由外框 `overflow: hidden` 裁切，不在 `<image>` 上加圆角。
 - 配色：底色取对应的 `*-soft`，前景取 `*-pressed`，`warning` 取 `warning-ink`，`default` 取正文色。图片态不铺底色，除非传了 `bgColor`。
 - `ring` 是绝对定位的内层 2px 描边，颜色固定 `surface`，半径跟外框一致；外框不加 `border`，32 / 40 / 48 不会变成 34 / 42 / 50。
-- 有 `@click` 监听时才加 `--vx-opacity-pressed` 按下态和 Web 指针；没有监听时不挂 `hover-class`，也不加指针。
+- `clickable` 默认 `false`。只写 `@click` 或显式打开 `clickable` 时，按下压到 `--vx-opacity-pressed` 0.8，点击停在头像上并抛 `click`；显式 `clickable=false` 时不淡、不拦外层点击；既没监听也没打开时不挂 `hover-class`，点击继续冒泡。
 - 图片绝对定位铺满，`mode` 原样透传；加载中不显示占位动画，占位和骨架分别属于 `vx-image` 与 Pro 的骨架屏。
 - 没有 `badge`、在线状态点和 `disabled`：徽章用 `vx-badge` 的 `absolute` 包一层，状态点由业务用绝对定位的小圆点加；不做头像组、裁剪上传、点击放大和长按保存。
 - Web 端首字和图标设置了 `user-select: none`，拖选时不会把首字选走。
@@ -1437,7 +1449,7 @@ const onSave = () => {
 - 第一行不画上边线，第一列不画左边线；序号跳号会让线算错。
 - 最小高度 72 / 88 / 104，内边距 8 / 12 / 16；主文案 13 / 15 / 17，单行省略；说明固定 13 / 20。
 - 字体图标 18 / 22，不套底色；默认 `text-secondary`，`type` 改语义色，`iconVariant` 切 regular / fill。普通入口不传 `type`，只有状态才上语义色。
-- 图片用 32 / 40 / 48 方框按 `aspectFit` 展示，圆角由方框裁切；`icon` 插槽内容自己定尺寸和颜色。
+- 图片用 32 / 40 / 48 方框按 `aspectFit` 展示，圆角由方框裁切，跟 `size` 取 6 / 8 / 10；`icon` 插槽内容自己定尺寸和颜色。
 - `type` 只作用于字体图标；图片和插槽内容不跟着变色。禁用时图标转灰，图片压到 0.4。
 - 有 `bgColor` 时按下用 `--vx-opacity-pressed`，不再换 `surface-pressed`；`color` 同时改主文案和字体图标，说明仍用次要灰；底色和分割线的对比度由业务保证。
 - 色底只铺在格子上；最后一行不足时，空位保留网格底色，色块要铺满整行。
@@ -1564,9 +1576,9 @@ const onSave = () => {
 | click | 可点图被点按时触发，回传 `index` 和该项 `item` |
 | error | 图片加载失败时触发一次，回传 `index` 和该项 `item`；`src` 为空只显示占位图，不抛事件 |
 
-- 方框固定正方形，不跟父级宽度缩放；同一组只用一档 `size`。`sm` 用 `sm` 圆角，`md` / `lg` 用 `md` 圆角。`sm` 40 适合堆叠和列表前缀，独立图片入口用 `md` / `lg` 并留出外层间距。
+- 方框固定正方形，不跟父级宽度缩放；同一组只用一档 `size`。圆角跟 `size` 取 6 / 8 / 10。`sm` 40 适合堆叠和列表前缀，独立图片入口用 `md` / `lg` 并留出外层间距。
 - `offset` 单位是 px，取整；行内只在后一张加左侧外边距，纵向只在后一张加上方外边距。重叠量建议控制在方框的三分之一以内。
-- `wrap` 只在 `direction="row"` 时生效，父级要有宽度边界，横向和纵向留缝都取 `offset`；最后一行和最后一列用负外边距收回尾巴。负 `offset` 按 0 处理，`column` 忽略 `wrap`。
+- `wrap` 只在 `direction="row"` 时生效，父级要有宽度边界，横向和纵向留缝都取 `offset`；最后一行和最后一列用负外边距收回尾巴。横排父级需要 `flex: 1`，负外边距才收得回最后一列。负 `offset` 按 0 处理，`column` 忽略 `wrap`。
 - `ring` 是方框内侧的 2px 描边，默认用 `surface`；放在页面底色上时传 `ring-color="var(--vx-color-bg)"`。圆环挤占图片内容区，不改变方框边长。
 - 图片加载失败或 `src` 为空时显示 `default-soft` 底色和 `image` 占位图标，图标用 `disabled-text`；加载失败抛 `error`，空地址只占位不抛事件。父级整组换图时清掉失败记录重新加载，同一个地址在清掉失败记录前只抛一次 `error`。
 - `clickable` 默认打开；可点时点击停在单张图上，不冒泡到外层。静态展示传 `:clickable="false"`，不抛 `click`，也不拦点击，放进可点击行时点缩略图等同于点行。图片组里不要再放按钮和链接。
@@ -1658,7 +1670,7 @@ const onSave = () => {
 | overlay | boolean | `false` | 全屏浮层，面板居中，挡住页面点击 |
 | mask | boolean | `true` | 浮层带遮罩；关掉后仍挡住点击，只是不压暗页面 |
 | maskColor | string | `''` | 自定义遮罩色，字面值；不传时用 `--vx-color-mask` |
-| zIndex | number | `150` | 浮层层级，压在消息提示上、轻提示下 |
+| zIndex | number | `1050` | 浮层层级，压在消息提示上、轻提示下 |
 
 没有事件和插槽。
 
@@ -1666,7 +1678,7 @@ const onSave = () => {
 - `type` 只改转圈：warning 取 `warning-ink`，default 行内用次要灰；文案在行内保持次要灰，浮层里默认转圈和文案一起用正文色。
 - `overlay` 是 `position: fixed` 的整页浮层，用 `v-if` 控制显隐。面板最小 120、最大 240，内边距 24，`md` 圆角、`lg` 阴影，压在页面内容上。
 - 浮层默认带 `mask`，遮罩使用 `--vx-color-mask`；`mask=false` 只去掉压暗，整层仍然接住点击。
-- 层级默认 150；消息提示是 100，弹框是 110，轻提示是 200。浮层加载不要再叠消息提示和轻提示。
+- 层级默认 1050；消息提示是 1010，弹框是 1020，轻提示是 1100。浮层加载不要再叠消息提示和轻提示。
 - 三种形态共用 700ms 线性节奏。`bars` 是十二瓣轮流渐隐，比另外两种重，适合更大的展示位；同一页只用一种。
 - 5.26 的 App 端没有 CSS 关键帧，转圈可能不旋转；文案要能独立说明正在等什么。5.31 起恢复正常。
 - 加载中不是骨架屏、进度条或百分比。需要占位用骨架屏，需要进度用进度条，需要弹窗确认用对话框。
@@ -1837,7 +1849,7 @@ const onStickyChange = (stuck: boolean) => {
 
 | 方法 | 说明 |
 | --- | --- |
-| refresh() | 重新测量位置和尺寸；异步内容撑高、窗口尺寸变化后调用 |
+| refresh() | 重新测量位置和尺寸；内容变高或窗口尺寸变化后由业务调用，占位高度才会更新 |
 
 ```vue
 <vx-sticky ref="stickyRef" :scroll-top="scrollTop">
@@ -1850,7 +1862,7 @@ const onStickyChange = (stuck: boolean) => {
 ```ts
 const stickyRef = ref<VxStickyComponentPublicInstance | null>(null)
 
-// 列表异步加载、图片撑高或窗口尺寸变化后重测一次。
+// 折叠、图片加载完或窗口尺寸变化后调用一次，占位高度才会更新。
 const refreshSticky = () => {
 	stickyRef.value?.refresh?.()
 }
@@ -1863,11 +1875,13 @@ const refreshSticky = () => {
 - 吸顶时保持原来的横向位置和宽度，放进卡片或带缩进的区块时和未吸顶一致。
 - `suffix` 里的内容参与文档流，滚到末尾时用容器底边把吸顶条顶出去，下一段接着吸；不传或传空 `suffix` 时一直吸到页面末尾。
 - `change` 只在状态变化时触发；挂载时已经吸顶也会触发一次 `true`。
-- 首屏字体、图片落位后，第一次滚动会自动补测一次位置；之后异步内容撑高、图片或字体加载完成、窗口尺寸变化再调用 `refresh()`，不要靠反复滚动兜底。
+- 挂载时测量。容器当时隐藏、三次都量不到时，第一次滚动再补测一轮；已经量成功后，滚动不再改吸顶线。
+- 内容变高（折叠、图片加载完）后由业务调 `refresh()`，占位高度才会更新。
+- `offsetTop` 变化时组件自己重测。自定义导航栏 `ready` 之后把导航栏高度写进 `offsetTop`，吸顶线跟着下移，不钻到导航栏底下。
 - 吸顶条只放标题、页签和状态。输入框、按钮和主操作放在 `suffix` 里，吸顶后的位置变化会打断输入。
 - 不要放进 `position: fixed` 浮层、带 `transform` 的容器或原生 `list-view` 的 sticky 结构里；这些会改掉 `fixed` 的坐标原点。
 - 同一屏不要叠两个不带 `suffix` 的吸顶条；分段吸顶时每段各用一个并带上 `suffix`。
-- 层级默认 10，压在页面内容和固定页脚上，低于消息提示（100）。组件不抛 `click`，条内内容的点击由内容自己处理。
+- 层级默认 10，压在页面内容和固定页脚上，低于消息提示（1010）。组件不抛 `click`，条内内容的点击由内容自己处理。
 - 从 ThorUI `tui-sticky` 迁移：`stickyTop` 换成 `offsetTop`，`container` + `content` 插槽换成 `suffix`，`recalc` 换成 `refresh()`，`sticky` 事件换成 `change`；`isNativeHeader` 由安全区自动处理，占位高度自动测量。
 
 ## vx-time-axis
@@ -2027,7 +2041,7 @@ const logistics = [
 - 横排项高 32 / 40 / 48，列表最小行高 44 / 52 / 60；标记 14 / 16 / 18，比文案大 1–2px，对号用旋转边框画。
 - 横排文案 13 / 14 / 16，列表文案 13 / 15 / 17，说明固定 13 / 20；两组档位不互相换算。
 - 未选中圆圈用 `text-secondary` 描边；选中填充取 `type` 语义色，`warning` 用 `warning-pressed`，对号取对应的 `on-*`。
-- 列表最后一项自动不画分割线；`card` 只对列表生效，横排仍由外层容器提供边界。
+- 列表最后一项自动不画分割线；`card` 只对列表生效，横排仍由外层容器提供边界。动态列表要给每项传 `index`。
 - 按下态：列表铺 `surface-pressed`，横排只压 `--vx-opacity-pressed`；没有缩放和选中动画。
 - 整组 `disabled` 停下全部；没有 `readonly`，展示已有结果用 `disabled` 并补说明。
 - 从 ThorUI `tui-radio-group` 迁移：分组和选项拆成 `vx-radio-group` + `vx-radio`；`name`、`tui-form-field` 不再提供（自绘控件不进原生表单，提交由业务取值）；选项上的 `checked` 并入分组的 `v-model`；`change` 直接给 value；`isCheckMark` 换成 `variant="check"`，`checkMarkColor` 换成 `checkColor`；`scaleRatio` 换成 `size`；`tui-label` + `tui-list-cell` 换成 `layout="list"` + `card`。
@@ -2051,6 +2065,7 @@ const logistics = [
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | value | string | `''` | 选中时回传给分组的 value；分组里不能为空 |
+| index | number | — | `v-for` 的循环下标。同一组都传了才按最大 index 认最后一项；缺一项仍按挂载顺序。静态项不用传 |
 | label | string | `''` | 主文案；用默认插槽时忽略 |
 | description | string | `''` | 主文案下的说明；用默认插槽时忽略 |
 | modelValue | boolean | `false` | 单独使用时的选中状态；在分组里由分组接管 |
@@ -2129,7 +2144,7 @@ const logistics = [
 - 点已勾选项取消，点未勾选项追加；两种都会抛 `change`，拿到的始终是新数组。
 - `max` 只拦新增勾选，取消勾选不受限；父级传入的数组超过 `max` 时照常显示，不再追加。到上限后未选项不转灰，仍可点击，由 `exceed` 弹提示。
 - 方框固定小圆角方形，和单选的正圆区分；三档 14 / 16 / 18，圆角 4 / 5 / 6，比文案大 1–2px。对号用旋转的右边框和下边框画，`md` / `lg` 2px、`sm` 1.5px。
-- 横排项高 32 / 40 / 48，列表最小行高 44 / 52 / 60；列表最后一项自动不画分割线，`card` 只对列表生效。
+- 横排项高 32 / 40 / 48，列表最小行高 44 / 52 / 60；列表最后一项自动不画分割线，`card` 只对列表生效。动态列表要给每项传 `index`。
 - 未选中方框用 `text-secondary` 描边；选中填充取 `type` 语义色，`warning` 用 `warning-pressed`，对号取对应的 `on-*`。
 - 按下态：列表铺 `surface-pressed`，横排只压 `--vx-opacity-pressed`；不做缩放、位移和选中动画。
 - 分组 `disabled` 停下全部，不抛 `change`；文字和方框转 `disabled-text`，选中填充用 `disabled-text`、对号用 `surface`。
@@ -2156,6 +2171,7 @@ const logistics = [
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | value | string | `''` | 勾选时回传给分组的 value；分组里不能为空 |
+| index | number | — | `v-for` 的循环下标。同一组都传了才按最大 index 认最后一项；缺一项仍按挂载顺序。静态项不用传 |
 | label | string | `''` | 主文案；用默认插槽时忽略 |
 | description | string | `''` | 主文案下的说明；用默认插槽时忽略 |
 | modelValue | boolean | `false` | 单独使用时的选中状态；在分组里由分组接管 |
@@ -2437,14 +2453,14 @@ const steps = [
 弹出层。遮罩铺满页面，面板按 `placement` 从一条边滑出或悬在中间；只圆朝向页面的那一侧，进出场只改位移和透明度。内容由业务给，组件不带标题栏、动作列表和滚动容器。
 
 ```vue
-<vx-popup v-model:show="bottomVisible" closeable>
+<vx-popup v-model:show="bottomVisible" closable>
 	<view class="popup-panel">
 		<text class="popup-panel__title">筛选</text>
 		<vx-checkbox-group v-model="filters" layout="list">...</vx-checkbox-group>
 	</view>
 </vx-popup>
 
-<vx-popup v-model:show="menuVisible" placement="left" width="86%" closeable>
+<vx-popup v-model:show="menuVisible" placement="left" width="86%" closable>
 	<vx-list-view title="全部菜单">...</vx-list-view>
 </vx-popup>
 
@@ -2473,6 +2489,13 @@ const popupRef = ref<VxPopupComponentPublicInstance | null>(null)
 const openConfirm = () => {
 	popupRef.value?.open?.()
 }
+
+// 返回键按用户关闭处理：收起、抛 close，并拦住页面返回。
+onBackPress(() => {
+	if (confirmVisible.value !== true) return false
+	popupRef.value?.cancel?.()
+	return true
+})
 ```
 
 | 属性 | 类型 | 默认值 | 说明 |
@@ -2481,19 +2504,20 @@ const openConfirm = () => {
 | placement | `top` \| `bottom` \| `left` \| `right` \| `center` | `bottom` | 弹出方向 |
 | width | string | `''` | 左右贴边和居中的宽度，需带单位，如 `320px`、`86%`；不传时左右用 `--vx-popup-width`，居中按内容并收在 `--vx-popup-max-width` 内 |
 | height | string | `''` | 上下贴边的高度，需带单位，如 `320px`、`60%`；不传时按内容高度排 |
+| maxWidth | string | `''` | 上下贴边时面板最大宽，需带单位，如 `480px`；不传时仍是 100% 宽。左右和居中不读 |
 | round | `none` \| `sm` \| `md` \| `lg` | `lg` | 圆角档位；只圆朝向页面的那一侧，贴边那条边保持直角，居中四角全圆 |
-| closeable | boolean | `false` | 内容上方显示一行关闭叉，点击收起并抛 `close` |
+| closable | boolean | `false` | 内容上方显示一行关闭叉，点击收起并抛 `close` |
 | maskClosable | boolean | `true` | 点击遮罩收起并抛 `close`；关掉后点遮罩只抛 `click-mask` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
 | safeArea | boolean | `true` | 上下贴边时由面板内边距让开顶部或底部安全区；左右和居中的侧边安全区始终让开 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 | duration | number | `220` | 进出场时长，单位毫秒；`0` 直接切换，Web 上跟随系统的减少动效 |
 | lockScroll | boolean | `true` | 打开时锁住页面滚动；只在 Web 生效，见「平台支持」 |
 
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
 | open | 面板开始入场时触发，`v-model:show` 改 `true` 和调 `open()` 都算；首次渲染就显示时不触发 | 无 |
-| close | 用户点可关闭的遮罩或关闭叉时触发；默认先收起 | 无 |
+| close | 用户点可关闭的遮罩、关闭叉，或页面调 `cancel()` 时触发；默认先收起 | 无 |
 | click-mask | 点遮罩总是触发；`maskClosable=false` 时只触发它，不关闭 | 无 |
 | update:show | `v-model:show` 同步，收起时回传 `false` | boolean |
 
@@ -2505,18 +2529,20 @@ const openConfirm = () => {
 | --- | --- |
 | open() | 打开弹出层 |
 | close() | 立刻收起，不抛 `close` |
+| cancel() | 收起并抛 `close`，给页面 `onBackPress` 用 |
 | toggle() | 打开或收起 |
 
-- 上下贴边占满宽度，高度由内容或 `height` 决定；左右贴边占满高度、宽 280（`--vx-popup-width`），`width` 必须带单位；居中按内容宽度排、最宽 480（`--vx-popup-max-width`），四周留 24。
+- 上下贴边默认占满宽度，高度由内容或 `height` 决定；`maxWidth` 把面板收到指定宽并居中，不传时仍是 100%。左右贴边占满高度、宽 280（`--vx-popup-width`），`width` 必须带单位；居中按内容宽度排、最宽 480（`--vx-popup-max-width`），四周留 24。
 - 贴住屏幕的一侧不圆角，朝向页面的两角取 `round`；居中四角全圆。`round` 只改外轮廓，内容不跟着裁圆角。
 - 面板用 `surface` 底，不加阴影；遮罩用 `--vx-color-mask`，只压页面。居中面板四周加 1px `border`，从遮罩里分出边界。
 - 面板不预留内容内边距：内容自己留 16；上下贴边由面板内边距让开顶部或底部安全区，左右面板两头都让，横屏的左右安全区每档都让。
 - 关闭叉在内容上方单占一行，行高沿用列表行 44、图标 18；贴顶时不会钻进状态栏，也不会压住业务内容。
-- 点可关闭的遮罩收起并抛 `close`；`maskClosable=false` 时点遮罩只抛 `click-mask`，要保留关闭叉或内容里的关闭按钮。`close()` 只收起，不抛 `close`。
+- 点可关闭的遮罩收起并抛 `close`；`maskClosable=false` 时点遮罩只抛 `click-mask`，要保留关闭叉或内容里的关闭按钮。`close()` 只收起，不抛 `close`。`cancel()` 收起并抛 `close`；页面 `onBackPress` 里调用并返回 `true`，面板收起、页面不退。
 - 只过渡 `transform` 和 `opacity`：贴边面板从所在边滑入，居中面板只淡入。`duration` 默认 220，`0` 直接切换；Web 上系统打开「减少动效」时按 0 处理。
-- 关闭动画走完（`duration` 加一帧）才卸载内容；关闭过程中再打开会从当前位置回到终点，不会叠出第二个面板，也不会卡在中间态。
+- 关闭动画走完（`duration` 加一帧）只加隐藏 class；第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁。真机上 `fixed` + `v-if` 反复创建 `scroll-view` 会连遮罩和面板一起不画。关闭过程中再打开会从当前位置回到终点，不会叠出第二个面板，也不会卡在中间态。
+- 关闭后节点仍留在页面里，插槽里的 `scroll-view` 也还活着；需要完全释放时用 `v-if` 包住整个弹出层。
 - 内容超过一屏时先给 `height`，再在内容里放 `scroll-view` 接管滚动；组件不内置滚动容器，也不接管焦点。
-- 层级默认 90，和抽屉、操作菜单同档；低于数字键盘 95、消息提示 100、弹框 110、加载浮层 150 和轻提示 200。组件不自动叠加，嵌套两个时由业务自己传 `zIndex`。
+- 层级默认 1000，和抽屉、操作菜单同档；低于数字键盘 1005、消息提示 1010、弹框 1020、加载浮层 1050 和轻提示 1100。组件不自动叠加，嵌套两个时由业务自己传 `zIndex`。
 - 挂在页面根节点，和滚动容器平级；不要放进 `scroll-view`、卡片或 `fixed` 容器。同一屏只开一个。
 - Web 端遮罩标 `aria-hidden`，关闭叉带可读标签；内容区不抢焦点，键盘出口由业务提供。
 - 弹出层只承载内容，不做动作列表、标题栏、跟手拖动和路由；这些用操作菜单、抽屉和弹框。
@@ -2568,7 +2594,7 @@ const genderItems = [
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
 | titleColor | string | `''` | 自定义标题色，字面值 |
 | descriptionColor | string | `''` | 自定义说明色，字面值 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 
 `items` 的每一项：
 
@@ -2597,9 +2623,9 @@ const genderItems = [
 - 取消与动作之间用 4px `default-soft` 间隔带分开，不画 border；底部安全区由面板内边距承担。`showCancel=false` 时末条动作下面仍留安全区。
 - `closeOnSelect=false` 时不自动收起，适合单选、多选；在 `select` 里更新 `items` 的 `selected`。
 - `maskClosable=false` 时只能点动作或取消退出，取消按钮要保留。
-- 操作菜单挂在页面根节点，和滚动容器平级；层级默认 90，低于消息提示（100）、弹框（110）、加载浮层（150）和轻提示（200）。同一屏只开一个，动作控制在 2–6 条。
+- 操作菜单挂在页面根节点，和滚动容器平级；层级默认 1000，低于消息提示（1010）、弹框（1020）、加载浮层（1050）和轻提示（1100）。同一屏只开一个，动作控制在 2–6 条。
 - 从 ThorUI `tui-actionsheet` 迁移：`itemList` 换成 `items`，文案固定读 `text`，`textField` 不再需要；`isCancel` 换成 `showCancel`；`tips` 换成 `title` / `description`；`color` / `size` 换成 `titleColor` / `descriptionColor` 和设计令牌。
-- `textColor` / `textSize` / `cancelColor` / `radius` 不再需要：动作色由每项的 `type` 控制，字号和圆角走令牌；`zIndex` 保留，默认改为 90。`click` 换成 `select(index, item)`，不再把动作对象展开成事件参数。
+- `textColor` / `textSize` / `cancelColor` / `radius` 不再需要：动作色由每项的 `type` 控制，字号和圆角走令牌；`zIndex` 保留，默认改为 1000。`click` 换成 `select(index, item)`，不再把动作对象展开成事件参数。
 
 ## vx-modal
 
@@ -2665,7 +2691,7 @@ const actions = [
 | titleColor | string | `''` | 自定义标题色，字面值 |
 | contentColor | string | `''` | 自定义正文色，字面值；只改 `content`，不改插槽 |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
-| zIndex | number | `110` | 浮层层级，低于加载浮层 150 和轻提示 200 |
+| zIndex | number | `1020` | 浮层层级，低于加载浮层 1050 和轻提示 1100 |
 
 `actions` 的每一项：
 
@@ -2708,8 +2734,9 @@ const actions = [
 - 自定义正文用默认插槽，并用 `:show-actions="false"` 关掉内置动作；插槽内容自己带颜色、字号和按钮。
 - 插槽里的输入和按钮属于表单内容，按业务需要选尺寸，不跟随动作区的 `sm` 档收小；示例用默认 `md`。
 - `titleColor` / `contentColor` / `maskColor` 各改一处，字面值不跟随主题；`contentColor` 只作用于 `content`。
-- 弹框挂在页面根节点，和滚动容器平级；层级默认 110，高于操作菜单 90 和消息提示 100，低于加载浮层 150 和轻提示 200。同一屏只开一个弹框，不和操作菜单叠加。
-- 弹框不内置滚动，只承载一件短内容；长表单、多步流程和整页内容改用页面区块。Web 上遮罩淡入、面板从 0.96 放大到 1；App 5.26 直接出现，关闭即移除。
+- 弹框挂在页面根节点，和滚动容器平级；层级默认 1020，高于操作菜单 1000 和消息提示 1010，低于加载浮层 1050 和轻提示 1100。同一屏只开一个弹框，不和操作菜单叠加。
+- 弹框不内置滚动，只承载一件短内容；长表单、多步流程和整页内容改用页面区块。Web 上遮罩淡入、面板从 0.96 放大到 1；App 5.26 直接出现，不做退场。第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁；原生层在 App 上反复创建会整层不画。
+- 关闭后节点仍留在页面里，插槽里的原生控件也还活着；需要完全释放时用 `v-if` 包住整个弹框。
 - 从 ThorUI `tui-modal` 迁移：`button` 换成 `actions`，每项 `plain` 换成 `variant="plain"`；`shape="circle"` 换成 `actionShape="pill"`；`custom` 换成默认插槽 + `:show-actions="false"`；`color` 换成 `contentColor`；`width` / `padding` / `radius` / `backgroundColor` 换成 `size` 和主题令牌。
 - `click({ index })` 拆成 `confirm` / `cancel` / `action(index, action)`，由动作的 `role` 决定；`cancel` 仍表示遮罩、关闭叉或取消。`fadeIn` 不再需要，Web 端已带淡入；`maskZIndex` 移除，遮罩和面板共用 `zIndex`。
 
@@ -2719,7 +2746,7 @@ const actions = [
 
 ```vue
 <vx-collapse v-model="open">
-	<vx-collapse-item v-for="item in faq" :key="item.name" :name="item.name" :title="item.title">
+	<vx-collapse-item v-for="(item, index) in faq" :key="item.name" :index="index" :name="item.name" :title="item.title">
 		<text class="faq__body">{{ item.body }}</text>
 	</vx-collapse-item>
 </vx-collapse>
@@ -2775,7 +2802,7 @@ collapseRef.value?.toggle('return')
 
 - `variant="card"` 是 `surface` 底、1px `border` 描边、`md` 圆角；`variant="plain"` 只保留 `surface` 底，放进卡片时用 `plain`。
 - 标题行沿用列表行 44 / 52 / 60；标题 13 / 15 / 17（20 / 22 / 24、500），说明固定 13 / 20，箭头 14 / 18 / 22。水平内边距 12 / 16 / 16，垂直 8 / 12 / 16。
-- 分割线 1px，左右与标题内边距对齐，最后一项自动不画；`divider=false` 去掉全部面板间分割线。
+- 分割线 1px，左右与标题内边距对齐，最后一项自动不画；`divider=false` 去掉全部面板间分割线。动态列表要给每项传 `index`。
 - 展开用 `max-height` 加透明度和 8px 上移过渡，固定高度改用 `height` 过渡；第一帧不加过渡，默认展开的面板不会滑进来。
 - 方法只改 `v-model` 并抛 `change`，不受 `disabled` 限制；禁用态只挡住标题行的点击。手风琴自动收起上一项时不会为旧项再抛一次 `change`，完整名单以 `v-model` / `update:modelValue` 为准。
 - 从 ThorUI `tui-collapse` 迁移：`current` + `index` 换成容器的 `v-model` 和面板的 `name`；`@click` 换成容器的 `change(name, open)`；`bgColor` / `hdBgColor` / `bdBgColor` 不再需要，底色由 `surface` 和主题令牌提供。
@@ -2814,6 +2841,7 @@ collapseRef.value?.toggle('return')
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | name | string | `''` | 面板名，同一组内唯一；`v-model` 用它记录展开项 |
+| index | number | — | `v-for` 的循环下标。同一组都传了才按最大 index 认最后一项；缺一项仍按挂载顺序。静态面板不用传 |
 | title | string | `''` | 标题，可以换行；为空时不渲染标题文字 |
 | description | string | `''` | 标题下方的说明，次要色，可以换行 |
 | disabled | boolean | `false` | 禁用：不响应点击，标题、说明和箭头转灰 |
@@ -2837,7 +2865,7 @@ collapseRef.value?.toggle('return')
 - `arrow=false` 只去掉箭头，标题行仍整行可点；容器上的 `arrow` 可以一次关掉整组。
 - `contentHeight` 固定内容区高度并在内部滚动，必须带单位；不传时由内容自然撑高，最多 2000px。
 - 面板不画外框、圆角和阴影，外轮廓只由 `vx-collapse` 负责；最后一项的分割线也由容器判断。
-- 从 ThorUI `tui-collapse` 迁移：标题和内容插槽换成 `title` / `description` 和默认插槽；`index` / `current` 不再需要；`height` 换成 `contentHeight`，`bgColor` / `hdBgColor` / `bdBgColor` / `arrowColor` 不再需要。
+- 从 ThorUI `tui-collapse` 迁移：标题和内容插槽换成 `title` / `description` 和默认插槽；展开用的 `current` 不再需要。这里的 `index` 只表示列表位置，`v-for` 要传入。`height` 换成 `contentHeight`，`bgColor` / `hdBgColor` / `bdBgColor` / `arrowColor` 不再需要。
 
 ## vx-datetime
 
@@ -2881,7 +2909,7 @@ const remindVisible = ref(false)
 | format | string | `''` | 输出格式，不传按 `mode` |
 | maskClosable | boolean | `true` | 点遮罩关闭并抛 `cancel` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 
 `mode` 的取值和默认格式：
 
@@ -2919,7 +2947,7 @@ const remindVisible = ref(false)
 - 滚动只改草稿，点确定才写回 `v-model`；取消、遮罩和 `close()` 都不动已提交的值，下次打开还在上一次确定的位置。
 - 天数跟着年月走，闰年二月 29 天；换月或换年时选中的日超出当月会收口，并把日期列滚回去。
 - `format` 认 `YYYY` / `MM` / `DD` / `HH` / `mm` / `ss`，其余字符原样保留；只改输出文本，不改哪些列可以选。输出永远按本机时间，不做时区换算。
-- 选择器挂在页面根节点，和滚动容器平级；层级默认 90，和操作菜单同档，低于弹框（110）和提示（100 / 200）。同一屏只开一个。
+- 选择器挂在页面根节点，和滚动容器平级；层级默认 1000，和操作菜单同档，低于弹框（1020）和提示（1010 / 1100）。同一屏只开一个。
 - 从 ThorUI `tui-datetime` 迁移：数字 `type` 换成语义化的 `mode`——`0` → `year`，`1` → `datetime`，`2` → `date`，`3` → `year-month`，`4` → `time`，`5` → `time-second`，`6` → `minute-second`，`7` → `datetime-second`，`8` → `date-hour`。
 - `setDateTime` 换成 `v-model`，`startYear` / `endYear` 保留；`hoursData` / `minutesData` / `secondsData` 换成 `minuteStep` / `secondStep`。`unitTop` 换成 `unit-position="top"`，`radius` 不再需要（面板固定顶部圆角）。
 - `titleSize` / `titleColor` / `cancelColor` / `color` / `headerBackground` / `bodyBackground` / `unitBackground` / `height` 不再需要：字号、颜色和高度都走令牌，遮罩色需要时用 `maskColor`。`confirm` 只抛格式化后的字符串，不再抛年月日对象。
@@ -2982,7 +3010,7 @@ const onRegionConfirm = (result: VxPickerResult) => {
 | invalidText | string | `'该选项不可选'` | 当前路径含不可选项时的头部提示 |
 | maskClosable | boolean | `true` | 点遮罩关闭并抛 `cancel` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 
 `options` 的节点是 `VxPickerOption`：
 
@@ -3021,7 +3049,7 @@ const onRegionConfirm = (result: VxPickerResult) => {
 - 头部高 52（`--vx-list-height-md`），滚轮可视高度 220、每行 44，正好五行；指示器高度必须等于行高。行文字 15 / 22，未选中 `text-secondary` 400，选中 `text` 600。
 - 面板 `surface` 底、顶部 `lg` 圆角、`--vx-shadow-lg`，最大宽度 480；遮罩用 `--vx-color-mask`，只压页面。原生蒙层写死了白色渐变，组件用 `mask-class` 换成透明。
 - 新增令牌 `--vx-picker-row`、`--vx-picker-wheel`、`--vx-picker-max-width`，亮色、暗色各一份；行高同时写在 `libs/picker.ts` 的 `VX_PICKER_ROW` 里。
-- 选择器挂在页面根节点，和滚动容器平级；层级默认 90，和操作菜单、日期时间选择器同档。同一屏只开一个；两个值用两个实例，选项不同时各传一份 `options`。
+- 选择器挂在页面根节点，和滚动容器平级；层级默认 1000，和操作菜单、日期时间选择器同档。同一屏只开一个；两个值用两个实例，选项不同时各传一份 `options`。
 - 从 ThorUI `tui-picker` 迁移：`pickerData` → `options`，`layer` → 由树深度决定；`value` 文本数组可以直接继续用，`valueField` / `textField` / `childrenField` 改为固定的 `value` / `text` / `children`。
 - `@change` 参数从对象改成 `{ values, texts, indices, text }`，`@hide` → `@cancel`，`picker` 事件 → `@confirm`。`radius` / `titleSize` / `titleColor` / `cancelColor` / `bold` / `size` / `color` / `height` / `params` 不再提供：字号、颜色和高度走令牌，业务参数自己带回。
 - `pickstart` / `pickend` 不再提供；需要在滚动时做提示或埋点用 `change`，它只在路径可选且真的变化时抛。
@@ -3080,7 +3108,7 @@ const marks = ref([
 | marks | `VxCalendarMark[]` | `[]` | 日期标记，按 date 匹配 |
 | maskClosable | boolean | `true` | 点遮罩关闭并抛 `cancel` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 
 `VxCalendarMark`：
 
@@ -3117,7 +3145,7 @@ const marks = ref([
 - `showYearArrow` 关掉后外侧的双箭头消失，只剩按月翻，和「只能切换月份」等价。
 - `marks` 按日期补底色、文案或对勾；选中和区间优先于标记，不可选的日子也不显示标记颜色。标记是正圆，和选中方块同为 36。
 - `type` 同时作用于选中底色、区间浅底、文字色和确定按钮；warning 的琥珀底配深色字，区间文字用 `warning-ink`。
-- 选择器挂在页面根节点，和滚动容器平级；层级默认 90，和操作菜单、日期时间选择器同档，低于弹框（110）和提示（100 / 200）。同一屏只开一个。
+- 选择器挂在页面根节点，和滚动容器平级；层级默认 1000，和操作菜单、日期时间选择器同档，低于弹框（1020）和提示（1010 / 1100）。同一屏只开一个。
 - 从 ThorUI `tui-calendar` 迁移：`type`（1 / 2）换成 `mode`（`single` / `range`），`isFixed` 换成 `popup`，`arrowType`（2 表示只能切换月份）换成 `showYearArrow=false`。
 - `minYear` / `maxYear` 不再单独传：年份范围由 `minDate` / `maxDate` 推出，再用 1900–2100 收口。`initStartDate` / `initEndDate` 换成 `v-model` 和 `v-model:start` / `v-model:end`，`startText` / `endText` 保留。
 - `fixedHeight` 不再需要：行数按当月占几周算，网格不按屏幕宽度算高度。`isActiveCurrent` 固定打开（今天只换数字颜色），`isChange` 改成独立的 `monthChange`。
@@ -3168,7 +3196,7 @@ const marks = ref([
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| labelWidth | string | `'72px'` | 整组标签宽，必须带单位，纯数字或空串在开发阶段提示一次；只影响 `labelPosition="left"` 且有 `label` 的项 |
+| labelWidth | string | `''` | 整组标签宽。不传时左侧宽取 `--vx-form-label-width`（72px），不写行内、不警告；传了带单位的值才写行内盖过。纯数字在开发阶段提示一次。只影响 `labelPosition="left"` 且有 `label` 的项 |
 | labelPosition | `left` \| `top` | `left` | 标签在左还是在上；`top` 时标签独占一行 |
 | size | `sm` \| `md` \| `lg` | `md` | 标签的字号和行距档位，下发给每个 `vx-form-item` |
 | disabled | boolean | `false` | 整组禁用：校验跳过，星号仍显示；控件自己的禁用态由业务传给控件 |
@@ -3189,8 +3217,8 @@ const marks = ref([
 
 ### 平台支持
 
-- Web：错误文案另有一层隐藏的 `aria-live="polite"` 播报层；`scrollToError` 走 `uni.pageScrollTo`，滚动的是 window。
-- Android / iOS / 鸿蒙：没有 aria 属性；页面滚动由最外层 `scroll-view` 模拟时 `pageScrollTo` 才会跟着滚，页面嵌在内部 `scroll-view` 里时静默跳过。
+- Web：错误文案另有一层隐藏的 `aria-live="polite"` 播报层；`scrollToError` 先由失败项交回矩形，外层是 `vx-page` 时滚它的滚动区，没有才补页面滚动量后调 `uni.pageScrollTo`。
+- Android / iOS / 鸿蒙：没有 aria 属性；失败项在自己的作用域里量根节点，小程序和 App 里父级选择器进不了子组件，定位靠这条回传的矩形，不靠 form 往下查。接手的是 `vx-page` 滚动区或页面滚动。
 - 微信小程序：`pageScrollTo` 支持 `scrollTop`；`aria-live` 不生效。
 - 除 Web 的 `aria-live` 外没有平台专属属性和选择器；选择器只用一个 class 和标签名，蒸汽模式可以编译。
 
@@ -3426,14 +3454,14 @@ const raisedTabs = [
 - 一屏 3–5 个，等宽排列，不横向滚动；文案 2–4 个字，放不下时先缩短文案。空数组不渲染。
 - 标签栏是页面骨架，不是内容区：只切视图和抛事件，不内置路由、请求、权限和插槽。切换后的内容由业务按索引渲染。
 - 栏高 48 / 56 / 64（`--vx-tabbar-height-*`），图标位 20 / 24 / 28（`--vx-tabbar-media-*`），凸起圆钮 44 / 52 / 60（`--vx-tabbar-raise-size-*`）。文案 `sm` / `md` 13 / 20，`lg` 14 / 22（`--vx-tabbar-font-*` / `--vx-tabbar-line-*`），图标和文案间距 2 / 2 / 4（`--vx-tabbar-gap-*`），不借控件字号和页面留白。
-- 有凸起项时栏顶让出 22 / 24 / 26（`--vx-tabbar-raise-lift-*`），整行高 70 / 80 / 90（`--vx-tabbar-row-raised-*`）。每一列都按伸出段下移，标签仍落在同一条线上；透明段和圆钮都算在凸起那一列的热区里。
+- 有凸起项时栏顶让出 22 / 24 / 26（`--vx-tabbar-raise-lift-*`），整行高 70 / 80 / 90（`--vx-tabbar-row-raised-*`）。每一列都按伸出段下移，标签仍落在同一条线上；只有圆钮是热区，透明带把点击让给页面。
 - 一个标签栏最多一个凸起项，多传时只认第一个；`raised` 只是外观，`action` 才决定不参与选中。凸起项也占一列，左右项按列数等分。凸起项要带 `icon` 或 `image`，圆钮里才有内容。
 - 凸起圆钮用 `type` 的实心色：`warning` 取 `warning-pressed`，图标取对应的 `on-*`，`default` 用正文色底配 `text-inverse`。圆钮不跟选中态，禁用时换成 `disabled-bg` / `disabled-text`。
 - 选中态同时换文字色和字重；字体图标取 `type` 的语义色，`warning` 用 `warning-ink`。图片图标不能染色，选中态靠 `activeImage`。`activeIconVariant="fill"` 可以做线性转实心。
 - `fixed` 默认打开，`placeholder` 默认打开：组件放在页面根节点的末尾，占位补出栏高和安全区，滚动区不会被压在标签栏下面。页面用 `scroll-view` + 底栏的列布局时改 `:fixed="false"`，标签栏留在文档流里。
 - `safeArea` 默认打开：安全区算在栏内，底色铺到屏幕底边，图标和文案仍落在手势条之上。放进卡片、画布或已经有底部安全区的容器时关掉，避免多出一截。
 - `color` / `bgColor` 是字面值，不跟随亮暗主题；传 `var(--vx-color-*)` 时跟主题。选中态仍跟 `type`，对比度由业务保证。
-- `badge` 超过 `badgeMax` 显示 `max+`，`dot` 优先于计数；角标默认 `danger`，叠在图标右上角，不参与布局，点击仍落在整列。角标跟图标走：项没有 `icon` / `image` 时不渲染角标；纯文字标签栏不放角标。
+- `badge` 超过 `badgeMax` 显示 `max+`，`dot` 优先于计数；角标默认 `danger`，叠在图标右上角，不参与布局，点击仍落在这项的热区上。角标跟图标走：项没有 `icon` / `image` 时不渲染角标；纯文字标签栏不放角标。
 - `disabled` 只停这一项：文字和字体图标转 `disabled-text`，图片压到 0.4，角标单独降透明度；不抛 `change` 和 `click`。当前项不要设成禁用。
 - 点击 `click` 停在标签栏上，外层卡片不会再收到同一次点击。点击当前项不抛 `change`，只抛 `click`，可以拿来做「再点一次回顶」。
 - 使用本组件时不要再配置 `pages.json` 的 `tabBar`，否则两条底栏会叠在一起；同一屏也只有一个底部导航。需要浮层时按 DESIGN.md 的层级排，标签栏固定层级 1，低于吸顶条 10 和导航栏 20。
@@ -3487,11 +3515,11 @@ const navVisible = ref(false)
 | maskClosable | boolean | `true` | 点击遮罩收起并抛 `close` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
 | bgColor | string | `''` | 自定义面板底色，字面值 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
-| close | 用户点可关闭的遮罩或关闭叉时触发；默认先收起 | 无 |
+| close | 用户点可关闭的遮罩、关闭叉，或页面调 `cancel()` 时触发；默认先收起 | 无 |
 | update:show | `v-model:show` 同步，收起时回传 `false` | boolean |
 
 | 插槽 | 说明 |
@@ -3505,6 +3533,7 @@ const navVisible = ref(false)
 | --- | --- |
 | open() | 打开抽屉 |
 | close() | 立刻收起，不抛 `close` |
+| cancel() | 收起并抛 `close`，给页面 `onBackPress` 用 |
 
 - 左右抽屉占满高度、宽 280（`--vx-drawer-width`）；上下抽屉占满宽度、高 45%（`--vx-drawer-height`）。面板最大不超出整屏；`width` / `height` 必须带单位，App 上也不要写 `calc`。
 - 面板贴住屏幕的一侧不圆角，朝向页面的两角用 `lg` 12；`surface` 底、`--vx-shadow-lg`，不加描边。遮罩用 `--vx-color-mask`，只压页面。
@@ -3514,9 +3543,10 @@ const navVisible = ref(false)
 - 点可关闭的遮罩收起并抛 `close`；`maskClosable=false` 时点遮罩不关闭也不抛 `close`，要保留 `closable` 或内容里的关闭按钮。`close()` 只收起，不抛 `close`。
 - 四个方向的安全区都由面板内边距承担：左右抽屉让开顶部、所在边的侧边距和底部手势条，上下抽屉让开顶部或底部。
 - 抽屉挂在页面根节点，和滚动容器平级；不要放进 `scroll-view`、卡片或 `fixed` 容器。同一屏只开一个，不要和对话框、操作菜单叠加。
-- 层级默认 90，和操作菜单、日期时间选择器、日历弹层同档；低于消息提示 100、弹框 110、加载浮层 150、轻提示 200。Web 上遮罩淡入、面板从所在边滑入；App 5.26 直接出现，关闭即移除。
+- 层级默认 1000，和操作菜单、日期时间选择器、日历弹层同档；低于消息提示 1010、弹框 1020、加载浮层 1050、轻提示 1100。Web 上遮罩淡入、面板从所在边滑入；App 5.26 直接出现，不做退场。第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁；原生层在 App 上反复创建会整层不画。
+- 关闭后节点仍留在页面里，正文的 `scroll-view` 也还活着；需要完全释放时用 `v-if` 包住整个抽屉。
 - 从 ThorUI `tui-drawer` 迁移：`visible` 换成 `v-model:show` / `show`，`mode` 换成 `position`，`backgroundColor` 换成 `bgColor`。`mask` 不再提供，抽屉始终带遮罩；需要常驻侧栏时用页面布局。
-- ThorUI 的 `maskZIndex` 并进 `zIndex`，遮罩和面板共用一档；`zIndex` 默认从 990 改为 90。宽度和高度不再靠插槽内容撑开，改用 `width` / `height`；关闭仍抛 `close`，`close()` 方法不抛。
+- ThorUI 的 `maskZIndex` 并进 `zIndex`，遮罩和面板共用一档；`zIndex` 默认从 990 改为 1000。宽度和高度不再靠插槽内容撑开，改用 `width` / `height`；关闭仍抛 `close`，`close()` 方法不抛。
 - 自定义宽度不要再用外层 `style` 写死：左右传 `width`，上下传 `height`；内容长时保持正文滚动，不要给面板加第三层滚动。
 
 ## vx-swipe-action
@@ -3561,7 +3591,8 @@ const onSelect = (index: number, item: VxSwipeActionItem, name: string) => {
 | open | boolean | `false` | 是否展开，支持 `v-model:open` |
 | swipeable | boolean | `true` | 手势滑出菜单；`false` 只停手势，程序控制仍可用 |
 | closeOnSelect | boolean | `true` | 点动作后收起；`false` 时保持展开 |
-| multiple | boolean | `false` | 允许同时展开多行；默认展开一行时收起其他行 |
+| multiple | boolean | `false` | 允许同组同时展开多行；默认展开一行时收起同组其他行 |
+| group | string | `''` | 互斥分组，默认按页面：不传时同页面的行共用一个组；一个页面上多个列表要各管各的，传不同的值 |
 | extraWidth | number | `80` | `extra` 插槽的露出宽度，单位 px；没有 actions 且插槽存在时生效 |
 
 `VxSwipeActionItem`：
@@ -3598,13 +3629,13 @@ const onSelect = (index: number, item: VxSwipeActionItem, name: string) => {
 - 菜单固定在右侧、压在内容下面，内容单独平移；不要把菜单放进被平移的内容容器，uni-app x Web 的 view 默认 `overflow: hidden` 会把它裁掉。
 - 左滑超过动作总宽的一半、或 24px / 250ms 内的快速轻扫展开；拖动过程不挂过渡，松手用 `--vx-duration-normal`。横向超过 8px 且大于纵向后才接管，并拦住这一笔外层滚动；纵向先超过 8px 则整段手势交还给页面。
 - 展开期间一行只保留一个透明保护层，点内容只收起，不触发下层行点击；滑动结束补 300ms 点击保护。
-- 默认只展开一行，跨列表也生效。横向接管、`open()` 或把 `v-model:open` 写成 true 时，其他已展开的行收起并抛 `change(false, name)`。`multiple=true` 只影响当前行展开时是否收起其他行。
+- 默认只展开一行，同组内生效：不传 `group` 时按页面分组，同页的普通列表共用一个组，导航栈下层的页面和别的页面不受影响；一个页面上多个列表要各管各的，各传一个 `group`。横向接管、`open()` 或把 `v-model:open` 写成 true 时，同组其他已展开的行收起并抛 `change(false, name)`。`multiple=true` 只影响当前行展开时是否收起同组的其他行，不另开组。
 - 没有 `actions` 也没有 `extra` 时不渲染菜单，手势不移动内容。
 - `swipeable=false` 只停手势；`v-model:open`、`open()` 仍能展开，点内容仍能收起。
 - 删除等不可逆动作先收起菜单，再由业务用 `vx-modal` 确认；组件只抛 `select`，不碰数据、路由和请求。
 - 从 ThorUI `tui-swipe-action` 迁移：`@click` → `@select`（参数 `index, item, name`），`actions[].name` → `text`，`background` → `bgColor`，`fontsize` 不再需要（固定 15 / 22 / 500），`icon` 改成字体图标名（不再接受图片地址），`width` 保留（px）。
 - `closable` → `closeOnSelect`（含义相同）；`forbid` → `swipeable`（取反）；`open` 改成 `v-model:open` 或 `open()`；`params` → `name`；`operateWidth` → `extraWidth`。
-- `showMask` 不再提供：默认只展开一行，靠内部登记收起其他行，不铺全屏透明遮罩；需要多行同时展开时传 `multiple`（对应 ThorUI `showMask=false`）。
+- `showMask` 不再提供：默认同组只展开一行，靠内部登记收起其他行，不铺全屏透明遮罩；需要多行同时展开时传 `multiple`（对应 ThorUI `showMask=false`）。
 - `nameField` / `iconField` / `backgroundColor` 不再提供：字段固定为 `text` / `icon`，行底色固定 `surface`，外观由外层列表或卡片负责；`actions` 为空时用 `extra` 插槽自定义菜单。
 
 ## vx-navigation-bar
@@ -4077,7 +4108,7 @@ const onClose = () => {
 | mask | boolean | `false` | 铺遮罩压暗页面，只压页面不压气泡 |
 | outsideClosable | boolean | `true` | 点遮罩或外部收起并抛 `close` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
-| zIndex | number | `90` | 浮层层级 |
+| zIndex | number | `1000` | 浮层层级 |
 
 `items` 每项：
 
@@ -4093,7 +4124,7 @@ const onClose = () => {
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
 | select | 点击可用菜单项时触发；默认先收起 | `index: number`、`item: VxBubblePopupItem` |
-| close | 点外部、滚动或 Esc 收起时触发；`close()` 不触发 | — |
+| close | 点外部、滚动、Esc，或页面调 `cancel()` 收起时触发；`close()` 不触发 | — |
 | update:show | `v-model:show` 同步，收起时回传 `false` | boolean |
 
 | 插槽 | 说明 |
@@ -4107,6 +4138,7 @@ const onClose = () => {
 | --- | --- |
 | open() | 打开气泡；inline 下无效 |
 | close() | 立刻收起，不抛 `close`；inline 下无效 |
+| cancel() | 收起并抛 `close`，给页面 `onBackPress` 用；未打开或 inline 下直接返回 |
 | toggle() | 按当前状态切换；inline 下无效 |
 | refresh() | 重新测量触发区和面板；异步内容落定后调用 |
 
@@ -4119,7 +4151,7 @@ const onClose = () => {
 - 换 `items` 数组或改数量会自动重测；只在原数组里原地改文案或换 `extra` 内容时，由业务调 `refresh()`。
 - 遮罩默认关闭，点击层始终接住外部点击；`outsideClosable=false` 时保留触发区、菜单项或 `close()` 作为出口。关掉且不铺遮罩时页面还能操作，滚动后气泡不会跟随触发区，需要时调 `refresh()` 或先收起。
 - 页面滚动、Web 上的 Esc 和点外部都抛 `close`；`close()` 只收起，不抛事件。
-- 层级默认 90，和操作菜单、抽屉同档，低于消息提示 100、弹框 110、加载浮层 150、轻提示 200。
+- 层级默认 1000，和操作菜单、抽屉同档，低于消息提示 1010、弹框 1020、加载浮层 1050、轻提示 1100。
 - Web 上量完位置后淡入、面板从 0.96 放大到 1；5.26 的 App 直接出现，关闭即移除，不做退场。
 - 从 ThorUI `tui-bubble-popup` 迁移：默认插槽从「内容」改成「触发区」，菜单改用 `items`，单段内容用 `content`，自定义面板用 `extra`；`direction` → `placement`（表示气泡在锚点的哪一侧，不是箭头指向）；`left` / `right` / `top` / `bottom` / `translateX` / `translateY` / `triangleLeft` / `triangleRight` / `triangleTop` / `triangleBottom` 去掉，改由触发区自动测量，配合 `align` / `offset` / `arrowOffset` 落位；`width` 保留，需带单位；`radius` / `borderWidth` 去掉，圆角和箭头固定走令牌；`backgroundColor` / `color` 改成 `variant` + `type`，前景由 `on-*` 决定；`maskBgColor` → `maskColor`；`mask` 同名保留；`position` / `flexEnd` 去掉，行内消息用 `inline`，对齐用 `align` 和外层布局。
 

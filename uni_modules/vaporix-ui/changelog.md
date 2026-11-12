@@ -1,3 +1,70 @@
+## 0.67.0（2026-11-12）
+
+- 弹层在真机上会整层不画：`position: fixed` 的子树里用 `v-if` 反复创建原生 `scroll-view` / `input` / `picker-view`，几次开关之后遮罩和面板一起消失，等 8.5 秒也不补画。真机记录在 `vaporix-ui/pages/probe/fixed-vif-probe.uvue` 文件头：XiaoMi 14 / Android 13 / HBuilderX 5.34，B 组（带 `scroll-view`）第 7 次、C 组（带 `input`）第 5 次、D 组（带 `picker-view`）第 3 次开始看不到「罩」和「面板在」；A 组（只有 `view` / `text`）30/30 正常，页面本身没有失活。
+- 五个弹层改成首开后常驻：`vx-popup`、`vx-modal`、`vx-drawer`、`vx-picker`、`vx-calendar` 的根节点只从「不在」变成「在」，关闭动画走完或 `duration=0` 时只加隐藏 class（`display: none`），不再卸载。探针 E 组（同样内容改成首次打开后不销毁、关闭用 `display: none`）和 F 组（`vx-popup` 里放纵向 `scroll-view`）都是 30/30 正常。
+- Web 的入场关键帧不靠重新挂载：`display: none` 会终止动画，去掉隐藏类后浏览器从头再播一遍，和第一次打开一致。
+- `vx-datetime` 的滚轮改成下一帧挂载：`picker-view` 和 `fixed` 根节点同一帧创建时 App 端会拒绝创建，先画同尺寸占位，`nextTick` 后再换成滚轮；下标由 `prepare()` 当场备好，不会给空 `value`。挂上后常驻，列数变化仍由 `wheelKey` 整只换。
+- 新增探针页 `pages/probe/fixed-vif-probe`：不进 `pages/demo/shared/catalog.ts`，演示目录和首页看不到入口，只在 `pages.json` 留路由。真机记录和 Web 冒烟说明都写在文件头。
+
+- 操作菜单动作超过一屏会把取消栏顶出屏幕：不再写 `max-height: 100%`，打开时在本组件作用域里量 `.vx-actionsheet` 根节点的高度减 24 写行内上限，量不到才退回 `getWindowInfo().windowHeight` 减 24，两者都拿不到就不写上限。`panel` 补 `flex-shrink: 1`、动作区补 `min-height: 0`：App 不会把 `sheet` 的 `max-height` 分给子项，子项不写收缩就按内容高撑出去，取消栏被裁在屏幕下面。多出来的动作仍在动作区被裁，动作行不收缩，52 的行高（App 上加上下各 12 内边距 76）不被压扁。`items` 超过 8 条仍只警告一次，规范是 2–6 条。真机验证：XiaoMi 14 / Android 13 / HBuilderX 5.34，12 条动作时取消栏完整在窗口内可点、顶部留白 24dp、改 `wm size` 后不再多吃 32px；2–6 条版式和改前一致，证据在 `pages/demo/actionsheet/actionsheet.uvue` 文件头。
+- 弹框动作在短屏或键盘弹起后会出屏：面板按 `getWindowInfo().windowHeight` 减上下各 24 写 `max-height`，头部和底栏保持不收缩，只缩正文（`flex-shrink: 1` + `min-height: 0` + `overflow: hidden`）。窗口高度每次打开重读，键盘收起后再打开上限跟着走；不再把 `uni.onWindowResize` 当成必需，先判是不是函数再挂（Web 听 `window.resize`）。
+- 弹框和抽屉的关闭叉离面板边 8：弹框 `top` / `right` 从 4 改 `--vx-space-sm`，抽屉头部右内边距从 4 改 8；两处热区都改用 `--vx-hit-size`。
+- 贴边弹层不再投阴影：`vx-actionsheet`、`vx-drawer`、`vx-picker`、`vx-calendar`、`vx-datetime` 去掉 `--vx-shadow-lg`，遮罩已经把面板和页面分开；居中弹框仍保留 `lg` 阴影。
+- 打开那一下的抬手会点到刚挂上的遮罩，浮层一闪就关：`vx-popup`、`vx-modal`、`vx-drawer`、`vx-picker`、`vx-actionsheet`、`vx-bubble-popup` 补上 250ms 遮罩保护窗（`VX_POPUP_MASK_GUARD`，`vx-calendar` 已有），窗口内丢掉遮罩 / 外层点击，连 `click-mask` 也不抛。
+- 弹层打开期间锁页面：`vx-modal`、`vx-drawer`、`vx-picker`、`vx-calendar`、`vx-actionsheet` 打开时调 `vxLockPageScroll()`，关闭或卸载时还原；Web 生效，App 和小程序仍靠遮罩拦手势。
+- `vx-popup`、`vx-drawer`、`vx-bubble-popup` 新增 `cancel()`：收起并抛 `close`，给页面 `onBackPress` 用；`close()` 仍然只收起。
+- 弹框和操作菜单不再在根节点统一拦 `touchmove`：只拦遮罩、头部和底栏，正文插槽里的 `scroll-view` 才能接住手势。
+
+- `vx-popup` 新增 `overlay` 插槽：和遮罩、面板同一个根节点，共享 `fixed` 落点，默认不渲染；不要放进面板，面板的裁切会把自绘层裁掉。新增 `maxWidth`（只对上下贴边生效，横轴居中，窄屏仍铺满）；落位拆成 `--in-y` / `--in-x`，上下贴边用 `translateY`，左右和居中仍用 `translateX`。
+- `vx-popup` 的 `closeable` 改名 `closable`：旧写法不再识别，与 `vx-modal`、`vx-drawer`、`vx-tag` 统一；0.63.0 条目里的旧拼写一起更正。关闭叉热区改用 `--vx-hit-size`。
+- `vx-avatar` 新增 `clickable`：只写 `@click` 也算可点（读 `vnode.props`），显式 `clickable=false` 时按下不变淡也不拦点击；可点时才 `stopPropagation`。圆角跟 `size` 取 `--vx-control-radius-*`；`src` 显式 `null` 先收成空串。
+- `vx-card` 静态卡片不再 `@click.stop`：不抛 `click` 的卡片把点击交给外层列表行，可点时才拦。
+- `vx-bubble-popup` 的 Web 全局监听只在打开期间挂：关着的实例不跟页面滚动跑回调，收起即摘。
+- `vx-checkbox` / `vx-checkbox-group` / `vx-radio` / `vx-radio-group` 新增 `index`：同一组都传了才按最大 `index` 认最后一项，缺一项整组退回挂载顺序；中间插入后 `index` 变化会重新登记。分组改成原地维护登记表，选中值先收成表再判断，挂载不再 O(N²)。
+- `vx-collapse` / `vx-collapse-item` 新增 `index`，规则同上，静态写死的面板不用传。
+- `vx-collapse-item` 的插槽和 `scroll-view` 第一次展开才创建，之后留着；自动高度先量内容再走和固定高度同一套 `height` 过渡，量不到才退回 `max-height`，量到之后超过 2000px 也不截。箭头 `sm` / `md` 用 14、`lg` 用 18，占位跟字形同大。
+- `vx-countdown` 的秒段先按最小可见单位向上取整再拆天时分秒：只显示到分 / 时 / 天时，不再每秒进位；`onHide` 只停表，`onShow` 按截止时间补回剩余毫秒。`lg` 单独 10 圆角，三位数左右各补 8。
+- `vx-divider` 的默认间距改走令牌：横线上下 `--vx-space-md`、竖线左右 `--vx-space-lg`，只有传了 `spacing` 才写行内；`align="left"` / `"right"` 去掉没有线那侧的外边距。
+- `vx-form` 的 `labelWidth` 默认改成空串，宽度取 `--vx-form-label-width`（72px），不写行内也不警告；传了带单位的值才写行内盖过。
+- `vx-form` 的失败项改为自己上报位置：表单项在自己作用域里量根节点，把视口 `top` 交给容器；容器外面是 `vx-page` 时滚它的滚动区（`libs/page-scroll.ts` 的注入键），没有才补页面滚动量调 `pageScrollTo`；form 自己查 `.vx-form-item--invalid` 只作兜底。`validateField` 单项校验不定位，边输入边跳不再出现。
+- `vx-form-item` 的内容区最小高度跟控件档位，矮控件在这一层垂直居中，双行时标题仍停在第一行；异步校验回来序号对不上就丢弃，`value` 变化让旧结果失效。
+- `libs/form.ts` 的异步 `validator` 返回非字符串（含 `undefined`）按通过处理，收成空串，不再被当成错误文案。
+- `vx-grid-item` 的圆角跟 `size` 取 6 / 8 / 10，禁用图片压到 `--vx-opacity-media-disabled`。
+- `vx-image` 的 `src` 显式 `null` 先收成空串；窗口宽在 `props.ts` 里缓存一次，列表里不再每个实例打 `getWindowInfo`；淡入时长走 `--vx-duration-normal`。
+- `vx-image-group` 的失败按格子 `index` 记：同一地址两张图，一张失败不把另一张已经显示的换掉，也不再按地址恢复；换 `items` 清掉失败记录；`wrap` 用 `align-self: stretch` 代替 `width: 100%`，父宽刚好 n 列时最后一列不再换行。
+- `vx-input` 点清除时在 `clear` 之外补抛 `input('')`，绑 `@input` 过滤的业务也能收到空串；`change` 仍只在失焦和确认时抛，已经是空串不补抛。清除热区收成 30 / 34（图标 14 / 18 加左右各 8），不再占整档控件高度。搜索取消按钮在 App 上用按下标记留住热区，Web 用 `mousedown.prevent` 保住焦点。
+- `vx-list-view` 新增 `size`：只改标题区左右内边距（`sm` 12，`md` / `lg` 16），不传给里面的行。
+- `vx-loading` 的 `bars` 变体按顺序写递减 `opacity`（终点 0.16）：5.26 的 App 没有关键帧时十二瓣也分得出前后，关键帧跑起来仍盖过行内值。
+- `vx-navigation-bar` 的 `ready` 在条高变化超过 0.5px 时重新抛：`refresh()` 改字体、胶囊或槽之后，外层占位和 `sticky` 的 `offsetTop` 能跟着更新。返回热区改用 `--vx-hit-size`。
+- `vx-no-data` 的内边距改用 `--vx-space-xl` / `--vx-space-lg`，不再写字面量 24 / 16。
+- `vx-nomore` 的线、文案和圆点收进同一行容器：只留线时也占一行文案高度（`sm` / `md` 走 `--vx-line-sm`，`lg` 走 `--vx-line-md`），和同尺寸的 `vx-loadmore` 同高。
+- `vx-picker` 的 `prepare()` 看到同一份 `options` 引用就跳过规整，全国三级三千多个节点连开不必重走；每次打开强制写一次 `value`，常驻的滚轮在隐藏期间丢了位置也能拨回草稿，打开期间的滚动仍走「没变就不换」。
+- `vx-qrcode` 的 `text` / `logo` 显式 `null` 先收成空串；`width` 传 `rpx` 时回落档位边长，不再被 `parseFloat` 读成 200；模块 `key` 改用下标复用，内容变化不再整批删掉重建；`logoBox` 单独计算，改 `logoScale` 不重拼全部模块样式。
+- `vx-rate` 按下后中途被改成只读或禁用时整笔手势作废，拖动中写过的分值退回按下时的值；横向接管后 `stopPropagation`，不再把这一笔交给外层滚动。
+- `vx-rolling-news` 根节点加 `z-index: 0` 收口：内部 `prefix` / `suffix` / 热区的 2、3 只在组件这一组里比较，Web 上不再压到固定页脚。
+- `vx-row` / `vx-col` 的 `stretch` 改成按视觉行分组：换行后每一行只用自己的最高列，不再用整组最高撑后面的短卡片；Web 不写像素高度，`align-items: stretch` 本身生效；离开 `stretch` 时清掉旧 `height`；测量前先拿掉高度再量，内容变矮也缩得回。App 用 `ResizeObserver` 听列内容，小程序在 `onUpdated` 补量。
+- `vx-section` 可点标题栏的最小高度改用 `--vx-hit-size`。
+- `vx-sticky` 已经量到位置就不再在滚动里重测，只由 `refresh()` 触发；`offsetTop` 变化时自动重测，导航栏 `ready` 后改偏移能落到新的吸顶线。
+- `vx-swipe-action` 新增 `group`：不传时按页面分组（`getCurrentPages()` 的 `route` 加栈位置），同页多个列表各传一个值；动作节点第一次露出后常驻，收起不再卸载重建；跟手期间直接写内容节点的 `transform`，不再每一帧重绘整行。
+- `vx-tabbar` 的凸起圆钮只有圆钮能点：栏身不切换，栏顶以上的透明段不接点击，点下去落到页面。行高不再为凸起加高，未固定时用 `margin-top` 留出圆钮，固定时正文铺到栏顶下面；圆钮自己挂按下态和指针，禁用图片压到 `--vx-opacity-media-disabled`。
+- `vx-tabs` 的行对象只跟 `items`、尺寸、`variant`、`type`、竖排和滚动形态走，选中变了不重建：选中 / 未选中两份 class 在行上预留，模板按当前下标挑，只有新旧两项的挑选结果变。
+- `vx-tag` 的高度、字号、行高和左右内边距改用标签自己的令牌：高 20 / 24 / 28，字 12 / 13 / 14，行 16 / 18 / 20，内边距 6 / 8 / 10。关闭叉三档都用 `sm` 14，热区宽度不小于标签高度，不再靠放大图标。
+- `vx-textarea` 的圆角跟 `--vx-control-radius-*`，左右内边距按档 12 / 16 / 24，和输入框对齐。
+- `vx-time-axis` 的图标不再比节点小一档，直接跟 `size` 取 14 / 18 / 22。
+- `vx-calendar` 的翻月箭头宽 40、年份双箭头宽 30 改用 `--vx-calendar-arrow` / `--vx-calendar-double`，关闭叉热区改用 `--vx-hit-size`。
+
+- 新增 `--vx-form-label-width`（72px），表单项左侧标签默认取它；亮暗各一份。
+- 新增 `--vx-hit-size`（44px），关闭叉、返回、可点标题栏和独立图标按钮统一用它。`--vx-gallery-control` / `--vx-modal-close-size` 这一版仍写 44，下个大版本删除；App 不能写 `--a: var(--b)`，两处数值手工保持相等。
+- 新增标签令牌 `--vx-tag-height-*`、`--vx-tag-font-*`、`--vx-tag-line-*`、`--vx-tag-padding-*`，亮暗各一份；`--vx-compact-height-*` 只留给页脚链接和页签胶囊，标签不再借用。
+- 新增 `--vx-opacity-media-disabled`（0.4），亮暗各一份。
+- 新增 `--vx-calendar-arrow`（40）、`--vx-calendar-double`（30），亮暗各一份。
+- 新增给 Pro 用的令牌：`--vx-index-key-font-*` / `--vx-index-key-line-*`、`--vx-index-indicator-font-*` / `--vx-index-indicator-line-*`、`--vx-guide-arrow` / `--vx-guide-arrow-out`、`--vx-indicator-dot` / `--vx-indicator-line` / `--vx-indicator-line-active` / `--vx-indicator-line-height`、`--vx-swiper-caption` / `--vx-swiper-indicator-over`、`--vx-opacity-key-dim`（0.72）；免费层本次没有组件读取它们。
+- `vx-tips` / `vx-toast` 只改注释里的默认层级（1010 / 1100），样式和行为不变。
+- 圆角约定同步：`--vx-control-radius-*` 是跟 `size` 走的三档元素圆角 6 / 8 / 10，不分档的容器仍用 `--vx-radius-md`，贴边面板和弹框仍用 `--vx-radius-lg`。
+- DESIGN 和 readme 同步：弹层层级表从 90 / 95 / 100 / 105 / 110 / 150 / 200 改到 1000 / 1005 / 1010 / 1015 / 1020 / 1050 / 1100（与 `libs/overlay.ts` 一致）；贴边弹层不投阴影；常驻、`display: none` 和「要完全释放用 `v-if` 包住整个弹层」写进各弹层条目；标签尺寸、控件字号表、三档元素圆角、表单 `labelWidth`、输入框清除补抛 `input`、折叠面板的 `index`、滑动菜单的 `group`、列表分组的 `size` 一并补上。README.en 的标签高度和层级同步。
+- 演示工程：头像加 `clickable` 和显式 `false` 两组、折叠面板和弹出层的 `v-for` 补 `index`、列表分组加 `size="sm"` 一组、标签演示的尺寸说明改成 20 / 24 / 28、标签栏提示改成「只有圆钮能点」。免费仍 60 件（按目录 62），Pro 仍 29 件，本版不新增组件。
+- 版本号统一到 0.67.0：`uni_modules/vaporix-ui/package.json`、`manifest.json`（versionCode 6700）、演示工程首页、头像 / 折叠面板 / 列表分组 / 弹出层 / 标签栏 / 标签六个演示页页脚。
+
 ## 0.66.2（2026-11-06）
 
 - 修复 `vx-tabs` 竖排角标压行：竖排的行只有文字高，角标仍绝对定位在文案右上角，会顶出本行压到上一行的分割线，`soft` 外观下还盖住文案。改成行内排布——文案和角标放进同一个 flex 行，角标跟在文案后面、垂直居中，右侧落在 12px 内边距内侧，不再绝对定位。
@@ -65,7 +132,7 @@
 ## 0.63.0（2026-11-05）
 
 - 新增弹层底座 `libs/overlay.ts`：六档层级常量（90 / 95 / 100 / 110 / 150 / 200）、进出场时长、贴边方向到安全区的映射、圆角档位到 px 的换算和滚动锁类名；只放常量和纯函数，读写状态留在组件里，后面几个免费弹层逐个迁移过来。
-- 新增免费组件 `vx-popup`：`placement` 支持四向贴边和居中，`width` / `height` / `round` / `closeable` / `maskClosable` / `maskColor` / `safeArea` / `zIndex` / `duration` / `lockScroll` 十个选项；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()` / `toggle()`。
+- 新增免费组件 `vx-popup`：`placement` 支持四向贴边和居中，`width` / `height` / `round` / `closable` / `maskClosable` / `maskColor` / `safeArea` / `zIndex` / `duration` / `lockScroll` 十个选项；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()` / `toggle()`。
 - 进出场只改 `transform` 和 `opacity`，贴边面板从所在边滑入、居中面板只淡入；关闭动画走完（`duration` 加一帧）才卸载，关闭过程中再打开会从当前位置回到终点；`duration=0` 和 Web 的「减少动效」都直接切换。
 - 面板只圆朝向页面的那一侧，贴边那条边保持直角，居中四角全圆；贴边面板不加阴影也不加描边，居中面板四周加 1px 描边；关闭叉在内容上方单占一行 44，贴顶时不会钻进状态栏。
 - 安全区由面板内边距承担：上下贴边让开所在边的状态栏或手势条，左右面板两头都让，横屏的左右安全区每档都让；`safeArea=false` 只影响上下贴边。
