@@ -42,7 +42,7 @@
 - `vx-qrcode` 的 `text` / `logo` 显式 `null` 先收成空串；`width` 传 `rpx` 时回落档位边长，不再被 `parseFloat` 读成 200；模块 `key` 改用下标复用，内容变化不再整批删掉重建；`logoBox` 单独计算，改 `logoScale` 不重拼全部模块样式。
 - `vx-rate` 按下后中途被改成只读或禁用时整笔手势作废，拖动中写过的分值退回按下时的值；横向接管后 `stopPropagation`，不再把这一笔交给外层滚动。
 - `vx-rolling-news` 根节点加 `z-index: 0` 收口：内部 `prefix` / `suffix` / 热区的 2、3 只在组件这一组里比较，Web 上不再压到固定页脚。
-- `vx-row` / `vx-col` 的 `stretch` 改成按视觉行分组：换行后每一行只用自己的最高列，不再用整组最高撑后面的短卡片；Web 不写像素高度，`align-items: stretch` 本身生效；离开 `stretch` 时清掉旧 `height`；测量前先拿掉高度再量，内容变矮也缩得回。App 用 `ResizeObserver` 听列内容，小程序在 `onUpdated` 补量。
+- `vx-row` / `vx-col` 的 `stretch` 改成按视觉行分组：换行后每一行只用自己的最高列，不再用整组最高撑后面的短卡片；Web 不写像素高度，`align-items: stretch` 本身生效；离开 `stretch` 时清掉旧 `height`；测量前先拿掉高度再量，内容变矮也缩得回。重测由列的 `onUpdated` 和页面 `onResize` 触发，不挂 `ResizeObserver`。
 - `vx-section` 可点标题栏的最小高度改用 `--vx-hit-size`。
 - `vx-sticky` 已经量到位置就不再在滚动里重测，只由 `refresh()` 触发；`offsetTop` 变化时自动重测，导航栏 `ready` 后改偏移能落到新的吸顶线。
 - `vx-swipe-action` 新增 `group`：不传时按页面分组（`getCurrentPages()` 的 `route` 加栈位置），同页多个列表各传一个值；动作节点第一次露出后常驻，收起不再卸载重建；跟手期间直接写内容节点的 `transform`，不再每一帧重绘整行。
