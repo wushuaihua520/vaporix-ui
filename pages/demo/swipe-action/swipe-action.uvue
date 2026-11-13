@@ -53,16 +53,18 @@
 					</view>
 					<view class="demo-card">
 						<vx-list-view>
-							<vx-swipe-action name="order-20261026" :actions="swipeBasicActions"
+							<vx-swipe-action group="b" name="order-20261026" :actions="swipeBasicActions"
 								@select="onSwipeSelect">
 								<vx-list-cell title="订单 20261026" description="今天 18:00 前付款" value="待付款"
 									@click="onSwipeRowTap('订单 20261026')" />
 							</vx-swipe-action>
-							<vx-swipe-action name="membership" :actions="swipeBasicActions" @select="onSwipeSelect">
+							<vx-swipe-action group="b" name="membership" :actions="swipeBasicActions"
+								@select="onSwipeSelect">
 								<vx-list-cell title="会员续费" description="11 月 3 日到期" value="待付款"
 									@click="onSwipeRowTap('会员续费')" />
 							</vx-swipe-action>
-							<vx-swipe-action name="address" :actions="swipeBasicActions" @select="onSwipeSelect">
+							<vx-swipe-action group="b" name="address" :actions="swipeBasicActions"
+								@select="onSwipeSelect">
 								<vx-list-cell title="收货地址" description="上海市浦东新区" value="常用" :divider="false"
 									@click="onSwipeRowTap('收货地址')" />
 							</vx-swipe-action>
@@ -244,15 +246,15 @@
 					</view>
 					<view class="demo-card">
 						<vx-list-view>
-							<vx-swipe-action multiple name="multi-a" :actions="swipeMultipleActions"
+							<vx-swipe-action multiple group="a" name="multi-a" :actions="swipeMultipleActions"
 								@select="onSwipeMultipleSelect">
 								<vx-list-cell title="打开关闭互不影响" description="multiple 打开后，多行可以同时展开" />
 							</vx-swipe-action>
-							<vx-swipe-action multiple name="multi-b" :actions="swipeMultipleActions"
+							<vx-swipe-action multiple group="a" name="multi-b" :actions="swipeMultipleActions"
 								@select="onSwipeMultipleSelect">
 								<vx-list-cell title="打开关闭互不影响" description="当前这一行也保持展开" />
 							</vx-swipe-action>
-							<vx-swipe-action multiple name="multi-c" :actions="swipeMultipleActions"
+							<vx-swipe-action multiple group="a" name="multi-c" :actions="swipeMultipleActions"
 								@select="onSwipeMultipleSelect">
 								<vx-list-cell title="打开关闭互不影响" description="点内容或点动作才会收起"
 									:divider="false" />
@@ -262,7 +264,7 @@
 							<text class="demo-tabs-status__label">select</text>
 							<text class="demo-tabs-status__text">{{ swipeMultipleLast }}</text>
 						</view>
-						<text class="demo-hint">默认只留一行；多行适合批处理，普通列表不要一次露出太多颜色。</text>
+						<text class="demo-hint">两个列表各传一个 group，互不干扰；都不传时同页只留一行。多行适合批处理，普通列表不要一次露出太多颜色。</text>
 					</view>
 				</view>
 
