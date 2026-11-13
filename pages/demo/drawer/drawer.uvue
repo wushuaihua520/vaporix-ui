@@ -1,3 +1,5 @@
+<!-- 真机 2026-11-13：XiaoMi 14 / Android 13 / HBuilderX 5.34 标准基座 5.34.15179（蒸汽模式 bytecode）。
+2. 通过：长内容抽屉正文滚到中下部（首条「优惠券将在 3 天后过期」、末条「客服回复了您的咨询」）后关闭再开，回到「订单 20261026 已发货」；再滚一次、再关再开，仍在顶部。本抽屉没有输入框，输入内容不被清掉这一项没有对应用例。 -->
 <template>
 	<view :class="pageClass">
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
