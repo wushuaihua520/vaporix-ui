@@ -1,3 +1,10 @@
+## 0.68.0（2026-11-13）
+
+- 控件文案字号三档从 13 / 14 / 16 提到 14 / 16 / 18（`--vx-font-control-*`），行高仍是 20 / 22 / 24。按钮、输入框、多行输入框、数字框、表单项标题、单选 / 复选 / 开关的横排文案、标签页、分段器、分页器、树、表格和数字动画一起换；正文档位 13 / 15 / 17、标签 12 / 13 / 14、徽章 12 / 13 / 14 不动。
+- 单选圆圈和复选方框从 14 / 16 / 18 提到 16 / 18 / 20（`--vx-radio-size-*` / `--vx-checkbox-size-*`），重新比横排文案大 2px。列表里标记的顶对齐补偿从 3px 收到 2px：行高 20 / 22 / 24 和标记都差 4，补一半。`vx-select` 的选项标记共用这两组令牌，跟着变；圆角、对号字形和标记到文案的间距不变。
+- 表单左侧标签列宽 `--vx-form-label-width` 从 72px 提到 80px。16px 下四字标题带星号原来会被列宽裁掉，现在放得下；`lg` 的四字标题带星号仍超出这一档，业务自己传 88px。`vx-form` 的 `labelWidth` 默认还是空串，不传就走新值。
+- `vx-tag` 只看标签自己的令牌，`vx-avatar` 的图标 14 / 16 / 18 和 `vx-icon` 的 14 / 18 / 22 也不是控件文案，这次都没有改。
+
 ## 0.67.0（2026-11-12）
 
 - 弹层在真机上会整层不画：`position: fixed` 的子树里用 `v-if` 反复创建原生 `scroll-view` / `input` / `picker-view`，几次开关之后遮罩和面板一起消失，等 8.5 秒也不补画。真机复测（XiaoMi 14 / Android 13 / HBuilderX 5.34）：B 组（带 `scroll-view`）第 7 次、C 组（带 `input`）第 5 次、D 组（带 `picker-view`）第 3 次开始看不到「罩」和「面板在」；A 组（只有 `view` / `text`）30/30 正常，页面本身没有失活。
@@ -42,7 +49,7 @@
 - `vx-qrcode` 的 `text` / `logo` 显式 `null` 先收成空串；`width` 传 `rpx` 时回落档位边长，不再被 `parseFloat` 读成 200；模块 `key` 改用下标复用，内容变化不再整批删掉重建；`logoBox` 单独计算，改 `logoScale` 不重拼全部模块样式。
 - `vx-rate` 按下后中途被改成只读或禁用时整笔手势作废，拖动中写过的分值退回按下时的值；横向接管后 `stopPropagation`，不再把这一笔交给外层滚动。
 - `vx-rolling-news` 根节点加 `z-index: 0` 收口：内部 `prefix` / `suffix` / 热区的 2、3 只在组件这一组里比较，Web 上不再压到固定页脚。
-- `vx-row` / `vx-col` 的 `stretch` 改成按视觉行分组：换行后每一行只用自己的最高列，不再用整组最高撑后面的短卡片；Web 不写像素高度，`align-items: stretch` 本身生效；离开 `stretch` 时清掉旧 `height`；测量前先拿掉高度再量，内容变矮也缩得回。重测由列的 `onUpdated` 和页面 `onResize` 触发，不挂 `ResizeObserver`。
+- `vx-row` / `vx-col` 的 `stretch` 改成按视觉行分组：换行后每一行只用自己的最高列，不再用整组最高撑后面的短卡片；Web 不写像素高度，`align-items: stretch` 本身生效；离开 `stretch` 时清掉旧 `height`；测量前先拿掉高度再量，内容变矮也缩得回。App 用 `UniResizeObserver` 听列内容，小程序在列的 `onUpdated` 补量，Web 不写像素高度。
 - `vx-section` 可点标题栏的最小高度改用 `--vx-hit-size`。
 - `vx-sticky` 已经量到位置就不再在滚动里重测，只由 `refresh()` 触发；`offsetTop` 变化时自动重测，导航栏 `ready` 后改偏移能落到新的吸顶线。
 - `vx-swipe-action` 新增 `group`：不传时按页面分组（`getCurrentPages()` 的 `route` 加栈位置），同页多个列表各传一个值；动作节点第一次露出后常驻，收起不再卸载重建；跟手期间直接写内容节点的 `transform`，不再每一帧重绘整行。
