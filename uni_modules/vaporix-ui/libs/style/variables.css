@@ -23,10 +23,10 @@
 	--vx-weight-semibold: 600;
 	--vx-weight-bold: 700;
 
-	/* 控件文案：和控件高度配套，正文仍用上面的 --vx-font-* */
-	--vx-font-control-sm: 13px;
-	--vx-font-control-md: 14px;
-	--vx-font-control-lg: 16px;
+	/* 控件文案：比同档 --vx-font-* 大 1px，和控件高度配套；正文仍用上面的 --vx-font-* */
+	--vx-font-control-sm: 14px;
+	--vx-font-control-md: 16px;
+	--vx-font-control-lg: 18px;
 
 	/* 间距（4px 基准） */
 	--vx-space-xs: 4px;
@@ -41,7 +41,7 @@
 	--vx-control-height-lg: 48px;
 
 	/* 表单左侧标签列宽；业务传了带单位的 labelWidth 才用行内盖过 */
-	--vx-form-label-width: 72px;
+	--vx-form-label-width: 80px;
 
 	/* 紧凑高度：页脚链接、页签胶囊 */
 	--vx-compact-height-sm: 28px;
@@ -157,14 +157,14 @@
 	--vx-rate-gap: 8px;
 
 	/* 单选：圆圈跟文案同级，比字大 1–2px；不并入图标三档。对号宽高写在 vx-radio 里 */
-	--vx-radio-size-sm: 14px;
-	--vx-radio-size-md: 16px;
-	--vx-radio-size-lg: 18px;
+	--vx-radio-size-sm: 16px;
+	--vx-radio-size-md: 18px;
+	--vx-radio-size-lg: 20px;
 
 	/* 复选框：方框和单选同三档，圆角按档位递进；对号和横线的宽高写在 vx-checkbox 里 */
-	--vx-checkbox-size-sm: 14px;
-	--vx-checkbox-size-md: 16px;
-	--vx-checkbox-size-lg: 18px;
+	--vx-checkbox-size-sm: 16px;
+	--vx-checkbox-size-md: 18px;
+	--vx-checkbox-size-lg: 20px;
 
 	--vx-checkbox-radius-sm: 4px;
 	--vx-checkbox-radius-md: 5px;
@@ -785,9 +785,9 @@
 	--vx-weight-bold: 700;
 
 	/* 控件文案（与亮色一致） */
-	--vx-font-control-sm: 13px;
-	--vx-font-control-md: 14px;
-	--vx-font-control-lg: 16px;
+	--vx-font-control-sm: 14px;
+	--vx-font-control-md: 16px;
+	--vx-font-control-lg: 18px;
 
 	/* 间距（与亮色一致） */
 	--vx-space-xs: 4px;
@@ -802,7 +802,7 @@
 	--vx-control-height-lg: 48px;
 
 	/* 表单左侧标签列宽（与亮色一致） */
-	--vx-form-label-width: 72px;
+	--vx-form-label-width: 80px;
 
 	/* 紧凑高度：页脚链接、页签胶囊（与亮色一致） */
 	--vx-compact-height-sm: 28px;
@@ -915,14 +915,14 @@
 	--vx-rate-gap: 8px;
 
 	/* 单选（与亮色一致） */
-	--vx-radio-size-sm: 14px;
-	--vx-radio-size-md: 16px;
-	--vx-radio-size-lg: 18px;
+	--vx-radio-size-sm: 16px;
+	--vx-radio-size-md: 18px;
+	--vx-radio-size-lg: 20px;
 
 	/* 复选框（与亮色一致） */
-	--vx-checkbox-size-sm: 14px;
-	--vx-checkbox-size-md: 16px;
-	--vx-checkbox-size-lg: 18px;
+	--vx-checkbox-size-sm: 16px;
+	--vx-checkbox-size-md: 18px;
+	--vx-checkbox-size-lg: 20px;
 
 	--vx-checkbox-radius-sm: 4px;
 	--vx-checkbox-radius-md: 5px;

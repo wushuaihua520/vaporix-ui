@@ -205,7 +205,7 @@
 								</view>
 							</view>
 						</view>
-						<text class="demo-hint">字号同时跟档位走：13 / 14 / 16。</text>
+						<text class="demo-hint">字号同时跟档位走：12 / 13 / 14。</text>
 					</view>
 				</view>
 
@@ -319,7 +319,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.67.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.0</text>
 				</view>
 			</view>
 		</scroll-view>

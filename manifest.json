@@ -2,8 +2,8 @@
 	"name": "vaporix-ui",
 	"appid": "__UNI__19854A7",
 	"description": "元汽UI - uni-app x 蒸汽模式 UI 组件库",
-	"versionName": "0.67.0",
-	"versionCode": "6700",
+	"versionName": "0.68.0",
+	"versionCode": "6800",
 	"transformPx": false,
 	"uni-app-x": {
 		"vapor": true,

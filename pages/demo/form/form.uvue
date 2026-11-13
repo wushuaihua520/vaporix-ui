@@ -330,7 +330,7 @@
 							</vx-form>
 						</view>
 						<view class="demo-field demo-field--last">
-							<vx-form size="lg" label-width="80px">
+							<vx-form size="lg" label-width="88px">
 								<vx-form-item label="大号标签" required :value="sizeLgNotify">
 									<vx-switch v-model="sizeLgNotify" size="lg" />
 								</vx-form-item>

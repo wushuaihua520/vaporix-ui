@@ -76,13 +76,13 @@
 					</view>
 					<view class="demo-card">
 						<view class="demo-field">
-							<vx-textarea v-model="sizeSmIntroValue" size="sm" placeholder="小号 · 13px" />
+							<vx-textarea v-model="sizeSmIntroValue" size="sm" placeholder="小号 · 14px" />
 						</view>
 						<view class="demo-field">
-							<vx-textarea v-model="sizeMdIntroValue" placeholder="常规 · 14px" />
+							<vx-textarea v-model="sizeMdIntroValue" placeholder="常规 · 16px" />
 						</view>
 						<view class="demo-field demo-field--last">
-							<vx-textarea v-model="sizeLgIntroValue" size="lg" placeholder="大号 · 16px" />
+							<vx-textarea v-model="sizeLgIntroValue" size="lg" placeholder="大号 · 18px" />
 						</view>
 						<text class="demo-hint">内容区 60 / 66 / 72，加上内边距是 76 / 90 / 104。</text>
 					</view>

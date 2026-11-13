@@ -183,7 +183,7 @@
 		} else if (isDisabled.value) {
 			name += ' vx-checkbox__marker--disabled'
 		}
-		// 列表顶对齐后按首行行高居中：行高 20 / 22 / 24，标记 14 / 16 / 18，三档都差 6，补 3。横排整项居中，不加。
+		// 列表顶对齐后按首行行高居中：行高 20 / 22 / 24，标记 16 / 18 / 20，三档都差 4，补 2。横排整项居中，不加。
 		if (layout.value === 'list') name += ' vx-checkbox__marker--list'
 		name += placement.value === 'end'
 			? (size.value === 'lg' ? ' vx-checkbox__marker--end-lg' : ' vx-checkbox__marker--end')
@@ -394,7 +394,7 @@
 		flex: 1;
 	}
 
-	/* 标记盒子三档 14 / 16 / 18，比文案大 1–2px；方框和只画对号共用，未选中时盒子仍在，文案起点不会跳。
+	/* 标记盒子三档 16 / 18 / 20，比文案大 2px；方框和只画对号共用，未选中时盒子仍在，文案起点不会跳。
 	   方框是小圆角方形，和单选的正圆区分开；圆角 4 / 5 / 6，箱子越大越钝。 */
 	.vx-checkbox__marker {
 		flex-shrink: 0;
@@ -469,12 +469,12 @@
 		border-color: var(--vx-color-disabled-text);
 	}
 
-	/* 列表顶对齐后按首行行高居中：行高 20 / 22 / 24，标记 14 / 16 / 18，三档都差 6，补 3。 */
+	/* 列表顶对齐后按首行行高居中：行高 20 / 22 / 24，标记 16 / 18 / 20，三档都差 4，补 2。 */
 	.vx-checkbox__marker--list {
-		margin-top: 3px;
+		margin-top: 2px;
 	}
 
-	/* 标记已收到 14 / 16 / 18，8 / 12 相对方框偏空，收到上一档 4 / 8。位置不同，外边距落在不同一侧。 */
+	/* 标记已收到 16 / 18 / 20，8 / 12 相对方框偏空，收到上一档 4 / 8。位置不同，外边距落在不同一侧。 */
 	.vx-checkbox__marker--start {
 		margin-right: var(--vx-space-xs);
 	}
@@ -491,7 +491,7 @@
 		margin-left: var(--vx-space-sm);
 	}
 
-	/* 对号用旋转的右边框和下边框画。方框已收到 14 / 16 / 18，框内对号跟着收成 3×6 / 4×8 / 5×10，
+	/* 对号用旋转的右边框和下边框画。方框 16 / 18 / 20，框内对号 3×6 / 4×8 / 5×10，
 	   描边 sm 1.5px、md / lg 2px。border-box 下宽高是外框，长短两臂约 1 : 2。 */
 	.vx-checkbox__check {
 		flex-shrink: 0;
@@ -654,7 +654,7 @@
 		background-color: var(--vx-color-surface);
 	}
 
-	/* 横排文案 13 / 14 / 16、行高 20 / 22 / 24，字重 400，靠标记分层。
+	/* 横排文案 14 / 16 / 18、行高 20 / 22 / 24，字重 400，靠标记分层。
 	   App 默认 keep、Web 默认 pre-line，写明 normal 才会在列宽里折行。
 	   纵向 flex 里收缩发生在高度上，文字不压缩。 */
 	.vx-checkbox__label,
