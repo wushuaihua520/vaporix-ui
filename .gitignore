@@ -123,3 +123,4 @@ tools/icons/out/
 
 # 探针页截图（一次性核对证据，不随仓库发布）
 .probe-shots/
+.DS_Store
