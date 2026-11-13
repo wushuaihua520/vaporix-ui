@@ -203,14 +203,38 @@
 					</view>
 					<view class="demo-card">
 						<view class="demo-field">
+							<vx-input v-model="feedbackTitle" label="反馈标题" label-width="72px" size="sm" required
+								placeholder="sm · 一句话说明问题" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="feedbackValueSm" label="反馈内容" label-width="72px" size="sm"
+								required counter :maxlength="200" min-height="60px" placeholder="sm · 请描述你遇到的问题" />
+						</view>
+						<view class="demo-field">
+							<vx-input v-model="feedbackTitleMd" label="反馈标题" label-width="72px" required
+								placeholder="md · 一句话说明问题" />
+						</view>
+						<view class="demo-field">
 							<vx-textarea v-model="feedbackValue" label="反馈内容" label-width="72px" required counter
-								:maxlength="200" min-height="88px" placeholder="请描述你遇到的问题，便于我们定位" />
+								:maxlength="200" min-height="88px" placeholder="md · 请描述你遇到的问题" />
+						</view>
+						<view class="demo-field">
+							<vx-input v-model="feedbackTitleLg" label="反馈标题" label-width="72px" size="lg" required
+								placeholder="lg · 一句话说明问题" />
+						</view>
+						<view class="demo-field">
+							<vx-textarea v-model="feedbackValueLg" label="反馈内容" label-width="72px" size="lg"
+								required counter :maxlength="200" min-height="104px" placeholder="lg · 请描述你遇到的问题">
+								<template #extra>
+									<text class="demo-hint">最多 200 字</text>
+								</template>
+							</vx-textarea>
 						</view>
 						<view class="demo-field demo-field--last">
 							<vx-button block type="primary" text="提交反馈" :loading="submittingFeedback"
 								@click="onFeedbackSubmit" />
 						</view>
-						<text class="demo-hint">演示，不发请求。</text>
+						<text class="demo-hint">三档各一组输入框 + 多行输入框：标题和正文左缘应在同一条竖线上；计数和 extra 落在右下角。</text>
 					</view>
 				</view>
 
@@ -308,6 +332,12 @@
 	const invalidIntroValue = ref('')
 
 	const feedbackValue = ref('')
+	// 三档各一组，用来比对输入框和多行输入框的标题、正文左缘
+	const feedbackTitle = ref('')
+	const feedbackValueSm = ref('')
+	const feedbackTitleMd = ref('')
+	const feedbackTitleLg = ref('')
+	const feedbackValueLg = ref('')
 
 	const submittingFeedback = ref(false)
 

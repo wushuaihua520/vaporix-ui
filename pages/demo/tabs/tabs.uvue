@@ -252,6 +252,35 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">09</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">滚动形态</text>
+							<text class="demo-section__desc">解除等宽，超出容器横向滑；先隐藏再显示、中途改 options，指示条仍落在当前页签下。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" :text="tabsScrollVisible ? '隐藏页签' : '显示页签'"
+									@click="tabsScrollVisible = !tabsScrollVisible" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" :text="tabsScrollWide ? '换成短文案' : '换成长文案'"
+									@click="toggleScrollEntries" />
+							</view>
+						</view>
+						<view class="demo-tabs-group demo-tabs-group--last">
+							<vx-tabs v-if="tabsScrollVisible" v-model="tabsScrollActive" :items="tabsScrollEntries"
+								scrollable />
+						</view>
+						<text class="demo-hint">当前第 {{ tabsScrollActive + 1 }} 项 · {{ tabsScrollLabel }}；文案宽度变了，指示条要跟着挪到同一项下面。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -374,7 +403,6 @@
 	const tabsDividerOffActive = ref(1)
 
 	const tabsBrandActive = ref(0)
-
 	const tabsPlainActive = ref(0)
 
 	const tabsComposeActive = ref(0)
@@ -386,6 +414,39 @@
 	const tabsVerticalLgActive = ref(1)
 
 	const tabsLastChange = ref('还没有切换')
+
+	// 09 滚动形态：v-if 控制显隐，两组文案宽度不同；指示条是量出来的，重挂和换文案后都要落在当前项下面
+	const tabsScrollVisible = ref(true)
+	const tabsScrollWide = ref(false)
+	const tabsScrollActive = ref(1)
+	const tabsScrollShort: TabsDemoItem[] = [
+		{ text: '今日特拼' },
+		{ text: '全部' },
+		{ text: '新品' },
+		{ text: '品牌' }
+	]
+	const tabsScrollLong: TabsDemoItem[] = [
+		{ text: '今日限时特价拼团' },
+		{ text: '全部商品分类' },
+		{ text: '新品首发预告' },
+		{ text: '品牌旗舰专区' },
+		{ text: '附近门店' }
+	]
+
+	const tabsScrollEntries = computed((): TabsDemoItem[] => {
+		return tabsScrollWide.value ? tabsScrollLong : tabsScrollShort
+	})
+
+	const tabsScrollLabel = computed((): string => {
+		const list = tabsScrollEntries.value
+		if (tabsScrollActive.value < 0 || tabsScrollActive.value >= list.length) return '—'
+		return list[tabsScrollActive.value].text ?? '—'
+	})
+
+	const toggleScrollEntries = () => {
+		tabsScrollWide.value = !tabsScrollWide.value
+		if (tabsScrollActive.value >= tabsScrollEntries.value.length) tabsScrollActive.value = 0
+	}
 
 	const onTabsChange = (index: number) => {
 		tabsLastChange.value = `切换到第 ${index + 1} 个页签`

@@ -302,6 +302,37 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">放进列表行和卡片头部</text>
+							<text class="demo-section__desc">md 标签 24，52 的列表行内容区 28、卡片头部最小高 52，两处都撑不高外层。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-list-view>
+							<vx-list-cell title="订单 20261113" value="已发货">
+								<template #extra>
+									<vx-tag type="success" variant="soft" text="已发货" />
+								</template>
+							</vx-list-cell>
+						</vx-list-view>
+						<text class="demo-hint">行高量的是 vx-list-cell 根节点，标签只占 extra 那一格。</text>
+					</view>
+					<view class="demo-card">
+						<vx-card title="今日推荐" avatar="/static/demo/card/avatar-cs.png"
+							content="头部右侧放 md 标签，标题行不跟着长高。">
+							<template #extra>
+								<vx-tag type="danger" text="HOT" />
+							</template>
+						</vx-card>
+						<text class="demo-hint">卡片头部最小高 52，标签高度取 --vx-tag-height-md。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"

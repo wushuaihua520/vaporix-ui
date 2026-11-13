@@ -282,6 +282,23 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">14</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">长正文</text>
+							<text class="demo-section__desc">正文 60 行时面板按窗口高收口，确定和取消始终在屏内。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block type="default" text="打开 60 行正文"
+							@click="longModalVisible = true" />
+						<text class="demo-hint">正文超过可视高度时被压住并裁切，动作区不收缩；需要滚动请自己放 scroll-view 或改用弹出层。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -305,6 +322,12 @@
 		</scroll-view>
 
 		<!-- 弹框同样挂在页面根上，层级高于操作菜单和消息提示，低于加载浮层和轻提示。 -->
+		<vx-modal v-model:show="longModalVisible" title="服务协议摘要" :show-actions="true">
+			<view>
+				<text v-for="line in longModalLines" :key="line">{{ line }}</text>
+			</view>
+		</vx-modal>
+
 		<vx-modal ref="modalRef" v-model:show="modalVisible" :title="modalTitle" :content="modalContent"
 			:size="modalSize" :icon="modalIcon" :icon-type="modalIconType" :actions="modalActions"
 			:show-actions="modalShowActions" :show-cancel="modalShowCancel" :cancel-text="modalCancelText"
@@ -475,6 +498,13 @@
 	const modalRef = ref<ModalApi | null>(null)
 
 	const customModalVisible = ref(false)
+	const longModalVisible = ref(false)
+
+	// 60 行正文：验面板按窗口高收口之后，确定和取消仍在屏内
+	const longModalLines: string[] = []
+	for (let i = 1; i <= 60; i++) {
+		longModalLines.push(`第 ${i} 条：这是一段用来把正文撑到 60 行的协议文字。`)
+	}
 
 	const modalEmail = ref('')
 

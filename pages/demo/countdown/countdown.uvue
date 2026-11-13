@@ -87,6 +87,20 @@
 							<text class="demo-countdown-label">冒号模式</text>
 							<vx-countdown :time="countdownLongTime" show-days />
 						</view>
+						<view class="demo-countdown-item demo-countdown-item--spaced">
+							<text class="demo-countdown-label">三位数天数 · sm</text>
+							<vx-countdown :time="countdownHundredDays" size="sm" show-days
+								separator="unit" />
+						</view>
+						<view class="demo-countdown-item demo-countdown-item--spaced">
+							<text class="demo-countdown-label">三位数天数 · md</text>
+							<vx-countdown :time="countdownHundredDays" show-days separator="unit" />
+						</view>
+						<view class="demo-countdown-item demo-countdown-item--spaced">
+							<text class="demo-countdown-label">三位数天数 · lg</text>
+							<vx-countdown :time="countdownHundredDays" size="lg" show-days
+								separator="unit" />
+						</view>
 						<text class="demo-hint demo-countdown-hint">单位语言只在 separator="unit" 时出现；冒号模式保持紧凑，不显示单位。</text>
 					</view>
 				</view>
@@ -115,6 +129,12 @@
 							<vx-countdown :time="countdownLongTime" show-days :show-seconds="false"
 								separator="unit" />
 						</view>
+						<view class="demo-countdown-item demo-countdown-item--spaced">
+							<text class="demo-countdown-label">只显示时分 · 最后一分钟</text>
+							<vx-countdown ref="lastMinuteRef" :time="60" :show-seconds="false" />
+						</view>
+						<vx-button size="sm" type="default" text="重置 60 秒"
+							@click="resetLastMinute" />
 						<text class="demo-hint demo-countdown-hint">只留秒时可以显示超过 59 的秒数；只留天时同理。可见单位按从大到小接管余数。</text>
 					</view>
 				</view>
@@ -330,6 +350,9 @@
 
 	const countdownLongTime = 2 * 86400 + 18 * 3600 + 39 * 60 + 13
 
+// 三位数天数：验 sm / md / lg 的数字盒在 100 天以上时左右不贴边
+const countdownHundredDays = 103 * 86400 + 18 * 3600 + 39 * 60 + 13
+
 	const countdownMethodSeconds = 12
 
 	const countdownLastTick = ref(countdownMethodSeconds)
@@ -337,6 +360,12 @@
 	const countdownStatus = ref('等待开始')
 
 	const countdownRef = ref<VxCountdownComponentPublicInstance | null>(null)
+	// 最后一分钟单独一个 ref：演示页不重挂，只有重置才能重新观察这一分钟
+	const lastMinuteRef = ref<VxCountdownComponentPublicInstance | null>(null)
+
+	const resetLastMinute = () => {
+		lastMinuteRef.value?.reset(60)
+	}
 
 	const onCountdownTick = (seconds: number) => {
 		countdownLastTick.value = seconds

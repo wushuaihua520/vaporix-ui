@@ -467,32 +467,6 @@
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
-	/* 定位层铺满页面，面板贴底居中。层级写在行内，默认 1000，和操作菜单同档。 */
-	.vx-datetime {
-		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		box-sizing: border-box;
-		width: 100%;
-		height: 100%;
-		flex-direction: column;
-		align-items: center;
-		justify-content: flex-end;
-		overflow: hidden;
-	}
-
-	.vx-datetime__mask {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		z-index: 0;
-		background-color: var(--vx-color-mask);
-	}
-
 	/* 内层裁按压态和底色。安全区作为内边距，滚轮不压住手势条。 */
 	.vx-datetime__panel {
 		flex-direction: column;
@@ -501,8 +475,6 @@
 		padding-left: var(--uni-safe-area-inset-left, 0px);
 		padding-right: var(--uni-safe-area-inset-right, 0px);
 		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
-		border-top-left-radius: var(--vx-radius-lg);
-		border-top-right-radius: var(--vx-radius-lg);
 		background-color: var(--vx-color-surface);
 		overflow: hidden;
 	}
@@ -660,37 +632,9 @@
 		background-image: none;
 	}
 
-	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
-	   不支持动画时元素直接按正常样式出现，不会留在透明态。
-	   定位层的 touch-action 关掉浏览器默认手势，页面在面板打开期间不跟着滚；
-	   滚轮自己用 JS 接手势，不受影响。 */
 	/* #ifdef WEB */
-	.vx-datetime {
-		touch-action: none;
-	}
-
-	.vx-datetime__mask {
-		animation-name: vx-datetime-fade;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	.vx-datetime__mask--closable {
-		cursor: pointer;
-	}
-
 	.vx-datetime__action {
 		cursor: pointer;
-	}
-
-	@keyframes vx-datetime-fade {
-		from {
-			opacity: 0;
-		}
-
-		to {
-			opacity: 1;
-		}
 	}
 
 	/* #endif */

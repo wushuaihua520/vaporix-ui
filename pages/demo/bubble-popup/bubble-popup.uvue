@@ -335,6 +335,34 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">12</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">50 个关闭实例</text>
+							<text class="demo-section__desc">全部关闭时不该挂窗口监听；打开一个才挂，收起即摘。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block size="sm" type="default"
+							:text="bubbleManyVisible ? '卸载这 50 个' : '挂 50 个（全部关闭）'"
+							@click="bubbleManyVisible = !bubbleManyVisible" />
+						<view v-if="bubbleManyVisible">
+							<view v-for="row in bubbleManyRows" :key="row" class="demo-bubble-bar">
+								<text class="demo-bubble-bar__label">第 {{ row }} 行</text>
+								<vx-bubble-popup :show="false" placement="bottom" align="end" :items="basicItems">
+									<view class="demo-bubble-icon-btn" hover-class="demo-bubble-icon-btn--pressed">
+										<vx-icon name="more-horizontal" size="md" />
+									</view>
+								</vx-bubble-popup>
+							</view>
+						</view>
+						<text class="demo-hint">用性能面板录一次滚动：这 50 个都关着，不该有 onWindowScroll 回调。第 01 节打开一个再滚，气泡收起后回调也跟着消失。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -375,6 +403,12 @@
 	}
 
 	const menuBasic = ref(false)
+	// 50 个全部关闭的实例：验关着的实例不挂窗口 scroll 监听
+	const bubbleManyVisible = ref(false)
+	const bubbleManyRows: Array<number> = []
+	for (let i = 1; i <= 50; i++) {
+		bubbleManyRows.push(i)
+	}
 	const menuTop = ref(false)
 	const menuTypes = ref(false)
 	const menuStates = ref(false)

@@ -342,6 +342,92 @@
 					<text class="demo-hint">方法只改 v-model 并抛 change，不受 disabled 限制；父级也可以只用 v-model 维护展开名单。</text>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">10</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">中间插入</text>
+							<text class="demo-section__desc">v-for 中间插一项，只有真正的最后一项不画分割线。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-button block size="sm" type="default" text="在第 1 项后面插一项"
+							@click="insertCollapseMiddle" />
+						<view class="demo-collapse__group demo-collapse__group--divided">
+							<vx-collapse v-model="collapseInsertOpen">
+								<vx-collapse-item v-for="(item, index) in collapseInsertItems" :key="item.name" :index="index"
+									:name="item.name" :title="item.title">
+									<text class="demo-collapse__body">{{ item.body }}</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</view>
+						<text class="demo-hint">{{ collapseInsertItems.length }} 项该有 {{ collapseInsertDividers }} 条分割线；插在末尾那一项不该抢走「最后一项」。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">11</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">和列表行同排</text>
+							<text class="demo-section__desc">同一卡片里 list-cell 和 collapse-item 上下排，三档箭头的字形大小和右缘一致。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-card :body-padded="false">
+							<vx-list-cell size="sm" title="消息通知（sm）" value="已开启" arrow />
+							<vx-collapse v-model="collapseMixedSmOpen" variant="plain" size="sm">
+								<vx-collapse-item name="mix-sm" title="高级设置（sm）" :index="0">
+									<text class="demo-collapse__body">折叠项箭头和上面那行列表行的箭头同档。</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</vx-card>
+						<vx-card :body-padded="false">
+							<vx-list-cell title="消息通知（md）" value="已开启" arrow />
+							<vx-collapse v-model="collapseMixedMdOpen" variant="plain">
+								<vx-collapse-item name="mix-md" title="高级设置（md）" :index="0">
+									<text class="demo-collapse__body">折叠项箭头和上面那行列表行的箭头同档。</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</vx-card>
+						<vx-card :body-padded="false">
+							<vx-list-cell size="lg" title="消息通知（lg）" value="已开启" arrow />
+							<vx-collapse v-model="collapseMixedLgOpen" variant="plain" size="lg">
+								<vx-collapse-item name="mix-lg" title="高级设置（lg）" :index="0">
+									<text class="demo-collapse__body">折叠项箭头和上面那行列表行的箭头同档。</text>
+								</vx-collapse-item>
+							</vx-collapse>
+						</vx-card>
+						<text class="demo-hint">箭头是辅助图标档 14 / 14 / 18，和列表行一致；展开时只旋转，中心不位移。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">12</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">超长内容</text>
+							<text class="demo-section__desc">内容高于 2000px 时展开不截断，节奏仍是 220ms。</text>
+						</view>
+					</view>
+					<view class="demo-collapse-stage">
+						<vx-collapse v-model="collapseTallOpen" variant="card">
+							<vx-collapse-item name="tall" title="约 2400px 的内容" :index="0">
+								<view>
+									<text v-for="line in collapseTallLines" :key="line" class="demo-collapse__body">{{ line }}</text>
+								</view>
+							</vx-collapse-item>
+						</vx-collapse>
+						<text class="demo-hint">展开后量正文节点高度：{{ collapseTallLines.length }} 行，低于 2000 就是被截断了。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -464,6 +550,49 @@
 	const collapseMethodRef = ref<CollapseDemoApi | null>(null)
 
 	const collapseLastChange = ref('还没有操作')
+
+	// 10 动态插入：插完重排 index，验「最后一项」按 index 认，不按挂载先后
+	const collapseInsertItems = ref<CollapseDemoItem[]>([
+		{ name: 'insert-a', title: '第一项', body: '第一项的内容。' },
+		{ name: 'insert-b', title: '第二项', body: '第二项的内容。' },
+		{ name: 'insert-c', title: '第三项', body: '第三项的内容。' }
+	])
+	const collapseInsertOpen = ref<Array<string>>([])
+
+	const collapseInsertDividers = computed((): number => {
+		const total = collapseInsertItems.value.length
+		return total > 0 ? total - 1 : 0
+	})
+
+	const insertCollapseMiddle = () => {
+		const list = collapseInsertItems.value
+		const next: CollapseDemoItem[] = []
+		for (let i = 0; i < list.length; i++) {
+			next.push(list[i])
+			// 插在第 1 项后面：新项的 index 是 1，原来的第 2 项顺延
+			if (i === 0) {
+				const order = list.length
+				next.push({
+					name: `insert-x-${order}`,
+					title: `插入的第 ${order} 项`,
+					body: '这一项插在中间，挂载顺序排在后面，index 却在前。'
+				})
+			}
+		}
+		collapseInsertItems.value = next
+	}
+
+	// 11 和列表行同排
+	const collapseMixedSmOpen = ref<Array<string>>([])
+	const collapseMixedMdOpen = ref<Array<string>>([])
+	const collapseMixedLgOpen = ref<Array<string>>([])
+
+	// 12 超长内容：100 行正文，展开后总量超过 2000px
+	const collapseTallOpen = ref<Array<string>>([])
+	const collapseTallLines: Array<string> = []
+	for (let i = 1; i <= 100; i++) {
+		collapseTallLines.push(`第 ${i} 行：展开后这一段不该被 2000px 的旧上限截掉。`)
+	}
 
 	const collapseTitleOf = (name: string): string => {
 		for (let index = 0; index < collapseFaq.length; index++) {

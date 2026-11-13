@@ -294,6 +294,29 @@
 					<text class="demo-hint demo-card-hint">最近点击：{{ cardLastAction }}。其他分区的卡片保持静态，整卡默认不可点。</text>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">卡片放进可点区域</text>
+							<text class="demo-section__desc">静态卡片把点击交给外层；clickable 打开后点击停在卡片上。</text>
+						</view>
+					</view>
+					<view class="demo-card-lab">
+						<view class="demo-card-lab__item" @click="onCardOuterTap('静态卡片')">
+							<vx-card title="静态卡片" content="clickable 关闭，点整卡应该触发外层区块。" />
+						</view>
+						<view class="demo-card-lab__item demo-card-lab__item--last"
+							@click="onCardOuterTap('可点卡片')">
+							<vx-card clickable title="可点卡片" content="点整卡停在卡片上，外层区块收不到。"
+								@click="onCardAction('可点卡片')" />
+						</view>
+					</view>
+					<text class="demo-hint demo-card-hint">最近触发：{{ cardOuterTrace }}；卡片自身：{{ cardLastAction }}。</text>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -323,6 +346,12 @@
 
 	// 卡片演示：展开状态、最近点击和九宫格图集共用一份数据。
 	const cardLastAction = ref('还没有点击')
+	// 外层区块的点击结果单独记：静态卡片的点击应该落到这里，可点卡片的不应该
+	const cardOuterTrace = ref('还没有点击')
+
+	const onCardOuterTap = (label: string) => {
+		cardOuterTrace.value = `${label}的外层区块收到点击`
+	}
 
 	const cardFeedExpanded = ref(false)
 

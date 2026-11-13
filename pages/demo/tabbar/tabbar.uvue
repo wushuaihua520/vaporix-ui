@@ -307,6 +307,34 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">12</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">凸起与固定</text>
+							<text class="demo-section__desc">fixed 时页面内容滚到栏下；透明带上的点击落到页面，只有圆钮能点。</text>
+						</view>
+					</view>
+					<view class="demo-card">
+						<vx-button block :type="fixedRaisedVisible ? 'default' : 'primary'"
+							:text="fixedRaisedVisible ? '收起凸起固定栏' : '显示凸起固定栏'"
+							@click="fixedRaisedVisible = !fixedRaisedVisible" />
+						<view class="demo-tabbar-status">
+							<view class="demo-tabbar-status__cell">
+								<text class="demo-tabbar-status__label">当前页签</text>
+								<text class="demo-tabbar-status__text">{{ fixedRaisedActive }}</text>
+							</view>
+							<view class="demo-tabbar-status__cell demo-tabbar-status__cell--last">
+								<text class="demo-tabbar-status__label">click</text>
+								<text class="demo-tabbar-status__text">{{ fixedRaisedClickText }}</text>
+							</view>
+						</view>
+						<text class="demo-hint demo-tabbar-hint">显示后点圆钮两侧、栏顶以上的透明带：页签下标不变，落到页面内容；点圆钮本身仍触发 click。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -331,6 +359,9 @@
 
 		<!-- 固定演示：放在页面根节点的末尾，占位和滚动区各让出栏高。 -->
 		<vx-tabbar v-if="fixedVisible" v-model="fixedActive" :items="fixedEntries" />
+		<!-- 凸起 + 固定：透明带压在页面内容上，只有圆钮接点击。 -->
+		<vx-tabbar v-if="fixedRaisedVisible" v-model="fixedRaisedActive" :items="raisedEntries"
+			@click="onFixedRaisedClick" />
 	</view>
 </template>
 
@@ -436,6 +467,10 @@
 	const fixedActive = ref(0)
 	const composeActive = ref(0)
 	const fixedVisible = ref(false)
+	// 12 凸起 + 固定：单独一组状态，页签下标和 click 分开记，才看得出透明带上的点击落到哪
+	const fixedRaisedVisible = ref(false)
+	const fixedRaisedActive = ref(0)
+	const fixedRaisedClickText = ref('还没有点击')
 
 	const basicClickText = ref('还没有点击')
 	const basicChangeText = ref('还没有切换')
@@ -489,6 +524,11 @@
 			return
 		}
 		raisedClickText.value = index === 0 ? '点击了首页' : '点击了我的'
+	}
+
+	// 12 凸起 + 固定：只关心圆钮有没有收到 click，两侧页签和透明带都不该改这里
+	const onFixedRaisedClick = (index: number) => {
+		fixedRaisedClickText.value = index === 1 ? '点击了发布圆钮' : `点击了第 ${index + 1} 个页签`
 	}
 
 	const toggleFixed = () => {

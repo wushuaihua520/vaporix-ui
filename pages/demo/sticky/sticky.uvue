@@ -1,6 +1,16 @@
 <template>
 	<view :class="pageClass">
-		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+		<!-- 07 自定义导航栏：放在滚动区之前，默认 placeholder 才会在文档流里补出等高占位；
+		     ready 回传的高度写进下面 sticky 的 offsetTop，吸顶条才不会钻到导航栏底下。 -->
+		<vx-navigation-bar v-if="stickyNavVisible" ref="stickyNavRef" :status-bar="false" title="商品详情" back
+			divider :z-index="30" @ready="onStickyNavReady">
+			<template v-if="stickyNavTall" #extra>
+				<view class="demo-sticky-nav-extra">
+					<text class="demo-sticky-nav-extra__text">第二行：搜索或筛选，45 高的整行</text>
+				</view>
+			</template>
+		</vx-navigation-bar>
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" @scroll="onDemoScroll">
 			<view class="demo-shell">
 				<view class="demo-pagebar">
 					<view class="demo-crumb">
@@ -207,6 +217,98 @@
 					<text class="demo-hint">阴影只使用 --vx-shadow-md；bgColor 是字面值，亮色、暗色都保持同一个品牌色，对比度由业务保证。</text>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">06</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">隐藏与变高</text>
+							<text class="demo-section__desc">先隐藏再显示仍能吸顶、位置不跳；吸顶条内容变高后，占位高度跟着变。</text>
+						</view>
+					</view>
+					<view class="demo-sticky-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default"
+									:text="stickyToggleVisible ? '隐藏吸顶条' : '显示吸顶条'"
+									@click="stickyToggleVisible = !stickyToggleVisible" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default"
+									:text="stickyToggleTall ? '收回第二行' : '加一行说明'"
+									@click="toggleStickyTall" />
+							</view>
+						</view>
+							<vx-sticky v-if="stickyToggleVisible" ref="stickyToggleRef" :scroll-top="demoScrollTop"
+								@change="onStickyToggleChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">隐藏与变高</text>
+									<text class="demo-sticky-bar__meta">{{ stickyToggleTall ? '两行' : '一行' }}</text>
+								</view>
+								<text class="demo-sticky-bar__state">{{ stickyToggleStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<!-- 第二行放在条下面，条高才跟着变；放进 .demo-sticky-bar 里会被行排布吃掉 -->
+							<view v-if="stickyToggleTall" class="demo-sticky-bar">
+								<text class="demo-sticky-bar__meta">第二行说明：吸顶条变高后，占位高度和吸顶线都要跟着更新。</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyToggleRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyToggleRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+						<text class="demo-hint">先滚到这一段的阈值附近，再点隐藏 / 显示和加一行，看吸顶条位置和占位高度。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">07</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">自定义导航栏 + 吸顶</text>
+							<text class="demo-section__desc">导航栏 ready 回传高度后写进 offsetTop；加一行 extra 重新测量，吸顶线跟着下移。</text>
+						</view>
+					</view>
+					<view class="demo-sticky-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default"
+									:text="stickyNavVisible ? '收起导航栏' : '显示固定导航栏'"
+									@click="toggleStickyNav" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default"
+									:text="stickyNavTall ? '收起 extra' : '加一行 extra'"
+									@click="toggleStickyNavExtra" />
+							</view>
+						</view>
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="stickyNavOffset"
+							@change="onStickyNavChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">导航栏下的吸顶条</text>
+									<text class="demo-sticky-bar__meta">offsetTop {{ stickyNavOffset }}</text>
+								</view>
+								<text class="demo-sticky-bar__state">{{ stickyNavStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-rows">
+									<vx-list-cell v-for="(row, index) in stickyNavRows" :key="row.title"
+										:title="row.title" :value="row.value" :clickable="false"
+										:divider="index < stickyNavRows.length - 1" />
+								</view>
+							</template>
+						</vx-sticky>
+						<text class="demo-hint">导航栏高度 {{ stickyNavHeight }}；吸顶条贴到 offsetTop 就该停在导航栏下面，不钻进去。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -235,6 +337,15 @@
 	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
 
 	const demoScrollTop = ref(0)
+
+	type StickyApi = {
+		refresh(): void
+	}
+
+	// 吸顶靠 scrollTop 驱动，滚动值必须一路喂给每个 vx-sticky；漏了这一句整页都不会吸顶
+	const onDemoScroll = (event: UniScrollEvent) => {
+		demoScrollTop.value = Math.round(event.detail.scrollTop)
+	}
 
 	// 吸顶演示：suffix 里的内容决定推到哪结束，这里记每个示例的吸顶状态。
 	type StickyDemoRow = {
@@ -283,6 +394,91 @@
 		{ title: '跟随主题', value: '否' },
 		{ title: '未吸顶也生效', value: '是' }
 	]
+
+	// 06 隐藏与变高：v-if 控制显隐，stickyToggleTall 加一行看占位是否跟着长
+	const stickyToggleRows: StickyDemoRow[] = [
+		{ title: '隐藏后重挂', value: '还能吸顶' },
+		{ title: '变高', value: '占位跟着变' },
+		{ title: '位置', value: '不跳' },
+		{ title: '范围一', value: '留在本段' },
+		{ title: '范围二', value: '不越界' },
+		{ title: '范围三', value: '滚到底复位' },
+		{ title: '范围四', value: '复位不跳' },
+		{ title: '范围五', value: '占位收掉' }
+	]
+
+	const stickyToggleVisible = ref(true)
+	const stickyToggleTall = ref(false)
+	const stickyToggleStuck = ref(false)
+	const stickyToggleRef = ref<StickyApi | null>(null)
+
+	// 吸顶条内容变了要自己调 refresh()：组件不在滚动里重测，占位高度才不会跟着内容走
+	const toggleStickyTall = () => {
+		stickyToggleTall.value = !stickyToggleTall.value
+		setTimeout(() => {
+			stickyToggleRef.value?.refresh()
+		}, 20)
+	}
+
+	const onStickyToggleChange = (stuck: boolean) => {
+		stickyToggleStuck.value = stuck
+	}
+
+	// 07 自定义导航栏：ready 给的高度写进 offsetTop，加 extra 后重新测量再写一次
+	type StickyNavInfo = {
+		height: number
+	}
+
+	type StickyNavApi = {
+		refresh(): void
+	}
+
+	const stickyNavRows: StickyDemoRow[] = [
+		{ title: '导航栏高度', value: 'ready 回传' },
+		{ title: '吸顶线', value: '跟着高度走' },
+		{ title: 'extra 变高', value: 'refresh 重测' },
+		{ title: '行 4', value: '撑出滚动空间' },
+		{ title: '行 5', value: '撑出滚动空间' },
+		{ title: '行 6', value: '撑出滚动空间' },
+		{ title: '行 7', value: '撑出滚动空间' },
+		{ title: '行 8', value: '撑出滚动空间' },
+		{ title: '行 9', value: '撑出滚动空间' },
+		{ title: '行 10', value: '撑出滚动空间' },
+		{ title: '行 11', value: '撑出滚动空间' },
+		{ title: '行 12', value: '撑出滚动空间' }
+	]
+
+	const stickyNavVisible = ref(true)
+	const stickyNavTall = ref(false)
+	const stickyNavHeight = ref(0)
+	const stickyNavOffset = ref(0)
+	const stickyNavStuck = ref(false)
+	const stickyNavRef = ref<StickyNavApi | null>(null)
+
+	const onStickyNavReady = (info: StickyNavInfo) => {
+		stickyNavHeight.value = info.height
+		stickyNavOffset.value = info.height
+	}
+
+	const onStickyNavChange = (stuck: boolean) => {
+		stickyNavStuck.value = stuck
+	}
+
+	const toggleStickyNavExtra = () => {
+		stickyNavTall.value = !stickyNavTall.value
+		setTimeout(() => {
+			stickyNavRef.value?.refresh()
+		}, 20)
+	}
+
+	// 收起导航栏时 offset 要归 0：导航栏不在，吸顶线还留在 101 就悬在半空
+	const toggleStickyNav = () => {
+		stickyNavVisible.value = !stickyNavVisible.value
+		if (!stickyNavVisible.value) {
+			stickyNavHeight.value = 0
+			stickyNavOffset.value = 0
+		}
+	}
 
 	const stickyBasicStuck = ref(false)
 

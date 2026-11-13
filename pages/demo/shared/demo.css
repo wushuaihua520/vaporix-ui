@@ -2840,6 +2840,23 @@
 	width: 100%;
 }
 
+/* 07 吸顶页的导航栏 second 行：固定高度 45，量出来的高度才是 44 + 45，吸顶线跟着下移。 */
+.demo-sticky-nav-extra {
+	flex-direction: row;
+	align-items: center;
+	box-sizing: border-box;
+	width: 100%;
+	height: 45px;
+	padding-left: var(--vx-space-lg);
+	padding-right: var(--vx-space-lg);
+}
+
+.demo-sticky-nav-extra__text {
+	color: var(--vx-color-text-secondary);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+}
+
 .demo-nav-message {
 	flex-direction: row;
 	align-items: center;

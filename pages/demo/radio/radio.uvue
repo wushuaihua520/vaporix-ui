@@ -252,6 +252,27 @@
 					<text class="demo-hint">extra 排在文案后方；标记在行尾时它落在文案与标记之间。禁用原因写在外层说明里。</text>
 				</view>
 
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">中间插入</text>
+							<text class="demo-section__desc">v-for 中间插一项，只有真正的最后一项不画分割线。</text>
+						</view>
+					</view>
+					<view class="demo-rd-stage">
+						<vx-button block size="sm" type="default" text="在第 1 项后面插一项"
+							@click="insertRadioMiddle" />
+						<vx-radio-group v-model="radioInsertValue" layout="list" card>
+							<vx-radio v-for="(item, index) in radioInsertItems" :key="item.value" :index="index"
+								:value="item.value" :label="item.label" />
+						</vx-radio-group>
+						<text class="demo-hint">{{ radioInsertItems.length }} 项该有 {{ radioInsertDividers }} 条分割线；当前选中 {{ radioInsertValue }}。</text>
+					</view>
+				</view>
+
 				<view class="demo-page-nav">
 					<view class="demo-page-nav__item"
 						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
@@ -288,6 +309,38 @@
 
 	const plan = ref('pro')
 	const channel = ref('wechat')
+
+	// 08 中间插入：插完重排 index，验「最后一项」按 index 认，不按挂载先后
+	type RadioDemoItem = {
+		value: string
+		label: string
+	}
+
+	const radioInsertItems = ref<Array<RadioDemoItem>>([
+		{ value: 'insert-a', label: '第一项' },
+		{ value: 'insert-b', label: '第二项' },
+		{ value: 'insert-c', label: '第三项' }
+	])
+	const radioInsertValue = ref('insert-a')
+
+	const radioInsertDividers = computed((): number => {
+		const total = radioInsertItems.value.length
+		return total > 0 ? total - 1 : 0
+	})
+
+	const insertRadioMiddle = () => {
+		const list = radioInsertItems.value
+		const next: Array<RadioDemoItem> = []
+		for (let i = 0; i < list.length; i++) {
+			next.push(list[i])
+			// 插在第 1 项后面：新项 index 是 1，原来的第 2 项顺延
+			if (i === 0) {
+				const order = list.length
+				next.push({ value: `insert-x-${order}`, label: `插入的第 ${order} 项` })
+			}
+		}
+		radioInsertItems.value = next
+	}
 	const sizeDemo = ref('s')
 	const tone = ref('p')
 	const colorDemo = ref('a')

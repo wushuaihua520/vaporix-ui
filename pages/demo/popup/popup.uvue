@@ -193,6 +193,8 @@
 									@click="onSize('bottom', '', '320px', '底部 · 320px')" />
 							</view>
 						</view>
+						<vx-button block size="sm" type="default" text="底部 maxWidth 480"
+							@click="maxWidthVisible = true" />
 						<view class="demo-popup-status">
 							<text class="demo-popup-status__text">当前：{{ sizeLabel }}</text>
 							<text class="demo-popup-status__meta">width · height</text>
@@ -359,6 +361,14 @@
 			</view>
 		</vx-popup>
 
+		<vx-popup v-model:show="maxWidthVisible" placement="bottom" max-width="480px" closable>
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">底部 · maxWidth 480</text>
+				<text class="demo-popup-text">窄屏仍铺满；平板和宽屏收成 480 居中，左右露出遮罩。</text>
+				<vx-button block type="default" text="关闭弹出层" @click="maxWidthVisible = false" />
+			</view>
+		</vx-popup>
+
 		<vx-popup v-model:show="orderVisible" placement="bottom" height="62%" closable>
 			<view class="demo-popup-panel">
 				<view class="demo-popup-panel__head">
@@ -467,6 +477,7 @@
 	const sizeWidth = ref('')
 	const sizeHeight = ref('')
 	const sizeLabel = ref('右侧 · 280px')
+	const maxWidthVisible = ref(false)
 
 	// 06 长内容
 	const orderVisible = ref(false)

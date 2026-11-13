@@ -104,7 +104,7 @@
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="searchKeyword" label="关键词" label-width="80px" clearable
-								placeholder="有值时出现清除" />
+								placeholder="有值时出现清除" @input="onKeywordInput" @clear="onKeywordClear" />
 						</view>
 						<view class="demo-field">
 							<vx-input v-model="percentValue" label="百分比" label-width="80px" align="right" unit="%"
@@ -115,6 +115,7 @@
 								type="digit" placeholder="请输入金额" />
 						</view>
 						<text class="demo-hint">百分比：{{ percentValue.length > 0 ? percentValue : '未填写' }} · 金额：{{ amountValue.length > 0 ? amountValue : '未填写' }}</text>
+						<text class="demo-hint">最近 input：{{ keywordInputText }}；clear：{{ keywordClearText }}</text>
 					</view>
 				</view>
 
@@ -426,6 +427,9 @@
 	const searchSmallValue = ref('')
 
 	const searchEventText = ref('键盘确认抛 search，点取消清空并抛 cancel。')
+	// 清除同时抛 input('') 和 clear，两个分开记，才能看出是不是都到了
+	const keywordInputText = ref('—')
+	const keywordClearText = ref('—')
 
 	const sendingCode = ref(false)
 
@@ -467,6 +471,14 @@
 
 	const onSearchCancel = () => {
 		searchEventText.value = 'cancel：已清空并收起键盘'
+	}
+
+	const onKeywordInput = (value: string) => {
+		keywordInputText.value = `"${value}"`
+	}
+
+	const onKeywordClear = () => {
+		keywordClearText.value = '已抛 clear'
 	}
 
 	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
