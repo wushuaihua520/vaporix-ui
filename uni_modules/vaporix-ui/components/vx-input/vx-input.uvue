@@ -36,7 +36,8 @@
 		<!-- Web 上 mousedown 会先让 input 失焦，prevent 保住焦点，空值取消才接得到 click。 -->
 		<view v-if="showSearchCancel" :class="searchCancelClass" :hover-class="searchCancelHoverClass"
 			:hover-stay-time="VX_PRESSED_STAY_TIME" @mousedown.prevent="onSearchCancelDown"
-			@touchstart="onSearchCancelDown" @touchcancel="onSearchCancelUp" @click.stop="onSearchCancel">
+			@touchstart="onSearchCancelDown" @touchmove="onSearchCancelMove" @touchcancel="onSearchCancelUp"
+			@click.stop="onSearchCancel">
 			<text :class="searchCancelTextClass">取消</text>
 		</view>
 
@@ -96,6 +97,22 @@
 	// App 点按不会被 preventDefault 留住焦点。按下期间为真，取消按钮在失焦后仍挂着，click 才接得到。
 	// #ifdef APP
 	const cancelPressing = ref(false)
+	// 按下时量一次取消热区；滑出这块区域就复位，不等 click / touchcancel。
+	const instance = getCurrentInstance()
+	let cancelRect: NodeInfo | null = null
+
+	const measureCancelRect = () => {
+		const proxy = instance != null ? instance.proxy : null
+		if (proxy == null) return
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.vx-input__search-cancel')
+			.boundingClientRect()
+			.exec((result) => {
+				if (result.length === 0) return
+				cancelRect = result[0] as NodeInfo | null
+			})
+	}
 	// #endif
 
 	// search 是搜索语义：没有标题位，取消按钮跟焦点和值走。
@@ -289,11 +306,29 @@
 	const onSearchCancelDown = () => {
 		// #ifdef APP
 		cancelPressing.value = true
+		measureCancelRect()
 		// #endif
 	}
 
 	const onSearchCancelUp = () => {
 		// #ifdef APP
+		cancelPressing.value = false
+		// #endif
+	}
+
+	// 滑出取消热区就复位：App 上手指滑出去不会补 click，也不会补 touchcancel。
+	const onSearchCancelMove = (event: UniTouchEvent) => {
+		// #ifdef APP
+		if (!cancelPressing.value) return
+		const rect = cancelRect
+		if (rect == null) return
+		const touches = event.touches
+		if (touches.length === 0) return
+		const touch = touches[0]
+		// 量到的矩形和 clientX / clientY 都在视口坐标系，不用减页面滚动。
+		const outsideX = touch.clientX < rect.left || touch.clientX > rect.left + rect.width
+		const outsideY = touch.clientY < rect.top || touch.clientY > rect.top + rect.height
+		if (!outsideX && !outsideY) return
 		cancelPressing.value = false
 		// #endif
 	}

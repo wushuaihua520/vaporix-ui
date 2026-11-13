@@ -2864,6 +2864,7 @@ collapseRef.value?.toggle('return')
 - `disabled` 只挡点击，标题、说明和箭头转 `disabled-text`，不抛 `change`；插槽内容不自动转灰。
 - `arrow=false` 只去掉箭头，标题行仍整行可点；容器上的 `arrow` 可以一次关掉整组。
 - `contentHeight` 固定内容区高度并在内部滚动，必须带单位；不传时由内容自然撑高，最多 2000px。
+- 插槽内容第一次展开才创建，之后保持挂载；收起状态下插槽不渲染，不要指望在收起时通过 `validate` 校验里面的表单项。
 - 面板不画外框、圆角和阴影，外轮廓只由 `vx-collapse` 负责；最后一项的分割线也由容器判断。
 - 从 ThorUI `tui-collapse` 迁移：标题和内容插槽换成 `title` / `description` 和默认插槽；展开用的 `current` 不再需要。这里的 `index` 只表示列表位置，`v-for` 要传入。`height` 换成 `contentHeight`，`bgColor` / `hdBgColor` / `bdBgColor` / `arrowColor` 不再需要。
 

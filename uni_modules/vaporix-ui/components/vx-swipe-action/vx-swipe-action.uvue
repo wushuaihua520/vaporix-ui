@@ -93,7 +93,9 @@
 	const slots = useSlots()
 	const peerKey = vxSwipeActionKey()
 	// 只在创建时取一次：这一行跟谁互斥是列表的结构，不会中途换组。
-	const groupKey = props.group.length > 0 ? props.group : vxSwipeActionPageGroup()
+	// 显式传 null / undefined 时和没传一样，落到页面级分组。
+	const groupName = props.group ?? ''
+	const groupKey = groupName.length > 0 ? groupName : vxSwipeActionPageGroup()
 
 	// 小于等于 0、NaN 和缺省都回落到默认宽度，避免动作叠在一起或手势距离算成 0。
 	const readWidth = (value: number | undefined, fallback: number): number => {

@@ -71,9 +71,12 @@
 		cancel: []
 	}>()
 
+	// 显式传 null / undefined 时按空数组处理，模板和 computed 里不直接读 .length。
+	const itemsValue = computed((): Array<VxActionSheetItem> => props.items ?? [])
+
 	// 没有动作时不铺遮罩，避免出现一张只有取消按钮的空面板。
 	const visible = computed((): boolean => {
-		return show.value && props.items.length > 0
+		return show.value && itemsValue.value.length > 0
 	})
 
 	const hasHeader = computed((): boolean => {
@@ -236,7 +239,7 @@
 	// 文案色放在 class 里，不给每一行拼 style。
 	const rows = computed((): Array<ActionSheetRow> => {
 		const list: Array<ActionSheetRow> = []
-		const source = props.items
+		const source = itemsValue.value
 		const last = source.length - 1
 		for (let index = 0; index < source.length; index++) {
 			const entry = source[index]
@@ -273,7 +276,7 @@
 
 	// 点击停在动作上，禁用项不抛事件；默认先收起再抛，父级在事件里改 show 也不会被覆盖。
 	const onSelect = (index: number) => {
-		const item = props.items[index]
+		const item = itemsValue.value[index]
 		if (item == null || item.disabled === true) return
 		if (props.closeOnSelect) show.value = false
 		emit('select', index, item)
@@ -304,12 +307,12 @@
 
 	const warnItemCount = () => {
 		if (itemsWarned) return
-		if (props.items.length <= 8) return
+		if (itemsValue.value.length <= 8) return
 		itemsWarned = true
-		console.warn(`[vx-actionsheet] 规范是 2–6 条，当前 ${props.items.length} 条；更多改用页面或选择器。`)
+		console.warn(`[vx-actionsheet] 规范是 2–6 条，当前 ${itemsValue.value.length} 条；更多改用页面或选择器。`)
 	}
 
-	watch((): number => props.items.length, () => {
+	watch((): number => itemsValue.value.length, () => {
 		warnItemCount()
 	})
 

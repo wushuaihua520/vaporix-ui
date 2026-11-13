@@ -32,7 +32,7 @@
 				</view>
 
 				<!-- 不监听 touchmove：这一层接住监听后，App 上的 scroll-view 不再滚动。 -->
-				<scroll-view class="vx-drawer__body" direction="vertical">
+				<scroll-view class="vx-drawer__body" direction="vertical" :scroll-top="bodyScrollTop">
 					<view :class="contentClass">
 						<slot></slot>
 					</view>
@@ -163,6 +163,22 @@
 	// 最近一次打开的时刻，遮罩保护窗用它判断这一下是不是「打开那一下的抬手」。
 	let openedAt = 0
 
+	// 根节点首开后常驻，正文 scroll-view 不会随打开重建：关闭时停在哪，下次打开还在那。
+	const bodyScrollTop = ref(0)
+
+	// 同 vx-select：scroll-top 写和当前值相同（或只差不到 1）时原生滚动区不动。
+	// 先错开 0.01，下一帧再写回 0；只在打开时调，关闭时保留业务自己的位置。
+	const resetBodyScrollTop = () => {
+		if (Math.abs(bodyScrollTop.value) < 1) {
+			bodyScrollTop.value = 0.01
+			nextTick(() => {
+				bodyScrollTop.value = 0
+			})
+			return
+		}
+		bodyScrollTop.value = 0
+	}
+
 	// 打开期间只记一次。叠了两个弹层时由底座计数，最后一个收起才解锁。
 	let pageLocked = false
 
@@ -178,6 +194,7 @@
 		openedAt = Date.now()
 		rendered.value = true
 		hidden.value = false
+		resetBodyScrollTop()
 		setPageLock(true)
 	}
 

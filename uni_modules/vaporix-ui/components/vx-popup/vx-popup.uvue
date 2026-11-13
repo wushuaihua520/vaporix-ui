@@ -147,9 +147,12 @@
 		return name
 	})
 
+	// 显式传 null / undefined 时按没传处理；不要直接读 .length。
+	const maxWidthText = computed((): string => props.maxWidth ?? '')
+
 	// 只对上下贴边生效。不传时不挂，宽度仍是方向类上的 100%。
 	const sheetCapped = computed((): boolean => {
-		if (props.maxWidth.length === 0) return false
+		if (maxWidthText.value.length === 0) return false
 		return placement.value === 'top' || placement.value === 'bottom'
 	})
 
@@ -219,7 +222,7 @@
 			if (props.height.length > 0) style += ` height: ${props.height};`
 		}
 		// 方向类写了 width: 100%。这里只补 max-width：窄屏仍铺满，宽屏收到这条宽。
-		if (sheetCapped.value) style += ` max-width: ${props.maxWidth};`
+		if (sheetCapped.value) style += ` max-width: ${maxWidthText.value};`
 		style += radiusStyle(vxOverlayRadius(props.round))
 		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
 		return style
