@@ -164,7 +164,7 @@ export const DEMO_COMPONENTS: DemoComponent[] = [
 		icon: 'list-checks',
 		category: '表单',
 		desc: '校验、错误定位、标签与说明。',
-		sections: 10
+		sections: 11
 	},
 	{
 		key: 'tips',
