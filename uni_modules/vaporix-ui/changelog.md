@@ -8,7 +8,7 @@
 ## 0.67.0（2026-11-12）
 
 - 弹层在真机上会整层不画：`position: fixed` 的子树里用 `v-if` 反复创建原生 `scroll-view` / `input` / `picker-view`，几次开关之后遮罩和面板一起消失，等 8.5 秒也不补画。真机复测（XiaoMi 14 / Android 13 / HBuilderX 5.34）：B 组（带 `scroll-view`）第 7 次、C 组（带 `input`）第 5 次、D 组（带 `picker-view`）第 3 次开始看不到「罩」和「面板在」；A 组（只有 `view` / `text`）30/30 正常，页面本身没有失活。
-- 五个弹层改成首开后常驻：`vx-popup`、`vx-modal`、`vx-drawer`、`vx-picker`、`vx-calendar` 的根节点只从「不在」变成「在」，关闭动画走完或 `duration=0` 时只加隐藏 class（`display: none`），不再卸载。探针 E 组（同样内容改成首次打开后不销毁、关闭用 `display: none`）和 F 组（`vx-popup` 里放纵向 `scroll-view`）都是 30/30 正常。
+- 五个弹层改成首开后常驻：`vx-popup`、`vx-modal`、`vx-drawer`、`vx-picker`、`vx-calendar` 的根节点只从「不在」变成「在」，关闭动画走完或 `duration=0` 时只加隐藏 class（`display: none`），不再卸载。探针 E 组（同样内容改成首次打开后不销毁、关闭用 `display: none`）和 F 组（`vx-popup` 里放纵向 `scroll-view`）都是 30/30 正常。真机验证：XiaoMi 14 / Android 13 / HBuilderX 5.34，长内容抽屉滚到中下部后关闭再开、连开两次，正文都回到顶部，证据在 `pages/demo/drawer/drawer.uvue` 文件头。
 - Web 的入场关键帧不靠重新挂载：`display: none` 会终止动画，去掉隐藏类后浏览器从头再播一遍，和第一次打开一致。
 - `vx-datetime` 的滚轮改成下一帧挂载：`picker-view` 和 `fixed` 根节点同一帧创建时 App 端会拒绝创建，先画同尺寸占位，`nextTick` 后再换成滚轮；下标由 `prepare()` 当场备好，不会给空 `value`。挂上后常驻，列数变化仍由 `wheelKey` 整只换。
 - 新增一次性探针页（已移除）：不进 `pages/demo/shared/catalog.ts`，演示目录和首页看不到入口，只在 `pages.json` 留路由。真机记录和 Web 冒烟结论见上面弹层几条。
