@@ -33,8 +33,8 @@
 - `vx-countdown` 的秒段先按最小可见单位向上取整再拆天时分秒：只显示到分 / 时 / 天时，不再每秒进位；`onHide` 只停表，`onShow` 按截止时间补回剩余毫秒。`lg` 单独 10 圆角，三位数左右各补 8。
 - `vx-divider` 的默认间距改走令牌：横线上下 `--vx-space-md`、竖线左右 `--vx-space-lg`，只有传了 `spacing` 才写行内；`align="left"` / `"right"` 去掉没有线那侧的外边距。
 - `vx-form` 的 `labelWidth` 默认改成空串，宽度取 `--vx-form-label-width`（72px），不写行内也不警告；传了带单位的值才写行内盖过。
-- `vx-form` 的失败项改为自己上报位置：表单项在自己作用域里量根节点，把视口 `top` 交给容器；容器外面是 `vx-page` 时滚它的滚动区（`libs/page-scroll.ts` 的注入键），没有才补页面滚动量调 `pageScrollTo`；form 自己查 `.vx-form-item--invalid` 只作兜底。`validateField` 单项校验不定位，边输入边跳不再出现。
-- `vx-form-item` 的内容区最小高度跟控件档位，矮控件在这一层垂直居中，双行时标题仍停在第一行；异步校验回来序号对不上就丢弃，`value` 变化让旧结果失效。
+- `vx-form` 的失败项改为自己上报位置：表单项在自己作用域里量根节点，把视口 `top` 交给容器；容器外面是 `vx-page` 时滚它的滚动区（`libs/page-scroll.ts` 的注入键），没有才补页面滚动量调 `pageScrollTo`；form 自己查 `.vx-form-item--invalid` 只作兜底。`validateField` 单项校验不定位，边输入边跳不再出现。真机结论：XiaoMi 14 / Android 13 / HBuilderX 5.34，第 4 项和第 1 项失败时都滚到距顶 8 逻辑像素（设备像素 21、密度 2.625）。
+- `vx-form-item` 的内容区最小高度跟控件档位，矮控件在这一层垂直居中，双行时标题仍停在第一行；异步校验回来序号对不上就丢弃，`value` 变化让旧结果失效。真机结论：连续改两次只留「第二次校验」；`clearValidate` 之后 800ms 晚到的失败没有把错误行带回来。
 - `libs/form.ts` 的异步 `validator` 返回非字符串（含 `undefined`）按通过处理，收成空串，不再被当成错误文案。
 - `vx-grid-item` 的圆角跟 `size` 取 6 / 8 / 10，禁用图片压到 `--vx-opacity-media-disabled`。
 - `vx-image` 的 `src` 显式 `null` 先收成空串；窗口宽在 `props.ts` 里缓存一次，列表里不再每个实例打 `getWindowInfo`；淡入时长走 `--vx-duration-normal`。
