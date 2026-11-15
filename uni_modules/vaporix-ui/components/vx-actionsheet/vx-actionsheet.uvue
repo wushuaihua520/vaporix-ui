@@ -2,11 +2,11 @@
 	<!-- 操作菜单是底部弹层：遮罩铺满页面，面板贴底。挂在页面根节点，放进 scroll-view 会被裁掉。 -->
 	<!-- 点遮罩、点取消都收起并抛 cancel；点动作默认收起并抛 select，由业务决定后续跳转。 -->
 	<!-- 触摸只拦遮罩、头部和取消栏：动作行不监听，根节点接住后 App 上的 scroll-view 不再滚动。 -->
-	<view v-if="visible" class="vx-actionsheet" :style="rootStyle">
+	<view v-if="rendered" class="vx-actionsheet" :style="rootStyle">
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
 		<!-- 外层只负责阴影和滑入；内层裁按下态，避免 overflow 把阴影一起裁掉。 -->
-		<view class="vx-actionsheet__sheet" :style="sheetStyle" @click.stop>
+		<view :class="sheetClass" :style="sheetStyle" @click.stop>
 			<view class="vx-actionsheet__panel">
 				<!-- 头部两块都可选：title 用标题档，description 用次要色；都没有时不渲染。 -->
 				<view v-if="hasHeader" class="vx-actionsheet__header" @touchmove.stop.prevent>
@@ -15,7 +15,7 @@
 				</view>
 				<view v-if="hasHeader" class="vx-actionsheet__header-divider"></view>
 
-				<!-- 多出来的动作在这一层裁掉。行自己不收缩，52 的行高不会被挤矮。 -->
+				<!-- 多出来的动作在这一层裁掉。行自己不收缩，48 的行高不会被挤矮。 -->
 				<view class="vx-actionsheet__list">
 					<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
 						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onSelect(row.index)">
@@ -44,7 +44,7 @@
 <script setup>
 	import { VxActionSheetItem, VxActionSheetItemType, VxActionSheetProps } from './props'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
+	import { VX_OVERLAY_DURATION, VX_OVERLAY_FRAME, VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxActionSheetProps>(), {
 		items: (): Array<VxActionSheetItem> => [],
@@ -79,6 +79,33 @@
 		return show.value && itemsValue.value.length > 0
 	})
 
+	// 退场：根节点是 v-if，关掉时先挂上退场态让节点多留一帧动画时长再摘，
+	// 和弹框、抽屉、弹出层的两帧式进出场同一思路（那三个是常驻，这里是现摘）。
+	// 退场期间重新打开就取消计时、摘掉退场态；关键帧会换成入场那条，从底部重新滑入，
+	// 不会留下第二层，但也不会从半路接着往上（关键帧没有这种能力）。
+	const leaving = ref(false)
+	let leaveTimer = 0
+
+	const rendered = computed((): boolean => visible.value || leaving.value)
+
+	const clearLeave = () => {
+		if (leaveTimer === 0) return
+		clearTimeout(leaveTimer)
+		leaveTimer = 0
+	}
+
+	const startLeave = () => {
+		clearLeave()
+		// 在 watch 里同步挂上，这一拍渲染才不会先把节点摘掉。
+		leaving.value = true
+		leaveTimer = setTimeout(() => {
+			leaveTimer = 0
+			leaving.value = false
+			// 页面滚动锁等整段动画走完再解，退场期间页面不跟着滚。
+			setPageLock(false)
+		}, VX_OVERLAY_DURATION + VX_OVERLAY_FRAME)
+	}
+
 	const hasHeader = computed((): boolean => {
 		return props.title.length > 0 || props.description.length > 0
 	})
@@ -107,7 +134,14 @@
 
 	// 不可关闭的遮罩不是按钮，Web 上不给指针。
 	const maskClass = computed((): string => {
-		return props.maskClosable ? 'vx-actionsheet__mask vx-actionsheet__mask--closable' : 'vx-actionsheet__mask'
+		let name = props.maskClosable ? 'vx-actionsheet__mask vx-actionsheet__mask--closable' : 'vx-actionsheet__mask'
+		if (leaving.value) name += ' vx-actionsheet__mask--leaving'
+		return name
+	})
+
+	// 退场那一下的 class；只挂到遮罩和面板上，根节点不需要状态位。
+	const sheetClass = computed((): string => {
+		return leaving.value ? 'vx-actionsheet__sheet vx-actionsheet__sheet--leaving' : 'vx-actionsheet__sheet'
 	})
 
 	const rootStyle = computed((): string => {
@@ -276,6 +310,8 @@
 
 	// 点击停在动作上，禁用项不抛事件；默认先收起再抛，父级在事件里改 show 也不会被覆盖。
 	const onSelect = (index: number) => {
+		// 退场动画期间面板正在往外走，再点一次只会多抛一次 select。
+		if (leaving.value) return
 		const item = itemsValue.value[index]
 		if (item == null || item.disabled === true) return
 		if (props.closeOnSelect) show.value = false
@@ -283,7 +319,7 @@
 	}
 
 	const onCancelTap = () => {
-		if (!show.value) return
+		if (!show.value || leaving.value) return
 		show.value = false
 		emit('cancel')
 	}
@@ -333,17 +369,22 @@
 		// 根节点随 visible 重建，但组件实例不重建：打开这一下重读窗口并量层高，
 		// 关着时窗口可能已经变了，重读放在打开这一下。
 		if (open) {
+			// 退场没走完又打开：节点还在，取消计时把它拉回终点。
+			clearLeave()
+			leaving.value = false
+			setPageLock(true)
 			readWindowHeight()
 			nextTick(() => {
 				if (visible.value) measureLayer()
 			})
-		} else {
-			measureId++
-			clearMeasureTimer()
-			measureCount = 0
-			layerHeight.value = 0
+			return
 		}
-		setPageLock(open)
+		measureId++
+		clearMeasureTimer()
+		measureCount = 0
+		layerHeight.value = 0
+		// 滚动锁在退场动画走完时由 startLeave 的计时解开，这里不再立刻解。
+		startLeave()
 	})
 
 	// 挂载时已经打开的，watch 不会走，保护窗和滚动锁从这一帧算起。
@@ -365,6 +406,7 @@
 
 	onUnmounted(() => {
 		clearMeasureTimer()
+		clearLeave()
 		// #ifdef WEB
 		if (typeof window !== 'undefined') window.removeEventListener('resize', onWindowResize)
 		// #endif
@@ -399,7 +441,6 @@
 </script>
 
 <style>
-	/* App 端行高补偿见下方 APP-UVUE 块。 */
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
@@ -520,7 +561,7 @@
 		overflow: hidden;
 	}
 
-	/* 动作行是按钮，不是列表行：文案居中，行高沿用列表 md 的 52。
+	/* 动作行是按钮，不是列表行：文案居中，行高沿用列表行 md 的 48。
 	   不写背景色，按下态是这一层唯一的 background-color。
 	   限高之后裁的是多出来的动作，这一行不收缩，行高仍然不缩。 */
 	.vx-actionsheet__item {
@@ -539,9 +580,8 @@
 		background-color: var(--vx-color-surface-pressed);
 	}
 
-	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，动作行比设计值高。
-	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。 */
-	/* #ifdef APP-UVUE */
+	/* App 端 min-height 按内容盒算，减掉纵向内边距补回行高；原因见 variables.css 的列表行令牌。 */
+	/* #ifdef APP */
 	.vx-actionsheet__item {
 		min-height: calc(var(--vx-list-height-md) - 24px);
 	}
@@ -636,7 +676,7 @@
 		background-color: var(--vx-color-surface-pressed);
 	}
 
-	/* #ifdef APP-UVUE */
+	/* #ifdef APP */
 	.vx-actionsheet__cancel {
 		min-height: calc(var(--vx-list-height-md) - 24px);
 	}
@@ -654,8 +694,9 @@
 		text-align: center;
 	}
 
-	/* 滑入和淡入：5.31 起 App 端支持 @keyframes（vx-loading 的转圈同款语法），
-	   根节点 v-if 每次打开重建子树，动画每次都从头重播。
+	/* 滑入和淡入：5.31 起 App 端支持 @keyframes（vx-loading 的转圈同款语法）。
+	   根节点是 v-if，但关闭时先给遮罩和面板挂 --leaving 让节点多活一帧时长，
+	   退场动画播完才摘，所以进出场都有动画；重新打开会取消计时，节点不重建。
 	   5.26–5.30 的 App 端不支持关键帧，元素直接按正常样式出现，不会留在透明态。
 	   这一层接住触摸，页面在菜单打开期间不跟着滚。 */
 	.vx-actionsheet__mask {
@@ -669,6 +710,19 @@
 		animation-duration: var(--vx-duration-normal);
 		animation-timing-function: var(--vx-ease-standard);
 	}
+
+	/* 退场：换一条反向动画，时长和曲线跟入场一致；节点在计时结束时才摘掉。 */
+	.vx-actionsheet__mask--leaving {
+		animation-name: vx-actionsheet-fade-out;
+	}
+
+	.vx-actionsheet__sheet--leaving {
+		animation-name: vx-actionsheet-down;
+	}
+
+	/* 退场期间照常接住点击，不关 pointer-events：关掉之后 Web 上这一下会穿透到
+	   页面里，正好点到刚收起的浮层下面那个按钮。挡重复操作交给事件里的 leaving 判断，
+	   遮罩和面板也继续拦住页面滚动。 */
 
 	@keyframes vx-actionsheet-fade {
 		from {
@@ -687,6 +741,26 @@
 
 		to {
 			transform: translateY(0);
+		}
+	}
+
+	@keyframes vx-actionsheet-fade-out {
+		from {
+			opacity: 1;
+		}
+
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes vx-actionsheet-down {
+		from {
+			transform: translateY(0);
+		}
+
+		to {
+			transform: translateY(100%);
 		}
 	}
 
