@@ -270,6 +270,7 @@
 </script>
 
 <style>
+	/* App 端行高补偿见下方 APP-UVUE 块。 */
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
@@ -300,7 +301,7 @@
 		min-height: var(--vx-control-height-lg);
 	}
 
-	/* 列表项：一项一行，行高沿用列表行 44 / 52 / 60，左右内边距与列表行相同。
+	/* 列表项：一项一行，行高沿用列表行 44 / 48 / 52，左右内边距与列表行相同。
 	   分割线绝对定位在行底，行本身不画圆角，外轮廓交给外层卡片。
 	   min-width 0 配合 width 100%，长词不会把行撑出卡片。 */
 	.vx-radio--list {
@@ -321,8 +322,24 @@
 
 	.vx-radio--list-lg {
 		min-height: var(--vx-list-height-lg);
-		padding: var(--vx-space-lg) var(--vx-space-lg);
+		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
+
+	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，列表行比设计值高。
+	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。lg 纵向内边距与 md 同为 12。 */
+	/* #ifdef APP-UVUE */
+	.vx-radio--list {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+
+	.vx-radio--list-sm {
+		min-height: calc(var(--vx-list-height-sm) - 16px);
+	}
+
+	.vx-radio--list-lg {
+		min-height: calc(var(--vx-list-height-lg) - 24px);
+	}
+	/* #endif */
 
 	/* 按下态：列表整行铺 surface-pressed；横排没有底色，只把整项压到 0.8。
 	   行内文字和标记都不单独变色，按下结束后直接复位。 */

@@ -399,6 +399,7 @@
 </script>
 
 <style>
+	/* App 端行高补偿见下方 APP-UVUE 块。 */
 	/* App 不能把自定义变量定义成另一个 var()。
 	   同一元素上，class 字符串里靠后的声明盖过靠前的；样式表顺序与此一致。 */
 
@@ -538,6 +539,14 @@
 		background-color: var(--vx-color-surface-pressed);
 	}
 
+	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，动作行比设计值高。
+	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。 */
+	/* #ifdef APP-UVUE */
+	.vx-actionsheet__item {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+	/* #endif */
+
 	/* 文案占满内容区后居中。勾是绝对定位，不参与这一行的宽度，切换选中时文案不横跳。 */
 	.vx-actionsheet__text {
 		flex-shrink: 1;
@@ -610,7 +619,7 @@
 		background-color: var(--vx-color-default-soft);
 	}
 
-	/* 取消按钮和动作同高、同字重，用间隔带和上面的动作分层。这一层不收缩，短屏上仍保持 52。 */
+	/* 取消按钮和动作同高、同字重，用间隔带和上面的动作分层。这一层不收缩，短屏上仍保持 48。 */
 	.vx-actionsheet__cancel {
 		flex-direction: row;
 		flex-shrink: 0;
@@ -626,6 +635,12 @@
 	.vx-actionsheet__cancel--pressed {
 		background-color: var(--vx-color-surface-pressed);
 	}
+
+	/* #ifdef APP-UVUE */
+	.vx-actionsheet__cancel {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+	/* #endif */
 
 	.vx-actionsheet__cancel-text {
 		flex-shrink: 1;

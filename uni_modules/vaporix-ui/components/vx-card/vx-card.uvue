@@ -209,8 +209,24 @@
 
 	.vx-card__head-row--lg {
 		min-height: var(--vx-list-height-lg);
-		padding: var(--vx-space-lg) var(--vx-space-xl);
+		padding: var(--vx-space-md) var(--vx-space-xl);
 	}
+
+	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，标题行比设计值高。
+	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。lg 纵向内边距与 md 同为 12。 */
+	/* #ifdef APP-UVUE */
+	.vx-card__head-row {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+
+	.vx-card__head-row--sm {
+		min-height: calc(var(--vx-list-height-sm) - 16px);
+	}
+
+	.vx-card__head-row--lg {
+		min-height: calc(var(--vx-list-height-lg) - 24px);
+	}
+	/* #endif */
 
 	/* 标题区吃掉剩余宽度。最小宽度压成 0，长标题换行，右侧 meta 保持自身宽度。
 	   Web 默认 visible，超出的词裁在标题区里。 */

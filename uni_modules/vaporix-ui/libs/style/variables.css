@@ -72,8 +72,8 @@
 
 	/* 列表行最小高度：按可点热区起步，不并入控件三档 */
 	--vx-list-height-sm: 44px;
-	--vx-list-height-md: 52px;
-	--vx-list-height-lg: 60px;
+	--vx-list-height-md: 48px;
+	--vx-list-height-lg: 52px;
 
 	/* 可点热区下限：关闭叉、返回、回到顶部、独立图标按钮；不跟列表行和控件档位走 */
 	--vx-hit-size: 44px;
@@ -833,8 +833,8 @@
 
 	/* 列表行最小高度（与亮色一致） */
 	--vx-list-height-sm: 44px;
-	--vx-list-height-md: 52px;
-	--vx-list-height-lg: 60px;
+	--vx-list-height-md: 48px;
+	--vx-list-height-lg: 52px;
 
 	/* 可点热区下限（与亮色一致）；不跟列表行和控件档位走 */
 	--vx-hit-size: 44px;

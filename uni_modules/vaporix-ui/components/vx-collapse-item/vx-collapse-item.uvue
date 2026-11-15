@@ -405,7 +405,7 @@
 		min-width: 0;
 	}
 
-	/* 标题行是唯一热区；行高沿用列表行 52，双行标题由上下内边距撑高。
+	/* 标题行是唯一热区；行高沿用列表行 48，双行标题由上下内边距撑高。
 	   不铺底色，按下态是这一层唯一的 background-color。 */
 	.vx-collapse-item__head {
 		flex-direction: row;
@@ -425,8 +425,24 @@
 
 	.vx-collapse-item__head--lg {
 		min-height: var(--vx-list-height-lg);
-		padding: var(--vx-space-lg);
+		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
+
+	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，标题行比设计值高。
+	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。lg 纵向内边距与 md 同为 12。 */
+	/* #ifdef APP-UVUE */
+	.vx-collapse-item__head {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+
+	.vx-collapse-item__head--sm {
+		min-height: calc(var(--vx-list-height-sm) - 16px);
+	}
+
+	.vx-collapse-item__head--lg {
+		min-height: calc(var(--vx-list-height-lg) - 24px);
+	}
+	/* #endif */
 
 	.vx-collapse-item__head--pressed {
 		background-color: var(--vx-color-surface-pressed);

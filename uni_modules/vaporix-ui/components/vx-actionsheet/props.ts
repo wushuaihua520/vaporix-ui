@@ -39,3 +39,4 @@ export type VxActionSheetProps = {
 	/** 浮层层级，默认 1000，低于消息提示（1010）、弹框（1020）、加载浮层（1050）和轻提示（1100）。 */
 	zIndex?: number
 }
+// 行高补偿说明：App 端 min-height 按内容盒计算，组件 style 内有 APP-UVUE calc 块。

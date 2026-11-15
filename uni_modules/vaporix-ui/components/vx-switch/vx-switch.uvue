@@ -297,7 +297,7 @@
 		min-height: var(--vx-control-height-lg);
 	}
 
-	/* 列表行：一项一行，行高沿用列表行 44 / 52 / 60，左右内边距与列表行相同。
+	/* 列表行：一项一行，行高沿用列表行 44 / 48 / 52，左右内边距与列表行相同。
 	   垂直居中留在根节点：两行说明把行撑高时轨道仍在行中，不跟复选框那样贴首行。
 	   分割线绝对定位，定位包含块只建在列表上。 */
 	.vx-switch--list {
@@ -315,8 +315,24 @@
 
 	.vx-switch--list-lg {
 		min-height: var(--vx-list-height-lg);
-		padding: var(--vx-space-lg) var(--vx-space-lg);
+		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
+
+	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，列表行比设计值高。
+	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。lg 纵向内边距与 md 同为 12。 */
+	/* #ifdef APP-UVUE */
+	.vx-switch--list {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+
+	.vx-switch--list-sm {
+		min-height: calc(var(--vx-list-height-sm) - 16px);
+	}
+
+	.vx-switch--list-lg {
+		min-height: calc(var(--vx-list-height-lg) - 24px);
+	}
+	/* #endif */
 
 	/* 按下态：列表整行铺 surface-pressed；单行没有底色，只把整项压到 0.8。 */
 	.vx-switch--pressed {

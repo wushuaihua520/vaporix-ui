@@ -19,3 +19,4 @@ export type VxRadioProps = {
 	/** 自定义对号色，字面值；优先于 color，禁用时不生效。 */
 	checkColor?: string
 }
+// 行高补偿说明：App 端 min-height 按内容盒计算，组件 style 内有 APP-UVUE calc 块。

@@ -180,6 +180,14 @@
 		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
 
+	/* App 端 min-height 按内容盒算，上下内边距加在 token 之外，行比设计值高 24。
+	   这里减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。 */
+	/* #ifdef APP-UVUE */
+	.vx-list-cell__content {
+		min-height: calc(var(--vx-list-height-md) - 24px);
+	}
+	/* #endif */
+
 	.vx-list-cell__content--sm {
 		min-height: var(--vx-list-height-sm);
 		padding: var(--vx-space-sm) var(--vx-space-md);
@@ -187,8 +195,18 @@
 
 	.vx-list-cell__content--lg {
 		min-height: var(--vx-list-height-lg);
-		padding: var(--vx-space-lg) var(--vx-space-lg);
+		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
+
+	/* #ifdef APP-UVUE */
+	.vx-list-cell__content--sm {
+		min-height: calc(var(--vx-list-height-sm) - 16px);
+	}
+
+	.vx-list-cell__content--lg {
+		min-height: calc(var(--vx-list-height-lg) - 24px);
+	}
+	/* #endif */
 
 	.vx-list-cell__prefix {
 		flex-direction: row;
