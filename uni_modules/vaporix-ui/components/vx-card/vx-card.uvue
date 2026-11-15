@@ -212,9 +212,9 @@
 		padding: var(--vx-space-md) var(--vx-space-xl);
 	}
 
-	/* App 端 min-height 按内容盒算，纵向内边距加在 token 之外，标题行比设计值高。
-	   减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。lg 纵向内边距与 md 同为 12。 */
-	/* #ifdef APP-UVUE */
+	/* App 端 min-height 按内容盒算，减掉纵向内边距补回行高（lg 纵向内边距与 md 同为 12）。
+	   原因见 variables.css 的列表行令牌。 */
+	/* #ifdef APP */
 	.vx-card__head-row {
 		min-height: calc(var(--vx-list-height-md) - 24px);
 	}

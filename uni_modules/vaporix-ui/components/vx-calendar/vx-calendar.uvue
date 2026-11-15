@@ -908,7 +908,7 @@
 		background-color: var(--vx-color-surface);
 	}
 
-	/* 头部沿用列表行 md 的 52：标题居中，关闭叉贴右，两边内边距留出叉的位置，长标题不会钻到叉下面。 */
+	/* 头部用 --vx-overlay-head 52：标题居中，关闭叉贴右，两边内边距留出叉的位置，长标题不会钻到叉下面。 */
 	.vx-calendar__header {
 		position: relative;
 		flex-direction: column;
@@ -917,7 +917,7 @@
 		justify-content: center;
 		box-sizing: border-box;
 		width: 100%;
-		height: var(--vx-list-height-md);
+		height: var(--vx-overlay-head);
 		padding-left: var(--vx-space-xl);
 		padding-right: var(--vx-space-xl);
 	}

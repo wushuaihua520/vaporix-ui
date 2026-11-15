@@ -181,7 +181,7 @@
 	})
 
 	// 贴边那条边固定直角，只圆朝向页面的两条边；居中四角全圆。
-	// App 不能 calc，所以四个角一起写死，切换 round 时旧的圆角会被盖掉。
+	// 四个角一起写：切换 round 时旧的圆角会被新值整组盖掉，不用逐角判断。
 	const radiusStyle = (radius: number): string => {
 		const name = `${radius}px`
 		let style = ''

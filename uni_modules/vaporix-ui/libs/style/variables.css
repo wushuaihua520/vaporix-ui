@@ -70,10 +70,17 @@
 	--vx-height-textarea-md: 66px;
 	--vx-height-textarea-lg: 72px;
 
-	/* 列表行最小高度：按可点热区起步，不并入控件三档 */
+	/* 列表行最小高度：按可点热区起步，不并入控件三档。
+	   App 上同时写 min-height 和纵向内边距时，总高会比令牌多出这份内边距（Web 不会）。
+	   带内边距的行因此在 #ifdef APP 块里用 calc 减掉它，不带的行不用补。
+	   两端对不对齐用 pages/probe/box 量；改这里、或改某行的纵向内边距时重跑一次。 */
 	--vx-list-height-sm: 44px;
 	--vx-list-height-md: 48px;
 	--vx-list-height-lg: 52px;
+
+	/* 弹层头部：取消/确定、标题和关闭叉所在的横条。不借用列表行令牌，
+	   列表行改档时头部不动；头部只写 height / min-height 和左右内边距，不受盒模型影响。 */
+	--vx-overlay-head: 52px;
 
 	/* 可点热区下限：关闭叉、返回、回到顶部、独立图标按钮；不跟列表行和控件档位走 */
 	--vx-hit-size: 44px;
@@ -831,10 +838,13 @@
 	--vx-height-textarea-md: 66px;
 	--vx-height-textarea-lg: 72px;
 
-	/* 列表行最小高度（与亮色一致） */
+	/* 列表行最小高度（与亮色一致；盒模型差异见亮色那份的说明） */
 	--vx-list-height-sm: 44px;
 	--vx-list-height-md: 48px;
 	--vx-list-height-lg: 52px;
+
+	/* 弹层头部（与亮色一致） */
+	--vx-overlay-head: 52px;
 
 	/* 可点热区下限（与亮色一致）；不跟列表行和控件档位走 */
 	--vx-hit-size: 44px;

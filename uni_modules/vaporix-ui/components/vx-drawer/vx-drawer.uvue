@@ -479,14 +479,14 @@
 		width: 100%;
 	}
 
-	/* 头部沿用列表行 md 的 52：标题单行省略，右侧留 8 给 44 的关闭叉。 */
+	/* 头部用 --vx-overlay-head 52：标题单行省略，右侧留 8 给 44 的关闭叉。 */
 	.vx-drawer__header {
 		flex-direction: row;
 		flex-shrink: 0;
 		align-items: center;
 		box-sizing: border-box;
 		width: 100%;
-		min-height: var(--vx-list-height-md);
+		min-height: var(--vx-overlay-head);
 		padding-left: var(--vx-space-lg);
 		padding-right: var(--vx-space-sm);
 	}

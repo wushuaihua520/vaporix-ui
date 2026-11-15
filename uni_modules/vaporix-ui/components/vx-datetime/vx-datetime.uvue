@@ -479,14 +479,14 @@
 		overflow: hidden;
 	}
 
-	/* 头部高度沿用列表行 md 的 52：取消和确定都是整块热区，上下不另外留白。 */
+	/* 头部高度用 --vx-overlay-head 52：取消和确定都是整块热区，上下不另外留白。 */
 	.vx-datetime__header {
 		flex-direction: row;
 		flex-shrink: 0;
 		align-items: center;
 		box-sizing: border-box;
 		width: 100%;
-		height: var(--vx-list-height-md);
+		height: var(--vx-overlay-head);
 		padding-left: var(--vx-space-sm);
 		padding-right: var(--vx-space-sm);
 	}

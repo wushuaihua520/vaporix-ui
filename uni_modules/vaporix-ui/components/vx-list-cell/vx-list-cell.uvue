@@ -180,9 +180,8 @@
 		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
 
-	/* App 端 min-height 按内容盒算，上下内边距加在 token 之外，行比设计值高 24。
-	   这里减掉纵向内边距补回设计行高；Web 端 border-box 生效，不需要。 */
-	/* #ifdef APP-UVUE */
+	/* App 端 min-height 按内容盒算，减掉纵向内边距补回行高；原因见 variables.css 的列表行令牌。 */
+	/* #ifdef APP */
 	.vx-list-cell__content {
 		min-height: calc(var(--vx-list-height-md) - 24px);
 	}
@@ -198,7 +197,7 @@
 		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
 
-	/* #ifdef APP-UVUE */
+	/* #ifdef APP */
 	.vx-list-cell__content--sm {
 		min-height: calc(var(--vx-list-height-sm) - 16px);
 	}
