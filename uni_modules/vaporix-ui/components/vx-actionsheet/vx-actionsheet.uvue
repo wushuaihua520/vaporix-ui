@@ -639,34 +639,14 @@
 		text-align: center;
 	}
 
-	/* 5.26 的 App 端没有 CSS 关键帧，滑入和淡入只在 Web 生效；
-	   不支持动画时元素直接按正常样式出现，不会留在透明态。
+	/* 滑入和淡入：5.31 起 App 端支持 @keyframes（vx-loading 的转圈同款语法），
+	   根节点 v-if 每次打开重建子树，动画每次都从头重播。
+	   5.26–5.30 的 App 端不支持关键帧，元素直接按正常样式出现，不会留在透明态。
 	   这一层接住触摸，页面在菜单打开期间不跟着滚。 */
-	/* #ifdef WEB */
-	.vx-actionsheet {
-		touch-action: none;
-	}
-
 	.vx-actionsheet__mask {
 		animation-name: vx-actionsheet-fade;
 		animation-duration: var(--vx-duration-normal);
 		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	.vx-actionsheet__mask--closable {
-		cursor: pointer;
-	}
-
-	.vx-actionsheet__item {
-		cursor: pointer;
-	}
-
-	.vx-actionsheet__item--disabled {
-		cursor: not-allowed;
-	}
-
-	.vx-actionsheet__cancel {
-		cursor: pointer;
 	}
 
 	.vx-actionsheet__sheet {
@@ -693,6 +673,27 @@
 		to {
 			transform: translateY(0);
 		}
+	}
+
+	/* #ifdef WEB */
+	.vx-actionsheet {
+		touch-action: none;
+	}
+
+	.vx-actionsheet__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-actionsheet__item {
+		cursor: pointer;
+	}
+
+	.vx-actionsheet__item--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-actionsheet__cancel {
+		cursor: pointer;
 	}
 	/* #endif */
 </style>

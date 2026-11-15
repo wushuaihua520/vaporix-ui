@@ -259,7 +259,7 @@
 							<text class="demo-popup-status__text">{{ methodLog }}</text>
 							<text class="demo-popup-status__meta">open · close</text>
 						</view>
-						<text class="demo-hint">close() 只收起，不抛 close；弹框 110 压在弹出层 90 上，抽屉同档、后开的在上面。</text>
+						<text class="demo-hint">close() 只收起，不抛 close；弹框 1020 压在弹出层 1000 上，抽屉同档、后开的在上面。</text>
 					</view>
 				</view>
 

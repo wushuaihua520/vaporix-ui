@@ -19,7 +19,7 @@ export type VxTipsProps = {
 	icon?: VxIconName
 	/** 显示关闭图标；打开后点提示任意位置都能关闭。 */
 	closable?: boolean
-	/** 浮层层级，默认 100，压在页面内容和固定页脚之上。 */
+	/** 浮层层级，默认 1010（VX_OVERLAY_TIPS_LAYER），压在弹层和数字键盘之上。 */
 	zIndex?: number
 	/** 自定义底色，字面值。 */
 	bgColor?: string

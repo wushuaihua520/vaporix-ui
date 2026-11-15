@@ -42,7 +42,7 @@
 	import { VxIconName } from '../../libs/icons/codepoints'
 	import { VxSemantic } from '../../libs/types/common'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_MODAL_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
+	import { VX_OVERLAY_DURATION, VX_OVERLAY_DURATION_NONE, VX_OVERLAY_FRAME, VX_OVERLAY_MODAL_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 	import { VxModalAction, VxModalActionVariant, VxModalProps } from './props'
 
 	const props = withDefaults(defineProps<VxModalProps>(), {
@@ -85,6 +85,16 @@
 	// 首次渲染就显示时直接挂上；之后 rendered 只从 false 变 true，不再回头。
 	const rendered = ref(show.value === true)
 	const hidden = ref(show.value !== true)
+	// 落位态：false 时面板停在 scale(0.96)、遮罩全透明；挂上一帧后置 true 触发过渡。
+	// 与 vx-popup 同款两帧式进出场（2026-11-14 起 App 端也有动画，此前关键帧只在 Web）。
+	const inState = ref(show.value === true)
+
+	let settleTimer = 0
+	let leaveTimer = 0
+
+	// 进出场时长：与 vx-popup 同源。5.36 alpha 的 uts2js 类型缓存不会因 props.ts 新增
+	// 字段而失效（duration prop 编译不进去），先直接读共享常量，不暴露 duration prop。
+	const animateDuration = computed((): number => VX_OVERLAY_DURATION)
 
 	type ModalActionKind = 'cancel' | 'confirm' | 'action'
 
@@ -138,11 +148,17 @@
 	})
 
 	const maskClass = computed((): string => {
-		return props.maskClosable ? 'vx-modal__mask vx-modal__mask--closable' : 'vx-modal__mask'
+		let name = props.maskClosable ? 'vx-modal__mask vx-modal__mask--closable' : 'vx-modal__mask'
+		if (animateDuration.value > 0) name += ' vx-modal__mask--animated'
+		if (inState.value) name += ' vx-modal__mask--in'
+		return name
 	})
 
 	const panelClass = computed((): string => {
-		return `vx-modal__panel vx-modal__panel--${props.size}`
+		let name = `vx-modal__panel vx-modal__panel--${props.size}`
+		if (animateDuration.value > 0) name += ' vx-modal__panel--animated'
+		if (inState.value) name += ' vx-modal__panel--in'
+		return name
 	})
 
 	// 定位层是 border-box，上下各 24。max-height: 100% 按边框盒会再叠上这 48，动作仍出屏。
@@ -169,8 +185,10 @@
 
 	const panelStyle = computed((): string => {
 		const limit = windowHeight.value - VX_MODAL_EDGE - VX_MODAL_EDGE
-		if (limit <= 0) return ''
-		return `max-height: ${limit}px;`
+		let style = ''
+		if (limit > 0) style += `max-height: ${limit}px;`
+		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
+		return style
 	})
 
 	const onWindowResize = () => {
@@ -198,8 +216,10 @@
 	})
 
 	const maskStyle = computed((): string => {
-		if (props.maskColor.length === 0) return ''
-		return `background-color: ${props.maskColor};`
+		let style = ''
+		if (props.maskColor.length > 0) style += `background-color: ${props.maskColor};`
+		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
+		return style
 	})
 
 	const rootStyle = computed((): string => {
@@ -352,20 +372,62 @@
 
 	// 打开：首次挂上根节点，之后只去掉隐藏 class；插槽里的原生子树只创建一次。
 	// 根节点常驻，面板不随重开重建，可视高在这里补读：键盘收起或旋转后再打开，上限才跟着新的高度走。
+	const clearSettle = () => {
+		if (settleTimer === 0) return
+		clearTimeout(settleTimer)
+		settleTimer = 0
+	}
+
+	const clearLeave = () => {
+		if (leaveTimer === 0) return
+		clearTimeout(leaveTimer)
+		leaveTimer = 0
+	}
+
 	const enter = () => {
 		readWindowHeight()
 		openedAt = Date.now()
+		clearSettle()
+		clearLeave()
+		const justMounted = !rendered.value
+		const wasHidden = hidden.value
 		rendered.value = true
 		hidden.value = false
+		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+			inState.value = true
+		} else if (justMounted || wasHidden) {
+			settleTimer = setTimeout(() => {
+				settleTimer = 0
+				inState.value = true
+			}, VX_OVERLAY_FRAME)
+		} else {
+			inState.value = true
+		}
 		setPageLock(true)
 	}
 
-	// 关闭：现有实现没有退场（Web 的入场是关键帧，关闭时没有对应退场；App 5.26 也没有），
-	// 直接切隐藏 class；根节点和原生子树都保留，滚动锁跟着解开。
+	// 关闭：先退到起手位，duration 加一帧后只加隐藏 class；根节点和原生子树都保留。
+	// duration=0、还没落位就关，都直接隐藏；滚动锁跟着解开。
 	const leave = () => {
+		clearSettle()
+		clearLeave()
 		if (!rendered.value) return
-		hidden.value = true
-		setPageLock(false)
+		if (!inState.value) {
+			hidden.value = true
+			setPageLock(false)
+			return
+		}
+		inState.value = false
+		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+			hidden.value = true
+			setPageLock(false)
+			return
+		}
+		leaveTimer = setTimeout(() => {
+			leaveTimer = 0
+			hidden.value = true
+			setPageLock(false)
+		}, animateDuration.value + VX_OVERLAY_FRAME)
 	}
 
 	watch(show, (visible: boolean) => {
@@ -401,6 +463,8 @@
 			uni.offWindowResize(onWindowResize)
 		}
 		// #endif
+		clearSettle()
+		clearLeave()
 		setPageLock(false)
 	})
 
@@ -654,18 +718,41 @@
 		margin-bottom: var(--vx-space-sm);
 	}
 
-	/* 5.26 的 App 端没有 CSS 关键帧，淡入和放大只在 Web 生效；
-	   不支持动画时元素直接按正常样式出现，不会留在透明态。
-	   这一层接住触摸，弹框打开期间页面不跟着滚。 */
-	/* #ifdef WEB */
-	.vx-modal {
-		touch-action: none;
+	/* 进出场统一用 vx-popup 同款 transition 两帧式（全平台一条路径）：
+	   面板常驻 scale(0.96)、遮罩全透明；inState 挂上 --in 后按行内时长过渡到落位，
+	   关闭反向播放后再隐藏。duration=0 时不挂过渡类，enter 同帧置 inState。 */
+	.vx-modal__mask {
+		opacity: 0;
 	}
 
-	.vx-modal__mask {
-		animation-name: vx-modal-fade;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
+	.vx-modal__mask--animated {
+		transition-property: opacity;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-modal__mask--in {
+		opacity: 1;
+	}
+
+	.vx-modal__panel {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+
+	.vx-modal__panel--animated {
+		transition-property: transform, opacity;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-modal__panel--in {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	/* #ifdef WEB */
+	/* 定位层关掉浏览器默认手势，弹框打开期间页面不跟着滚。 */
+	.vx-modal {
+		touch-action: none;
 	}
 
 	.vx-modal__mask--closable {
@@ -674,34 +761,6 @@
 
 	.vx-modal__close {
 		cursor: pointer;
-	}
-
-	.vx-modal__panel {
-		animation-name: vx-modal-pop;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	@keyframes vx-modal-fade {
-		from {
-			opacity: 0;
-		}
-
-		to {
-			opacity: 1;
-		}
-	}
-
-	@keyframes vx-modal-pop {
-		from {
-			opacity: 0;
-			transform: scale(0.96);
-		}
-
-		to {
-			opacity: 1;
-			transform: scale(1);
-		}
 	}
 	/* #endif */
 </style>

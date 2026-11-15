@@ -53,7 +53,7 @@
 <script setup>
 	import { VxDrawerPosition, VxDrawerProps } from './props'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
-	import { VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
+	import { VX_OVERLAY_DURATION, VX_OVERLAY_DURATION_NONE, VX_OVERLAY_FRAME, VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxDrawerProps>(), {
 		position: 'right',
@@ -82,6 +82,17 @@
 	// 首次渲染就显示时直接挂上；之后 rendered 只从 false 变 true，不再回头。
 	const rendered = ref(show.value === true)
 	const hidden = ref(show.value !== true)
+	// 落位态：false 时面板停在起手 transform、遮罩全透明；挂上一帧后置 true 触发过渡。
+	// 与 vx-popup 同款两帧式进出场（2026-11-14 起 App 端也有动画，此前关键帧只在 Web）。
+	const inState = ref(show.value === true)
+
+	let settleTimer = 0
+	let leaveTimer = 0
+
+	// 进出场时长：与 vx-popup 同源。5.36 alpha 的 uts2js 类型缓存不会因 props.ts 新增
+	// 字段而失效（duration prop 编译不进去，实测 props.duration 恒为 undefined），
+	// 所以这里直接读共享常量，先不暴露 duration prop。
+	const animateDuration = computed((): number => VX_OVERLAY_DURATION)
 
 	// 传进来不认识的方向落回 right，class 拼出来才是合法的。
 	const placement = computed((): VxDrawerPosition => {
@@ -98,7 +109,13 @@
 	})
 
 	const sheetClass = computed((): string => {
-		return `vx-drawer__sheet vx-drawer__sheet--${placement.value}`
+		let name = `vx-drawer__sheet vx-drawer__sheet--${placement.value}`
+		if (animateDuration.value > 0) name += ' vx-drawer__sheet--animated'
+		if (inState.value) {
+			const axis = placement.value === 'left' || placement.value === 'right' ? 'x' : 'y'
+			name += ` vx-drawer__sheet--in-${axis}`
+		}
+		return name
 	})
 
 	const panelClass = computed((): string => {
@@ -118,7 +135,10 @@
 
 	// 不可关闭的遮罩不是按钮，Web 上不给指针。
 	const maskClass = computed((): string => {
-		return props.maskClosable ? 'vx-drawer__mask vx-drawer__mask--closable' : 'vx-drawer__mask'
+		let name = props.maskClosable ? 'vx-drawer__mask vx-drawer__mask--closable' : 'vx-drawer__mask'
+		if (animateDuration.value > 0) name += ' vx-drawer__mask--animated'
+		if (inState.value) name += ' vx-drawer__mask--in'
+		return name
 	})
 
 	const rootStyle = computed((): string => {
@@ -126,14 +146,17 @@
 	})
 
 	// 只覆盖当前方向那一条边；另一条边的默认尺寸在样式表里。
+	// 时长写行内：duration 是数值，过渡类只给属性和曲线，两处不重复。
 	const sheetStyle = computed((): string => {
+		let style = ''
 		if ((placement.value === 'left' || placement.value === 'right') && props.width.length > 0) {
-			return `width: ${props.width};`
+			style += `width: ${props.width};`
 		}
 		if ((placement.value === 'top' || placement.value === 'bottom') && props.height.length > 0) {
-			return `height: ${props.height};`
+			style += `height: ${props.height};`
 		}
-		return ''
+		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
+		return style
 	})
 
 	const panelStyle = computed((): string => {
@@ -142,8 +165,10 @@
 	})
 
 	const maskStyle = computed((): string => {
-		if (props.maskColor.length === 0) return ''
-		return `background-color: ${props.maskColor};`
+		let style = ''
+		if (props.maskColor.length > 0) style += `background-color: ${props.maskColor};`
+		if (animateDuration.value > 0) style += ` transition-duration: ${animateDuration.value}ms;`
+		return style
 	})
 
 	const hide = () => {
@@ -190,20 +215,63 @@
 	}
 
 	// 打开：首次挂上根节点，之后只去掉隐藏 class；正文的原生 scroll-view 只创建一次。
+	// duration>0 时先挂起手 class、等一帧再落位，过渡才有起点（与 vx-popup 同款）。
 	const enter = () => {
 		openedAt = Date.now()
+		clearSettle()
+		clearLeave()
+		const justMounted = !rendered.value
+		const wasHidden = hidden.value
 		rendered.value = true
 		hidden.value = false
+		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+			inState.value = true
+		} else if (justMounted || wasHidden) {
+			settleTimer = setTimeout(() => {
+				settleTimer = 0
+				inState.value = true
+			}, VX_OVERLAY_FRAME)
+		} else {
+			inState.value = true
+		}
 		resetBodyScrollTop()
 		setPageLock(true)
 	}
 
-	// 关闭：现有实现没有退场（Web 的入场是关键帧，关闭时没有对应退场；App 5.26 也没有），
-	// 直接切隐藏 class；根节点和正文的原生子树都保留，滚动锁跟着解开。
+	// 关闭：先退到起手位，duration 加一帧后只加隐藏 class；根节点和正文的原生子树都保留。
+	// duration=0、还没落位就关，都直接隐藏；滚动锁跟着解开。
 	const leave = () => {
+		clearSettle()
+		clearLeave()
 		if (!rendered.value) return
-		hidden.value = true
-		setPageLock(false)
+		if (!inState.value) {
+			hidden.value = true
+			setPageLock(false)
+			return
+		}
+		inState.value = false
+		if (animateDuration.value === VX_OVERLAY_DURATION_NONE) {
+			hidden.value = true
+			setPageLock(false)
+			return
+		}
+		leaveTimer = setTimeout(() => {
+			leaveTimer = 0
+			hidden.value = true
+			setPageLock(false)
+		}, animateDuration.value + VX_OVERLAY_FRAME)
+	}
+
+	const clearSettle = () => {
+		if (settleTimer === 0) return
+		clearTimeout(settleTimer)
+		settleTimer = 0
+	}
+
+	const clearLeave = () => {
+		if (leaveTimer === 0) return
+		clearTimeout(leaveTimer)
+		leaveTimer = 0
 	}
 
 	watch(show, (visible: boolean) => {
@@ -218,6 +286,8 @@
 	}
 
 	onUnmounted(() => {
+		clearSettle()
+		clearLeave()
 		setPageLock(false)
 	})
 
@@ -515,20 +585,58 @@
 		padding: var(--vx-space-md) var(--vx-space-lg);
 	}
 
-	/* 5.26 的 App 端没有 CSS 关键帧，淡入和滑入只在 Web 生效；
-	   不支持动画时元素直接按正常样式出现，不会留在透明态。
-	   定位层关掉浏览器默认手势，页面在抽屉打开期间不跟着滚；正文改回纵向滑动。 */
-	/* #ifdef WEB */
-	/* 根节点首开后常驻；隐藏时 display: none 会终止下面这些关键帧，
-	   去掉隐藏类后浏览器从头再播一遍，入场不靠重新挂载。 */
-	.vx-drawer {
-		touch-action: none;
+	/* 5.31 前 App 端没有 CSS 关键帧，所以进出场统一用 vx-popup 同款 transition 两帧式，
+	   全平台一条路径：面板常驻起手位（贴边那侧 100% 平移）、遮罩全透明；
+	   inState 挂上 --in-* 后按行内时长过渡到落位，关闭反向播放后再隐藏。
+	   duration=0 时不挂过渡类，enter 同帧置 inState，起手位不落屏。 */
+	.vx-drawer__mask {
+		opacity: 0;
 	}
 
-	.vx-drawer__mask {
-		animation-name: vx-drawer-fade;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
+	.vx-drawer__mask--animated {
+		transition-property: opacity;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-drawer__mask--in {
+		opacity: 1;
+	}
+
+	.vx-drawer__sheet--animated {
+		transition-property: transform;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-drawer__sheet--left {
+		transform: translateX(-100%);
+	}
+
+	.vx-drawer__sheet--right {
+		transform: translateX(100%);
+	}
+
+	.vx-drawer__sheet--top {
+		transform: translateY(-100%);
+	}
+
+	.vx-drawer__sheet--bottom {
+		transform: translateY(100%);
+	}
+
+	/* 落位规则排在方向之后，后写的才盖得住；起点和终点的变换函数一致，才按同一条轴补间。 */
+	.vx-drawer__sheet--in-x {
+		transform: translateX(0);
+	}
+
+	.vx-drawer__sheet--in-y {
+		transform: translateY(0);
+	}
+
+	/* #ifdef WEB */
+	/* 根节点首开后常驻；定位层关掉浏览器默认手势，页面在抽屉打开期间不跟着滚，
+	   正文改回纵向滑动、滚到底不把页面一起带走。 */
+	.vx-drawer {
+		touch-action: none;
 	}
 
 	.vx-drawer__mask--closable {
@@ -539,84 +647,9 @@
 		cursor: pointer;
 	}
 
-	/* pan-y 盖过定位层继承来的 none，正文才能滚。滚到底不把页面一起带走。 */
 	.vx-drawer__body {
 		overscroll-behavior: contain;
 		touch-action: pan-y;
-	}
-
-	.vx-drawer__sheet--left {
-		animation-name: vx-drawer-in-left;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	.vx-drawer__sheet--right {
-		animation-name: vx-drawer-in-right;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	.vx-drawer__sheet--top {
-		animation-name: vx-drawer-in-top;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	.vx-drawer__sheet--bottom {
-		animation-name: vx-drawer-in-bottom;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
-	}
-
-	@keyframes vx-drawer-fade {
-		from {
-			opacity: 0;
-		}
-
-		to {
-			opacity: 1;
-		}
-	}
-
-	@keyframes vx-drawer-in-left {
-		from {
-			transform: translateX(-100%);
-		}
-
-		to {
-			transform: translateX(0);
-		}
-	}
-
-	@keyframes vx-drawer-in-right {
-		from {
-			transform: translateX(100%);
-		}
-
-		to {
-			transform: translateX(0);
-		}
-	}
-
-	@keyframes vx-drawer-in-top {
-		from {
-			transform: translateY(-100%);
-		}
-
-		to {
-			transform: translateY(0);
-		}
-	}
-
-	@keyframes vx-drawer-in-bottom {
-		from {
-			transform: translateY(100%);
-		}
-
-		to {
-			transform: translateY(0);
-		}
 	}
 	/* #endif */
 </style>

@@ -89,9 +89,9 @@
 		else stopTimer()
 	})
 
-	// 同一条提示换了文案、类型、位置或时长就重新计时，业务不用先关再开。
+	// 同一条提示换了文案、类型、位置、图标或时长就重新计时，业务不用先关再开。
 	const contentKey = computed((): string => {
-		return `${props.position}|${props.type}|${props.text}|${props.duration}`
+		return `${props.position}|${props.type}|${props.text}|${props.icon}|${props.duration}`
 	})
 
 	watch(contentKey, () => {
@@ -121,9 +121,10 @@
 		return props.icon != null && props.icon.length > 0
 	})
 
-	// 关闭图标跟着文案走。顶部横幅铺满整条，才用左侧占位把正文配回中间。
+	// 关闭图标跟着文案走。顶部横幅铺满整条，才用左侧占位把正文配回中间；
+	// 已经有前置图标时左侧不再叠加占位，否则左 64 右 24，正文中心偏左约 20px。
 	const showBalance = computed((): boolean => {
-		return props.position === 'top' && props.closable
+		return props.position === 'top' && props.closable && !hasIcon.value
 	})
 
 	// 没传图标时给一个合法名字占位，hasIcon 为 false 不会渲染。

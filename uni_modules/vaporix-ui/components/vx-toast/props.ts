@@ -18,7 +18,7 @@ export type VxToastProps = {
 	variant?: VxIconVariant
 	/** 显示图标；关掉后是纯文字轻提示。 */
 	showIcon?: boolean
-	/** 浮层层级，默认 200，压在页面内容和消息提示之上。 */
+	/** 浮层层级，默认 1100（VX_OVERLAY_TOAST_LAYER），全库最高的一档，压在加载浮层之上。 */
 	zIndex?: number
 	/** 自定义底色，字面值。 */
 	bgColor?: string

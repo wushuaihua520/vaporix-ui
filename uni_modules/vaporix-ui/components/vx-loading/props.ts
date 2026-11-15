@@ -22,6 +22,6 @@ export type VxLoadingProps = {
 	mask?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
-	/** 浮层层级，默认 150，压在消息提示上、轻提示下。 */
+	/** 浮层层级，默认 1050（VX_OVERLAY_LOADER_LAYER），压在弹框之上、轻提示之下。 */
 	zIndex?: number
 }
