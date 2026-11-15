@@ -440,6 +440,16 @@
 }
 
 /* ---------- 徽章 ---------- */
+/* App 默认裁掉溢出：角标圆心正好落在格子、图标和文案的右上角，有一半在盒外；
+   从格子到页签外层逐层放开，徽章和 ring 阴影才画得完整。 */
+.demo-badge-row,
+.demo-badge-anchor-cell,
+.demo-badge-tabs,
+.demo-badge-tab,
+.demo-badge-tab__icon {
+	overflow: visible;
+}
+
 /* App 不保证 flex gap，间距放在子项上。 */
 .demo-badge-row {
 	flex-direction: row;

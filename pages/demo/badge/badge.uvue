@@ -292,7 +292,7 @@
 								<text class="demo-badge-anchor__label">圆点</text>
 							</view>
 						</view>
-						<text class="demo-hint">offsetX / offsetY 是默认位置上的微调，单位 px；正值向右、向下。定位层不接收点击。外层 overflow: hidden 会裁掉伸出的角。</text>
+						<text class="demo-hint">offsetX / offsetY 是默认位置上的微调，单位 px；正值向右、向下。定位层不接收点击。App 默认裁掉溢出，外层要写 overflow: visible，否则伸出的角会被裁。</text>
 					</view>
 				</view>
 
