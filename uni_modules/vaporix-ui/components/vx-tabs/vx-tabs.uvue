@@ -42,8 +42,8 @@
 		<template v-else>
 			<!-- 单条滑动指示线：外框对齐根节点让出来的内容区，格子占一格宽、整格平移，
 			     选中项变了就从上一格滑到当前格；几何全是百分比，不测量也不怕容器变宽变窄。
-			     必须排在页签之前：App 的同一层子节点按倒序命中，absolute 覆盖层排在后面会把
-			     整排页签的点击全吞掉（Web 上用 pointer-events: none 兜住）。 -->
+			     外框只占底部一条（线高 2px），不铺满整行：App 上 pointer-events 不保证，
+			     铺满就会把整排页签的点击全吞掉。线靠 overflow: visible 下移 1px 盖住底边分割线。 -->
 			<view v-if="sliderVisible" class="vx-tabs__slider-frame">
 				<view class="vx-tabs__slider" :style="sliderStyle">
 					<view :class="indicatorLineClass"></view>
@@ -1028,15 +1028,18 @@
 
 	/* —— 滑动指示线 ——
 	   整条只画一条线：外框对齐根节点左右让出来的内容区（页签的等宽就排在这个范围里），
-	   格子的百分比宽以这层为基准才和页签一格对得上。绝对定位不占布局，挡不住页签自己排。 */
+	   格子的百分比宽以这层为基准才和页签一格对得上。绝对定位不占布局，挡不住页签自己排。
+	   高度只留一条线的量并贴底：外框铺满整行时，App 上 pointer-events 不保证，
+	   整排页签的点击会被这一层接走（真机复现：非滚动形态 15 组页签全部无响应）。
+	   有分割线时线要下移 1px 盖住底边，靠 overflow: visible 画到外框外面，不靠加高外框。 */
 	.vx-tabs__slider-frame {
 		position: absolute;
-		top: 0;
 		bottom: 0;
 		left: var(--vx-space-md);
 		right: var(--vx-space-md);
+		height: var(--vx-border-width-strong);
 		overflow: visible;
-		/* 指示线只负责画，不参与点击；节点顺序已把它压到页签下面，这一条兜住支持指针事件的端。 */
+		/* 支持指针事件的端直接关掉命中，剩下的 2px 也不接点击。 */
 		pointer-events: none;
 	}
 
