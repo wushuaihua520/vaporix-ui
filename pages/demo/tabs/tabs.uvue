@@ -94,7 +94,7 @@
 						</view>
 						<view class="demo-section__copy">
 							<text class="demo-section__title">标签页尺寸</text>
-							<text class="demo-section__desc">高度 44 / 52 / 60，选中胶囊 28 / 32 / 36。</text>
+							<text class="demo-section__desc">高度 44 / 48 / 52，选中胶囊 28 / 32 / 36。</text>
 						</view>
 					</view>
 					<view class="demo-card">

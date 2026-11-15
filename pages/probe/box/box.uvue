@@ -1,0 +1,420 @@
+<template>
+	<!-- 盒模型探针：只量高度，不写断言。App 的 min-height 按内容盒算，Web 按 border-box 算，
+	     列表行用 calc 减掉纵向内边距补偿；这个页面量补偿是否生效，改令牌或改 calc 后重跑一次。 -->
+	<view class="probe vx-theme-light">
+		<scroll-view class="probe__scroll" direction="vertical">
+			<view class="probe__head">
+				<text class="probe__title">盒模型探针</text>
+				<text class="probe__lead">每项按设计值排版，实测高度写在右侧。全部通过说明当前端和设计值一致。</text>
+				<text :class="summaryClass">{{ summaryText }}</text>
+			</view>
+
+			<view v-for="row in rows" :key="row.key" class="probe__case">
+				<view class="probe__case-head">
+					<text class="probe__name">{{ row.name }}</text>
+					<text :class="row.resultClass">{{ row.resultText }}</text>
+				</view>
+				<text class="probe__expect">{{ row.expectText }}</text>
+
+				<view :id="row.id" :class="row.sampleClass">
+					<text v-if="row.text.length > 0" class="probe__sample-text">{{ row.text }}</text>
+				</view>
+			</view>
+
+			<!-- 真实组件单独一组：上面是裸盒子，下面是组件自身的补偿结果。 -->
+			<view class="probe__case">
+				<view class="probe__case-head">
+					<text class="probe__name">vx-button md</text>
+					<text :class="buttonResultClass">{{ buttonResultText }}</text>
+				</view>
+				<text class="probe__expect">应为 40px，含 1px 描边</text>
+				<view id="probe-button" class="probe__real">
+					<vx-button text="按钮" />
+				</view>
+			</view>
+
+			<view class="probe__case">
+				<view class="probe__case-head">
+					<text class="probe__name">vx-input md</text>
+					<text :class="inputResultClass">{{ inputResultText }}</text>
+				</view>
+				<text class="probe__expect">应为 40px，含 1px 描边</text>
+				<view id="probe-input" class="probe__real">
+					<vx-input placeholder="输入框" />
+				</view>
+			</view>
+
+			<view class="probe__case">
+				<view class="probe__case-head">
+					<text class="probe__name">vx-list-cell md</text>
+					<text :class="listResultClass">{{ listResultText }}</text>
+				</view>
+				<text class="probe__expect">应为 48px；App 少了补偿会量到 72px</text>
+				<view id="probe-list" class="probe__real">
+					<vx-list-cell title="列表行" :clickable="false" :divider="false" />
+				</view>
+			</view>
+
+			<view class="probe__foot">
+				<text class="probe__foot-text">高度写在同一层的内边距上时，App 会多出上下内边距；组件在 App 条件编译块里用 calc 减回去。弹层头部不写纵向内边距，所以不受影响。</text>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup>
+	const PROBE_RETRY_DELAY = 80
+
+	type ProbeCase = {
+		key: string
+		id: string
+		name: string
+		expect: number
+		expectText: string
+		sampleClass: string
+		text: string
+	}
+
+	type ProbeRow = {
+		key: string
+		id: string
+		name: string
+		expectText: string
+		sampleClass: string
+		text: string
+		resultText: string
+		resultClass: string
+	}
+
+	// 顺序和下面的模板一一对应，测量按这个顺序取 rect。
+	const cases: Array<ProbeCase> = [
+		{
+			key: 'height-border',
+			id: 'probe-height-border',
+			name: 'height 40 + 1px 描边',
+			expect: 40,
+			expectText: '应为 40px；描边算进高度',
+			sampleClass: 'probe__sample probe__sample--height-border',
+			text: 'height'
+		},
+		{
+			key: 'height-padding',
+			id: 'probe-height-padding',
+			name: 'height 40 + 上下各 12 内边距',
+			expect: 40,
+			expectText: '应为 40px；内容区只剩 16，所以样本里不放文案',
+			sampleClass: 'probe__sample probe__sample--height-padding',
+			text: ''
+		},
+		{
+			key: 'min-padding',
+			id: 'probe-min-padding',
+			name: 'min-height 48 + 上下各 12 内边距',
+			expect: 48,
+			expectText: '应为 48px；多出内边距说明要补 calc',
+			sampleClass: 'probe__sample probe__sample--min-padding',
+			text: 'min-height'
+		},
+		{
+			key: 'min-plain',
+			id: 'probe-min-plain',
+			name: 'min-height 52，无内边距',
+			expect: 52,
+			expectText: '应为 52px；没有纵向内边距就不用补 calc',
+			sampleClass: 'probe__sample probe__sample--min-plain',
+			text: 'min-height'
+		}
+	]
+
+	const measured = ref<Array<number>>([])
+
+	const heightOf = (index: number): number => {
+		return index < measured.value.length ? measured.value[index] : 0
+	}
+
+	const resultTextOf = (value: number, expect: number): string => {
+		if (value <= 0) return '未测量'
+		const rounded = Math.round(value * 10) / 10
+		if (Math.abs(rounded - expect) < 0.5) return `实测 ${rounded}px`
+		return `实测 ${rounded}px，差 ${Math.round((rounded - expect) * 10) / 10}px`
+	}
+
+	const resultClassOf = (value: number, expect: number): string => {
+		if (value <= 0) return 'probe__result'
+		if (Math.abs(value - expect) < 0.5) return 'probe__result probe__result--pass'
+		return 'probe__result probe__result--fail'
+	}
+
+	const rows = computed((): Array<ProbeRow> => {
+		const list: Array<ProbeRow> = []
+		for (let index = 0; index < cases.length; index++) {
+			const item = cases[index]
+			const value = heightOf(index)
+			list.push({
+				key: item.key,
+				id: item.id,
+				name: item.name,
+				expectText: item.expectText,
+				sampleClass: item.sampleClass,
+				text: item.text,
+				resultText: resultTextOf(value, item.expect),
+				resultClass: resultClassOf(value, item.expect)
+			})
+		}
+		return list
+	})
+
+	// 组件量出来的高度落在这一组，顺序固定，模板按下标取值。
+	const componentMeasured = ref<Array<number>>([0, 0, 0])
+
+	const componentText = (index: number, expect: number): string => {
+		const value = index < componentMeasured.value.length ? componentMeasured.value[index] : 0
+		return resultTextOf(value, expect)
+	}
+
+	const componentClass = (index: number, expect: number): string => {
+		const value = index < componentMeasured.value.length ? componentMeasured.value[index] : 0
+		return resultClassOf(value, expect)
+	}
+
+	const buttonResultText = computed((): string => componentText(0, 40))
+	const buttonResultClass = computed((): string => componentClass(0, 40))
+	const inputResultText = computed((): string => componentText(1, 40))
+	const inputResultClass = computed((): string => componentClass(1, 40))
+	const listResultText = computed((): string => componentText(2, 48))
+	const listResultClass = computed((): string => componentClass(2, 48))
+
+	const passedCount = computed((): number => {
+		let total = 0
+		for (let index = 0; index < cases.length; index++) {
+			const value = heightOf(index)
+			if (value > 0 && Math.abs(value - cases[index].expect) < 0.5) total++
+		}
+		for (let index = 0; index < componentMeasured.value.length; index++) {
+			const value = componentMeasured.value[index]
+			const expect = index === 2 ? 48 : 40
+			if (value > 0 && Math.abs(value - expect) < 0.5) total++
+		}
+		return total
+	})
+
+	const measuredCount = computed((): number => {
+		let total = 0
+		for (let index = 0; index < cases.length; index++) {
+			if (heightOf(index) > 0) total++
+		}
+		for (let index = 0; index < componentMeasured.value.length; index++) {
+			if (componentMeasured.value[index] > 0) total++
+		}
+		return total
+	})
+
+	const summaryText = computed((): string => {
+		if (measuredCount.value === 0) return '还没有量到高度：当前端可能不支持节点查询。'
+		return `通过 ${passedCount.value} / ${cases.length + 3}`
+	})
+
+	const summaryClass = computed((): string => {
+		if (measuredCount.value === 0) return 'probe__summary'
+		if (passedCount.value === cases.length + 3) return 'probe__summary probe__summary--pass'
+		return 'probe__summary probe__summary--fail'
+	})
+
+	let retried = false
+
+	const readHeights = () => {
+		if (typeof uni === 'undefined' || typeof uni.createSelectorQuery !== 'function') return
+		const query = uni.createSelectorQuery()
+		for (let index = 0; index < cases.length; index++) {
+			query.select('#' + cases[index].id).boundingClientRect()
+		}
+		query.select('#probe-button').boundingClientRect()
+		query.select('#probe-input').boundingClientRect()
+		query.select('#probe-list').boundingClientRect()
+		query.exec((result) => {
+			const heights: Array<number> = []
+			for (let index = 0; index < cases.length; index++) {
+				const rect = index < result.length ? result[index] as NodeInfo | null : null
+				heights.push(rect != null && rect.height != null ? rect.height : 0)
+			}
+			measured.value = heights
+
+			const componentHeights: Array<number> = []
+			for (let offset = 0; offset < 3; offset++) {
+				const index = cases.length + offset
+				const rect = index < result.length ? result[index] as NodeInfo | null : null
+				componentHeights.push(rect != null && rect.height != null ? rect.height : 0)
+			}
+			componentMeasured.value = componentHeights
+
+			// 首帧还没排版时全是 0，等一拍再量一次；仍拿不到就停在「未测量」。
+			if (measuredCount.value === 0 && !retried) {
+				retried = true
+				setTimeout(() => {
+					readHeights()
+				}, PROBE_RETRY_DELAY)
+			}
+		})
+	}
+
+	onReady(() => {
+		nextTick(() => {
+			readHeights()
+		})
+	})
+</script>
+
+<style>
+	/* 探针用亮色令牌固定排版：它只验证像素，不跟随演示页的主题切换。 */
+	.probe {
+		flex: 1;
+		background-color: var(--vx-color-bg);
+	}
+
+	.probe__scroll {
+		flex: 1;
+	}
+
+	.probe__head {
+		flex-direction: column;
+		padding: var(--vx-space-xl) var(--vx-space-lg) var(--vx-space-lg);
+	}
+
+	.probe__title {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-xl);
+		line-height: var(--vx-line-xl);
+		font-weight: var(--vx-weight-bold);
+	}
+
+	.probe__lead {
+		margin-top: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.probe__summary {
+		margin-top: var(--vx-space-md);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.probe__summary--pass {
+		color: var(--vx-color-success);
+	}
+
+	.probe__summary--fail {
+		color: var(--vx-color-warning-ink);
+	}
+
+	.probe__case {
+		flex-direction: column;
+		margin: var(--vx-space-md) var(--vx-space-lg) 0;
+		padding: var(--vx-space-lg);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+		background-color: var(--vx-color-surface);
+	}
+
+	.probe__case-head {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.probe__name {
+		flex-shrink: 1;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.probe__result {
+		flex-shrink: 0;
+		margin-left: var(--vx-space-sm);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.probe__result--pass {
+		color: var(--vx-color-success);
+	}
+
+	.probe__result--fail {
+		color: var(--vx-color-danger);
+	}
+
+	.probe__expect {
+		margin-top: var(--vx-space-xs);
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* 样本统一 120 宽，只让高度参与比较；底色和描边都取令牌，暗色下也看得见。 */
+	.probe__sample {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		margin-top: var(--vx-space-md);
+		width: 120px;
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.probe__sample--height-border {
+		height: 40px;
+		border-width: 1px;
+		border-style: solid;
+		border-color: var(--vx-color-primary);
+	}
+
+	.probe__sample--height-padding {
+		height: 40px;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+	}
+
+	.probe__sample--min-padding {
+		min-height: 48px;
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+	}
+
+	.probe__sample--min-plain {
+		min-height: 52px;
+	}
+
+	.probe__sample-text {
+		color: var(--vx-color-primary-pressed);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* 真实组件的量点：外层撑满卡片宽度，高度只由组件自己决定。 */
+	.probe__real {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: var(--vx-space-md);
+		width: 100%;
+	}
+
+	.probe__foot {
+		flex-direction: column;
+		margin: var(--vx-space-lg);
+	}
+
+	.probe__foot-text {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+</style>

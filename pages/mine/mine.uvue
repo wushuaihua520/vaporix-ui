@@ -115,9 +115,14 @@
 								<vx-icon name="grid-2x2" size="lg" type="primary" />
 							</template>
 						</vx-list-cell>
-						<vx-list-cell title="接口实验室" :value="moduleCountText" arrow :divider="false" @click="goApi">
+						<vx-list-cell title="接口实验室" :value="moduleCountText" arrow @click="goApi">
 							<template #prefix>
 								<vx-icon name="file-text" size="lg" type="primary" />
+							</template>
+						</vx-list-cell>
+						<vx-list-cell title="盒模型探针" value="量高度" arrow :divider="false" @click="goProbe">
+							<template #prefix>
+								<vx-icon name="table" size="lg" color="var(--vx-color-text-secondary)" />
 							</template>
 						</vx-list-cell>
 					</vx-list-view>
@@ -165,7 +170,7 @@
 						</view>
 					</view>
 					<vx-list-view title="元汽UI" variant="plain">
-						<vx-list-cell title="版本" value="0.61.0" :clickable="false" />
+						<vx-list-cell title="版本" value="0.68.1" :clickable="false" />
 						<vx-list-cell title="组件" :value="componentCountText" :clickable="false" />
 						<vx-list-cell title="图标" value="core 112 + extend 1000" :clickable="false" />
 						<vx-list-cell title="主题" value="亮色 · 暗色" :clickable="false" />
@@ -237,6 +242,11 @@
 
 	const goApi = () => {
 		uni.switchTab({ url: '/pages/api/api' })
+	}
+
+	// 探针不是 tab 页，走 navigateTo；它只用来量像素，业务不会用到。
+	const goProbe = () => {
+		uni.navigateTo({ url: '/pages/probe/box/box' })
 	}
 
 	const copyPath = (path: string) => {

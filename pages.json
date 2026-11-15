@@ -347,6 +347,12 @@
 			"style": {
 				"navigationBarTitleText": "头像"
 			}
+		},
+		{
+			"path": "pages/probe/box/box",
+			"style": {
+				"navigationBarTitleText": "盒模型探针"
+			}
 		}
 	],
 	"tabBar": {

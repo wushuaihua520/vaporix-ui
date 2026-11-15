@@ -2617,13 +2617,14 @@ const genderItems = [
 | close() | 立刻收起，不抛 `cancel` |
 
 - 面板贴底、只圆上两角；最大宽度 480px，手机上铺满，平板和 Web 上收成一张居中的浮层。遮罩用 `--vx-color-mask`，只压页面，不压面板。
-- 标题用 `title`（17 / 24 / 600），说明用 13 / 20 次要色；动作和取消文案用 `body`（15 / 22 / 500）。行高 52，左右内边距 24。
+- 标题用 `title`（17 / 24 / 600），说明用 13 / 20 次要色；动作和取消文案用 `body`（15 / 22 / 500）。行高 48，左右内边距 24。
 - 动作行默认 `text`，`primary` 用 `primary-pressed`，`danger` 用 `danger-pressed`，禁用用 `disabled-text`；按下铺 `surface-pressed`，分割线用 `divider` 通栏，最后一条不画。
 - 选中态用主色加右侧 `check`，`selected` 由业务维护；danger 动作保留危险色。组件不保存选中值，点击只抛 `select`。
 - 取消与动作之间用 4px `default-soft` 间隔带分开，不画 border；底部安全区由面板内边距承担。`showCancel=false` 时末条动作下面仍留安全区。
 - `closeOnSelect=false` 时不自动收起，适合单选、多选；在 `select` 里更新 `items` 的 `selected`。
 - `maskClosable=false` 时只能点动作或取消退出，取消按钮要保留。
 - 操作菜单挂在页面根节点，和滚动容器平级；层级默认 1000，低于消息提示（1010）、弹框（1020）、加载浮层（1050）和轻提示（1100）。同一屏只开一个，动作控制在 2–6 条。
+- 动效：淡入遮罩、从底部滑入面板，关闭时反向淡出、滑出，`--vx-duration-normal` 220ms、`--vx-ease-standard`；进退场都有，App 和 Web 同一套（5.31 起 App 支持关键帧，5.26–5.30 直接出现、退场只是多停 220ms 再消失，不会卡在透明态）。关掉后节点先留一帧时长播完退场动画再摘，期间照常接住点击，重复操作由事件里的退场判断挡掉；退场没走完又打开会取消计时、摘掉退场态，关键帧换成入场那条从底部重新滑入。
 - 从 ThorUI `tui-actionsheet` 迁移：`itemList` 换成 `items`，文案固定读 `text`，`textField` 不再需要；`isCancel` 换成 `showCancel`；`tips` 换成 `title` / `description`；`color` / `size` 换成 `titleColor` / `descriptionColor` 和设计令牌。
 - `textColor` / `textSize` / `cancelColor` / `radius` 不再需要：动作色由每项的 `type` 控制，字号和圆角走令牌；`zIndex` 保留，默认改为 1000。`click` 换成 `select(index, item)`，不再把动作对象展开成事件参数。
 
@@ -2735,7 +2736,7 @@ const actions = [
 - 插槽里的输入和按钮属于表单内容，按业务需要选尺寸，不跟随动作区的 `sm` 档收小；示例用默认 `md`。
 - `titleColor` / `contentColor` / `maskColor` 各改一处，字面值不跟随主题；`contentColor` 只作用于 `content`。
 - 弹框挂在页面根节点，和滚动容器平级；层级默认 1020，高于操作菜单 1000 和消息提示 1010，低于加载浮层 1050 和轻提示 1100。同一屏只开一个弹框，不和操作菜单叠加。
-- 弹框不内置滚动，只承载一件短内容；长表单、多步流程和整页内容改用页面区块。Web 上遮罩淡入、面板从 0.96 放大到 1；App 5.26 直接出现，不做退场。第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁；原生层在 App 上反复创建会整层不画。
+- 弹框不内置滚动，只承载一件短内容；长表单、多步流程和整页内容改用页面区块。走两帧式 `transform` 过渡：遮罩淡入、面板从 0.96 放大到 1，关闭时反向收回，App 和 Web 都有进退场。第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁；原生层在 App 上反复创建会整层不画。
 - 关闭后节点仍留在页面里，插槽里的原生控件也还活着；需要完全释放时用 `v-if` 包住整个弹框。
 - 从 ThorUI `tui-modal` 迁移：`button` 换成 `actions`，每项 `plain` 换成 `variant="plain"`；`shape="circle"` 换成 `actionShape="pill"`；`custom` 换成默认插槽 + `:show-actions="false"`；`color` 换成 `contentColor`；`width` / `padding` / `radius` / `backgroundColor` 换成 `size` 和主题令牌。
 - `click({ index })` 拆成 `confirm` / `cancel` / `action(index, action)`，由动作的 `role` 决定；`cancel` 仍表示遮罩、关闭叉或取消。`fadeIn` 不再需要，Web 端已带淡入；`maskZIndex` 移除，遮罩和面板共用 `zIndex`。
@@ -2941,7 +2942,7 @@ const remindVisible = ref(false)
 | close() | 立刻收起，不抛 `cancel`，不改 `v-model` |
 
 - 面板贴底、只圆上两角，最大宽度 480px；遮罩用 `--vx-color-mask`，只压页面。底部安全区由面板内边距承担。
-- 头部高 52（`--vx-list-height-md`）：取消用次要色、确定用 `primary-pressed`，都是 15 / 22 / 500；标题 17 / 24 / 600 居中，太长单行省略。
+- 头部高 52（`--vx-overlay-head`）：取消用次要色、确定用 `primary-pressed`，都是 15 / 22 / 500；标题 17 / 24 / 600 居中，太长单行省略。
 - 滚轮可视高度 220（`--vx-datetime-wheel`），每行 44（`--vx-datetime-row`），正好五行；指示器高度必须等于行高。行文字 15 / 22，未选中 `text-secondary` 400，选中 `text` 600；六列时收一档到 13 / 20。行高不随字号变，字号越小上下留白越大。
 - 原生蒙层写死了白色渐变，暗色主题下会在两端发白，组件用 `mask-class` 把它换成透明，选中行靠字重和颜色区分。
 - 打开时把 `v-model` 解析成草稿：读不出来或超出年份区间时回落到当前时间 / 区间边界；分钟、秒按步长对齐。
@@ -3047,7 +3048,7 @@ const onRegionConfirm = (result: VxPickerResult) => {
 - `options` 换数组才触发重新规整；异步补下一级时按当前路径重新对齐，必要时补抛一次 `change`。
 - 不可选项留在滚轮里转灰；停上去时头部换成 `invalidText`（默认「该选项不可选」），确定置灰，取消和遮罩仍可退出。
 - `options` 为空时留一块和滚轮等高的空状态，面板高度不跳；确定置灰，取消仍能退出。
-- 头部高 52（`--vx-list-height-md`），滚轮可视高度 220、每行 44，正好五行；指示器高度必须等于行高。行文字 15 / 22，未选中 `text-secondary` 400，选中 `text` 600。
+- 头部高 52（`--vx-overlay-head`），滚轮可视高度 220、每行 44，正好五行；指示器高度必须等于行高。行文字 15 / 22，未选中 `text-secondary` 400，选中 `text` 600。
 - 面板 `surface` 底、顶部 `lg` 圆角、`--vx-shadow-lg`，最大宽度 480；遮罩用 `--vx-color-mask`，只压页面。原生蒙层写死了白色渐变，组件用 `mask-class` 换成透明。
 - 新增令牌 `--vx-picker-row`、`--vx-picker-wheel`、`--vx-picker-max-width`，亮色、暗色各一份；行高同时写在 `libs/picker.ts` 的 `VX_PICKER_ROW` 里。
 - 选择器挂在页面根节点，和滚动容器平级；层级默认 1000，和操作菜单、日期时间选择器同档。同一屏只开一个；两个值用两个实例，选项不同时各传一份 `options`。
@@ -3137,7 +3138,7 @@ const marks = ref([
 | close() | 立刻收起，不抛 `cancel`，不改模型；平铺模式不做任何事 |
 | confirm() | 把草稿写回模型并抛 `confirm`；弹层同时收起。没选完时直接返回。平铺模式值已经写回，再调一次只补事件 |
 
-- 弹层贴底、只圆上两角，最大宽度 480px（`--vx-calendar-max-width`）；遮罩用 `--vx-color-mask`，只压页面。头部高 52：标题 15 / 22 / 500 次要色居中，关闭叉 44×44。底部结果行 13 / 16（`--vx-calendar-line-result`）次要色、上下各留 8，确定按钮铺满整行、高 40、胶囊形。
+- 弹层贴底、只圆上两角，最大宽度 480px（`--vx-calendar-max-width`）；遮罩用 `--vx-color-mask`，只压页面。头部高 52（`--vx-overlay-head`）：标题 15 / 22 / 500 次要色居中，关闭叉 44×44。底部结果行 13 / 16（`--vx-calendar-line-result`）次要色、上下各留 8，确定按钮铺满整行、高 40、胶囊形。
 - 每格 42 高（`--vx-calendar-cell`）、宽 `14.28%`，按当月占几周排 5 或 6 行，周日排第一列；五周的月份不留空的第六行。每天是一个 36 的等大方块（`--vx-calendar-tile`，圆角 10），四边都留缝；选中和区间两端实心、区间中间铺浅底，标记画成正圆。
 - 日期 15 / 20（`--vx-calendar-line-day`），选中取 `on-*`，区间内和今天取语义色，不可选取 `disabled-text`；农历和「开始 / 结束」10 / 12（`--vx-calendar-font-sub` / `--vx-calendar-line-sub`）贴着方块底边，小字槽不占布局，整行数字对齐。
 - 弹层模式点选先落在草稿上，点确定才写回模型；关闭叉、遮罩和 `close()` 都不动已提交的值。平铺模式没有确定这一步，点选当场写回。
@@ -3538,13 +3539,13 @@ const navVisible = ref(false)
 
 - 左右抽屉占满高度、宽 280（`--vx-drawer-width`）；上下抽屉占满宽度、高 45%（`--vx-drawer-height`）。面板最大不超出整屏；`width` / `height` 必须带单位，App 上也不要写 `calc`。
 - 面板贴住屏幕的一侧不圆角，朝向页面的两角用 `lg` 12；`surface` 底、`--vx-shadow-lg`，不加描边。遮罩用 `--vx-color-mask`，只压页面。
-- 头部高 52（沿用列表行 `md`）：标题 17 / 24 / 600、单行省略；`prefix` 在标题前，`extra` 在标题后；关闭叉热区 44、图标 18，点击和遮罩走同一个 `close`。
+- 头部高 52（`--vx-overlay-head`）：标题 17 / 24 / 600、单行省略；`prefix` 在标题前，`extra` 在标题后；关闭叉热区 44、图标 18，点击和遮罩走同一个 `close`。
 - 正文是唯一的滚动区（`scroll-view`），头部和底栏固定；默认四边内边距 16，`bodyPadded=false` 让列表、图片贴边。
 - `suffix` 上边一条 1px `divider`，内边距 12 / 16；底栏放 1–2 个动作，不做主导航、长表单和页面级流程。
 - 点可关闭的遮罩收起并抛 `close`；`maskClosable=false` 时点遮罩不关闭也不抛 `close`，要保留 `closable` 或内容里的关闭按钮。`close()` 只收起，不抛 `close`。
 - 四个方向的安全区都由面板内边距承担：左右抽屉让开顶部、所在边的侧边距和底部手势条，上下抽屉让开顶部或底部。
 - 抽屉挂在页面根节点，和滚动容器平级；不要放进 `scroll-view`、卡片或 `fixed` 容器。同一屏只开一个，不要和对话框、操作菜单叠加。
-- 层级默认 1000，和操作菜单、日期时间选择器、日历弹层同档；低于消息提示 1010、弹框 1020、加载浮层 1050、轻提示 1100。Web 上遮罩淡入、面板从所在边滑入；App 5.26 直接出现，不做退场。第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁；原生层在 App 上反复创建会整层不画。
+- 层级默认 1000，和操作菜单、日期时间选择器、日历弹层同档；低于消息提示 1010、弹框 1020、加载浮层 1050、轻提示 1100。遮罩淡入、面板从所在边滑入，走两帧式 `transform` 过渡，App 和 Web 都有进退场。第一次打开后根节点常驻，关闭只切 `display: none`，原生子组件不销毁；原生层在 App 上反复创建会整层不画。
 - 关闭后节点仍留在页面里，正文的 `scroll-view` 也还活着；需要完全释放时用 `v-if` 包住整个抽屉。
 - 从 ThorUI `tui-drawer` 迁移：`visible` 换成 `v-model:show` / `show`，`mode` 换成 `position`，`backgroundColor` 换成 `bgColor`。`mask` 不再提供，抽屉始终带遮罩；需要常驻侧栏时用页面布局。
 - ThorUI 的 `maskZIndex` 并进 `zIndex`，遮罩和面板共用一档；`zIndex` 默认从 990 改为 1000。宽度和高度不再靠插槽内容撑开，改用 `width` / `height`；关闭仍抛 `close`，`close()` 方法不抛。

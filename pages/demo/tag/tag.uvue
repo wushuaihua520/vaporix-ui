@@ -309,7 +309,7 @@
 						</view>
 						<view class="demo-section__copy">
 							<text class="demo-section__title">放进列表行和卡片头部</text>
-							<text class="demo-section__desc">md 标签 24，52 的列表行内容区 28、卡片头部最小高 52，两处都撑不高外层。</text>
+							<text class="demo-section__desc">md 标签 24，48 的列表行内容区 28、卡片头部最小高 48，两处都撑不高外层。</text>
 						</view>
 					</view>
 					<view class="demo-card">
@@ -329,7 +329,7 @@
 								<vx-tag type="danger" text="HOT" />
 							</template>
 						</vx-card>
-						<text class="demo-hint">卡片头部最小高 52，标签高度取 --vx-tag-height-md。</text>
+						<text class="demo-hint">卡片头部最小高 48，标签高度取 --vx-tag-height-md。</text>
 					</view>
 				</view>
 
@@ -350,7 +350,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
 				</view>
 			</view>
 		</scroll-view>

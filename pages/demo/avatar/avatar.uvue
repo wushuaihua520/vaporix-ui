@@ -298,7 +298,7 @@
 
 				<view class="demo-footer">
 					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.0</text>
+					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
 				</view>
 			</view>
 		</scroll-view>
