@@ -1,10 +1,10 @@
 <template>
 	<!-- 提示是浮层：fixed 定位，挂在页面根节点，不要放进 scroll-view 或卡片里。
-	     App 上相对页面（导航栏下方）定位，Web 上相对视口，顶部偏移由安全区变量补齐。 -->
+	     App 上 fixed 的原点是页面内容顶，顶部横幅由脚本让开状态栏和导航栏行；Web 上相对视口，偏移由安全区变量补齐。 -->
 	<view v-if="show" :class="rootClass" :style="rootStyle">
 		<view :class="boxClass" :style="boxStyle" :hover-class="boxHoverClass"
 			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onBoxTap">
-			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明。 -->
+			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明；整条一起淡用 opacity。 -->
 			<view :class="bgClass" :style="bgStyle"></view>
 			<view v-if="showBalance" class="vx-tips__balance"></view>
 			<view v-if="hasIcon" class="vx-tips__icon">
@@ -39,7 +39,8 @@
 		zIndex: VX_OVERLAY_TIPS_LAYER,
 		bgColor: '',
 		bgOpacity: 1,
-		color: ''
+		color: '',
+		opacity: 1
 	})
 
 	// 自动关闭和 close() 都写回 false，业务用 v-model:show 时状态能跟着变。
@@ -151,7 +152,7 @@
 		return name
 	})
 
-	// 透明度只作用在底色上，不把文字和图标一起淡掉。
+	// 透明度只作用在底色上，不把文字和图标一起淡掉；整条一起淡用 opacity。
 	const bgOpacity = computed((): number => {
 		const value = props.bgOpacity
 		if (!(value >= 0)) return 0
@@ -165,14 +166,40 @@
 		return style
 	})
 
+	// 顶部横幅从页面内容顶往下排：原生导航栏的页面，内容顶就是导航栏底，不用让；自绘导航栏的页面，
+	// 内容顶在窗口顶，状态栏和一行导航栏都要自己补出来。两者靠可用高度差区分——原生导航栏会把
+	// windowHeight 额外压掉这一段。不能挪到 setup 里量：页面首帧还没换成自绘导航栏时会判错。
+	// VX_NAVIGATION_BAR_HEIGHT 与 --vx-navigation-bar-height 同值，脚本读不到 CSS 变量。
+	const VX_NAVIGATION_BAR_HEIGHT = 44
+
+	const navBarHeight = (): number => {
+		// #ifdef APP
+		const info = uni.getWindowInfo()
+		const statusBar = info.statusBarHeight > 0 ? Math.round(info.statusBarHeight) : 0
+		const pageTopGap = Math.round(info.screenHeight - info.windowHeight)
+		if (pageTopGap < statusBar + VX_NAVIGATION_BAR_HEIGHT) return statusBar + VX_NAVIGATION_BAR_HEIGHT
+		// #endif
+		return 0
+	}
+
+	// 整条一起淡：写在盒子上，底色、文字、图标和阴影同乘这个值；只压底色用 bgOpacity。
+	// 不能写在外层定位层：App 上那层带 alpha 后盒子的阴影不再画出来。
+	const tipOpacity = computed((): number => {
+		const value = props.opacity
+		if (!(value >= 0)) return 0
+		return value > 1 ? 1 : value
+	})
+
 	// 顶部横幅铺满整条，maxWidth 只作用于居中和底部；offset 让贴边距离，交给外边距。
 	const boxStyle = computed((): string => {
 		let style = ''
 		if (props.position !== 'top' && props.maxWidth.length > 0) style += `max-width: ${props.maxWidth};`
-		if (props.offset !== 0) {
-			if (props.position === 'top') style += `margin-top: ${props.offset}px;`
-			if (props.position === 'bottom') style += `margin-bottom: ${props.offset}px;`
+		if (tipOpacity.value < 1) style += ` opacity: ${tipOpacity.value};`
+		if (props.position === 'top') {
+			const top = props.offset + navBarHeight()
+			if (top !== 0) style += `margin-top: ${top}px;`
 		}
+		if (props.position === 'bottom' && props.offset !== 0) style += `margin-bottom: ${props.offset}px;`
 		return style
 	})
 
@@ -224,10 +251,17 @@
 		overflow: visible;
 	}
 
-	/* App 上页面本来就在导航栏下方，顶部变量为 0。 */
+	/* App 上 fixed 的原点是页面内容顶：原生导航栏的页面已经在导航栏下方，从 0 开始；自绘导航栏的
+	   那一段由盒子的上边距补出来。Web 和小程序页面本来就在导航栏下方，读安全区就够。 */
+	.vx-tips--top {
+		top: 0;
+	}
+
+	/* #ifndef APP */
 	.vx-tips--top {
 		top: var(--uni-safe-area-inset-top, 0px);
 	}
+	/* #endif */
 
 	/* 只上移自身一半高度，层高就是提示高，上下的页面照常点击。 */
 	.vx-tips--center {
@@ -375,17 +409,18 @@
 	/* 5.26 的 App 端没有 CSS 关键帧，淡入只在 Web 生效；
 	   不支持动画时元素直接按正常样式出现，不会留在透明态。
 	   Web 上定位层不接指针，提示两侧的留白不挡下面的点击；
-	   App 上 pointer-events: none 会连子节点一起关掉，不能写。 */
+	   App 上 pointer-events: none 会连子节点一起关掉，不能写。
+	   淡入挂在定位层而不是盒子：关键帧的 opacity 优先级高于行内值，挂在盒子上会把 props.opacity 盖掉。 */
 	/* #ifdef WEB */
 	.vx-tips {
 		pointer-events: none;
+		animation-name: vx-tips-in;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
 	}
 
 	.vx-tips__box {
 		pointer-events: auto;
-		animation-name: vx-tips-in;
-		animation-duration: var(--vx-duration-normal);
-		animation-timing-function: var(--vx-ease-standard);
 	}
 
 	.vx-tips__box--closable {

@@ -11,7 +11,7 @@ export type VxTipsProps = {
 	position?: VxTipsPosition
 	/** 自动关闭时间，单位毫秒；0 表示常驻，只能手动或由业务关闭。 */
 	duration?: number
-	/** 贴边距离的微调，单位 px；top 往下让、bottom 往上让。 */
+	/** 贴边距离的微调，单位 px；top 往下让、bottom 往上让。顶部已经在导航栏下方，这里只加额外距离。 */
 	offset?: number
 	/** 浮层最大宽度，需带单位。top 铺满整条，忽略该值。 */
 	maxWidth?: string
@@ -27,4 +27,6 @@ export type VxTipsProps = {
 	bgOpacity?: number
 	/** 自定义文字和图标色，字面值。 */
 	color?: string
+	/** 整条提示的不透明度，0–1，默认 1。底色、文字、图标和阴影一起淡；和 bgOpacity 相乘。 */
+	opacity?: number
 }

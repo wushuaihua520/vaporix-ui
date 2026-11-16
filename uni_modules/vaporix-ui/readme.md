@@ -647,6 +647,8 @@ const onFooterLink = (link: FooterLink) => {
 
 <vx-tips v-model:show="tipsVisible" bg-color="#142033" color="#c8d3e3" text="自定义颜色" />
 
+<vx-tips v-model:show="tipsVisible" position="top" type="primary" :opacity="0.6" text="整条半透明" />
+
 <vx-tips v-model:show="tipsVisible" type="success">
 	<view class="tips-rich">
 		<text class="tips-rich__title">文件已上传</text>
@@ -673,7 +675,7 @@ const onSave = () => {
 | type | `primary` \| `success` \| `info` \| `warning` \| `danger` \| `default` | `default` | 语义色 |
 | position | `top` \| `center` \| `bottom` | `center` | 顶部横幅、垂直居中、底部浮层 |
 | duration | number | `2000` | 自动关闭时间，单位毫秒；`0` 常驻 |
-| offset | number | `0` | 贴边微调，单位 px；`top` 往下、`bottom` 往上 |
+| offset | number | `0` | 贴边微调，单位 px；`top` 往下、`bottom` 往上。顶部已经在导航栏下方，这里只加额外距离 |
 | maxWidth | string | `'320px'` | 浮层最大宽度，需带单位；`top` 忽略 |
 | icon | `VxIconName` | — | 文案前的图标，取值见 `libs/icons/codepoints.ts` |
 | closable | boolean | `false` | 显示关闭图标，点整条关闭并抛 `close` |
@@ -681,6 +683,7 @@ const onSave = () => {
 | bgColor | string | `''` | 自定义底色，字面值 |
 | bgOpacity | number | `1` | 底色不透明度，0–1；只作用在底色上 |
 | color | string | `''` | 自定义文字和图标色，字面值 |
+| opacity | number | `1` | 整条提示的不透明度，0–1；底色、文字、图标和阴影一起淡 |
 
 | 事件 | 说明 | 参数 |
 | --- | --- | --- |
@@ -697,13 +700,14 @@ const onSave = () => {
 | close() | 立刻收起并抛 `close` |
 
 - 提示是浮层，挂在页面根节点，和滚动容器平级；放进 `scroll-view` 会被滚动带走或裁掉。
-- `top` 铺满整条、直角，贴在导航栏下方；`center`、`bottom` 是 `md` 圆角的盒子，默认最大宽度 320，左右至少留 24。
+- `top` 铺满整条、直角，贴在导航栏下方：App 上让开状态栏和一行导航栏，原生导航栏和页面自绘的导航栏都算；Web 和小程序读安全区。`center`、`bottom` 是 `md` 圆角的盒子，默认最大宽度 320，左右至少留 24。
 - `type` 是实心底色，前景用对应的 `on-*`；`default` 用正文色的反相底，亮暗主题自动互换。
 - `duration` 到点自动关，`0` 常驻；自动关闭、手动关闭都抛 `close`，父组件改 `show` 不回抛。
 - `bottom` 在 `--uni-safe-area-inset-bottom` 之外再多留 16，不贴屏幕边缘；自定义底栏用 `offset` 抬高。
 - 文案超出一行时在 `maxWidth` 内换行，浮层跟着长高；长文案要加 `duration` 或常驻。
 - `icon` 固定 `md`，颜色跟前景；`closable` 打开后点整条关闭，关闭图标贴右，顶部横幅的正文仍按整条居中。
 - `bgColor` / `bgOpacity` 只改底色，`color` 改文字和图标；都是字面值，不跟随主题。只传一项时，其余项继续跟 `type`；透明度默认 1，不把文字一起淡掉。
+- `opacity` 让整条一起淡：底色、文字、图标和阴影都乘这个值，默认 1；和 `bgOpacity` 同时传时两者相乘。
 - 默认插槽替换 `text`，用于两行内容；插槽内容不继承前景色。
 - 重复触发同一条提示时先改 props 再调 `open()`，计时会重新开始，不用叠两个实例。
 
