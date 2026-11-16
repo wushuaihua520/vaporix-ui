@@ -532,14 +532,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 
 1. 同一件事的高配版本：select、slider、segmented-control、code-input、data-checkbox、index-list、divide-list、gallery、loader、skeleton、msg、circular-progress、landscape、pagination、waterfall、swiper、count-to。
 2. 跨控件的组合件：`vx-page` 把导航栏、状态栏、安全区和滚动容器收成一件。表单容器与校验从 0.62.0 起在免费层，不再作为付费组合件规划。
-3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text。
+3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text、drag-list。
 4. 服务：暗色与主题、i18n、无障碍、升级协助、源码授权。
 
-第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
+第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补，`drag-list` 由 1.38.0 补上；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
 
 ### 迁移（0.56.0 起）
 
-分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，当前付费层 30 件。
+分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，1.38.0 补 `vx-drag-list`，当前付费层 31 件。
 
 每个转出的组件跟着改：两包 readme 的清单、两包 changelog、文档站 `nav.ts` 的 `pro` 标记、`content` 中英文 meta 的「会员组件」、首页与索引页的组件数、Pro 的演示与依赖说明。免费库还要补演示页、`catalog.ts`、`pages.json`。全部迁完删掉本节。
 
@@ -964,6 +964,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 滚动列表不加阴影、描边和浮层层级：卡片边界由插槽或外层卡片给，指示器在文档流里；只有圆点颜色表达当前页，不给列表本身加底衬。
 - 级联选择是内联控件，不设层级、不投阴影：`surface` 底、1px `border`、`md` 圆角和列间 1px 竖线就是全部层级；需要弹层时由业务配 `vx-popup`，组件不内置。
 - 新手引导的遮罩、描边和气泡各自是 fixed 根节点，不套满屏透明父层：洞里的目标不被挡，Web 与 App 都能直接点；层级都用 1000，和弹层同档。遮罩默认 `rgba(0, 0, 0, 0.55)` 只压页面，气泡 `surface` 底配 1px `border` 和 `--vx-shadow-lg`，洞外 2px `primary` 描边压在目标边界上；层级低于消息提示 1010、弹框 1020、加载浮层 1050 和轻提示 1100。
+- 拖拽排序不加阴影和浮层层级：被拖的行靠 `surface` 底、1px `primary` 描边和 1.02 缩放从兄弟行里分出来，层级 10 只在本列表内比较；落点占位是 1px `primary` 虚线配 `sm` 圆角，不铺底色。松手后 300ms 内落定行上盖一层透明守卫视图，挡住补发的 click——App 上 `pointer-events` 不挡触摸，只有原生视图压在上面才接得住。
 
 ## Shapes
 
@@ -1120,6 +1121,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 分割线没有动效：改方向、虚实、间距和颜色都直接落位，不做展开、收起和尺寸过渡。
 - 安全区没有动效：改边、改高度和切换 `fixed` 都直接落位；固定条出现和收起都不淡入淡出。
 - 虚拟列表不做入场、位移和缩放：用户滚动直接换窗口，不挂过渡；`scrollToIndex(animated=true)` 用 `scroll-view` 自带滚动动画，其余直接落位。程序化跳转期间锁住中间 `scroll` 事件，只取落点，避免连续重建和误触 loadmore。
+- 拖拽排序的长按 300ms、落位 220ms、自动滚 16ms 一帧、点击守卫 300ms 写在组件目录的 `drag-list.ts`，与 `--vx-duration-normal` 手工一致。起拖前只观察：移动超过 8px 立刻按滚动处理。被拖行跟手不挂过渡，其余行 220ms 让位；起拖后锁滚动，落位动画走完再解锁；自动滚每帧写受控 `scroll-top`，方向不翻转。
 - 轮播图的切换动画由原生 swiper 负责（默认 400ms）：拖拽、回弹和循环都是平台行为，组件不挂过渡；指示器直接换态，不做宽度补间和位移动画，`line` 的当前项从 8 直接变成 20。`card` 的左右露出由平台在换屏时处理。
 - 数字动画用脚本按帧推进（优先 rAF，退回 16ms 定时器），每帧只改一个 `text`，不做逐位滚动；`duration=0` 和 `value === from` 不排帧，直接落值后异步抛一次 `finish`。连续改值先停旧补间再从 `from` 重播，不叠加、不从半路接着走。
 - 筛选栏的箭头翻转 220ms（`--vx-duration-normal`、`--vx-ease-standard`）；面板只淡入淡出不位移，和遮罩同频，展开时先量位置再淡入，第一帧不在错误位置闪。收起走完 220ms 加一帧才卸载，关闭过程中再打开从当前位置回来。
