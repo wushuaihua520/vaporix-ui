@@ -532,14 +532,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 
 1. 同一件事的高配版本：select、slider、segmented-control、code-input、data-checkbox、index-list、divide-list、gallery、loader、skeleton、msg、circular-progress、landscape、pagination、waterfall、swiper、count-to。
 2. 跨控件的组合件：`vx-page` 把导航栏、状态栏、安全区和滚动容器收成一件。表单容器与校验从 0.62.0 起在免费层，不再作为付费组合件规划。
-3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-editor。
+3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text。
 4. 服务：暗色与主题、i18n、无障碍、升级协助、源码授权。
 
-第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table` 和 `virtual-list` 已补，tree 和 rich-editor 按顺序补。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
+第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
 
 ### 迁移（0.56.0 起）
 
-分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`，当前付费层 29 件。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。
+分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，当前付费层 30 件。
 
 每个转出的组件跟着改：两包 readme 的清单、两包 changelog、文档站 `nav.ts` 的 `pro` 标记、`content` 中英文 meta 的「会员组件」、首页与索引页的组件数、Pro 的演示与依赖说明。免费库还要补演示页、`catalog.ts`、`pages.json`。全部迁完删掉本节。
 
@@ -1895,6 +1895,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 新手引导 `vx-guide` 用四块遮罩拼洞：洞 = 目标外扩 `holePadding`，2px `primary` 描边内缩到目标边界，气泡和洞留 8。`show` / `current` 受控，`next()` / `prev()` 换步抛 `change`，最后一步主按钮换成「完成」。
 - 目标矩形用 `createSelectorQuery().select(step.target).boundingClientRect()` 量；量不到时洞隐藏、遮罩铺满、气泡居中，`next` 仍可用。组件不监听页面滚动，`refresh()` 由业务在页面滚动、键盘弹起和数据变化后调用。
 - `placement` 四档加 `auto`：`auto` 先看上下再看左右，显式方向放不下时翻到对面，再按 12 的边距夹住。组件不存「已看过」，`finish` / `skip` 之后由业务写存储；`closeOnMask` 默认关，打开后点遮罩等同跳过并抛 `skip`。
+- 富文本 `vx-rich-text` 只做渲染：`content` 按 `format` 拆成块再排版，不托管编辑、不回写 HTML；富文本编辑器不在组件库范围。
+- 段落不用原生 `rich-text`：一种样式且没有链接时落一个 `text` 节点，混排时按 CJK 逐字、拉丁词连空白切片，靠 `flex-wrap` 换行。链接要能点、图片要能预览，代价就是混排段落多几个节点；纯文字段落不付这份成本。
+- 块类型固定九种：标题、段落、列表项、引用、代码、图片、表格、分隔线、embed。引用和列表在解析阶段拍平成带 `quote` / `level` 的块，模板不递归，嵌套列表最多缩到第三档。
+- 安全是四道白名单：标签、属性、地址、行内样式。`script` / `style` / `form` 系列连内容一起丢，`on*` 不读，`javascript:` / `vbscript:` / `data:text/html` 整条丢，行内样式只留 `color`、`font-size`（12–28）和 `text-align`。加新标签前先补这四道和用例。
+- 代码块只做横滚和复制，复制提示走 `vx-toast`；表格只读、列宽下限 120（列少均分、列多横滚），排序、合并、固定表头去 `vx-table`；iframe 和音视频不内嵌，只出地址卡。
+- Markdown 先转 HTML 再走同一套解析，过滤只有一份。只承诺文档里列出的子集，不追 CommonMark；脚注、公式和任务列表不做。
+- 长度护栏是 100000 字 / 3000 块：先截断再解析，并抛 `error('too-large')`。阈值和演示页的「大文档」对照一起改。
+- 图片按源里的宽高比和实测正文宽换算高度：挂载后量一次正文宽，首帧按 180 兜底，约一帧后落到正确高度；量不到宽度时一直是 180。`preview` 只负责调 `vx-gallery`，关掉后仍抛 `image-click`。
 - 每个组件同时交付：`vx-<block>.uvue`、`props.ts`、独立的 `pages/demo/<name>/<name>.uvue` 演示页、`pages/demo/shared/catalog.ts` 登记和 `uni_modules/vaporix-ui/readme.md` 登记。
 - 单文件顺序：`template` → `script setup` → `style`。`style` 与元素 class 字符串都按「基础 → 尺寸 → 类型 → 形状 → 状态 → 文本」排列。
 
