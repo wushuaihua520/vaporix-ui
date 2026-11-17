@@ -557,11 +557,12 @@
 		text-align: right;
 	}
 
+	/* 高度不写 100%：App 端固定高容器里的 text 会把 frame 拉满整行，
+	   行盒只在顶部，值文字就顶上去了；auto 高让根节点的 align-items 居中。 */
 	.vx-input__display {
 		flex: 1;
 		width: 0;
 		min-width: 0;
-		height: 100%;
 		flex-direction: row;
 		align-items: center;
 		overflow: hidden;
@@ -575,9 +576,13 @@
 		white-space: nowrap;
 	}
 
+	/* iOS 量比例字符（% 等）比字形窄，末字符会被自己的边界裁掉；
+	   padding 补出余量、负 margin 找回位置，墨迹不动，只是裁剪边界右移。 */
 	.vx-input__unit {
 		flex-shrink: 0;
 		margin-left: var(--vx-space-sm);
+		padding-right: 6px;
+		margin-right: -6px;
 	}
 
 	.vx-input__clear {

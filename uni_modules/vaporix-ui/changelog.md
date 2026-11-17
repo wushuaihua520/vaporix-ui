@@ -1,3 +1,9 @@
+## 0.71.1（2026-11-17）
+
+- `vx-input` 修 App 端两处布局（iOS 模拟器像素级验证，建议真机复验）：
+  - **unit 末字符被裁**：iOS 对比例字符（`%`）的测量宽度比字形实际宽度窄，末字符被 text 节点自身边界裁掉——`%` 只剩左圆和斜杠，右圆被截（CJK 全宽字符如「元」量得准，不受影响）。unit 加 `padding-right: 6px` 补余量、`margin-right: -6px` 找回位置：墨迹位置不动、后续兄弟节点（清除、箭头）位置也不变，只是裁剪边界右移进父级 padding 区。
+  - **readonly 值文字顶格不居中**：`vx-input__display` 的 `height: 100%` 让 App 端 text frame 拉满整行，`line-height` 行盒只占 frame 顶部，值文字墨迹贴行顶（实测偏 -8.3 逻辑px）。去掉固定高改 auto，靠根节点 `align-items: center` 居中（和 label 同机制），readonly 三行实测回到 ±0.3 逻辑px。
+
 ## 0.71.0（2026-11-17）
 
 - **Web 图标字体改 woff2，extend 切四段各带 `unicode-range`**：以前 extend 是一条 `@font-face` 指到 278 KB 的 ttf，页面只要出现一个 extend 图标（页脚的 Android `robot`、鸿蒙 `cpu`）就得整包下载。现在按码点切成 21–34 KB 的四段，浏览器只取命中字符的那几段；core 也一并转 woff2（28 KB → 11 KB）。同一页面的图标字体从约 302 KB 降到 65 KB 左右。
