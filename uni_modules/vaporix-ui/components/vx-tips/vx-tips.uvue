@@ -170,7 +170,7 @@
 	// 内容顶在窗口顶，状态栏和一行导航栏都要自己补出来。两者靠可用高度差区分——原生导航栏会把
 	// windowHeight 额外压掉这一段。不能挪到 setup 里量：页面首帧还没换成自绘导航栏时会判错。
 	// VX_NAVIGATION_BAR_HEIGHT 与 --vx-navigation-bar-height 同值，脚本读不到 CSS 变量。
-	const VX_NAVIGATION_BAR_HEIGHT = 44
+	const VX_NAVIGATION_BAR_HEIGHT = 48
 
 	const navBarHeight = (): number => {
 		// #ifdef APP

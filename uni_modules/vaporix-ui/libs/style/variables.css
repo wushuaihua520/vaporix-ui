@@ -82,7 +82,8 @@
 	   列表行改档时头部不动；头部只写 height / min-height 和左右内边距，不受盒模型影响。 */
 	--vx-overlay-head: 52px;
 
-	/* 可点热区下限：关闭叉、返回、回到顶部、独立图标按钮；不跟列表行和控件档位走 */
+	/* 可点热区下限：关闭叉、回到顶部、独立图标按钮；不跟列表行和控件档位走。
+	   导航栏的返回和右侧动作不取这一档，跟 --vx-navigation-bar-height 走。 */
 	--vx-hit-size: 44px;
 
 	/* 树型菜单：节点行高、每级缩进和箭头位三组三档。树比列表行紧一档，
@@ -99,8 +100,9 @@
 	--vx-tree-marker-md: 24px;
 	--vx-tree-marker-lg: 28px;
 
-	/* 导航栏内容行高。返回按钮宽高用 --vx-hit-size，不跟这一档 */
-	--vx-navigation-bar-height: 44px;
+	/* 导航栏内容行高。内置返回和右侧动作的宽高都取这一档，不再单独用 --vx-hit-size，
+	   按钮和行同高，热区才不会比行矮一截 */
+	--vx-navigation-bar-height: 48px;
 
 	/* 宫格格子：最小高度和图片方框，不并入图标三档 */
 	--vx-grid-height-sm: 72px;
@@ -863,7 +865,7 @@
 	--vx-tree-marker-lg: 28px;
 
 	/* 导航栏内容行高（与亮色一致） */
-	--vx-navigation-bar-height: 44px;
+	--vx-navigation-bar-height: 48px;
 
 	/* 宫格格子（与亮色一致） */
 	--vx-grid-height-sm: 72px;

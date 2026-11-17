@@ -48,7 +48,7 @@
 						</view>
 						<view class="demo-section__copy">
 							<text class="demo-section__title">基础导航栏</text>
-							<text class="demo-section__desc">标题居中，返回和右侧动作各占 44 热区；固定时默认占位。</text>
+							<text class="demo-section__desc">标题居中，返回和右侧动作各占 48 热区；固定时默认占位。</text>
 						</view>
 					</view>
 					<view class="demo-card">

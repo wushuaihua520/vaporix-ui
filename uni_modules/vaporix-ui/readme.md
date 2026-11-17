@@ -3694,7 +3694,7 @@ const onSelect = (index: number, item: VxSwipeActionItem, name: string) => {
 <image class="hero" src="/static/city.jpg" mode="aspectFill" />
 ```
 
-搜索框放在 `extra`，标题行保持 44：
+搜索框放在 `extra`，标题行保持 48：
 
 ```vue
 <vx-navigation-bar title="鲜果商城" back>
@@ -3779,7 +3779,7 @@ const onSelect = (index: number, item: VxSwipeActionItem, name: string) => {
 | --- | --- |
 | default | 替换标题，适合搜索框或分段控件；窄屏单行省略由内容自己处理 |
 | prefix | 替换返回区，放头像或自定义返回按钮 |
-| suffix | 右侧动作，建议只放一个；自己带 44 热区，小程序上要为胶囊让出宽度 |
+| suffix | 右侧动作，建议只放一个；自己带 48 热区，小程序上要为胶囊让出宽度 |
 | extra | 标题行下面的第二行，放搜索、筛选或页签 |
 
 | 方法 | 说明 |
@@ -3795,7 +3795,7 @@ const onSelect = (index: number, item: VxSwipeActionItem, name: string) => {
 - 头图、品牌底色和渐变用 `bgColor` / `transparent`；自定义颜色是字面值，亮暗主题和对比度由业务保证。
 - 从 ThorUI `tui-navigation-bar` 迁移：`isOpacity` → `fade`（默认关闭），`isImmersive` → `statusBar`，`isFixed` → `fixed`，`splitLine` → `divider`，`backgroundColor` → `bgColor`，`isCustom` → 默认插槽 / `extra`。
 - `@init` → `@ready`，`@change` 参数从对象改成 opacity 数字；`backdropFilter` 和 `dropDownHide` 不再提供。
-- `zIndex` 默认从 996 改成 20；内置返回的热区由组件补足 44，`suffix` 里的动作自己包一层 44 热区，不再需要写 `margin-top` 或固定层。
+- `zIndex` 默认从 996 改成 20；内置返回的热区由组件补足 48，`suffix` 里的动作自己包一层 48 热区，不再需要写 `margin-top` 或固定层。
 
 ## vx-status-bar
 

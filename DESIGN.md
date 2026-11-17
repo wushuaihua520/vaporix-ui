@@ -123,7 +123,7 @@ list:
   lg: 52px
 overlayHead: 52px
 navigationBar:
-  height: 44px
+  height: 48px
 grid:
   height:
     sm: 72px
@@ -781,9 +781,9 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 列表行最小高度单独三档：`sm` 44px、`md` 48px、`lg` 52px，从可点热区起步，不并入 32 / 40 / 48 的控件高度。双行内容由内边距自然撑高，不固定行高。
 - 列表行水平内边距 `sm` 12px、`md` / `lg` 16px，垂直 8 / 12 / 12px；说明固定 13 / 20，右侧值 `sm` / `md` 用 13 / 20，`lg` 用 15 / 22；箭头 14 / 18。
 - 盒模型：Web 端 `box-sizing: border-box` 把描边和内边距算进宽高；App 蒸汽模式上同一层同时写 `min-height` 和纵向内边距时，总高会比令牌多出这份内边距，所以带纵向内边距的列表行在 `#ifdef APP` 块里用 `calc(var(--vx-list-height-*) - 纵向内边距)` 补回。只写 `height` 或只写左右内边距的层不受影响，弹层头部就是后者。两端是否对齐用 `pages/probe/box` 量，改令牌或改某行的纵向内边距后重跑一次。
-- 导航栏内容行高 44px（`--vx-navigation-bar-height`），内置返回和右侧动作按行高 44 排；内置返回的热区由组件补足，`suffix` 里的动作自己包出 44 热区。左右各留 8px，顶部状态栏留白取 `--uni-safe-area-inset-top`，横屏两侧取 `--uni-safe-area-inset-left` / `--uni-safe-area-inset-right`。标题 17 / 24 / 600 居中单行省略。
+- 导航栏内容行高 48px（`--vx-navigation-bar-height`），内置返回和右侧动作按行高 48 排，热区和行同高；`suffix` 里的动作自己包出 48 热区。左右各留 4px，返回热区才贴得到屏幕边，顶部状态栏留白取 `--uni-safe-area-inset-top`，横屏两侧取 `--uni-safe-area-inset-left` / `--uni-safe-area-inset-right`。标题 17 / 24 / 600 居中单行省略。
 - 状态栏高度取 `--uni-safe-area-inset-top`（App 为状态栏与刘海，Web 为 0），`height` 传数字时是整条高度，0 表示跟随系统，超过 200 按 200。固定时占位同高；插槽内容左右各留 16，横屏再让开左右安全区；渐显距离是条宽 × `scrollRatio`（默认 0.3）。
-- 页面容器的顶栏在文档流里：导航栏内容行 44，状态栏留白由导航栏的 `statusBar` 承担，不再叠一只状态栏。滚动区吃剩余高度，底部按 `tabbar`（`--vx-tabbar-height-md` 56）和 `--uni-safe-area-inset-bottom` 叠加占位，两者相加就是插槽里的 `bottomInset`；内容左右留 `lg` 16，`padded=false` 交给业务。`navHeight` 只算内容行（不含状态栏），直接给 `vx-sticky` 的 `offsetTop`；导航栏第一次 `ready` 的瞬态值不采用，内容行下限 44。`scroll=false` 时不锁高，整页交给页面滚动，`refresh` / `loadmore` / `scrollToTop` 不生效；触底阈值固定 80，不做成属性。
+- 页面容器的顶栏在文档流里：导航栏内容行 48，状态栏留白由导航栏的 `statusBar` 承担，不再叠一只状态栏。滚动区吃剩余高度，底部按 `tabbar`（`--vx-tabbar-height-md` 56）和 `--uni-safe-area-inset-bottom` 叠加占位，两者相加就是插槽里的 `bottomInset`；内容左右留 `lg` 16，`padded=false` 交给业务。`navHeight` 只算内容行（不含状态栏），直接给 `vx-sticky` 的 `offsetTop`；导航栏第一次 `ready` 的瞬态值不采用，内容行下限 48。`scroll=false` 时不锁高，整页交给页面滚动，`refresh` / `loadmore` / `scrollToTop` 不生效；触底阈值固定 80，不做成属性。
 - 折叠面板的标题行沿用列表行最小高度 44 / 48 / 52，标题 13 / 15 / 17（20 / 22 / 24、500），说明固定 13 / 20，箭头 sm / md 用 14、lg 用 18；水平内边距 12 / 16 / 16，垂直 8 / 12 / 12。内容左右与标题对齐，上 8 / 12 / 16、下 12 / 16。这组尺寸不新增令牌，也不并入控件高度。
 - 卡片不占外部间距，宽度跟随父级：正文四边内边距 12 / 16 / 24，头部上下 8 / 12 / 12、左右 12 / 16 / 24，头像 32 / 40 / 48。页面左右边距用 `lg`，卡片之间用 `xl`。
 - 滚动消息是三档高的展示行：`sm` 32、`md` 40、`lg` 48（`--vx-rolling-news-height-*`），左右内边距 `sm` 12、`md` / `lg` 16，图标 14 / 18 / 22 跟档位，图标和文案留 8（`lg` 12），后缀同理。1px 描边含在这档高度里；滑层、视口和热区用内容区高度 `--vx-rolling-news-inner-*`（30 / 38 / 46），是行高减两条 1px 描边，直接写字面量，改行高时两处一起改。这组高度不并入控件三档。
@@ -1722,7 +1722,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - `scroll=false` 时不包滚动容器、不锁高，中间交给默认插槽，整页跟着页面滚；`refresh` / `loadmore` / `@scroll` / `scrollToTop` 都不生效。要在中间放自己的滚动容器，给它确定高度；内容里有输入框时，软键盘弹起后的可视高度按平台行为。
 - 页面容器不接管路由、不做转场、不改 `pages.json`，也不内置吸顶、tabbar 和登录拦截；这些分别交给 `vx-sticky`、`vx-tabbar` 和业务。
 - 页面容器的 `bgColor` / `navBgColor` / `color` 是字面值，`navBgColor` / `color` 原样透传给导航栏；`extra` 插槽内容自己带尺寸和颜色。页面根节点要带 `vx-theme-light` / `vx-theme-dark`，令牌都挂在主题类上。
-- 导航栏第一次 `ready` 可能早于样式落上，高度会偏小；`vx-page` 不直接采用这个瞬态值，改量顶栏外层，内容行下限 44。Web 上的返回热区带 `role="button"`、`aria-label="返回"` 和 `tabindex="0"`，Enter / 空格也能触发。
+- 导航栏第一次 `ready` 可能早于样式落上，高度会偏小；`vx-page` 不直接采用这个瞬态值，改量顶栏外层，内容行下限 48。Web 上的返回热区带 `role="button"`、`aria-label="返回"` 和 `tabindex="0"`，Enter / 空格也能触发。
 
 - Web 端指针：可点击控件用 `pointer`，禁用态用 `not-allowed`，加载态用 `progress`；原生端忽略该属性。
 - 弹出层 `vx-popup` 是通用浮层：`placement` 有 `top` / `bottom` / `left` / `right` / `center`，默认 `bottom`；`show` 支持 `v-model:show`，`ref` 上暴露 `open()` / `close()` / `cancel()` / `toggle()`。

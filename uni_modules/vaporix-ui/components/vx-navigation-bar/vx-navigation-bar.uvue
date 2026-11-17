@@ -73,7 +73,7 @@
 
 	// 等待测量时先用令牌同值撑住占位，测完再按实际高度改。
 	// 行高和 --vx-navigation-bar-height 对齐；0.85 与 readme、DESIGN.md 的分割线阈值一致。
-	const VX_NAVIGATION_BAR_HEIGHT = 44
+	const VX_NAVIGATION_BAR_HEIGHT = 48
 	const VX_NAVIGATION_BAR_LINE_OPACITY = 0.85
 
 	const windowInfo = uni.getWindowInfo()
@@ -435,7 +435,7 @@
 		padding-right: var(--uni-safe-area-inset-right, 0px);
 	}
 
-	/* 标题行高仍用 --vx-navigation-bar-height。左右各留 8。
+	/* 标题行高仍用 --vx-navigation-bar-height。左右各留 4，热区才贴得到屏幕边。
 	   两侧不伸缩，空着也各留一个热区的宽度，中间 flex: 1 的标题才落在中间；
 	   一侧放两个动作时标题会跟着偏一点，更多动作放进 extra。 */
 	.vx-navigation-bar__main {
@@ -444,8 +444,8 @@
 		box-sizing: border-box;
 		width: 100%;
 		min-height: var(--vx-navigation-bar-height);
-		padding-left: var(--vx-space-sm);
-		padding-right: var(--vx-space-sm);
+		padding-left: var(--vx-space-xs);
+		padding-right: var(--vx-space-xs);
 	}
 
 	/* 行高跟导航栏；最小宽度跟返回热区，空着也留出同宽。border-box 后，胶囊 padding 算进最小宽度。 */
@@ -455,7 +455,7 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: flex-start;
-		min-width: var(--vx-hit-size);
+		min-width: var(--vx-navigation-bar-height);
 		height: var(--vx-navigation-bar-height);
 	}
 
@@ -475,13 +475,13 @@
 		overflow: hidden;
 	}
 
-	/* 返回热区用 --vx-hit-size；行高仍是 --vx-navigation-bar-height。图标仍用图标三档里的 lg。 */
+	/* 返回热区和行同高，宽高都取 --vx-navigation-bar-height；图标仍用图标三档里的 lg。 */
 	.vx-navigation-bar__back {
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		width: var(--vx-hit-size);
-		height: var(--vx-hit-size);
+		width: var(--vx-navigation-bar-height);
+		height: var(--vx-navigation-bar-height);
 	}
 
 	.vx-navigation-bar__back--pressed {
