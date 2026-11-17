@@ -51,6 +51,13 @@
 	color: var(--vx-color-on-primary);
 }
 
+.demo-brand__logo {
+	width: 40px;
+	height: 40px;
+	border-radius: var(--vx-radius-lg);
+	margin-right: var(--vx-space-md);
+}
+
 .demo-brand__copy {
 	flex-direction: column;
 }
@@ -579,22 +586,11 @@
 	align-items: center;
 }
 
-.demo-footer-brand__mark {
+.demo-footer-brand__logo {
 	width: 32px;
 	height: 32px;
-	align-items: center;
-	justify-content: center;
 	margin-right: var(--vx-space-sm);
 	border-radius: var(--vx-radius-md);
-	background-color: var(--vx-color-primary-soft);
-}
-
-.demo-footer-brand__mark-text {
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-	font-weight: var(--vx-weight-bold);
-	letter-spacing: 1px;
-	color: var(--vx-color-primary-pressed);
 }
 
 .demo-footer-brand__copy {

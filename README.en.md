@@ -1,3 +1,5 @@
+<p align="center"><img src="static/logo.png" width="72" height="72" alt="Vaporix UI"></p>
+
 # Vaporix UI
 
 Native-rendered component library for uni-app x vapor mode. Free components live in this repository and are published as a `uni_modules` package.

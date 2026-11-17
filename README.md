@@ -1,3 +1,5 @@
+<p align="center"><img src="static/logo.png" width="72" height="72" alt="元汽UI"></p>
+
 # 元汽UI（Vaporix UI）
 
 uni-app x 蒸汽模式的原生渲染组件库。基础组件开源，按 `uni_modules` 组织。

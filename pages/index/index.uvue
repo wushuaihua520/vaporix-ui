@@ -5,9 +5,7 @@
 				<view class="demo-hero demo-home">
 					<view class="demo-home__head">
 						<view class="demo-brand">
-							<view class="demo-brand__mark">
-								<text class="demo-brand__mark-text">VX</text>
-							</view>
+							<image class="demo-brand__logo" src="/static/logo.png" mode="aspectFit" />
 							<view class="demo-brand__copy">
 								<text class="demo-brand__name">元汽UI</text>
 								<text class="demo-brand__meta">VAPORIX UI</text>
