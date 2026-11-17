@@ -3,7 +3,8 @@
 /* ---------- 扩展图标字体
    由 tools/icons/build.py 生成，勿手改。
    扩展图标字体：只在用到 extend 图标时引入本文件。
-   App 内嵌 base64，不依赖 static 里的 ttf；Web 用包内 ttf，小程序内嵌 base64。
+   App 内嵌 base64，不依赖 static 里的 ttf；Web 用分段 woff2，小程序内嵌 base64。
+   分段是为了让页面只下载命中字符的那一段，见 tools/icons/web_fonts.py。
    -------------------------------------------------------------------------- */
 /* #ifdef APP */
 @font-face {
@@ -21,15 +22,65 @@
 @font-face {
 	font-family: VaporixIconsExtend;
 	src:
-		url('../../static/fonts/vx-icons-extend.ttf') format('truetype'),
-		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend.ttf') format('truetype');
+		url('../../static/fonts/vx-icons-extend-1.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-1.woff2') format('woff2');
+	unicode-range: U+EB00-EB0D, U+EB0F-EB11, U+EB13, U+EB17-EB18, U+EB1A-EB25, U+EB27-EB33, U+EB37-EB4B, U+EB4F, U+EB53-EB59, U+EB5B-EB5D, U+EB5F, U+EB61-EB63, U+EB66-EB73, U+EB77-EB79, U+EB7B-EB7F, U+EB81, U+EB83-EB89, U+EB8B-EBA1, U+EBA5-EBA6, U+EBA8-EBA9, U+EBAB-EBB9, U+EBBB-EBBD, U+EBC0-EBC4, U+EBC7-EBCA, U+EBCC-EBCF, U+EBD1-EBD3, U+EBD6-EBD8, U+EBDB, U+EBDE-EBDF, U+EBE1, U+EBE3, U+EBE6-EBE9, U+EBEC-EC2D;
+}
+
+@font-face {
+	font-family: VaporixIconsExtend;
+	src:
+		url('../../static/fonts/vx-icons-extend-2.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-2.woff2') format('woff2');
+	unicode-range: U+EC2E-ED27;
+}
+
+@font-face {
+	font-family: VaporixIconsExtend;
+	src:
+		url('../../static/fonts/vx-icons-extend-3.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-3.woff2') format('woff2');
+	unicode-range: U+ED28-EE21;
+}
+
+@font-face {
+	font-family: VaporixIconsExtend;
+	src:
+		url('../../static/fonts/vx-icons-extend-4.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-4.woff2') format('woff2');
+	unicode-range: U+EE22-EF1B;
 }
 
 @font-face {
 	font-family: VaporixIconsExtendFill;
 	src:
-		url('../../static/fonts/vx-icons-extend-fill.ttf') format('truetype'),
-		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-fill.ttf') format('truetype');
+		url('../../static/fonts/vx-icons-extend-fill-1.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-fill-1.woff2') format('woff2');
+	unicode-range: U+EB00-EB0D, U+EB0F-EB11, U+EB13, U+EB17-EB18, U+EB1A-EB25, U+EB27-EB33, U+EB37-EB4B, U+EB4F, U+EB53-EB59, U+EB5B-EB5D, U+EB5F, U+EB61-EB63, U+EB66-EB73, U+EB77-EB79, U+EB7B-EB7F, U+EB81, U+EB83-EB89, U+EB8B-EBA1, U+EBA5-EBA6, U+EBA8-EBA9, U+EBAB-EBB9, U+EBBB-EBBD, U+EBC0-EBC4, U+EBC7-EBCA, U+EBCC-EBCF, U+EBD1-EBD3, U+EBD6-EBD8, U+EBDB, U+EBDE-EBDF, U+EBE1, U+EBE3, U+EBE6-EBE9, U+EBEC-EC2D;
+}
+
+@font-face {
+	font-family: VaporixIconsExtendFill;
+	src:
+		url('../../static/fonts/vx-icons-extend-fill-2.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-fill-2.woff2') format('woff2');
+	unicode-range: U+EC2E-ED27;
+}
+
+@font-face {
+	font-family: VaporixIconsExtendFill;
+	src:
+		url('../../static/fonts/vx-icons-extend-fill-3.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-fill-3.woff2') format('woff2');
+	unicode-range: U+ED28-EE21;
+}
+
+@font-face {
+	font-family: VaporixIconsExtendFill;
+	src:
+		url('../../static/fonts/vx-icons-extend-fill-4.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-extend-fill-4.woff2') format('woff2');
+	unicode-range: U+EE22-EF1B;
 }
 /* #endif */
 

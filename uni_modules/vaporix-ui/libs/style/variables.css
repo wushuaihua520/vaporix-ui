@@ -1499,7 +1499,7 @@
    由 tools/icons/build.py 生成，勿手改。
    上游 Phosphor 2.1.2；core regular / fill 共用同一组码点。
    App 内嵌 base64，不依赖 static 里的 ttf（增量编译会漏推 uni_modules 静态资源）；
-   Web 用包内 ttf，小程序内嵌 base64，避免 WXSS 字体路径差异。
+   Web 用包内 woff2，小程序内嵌 base64，避免 WXSS 字体路径差异。
    -------------------------------------------------------------------------- */
 /* #ifdef APP */
 @font-face {
@@ -1517,15 +1517,15 @@
 @font-face {
 	font-family: VaporixIcons;
 	src:
-		url('../../static/fonts/vx-icons.ttf') format('truetype'),
-		url('/uni_modules/vaporix-ui/static/fonts/vx-icons.ttf') format('truetype');
+		url('../../static/fonts/vx-icons.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons.woff2') format('woff2');
 }
 
 @font-face {
 	font-family: VaporixIconsFill;
 	src:
-		url('../../static/fonts/vx-icons-fill.ttf') format('truetype'),
-		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-fill.ttf') format('truetype');
+		url('../../static/fonts/vx-icons-fill.woff2') format('woff2'),
+		url('/uni_modules/vaporix-ui/static/fonts/vx-icons-fill.woff2') format('woff2');
 }
 /* #endif */
 

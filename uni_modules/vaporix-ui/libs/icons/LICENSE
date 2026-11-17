@@ -1,6 +1,7 @@
 Vaporix UI 图标字体
   vx-icons.ttf / vx-icons-fill.ttf                 core regular / fill
   vx-icons-extend.ttf / vx-icons-extend-fill.ttf   extend regular / fill
+  *.woff2                                          上述四份的 Web 子集（tools/icons/web_fonts.py 生成）
 
 来源：Phosphor Icons 2.1.2（https://phosphoricons.com）
 当前 core 112 个，extend 1000 个；两档共用同一组语义图标名和码点。

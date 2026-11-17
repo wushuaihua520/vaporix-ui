@@ -1,3 +1,11 @@
+## 0.71.0（2026-11-17）
+
+- **Web 图标字体改 woff2，extend 切四段各带 `unicode-range`**：以前 extend 是一条 `@font-face` 指到 278 KB 的 ttf，页面只要出现一个 extend 图标（页脚的 Android `robot`、鸿蒙 `cpu`）就得整包下载。现在按码点切成 21–34 KB 的四段，浏览器只取命中字符的那几段；core 也一并转 woff2（28 KB → 11 KB）。同一页面的图标字体从约 302 KB 降到 65 KB 左右。
+  - 分段与转换在 `tools/icons/web_fonts.py`，段数由 `EXTEND_PIECES` 决定；改段数后跑 `python tools/icons/write-css.py` 即可重写 CSS，不用重建字体。
+  - App 和小程序分支不变：`#ifdef APP` / `#ifdef MP` 仍内嵌全量 ttf 的 base64，真机字形与原来一致。
+  - `static/fonts/` 新增 `vx-icons.woff2`、`vx-icons-fill.woff2` 与 `vx-icons-extend{,-fill}-1..4.woff2`，ttf 保留给 App / 小程序与 QA 出图。
+  - 校验脚本 `tools/icons/check_web_fonts.py`：核对每段 cmap 与 CSS 的 `unicode-range` 一致、四段合起来覆盖全部 1000 个 extend 码点。
+
 ## 0.70.0（2026-11-17）
 
 - **导航栏内容行 44 → 48**（`--vx-navigation-bar-height`），内置返回和右侧动作一起跟到 48。原来返回的宽高取 `--vx-hit-size` 44，和行同高但只占可见面积的一小半，右插槽里又常被写成 36，点起来明显偏窄。48 正好是控件 `lg` 一档，状态栏 24 时整条 72、iPhone 47 时 95。这是可见的尺寸变更，业务按 44 留过占位或算过偏移的要复核。

@@ -25,7 +25,7 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 // #endif
 ```
 
-App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css` 在 App 分支里内嵌 base64，字体随样式一起进包，不依赖 `uni_modules` 下 static 目录的同步。Web 用包内 ttf，小程序内嵌 base64。
+App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css` 在 App 分支里内嵌 base64，字体随样式一起进包，不依赖 `uni_modules` 下 static 目录的同步。Web 用包内 woff2，extend 分四段各带 `unicode-range`，页面只下载用到的段；小程序内嵌 base64。
 
 3. 页面根节点加 `vx-theme-light` 或 `vx-theme-dark`。
 4. 组件目录符合 easycom 规范，`autoscan` 会自动注册，不需要写 `custom` 正则。同时安装 `vaporix-ui-pro` 时也不要写一条 `^vx-(.*)`，否则所有 `vx-` 标签都会指向其中一个目录。
@@ -442,7 +442,7 @@ import '@/uni_modules/vaporix-ui/libs/style/icons-extend.css'
 - `core` 只放高频常用图标，长尾/专业图标进 `extend`；不要为了少引入一个 CSS 把 core 撑大。
 - 用到 `extend` 图标必须引入 `icons-extend.css`，否则扩展字形不会加载；core 组件（如 `vx-input` 的 close / chevron）不依赖它。
 - 图标名与码点是公开契约：只追加、不改名、不复用。新增图标由维护者构建后随版本发布，不改运行时字体路径。
-- 四套字体随组件库分发：App 端在样式里内嵌 base64，随代码一起进包，不依赖 static 目录；H5 用包内 ttf 的相对路径，小程序内嵌 base64；都不依赖网络字体。
+- 四套字体随组件库分发：App 端在样式里内嵌 base64，随代码一起进包，不依赖 static 目录；Web 用包内 woff2，extend 分四段各带 `unicode-range`，页面只下用到的段；小程序内嵌 base64。都不依赖网络字体。
 - 图标来源 Phosphor 2.1.2（MIT），core / extend 各 regular / fill；许可证全文在 `libs/icons/LICENSE`。
 
 ## vx-badge
