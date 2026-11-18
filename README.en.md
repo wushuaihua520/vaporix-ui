@@ -1,145 +1,194 @@
-<p align="center"><img src="static/logo.png" width="72" height="72" alt="Vaporix UI"></p>
+<p align="center">
+	<img src="static/logo.png" width="88" height="88" alt="Vaporix UI">
+</p>
 
-# Vaporix UI
+<h1 align="center">Vaporix UI</h1>
 
-Native-rendered component library for uni-app x vapor mode. Free components live in this repository and are published as a `uni_modules` package.
+<p align="center">
+	Native-rendered component library for uni-app x vapor mode<br>
+	60 components · 1112 icons · light and dark tokens · MIT free tier
+</p>
 
-- Chinese name: 元汽UI
-- Prefix: `vx-`
-- Tokens: `--vx-*`
-- HBuilderX 5.26+. App `@keyframes` need 5.31+.
+<p align="center">
+	<a href="https://www.vaporix-ui.com/en">Docs</a> ·
+	<a href="https://www.vaporix-ui.com/en/components">Components</a> ·
+	<a href="https://www.vaporix-ui.com/en/docs/install">Install</a> ·
+	<a href="https://www.vaporix-ui.com/en/docs/pro">Pro components</a> ·
+	<a href="uni_modules/vaporix-ui/changelog.md">Changelog</a> ·
+	<a href="README.md">简体中文</a>
+</p>
 
-Basic components are MIT licensed, including button, icon, input, textarea, text, link, radio, checkbox, switch, number box, countdown, steps, progress, action sheet, bubble popup, drawer, popup, datetime, picker, calendar, tabs, tab bar, swipe action, tag, badge, footer, tips, toast, rate, list view, list cell, collapse, collapse item, card, section, image, avatar, divider, safe area, white space, wing blank, grid, grid item, row, col, image group, QR code, loading, load more, no more, no data, sticky, navigation bar, status bar, rolling news, notice bar and time axis. Icons come from Phosphor 2.1.2 (MIT), split into core 112 and extended 1000, each in regular and fill. Core ships by default; extended requires `libs/style/icons-extend.css`. The upstream license ships in `uni_modules/vaporix-ui/libs/icons/LICENSE`. Paid components belong to the private `vaporix-ui-pro` repository and are not included here.
+<p align="center">
+	<a href="https://www.vaporix-ui.com/en/docs/install"><img src="https://img.shields.io/badge/uni--app%20x-vapor%20mode-2b6be0?style=flat-square" alt="uni-app x vapor mode"></a>
+	<a href="https://www.vaporix-ui.com/en/docs/install"><img src="https://img.shields.io/badge/HBuilderX-5.26%2B-6b7280?style=flat-square" alt="HBuilderX 5.26 or newer"></a>
+	<a href="https://www.vaporix-ui.com/en/components"><img src="https://img.shields.io/badge/components-60-2b6be0?style=flat-square" alt="60 components"></a>
+	<a href="https://www.vaporix-ui.com/en/components/icon"><img src="https://img.shields.io/badge/icons-1112-0b7c46?style=flat-square" alt="1112 icons"></a>
+	<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT license"></a>
+</p>
 
-Advanced components ship separately as `vaporix-ui-pro`; see the docs site Pro page for scope, pricing and licensing.
+## Design language
 
-## Layout
+Cool, low saturation, thin borders. Depth comes from whitespace and 1px borders; shadows are for overlays only.
 
-The repository is itself a uni-app x playground. The library is `uni_modules/vaporix-ui`; the demo is a three-tab app:
+| Item | Value |
+| --- | --- |
+| Tokens | Color, type, spacing, radius and height all come from `--vx-*`, one set per theme |
+| Type | Page brand 28, section title 17, body 15, caption 13 |
+| Controls | Heights 32 / 40 / 48, labels 14 / 16 / 18 |
+| Radius | Controls 6 / 8 / 10, containers 8, edge panels 12 |
+| Motion | Press 120ms, transition 220ms, spinner 700ms |
 
-- `pages/index/index.uvue` — component catalog (first tab), grouped by basic, form, feedback, layout and navigation.
-- `pages/demo/<component>/<component>.uvue` — one page per component, opened from the catalog.
-- `pages/api/api.uvue` and `pages/api-detail/api-detail.uvue` — JS API modules from `libs`, with runnable examples.
-- `pages/mine/mine.uvue` — theme picker, docs and version (third tab).
-- `pages/demo/shared/` — catalog data, persisted theme state and shared demo CSS.
+## Screenshots
 
-Native tab bar icons live in `static/tabbar` and switch between light and dark sets with the theme. Design values are in `DESIGN.md` and `uni_modules/vaporix-ui/libs/style/variables.css`.
+<p align="center">
+	<img src="static/readme/showcase-catalog.png" width="200" alt="Component catalog">
+	<img src="static/readme/showcase-button.png" width="200" alt="Button demo">
+	<img src="static/readme/showcase-card.png" width="200" alt="Card demo">
+</p>
 
-## Run
+<p align="center">
+	<sub>Catalog · buttons · cards (web demo; App builds are native)</sub>
+</p>
 
-Open this directory in HBuilderX 5.26 or newer, enable vapor mode, then run to a browser or a device. The browser build uses VDOM and does not represent App vapor rendering. The first page is the component catalog; the bottom native tab bar switches between components, JS APIs and profile.
+## Why Vaporix UI
 
-## Usage
+| Capability | Details |
+| --- | --- |
+| **Native rendering** | Vapor mode compiles uvue into native views; App builds never run in a WebView. |
+| **No missing pieces** | 60 components carry an empty project to launch; Pro only adds upgraded and heavy items. |
+| **Copy and use** | `uni_modules` plus easycom: drop the folder in, import tokens, enable vapor mode. |
+| **Enough icons** | Phosphor 2.1.2, 112 core icons by default plus 1000 extended on demand. |
 
-Put `vx-theme-light` or `vx-theme-dark` on the page root. Component API is documented in `uni_modules/vaporix-ui/readme.md`.
+## Quick start
+
+| Item | Requirement |
+| --- | --- |
+| HBuilderX | 5.26 or newer |
+| Project | uni-app x with vapor mode |
+| Style isolation | 2.0 enabled in `manifest.json` |
+| App animation | `@keyframes` needs 5.31+; spinners stay still on earlier builds |
+
+**1. Drop in the module**
+
+Copy `uni_modules/vaporix-ui` into your project's `uni_modules`. `pages/` and `App.uvue` belong to the demo.
+
+**2. Import tokens**
+
+App, in `App.uvue`:
+
+```vue
+<style>
+	/* #ifndef WEB */
+	@import "@/uni_modules/vaporix-ui/libs/style/variables.css";
+	/* #endif */
+</style>
+```
+
+Web, in `main.uts`:
+
+```ts
+// #ifdef WEB
+import "@/uni_modules/vaporix-ui/libs/style/variables.css"
+// #endif
+```
+
+**3. Enable vapor mode and pick a theme**
+
+`manifest.json`:
+
+```json
+{
+	"uni-app-x": {
+		"vapor": true,
+		"styleIsolationVersion": "2",
+		"vapor-render-target": "bytecode"
+	}
+}
+```
+
+Put `vx-theme-light` or `vx-theme-dark` on the page root:
 
 ```vue
 <template>
 	<view class="vx-theme-light">
-		<vx-icon name="search" />
-		<vx-icon name="check" type="success" />
-		<vx-icon name="info" type="info" />
-		<vx-icon name="heart" variant="fill" />
 		<vx-input v-model="keyword" placeholder="Keyword" clearable />
-		<vx-number-box v-model="quantity" :min="1" :max="99" />
-		<vx-countdown :time="967" type="danger" />
-		<vx-countdown :time="239953" show-days separator="unit" variant="soft" />
-		<vx-steps :items="checkoutSteps" :active="1" />
-		<vx-steps :items="checkoutSteps" :active="1" variant="number" />
-		<vx-steps direction="vertical" :items="checkoutSteps" :active="1" type="success" />
-		<vx-steps :items="checkoutSteps" :active="1" line-style="dashed" />
-		<vx-tabs v-model="tabActive" :items="tabs" />
-		<vx-tabs v-model="tabActive" :items="tabs" variant="soft" />
-		<vx-tabs v-model="tabActive" :items="tabs" variant="inverse" />
-		<vx-tabbar v-model="tabbarActive" :items="tabbarTabs" />
-		<vx-tabbar v-model="tabbarActive" :items="tabbarTabs" :fixed="false" />
-		<vx-tabbar v-model="tabbarActive" :items="tabbarRaised" :fixed="false" />
-		<vx-swipe-action :name="order.id" :actions="swipeActions">
-			<vx-list-cell title="Swipe left for actions" :divider="false" />
-		</vx-swipe-action>
-		<vx-textarea v-model="intro" label="Bio" label-width="72px" required counter :maxlength="140" />
-		<vx-tag type="primary" text="Tag" />
 		<vx-tag type="success" variant="soft" text="Done" />
-		<vx-tag type="warning" variant="plain" size="sm" text="Pending" />
-		<vx-tag type="danger" shape="half" closable text="Expired" @close="removeTag" />
 		<vx-button text="OK" type="primary" size="lg" />
-		<vx-button text="Continue" type="primary">
-			<vx-icon name="chevron-right" color="var(--vx-color-on-primary)" />
-		</vx-button>
-		<vx-button text="Remove" type="danger" variant="plain" />
-		<vx-button text="Later" type="default" variant="soft" shape="pill" />
-		<vx-button text="Learn more" type="info" variant="soft" />
-		<vx-badge :value="12" />
-		<vx-badge :value="88" type="default" />
-		<vx-badge type="danger" dot />
-		<vx-badge absolute ring :value="9" type="danger" size="sm">
-			<vx-icon name="bell" size="lg" />
-		</vx-badge>
-		<vx-no-data text="No orders" description="Pull to refresh, or try again later" action-text="Browse" />
-		<vx-collapse v-model="openPanels">
-			<vx-collapse-item name="ship" title="Shipping and delivery">
-				<text>Free shipping over 99.</text>
-			</vx-collapse-item>
-			<vx-collapse-item name="return" title="Returns and exchanges">
-				<text>Return within 7 days of delivery.</text>
-			</vx-collapse-item>
-		</vx-collapse>
-		<vx-footer :links="footerLinks" copyright="© 2026 Vaporix UI · MIT" @click="onFooterLink" />
-		<vx-tips v-model:show="tipsVisible" text="Saved" type="success" />
-		<vx-tips v-model:show="tipsVisible" position="top" type="warning" text="Connection lost" />
-		<vx-toast v-model:show="toastVisible" text="Saved" type="success" />
-		<vx-toast v-model:show="toastVisible" text="Something went wrong" type="danger" />
-		<vx-toast v-model:show="toastVisible" type="success" icon="heart" text="Added to favorites" />
-		<vx-actionsheet v-model:show="sheetVisible" description="Sign out of this account?"
-			:items="sheetItems" />
-		<vx-drawer v-model:show="drawerVisible" title="Filters" closable>
-			<vx-tag type="primary" variant="soft" text="Free shipping" />
-		</vx-drawer>
-		<vx-drawer v-model:show="shareVisible" position="bottom" height="42%">
-			<text>Share sheet</text>
-		</vx-drawer>
-		<vx-actionsheet v-model:show="sheetVisible" title="Select your gender" :items="genderItems"
-			@select="onGenderSelect" />
-		<vx-modal v-model:show="modalVisible" title="Notice" content="Submit these changes?"
-			@confirm="onConfirm" />
-		<vx-datetime v-model="bookDate" v-model:show="dateVisible" mode="date" title="Pick a date" />
-		<vx-datetime v-model="bookTime" v-model:show="timeVisible" mode="time" format="HH:mm" />
-		<vx-rate v-model="score" show-text />
-		<vx-rate v-model="score" allow-half show-text />
-		<vx-rate :model-value="3.45" readonly />
-		<vx-list-view title="Account and orders">
-			<vx-list-cell title="My wallet" value="¥128.00" arrow @click="openWallet" />
-			<vx-list-cell title="Shipping address" value="Pudong, Shanghai" arrow :divider="false" />
-		</vx-list-view>
-		<vx-list-view title="Notifications" variant="plain">
-			<vx-list-cell title="System notifications" value="On" arrow :divider="false" />
-		</vx-list-view>
-		<vx-card title="CSDN Cloud" meta="1h ago" avatar="/static/demo/card/avatar-cs.png"
-			content="Card body" footer="Source · Vaporix UI" />
-		<vx-section title="Today's picks" description="Updated from your browsing history." marker />
-		<vx-section title="Account security" description="Updated in the last 30 days" variant="soft" marker />
-		<vx-white-space size="md" />
-		<vx-wing-blank size="lg">
-			<vx-card title="Inset card" content="Horizontal padding only; background, radius and border stay with the wrapper." />
-		</vx-wing-blank>
-		<vx-white-space height="24px" />
-		<vx-grid>
-			<vx-grid-item :columns="3" :index="0" icon="wallet" title="Wallet" />
-			<vx-grid-item :columns="3" :index="1" icon="receipt" title="Orders" />
-			<vx-grid-item :columns="3" :index="2" icon="settings" title="Settings" />
-		</vx-grid>
-		<vx-bubble-popup v-model:show="menuVisible" placement="bottom" align="end" :items="menuItems">
-			<vx-button text="More" @click="menuVisible = !menuVisible" />
-		</vx-bubble-popup>
 	</view>
 </template>
 ```
 
-Core 112 ships by default. The extended 1000 require importing `@/uni_modules/vaporix-ui/libs/style/icons-extend.css` in the app's global styles; otherwise extended glyphs are not loaded.
+Easycom auto-scans, so no `custom` regex is needed. Prop tables live in the [component docs](https://www.vaporix-ui.com/en/components).
+
+## Components
+
+| Group | Count | Components |
+| --- | :---: | --- |
+| Basic | 6 | [Button](https://www.vaporix-ui.com/en/components/button) · [Icon](https://www.vaporix-ui.com/en/components/icon) · [Tag](https://www.vaporix-ui.com/en/components/tag) · [Badge](https://www.vaporix-ui.com/en/components/badge) · [Text](https://www.vaporix-ui.com/en/components/text) · [Link](https://www.vaporix-ui.com/en/components/link) |
+| Form | 12 | [Input](https://www.vaporix-ui.com/en/components/input) · [Textarea](https://www.vaporix-ui.com/en/components/textarea) · [Number box](https://www.vaporix-ui.com/en/components/number-box) · [Radio](https://www.vaporix-ui.com/en/components/radio) · [Checkbox](https://www.vaporix-ui.com/en/components/checkbox) · [Switch](https://www.vaporix-ui.com/en/components/switch) · [Rate](https://www.vaporix-ui.com/en/components/rate) · [Datetime](https://www.vaporix-ui.com/en/components/datetime) · [Picker](https://www.vaporix-ui.com/en/components/picker) · [Calendar](https://www.vaporix-ui.com/en/components/calendar) · [Form](https://www.vaporix-ui.com/en/components/form) · [Form item](https://www.vaporix-ui.com/en/components/form-item) |
+| Feedback | 11 | [Tips](https://www.vaporix-ui.com/en/components/tips) · [Toast](https://www.vaporix-ui.com/en/components/toast) · [Loading](https://www.vaporix-ui.com/en/components/loading) · [Load more](https://www.vaporix-ui.com/en/components/loadmore) · [No more](https://www.vaporix-ui.com/en/components/nomore) · [No data](https://www.vaporix-ui.com/en/components/no-data) · [Action sheet](https://www.vaporix-ui.com/en/components/actionsheet) · [Modal](https://www.vaporix-ui.com/en/components/modal) · [Drawer](https://www.vaporix-ui.com/en/components/drawer) · [Bubble popup](https://www.vaporix-ui.com/en/components/bubble-popup) · [Popup](https://www.vaporix-ui.com/en/components/popup) |
+| Layout | 18 | [List view](https://www.vaporix-ui.com/en/components/list-view) · [List cell](https://www.vaporix-ui.com/en/components/list-cell) · [Card](https://www.vaporix-ui.com/en/components/card) · [Section](https://www.vaporix-ui.com/en/components/section) · [White space](https://www.vaporix-ui.com/en/components/white-space) · [Wing blank](https://www.vaporix-ui.com/en/components/wing-blank) · [Grid](https://www.vaporix-ui.com/en/components/grid) · [Grid item](https://www.vaporix-ui.com/en/components/grid-item) · [Row](https://www.vaporix-ui.com/en/components/row) · [Col](https://www.vaporix-ui.com/en/components/col) · [Image group](https://www.vaporix-ui.com/en/components/image-group) · [Collapse](https://www.vaporix-ui.com/en/components/collapse) · [Collapse item](https://www.vaporix-ui.com/en/components/collapse-item) · [Tabs](https://www.vaporix-ui.com/en/components/tabs) · [Sticky](https://www.vaporix-ui.com/en/components/sticky) · [Image](https://www.vaporix-ui.com/en/components/image) · [Divider](https://www.vaporix-ui.com/en/components/divider) · [Safe area](https://www.vaporix-ui.com/en/components/safe-area) |
+| Navigation and display | 13 | [QR code](https://www.vaporix-ui.com/en/components/qrcode) · [Navigation bar](https://www.vaporix-ui.com/en/components/navigation-bar) · [Status bar](https://www.vaporix-ui.com/en/components/status-bar) · [Tab bar](https://www.vaporix-ui.com/en/components/tabbar) · [Footer](https://www.vaporix-ui.com/en/components/footer) · [Swipe action](https://www.vaporix-ui.com/en/components/swipe-action) · [Time axis](https://www.vaporix-ui.com/en/components/time-axis) · [Steps](https://www.vaporix-ui.com/en/components/steps) · [Progress](https://www.vaporix-ui.com/en/components/progress) · [Countdown](https://www.vaporix-ui.com/en/components/countdown) · [Rolling news](https://www.vaporix-ui.com/en/components/rolling-news) · [Notice bar](https://www.vaporix-ui.com/en/components/notice-bar) · [Avatar](https://www.vaporix-ui.com/en/components/avatar) |
+
+The table covers the free tier. The 31 advanced components, including table, virtual list and image preview, ship in `vaporix-ui-pro`; see the [Pro page](https://www.vaporix-ui.com/en/docs/pro).
+
+## Repository layout
+
+This repository is also the demo project; the library is `uni_modules/vaporix-ui`.
+
+```
+vaporix-ui/
+├── DESIGN.md                          Design values
+├── App.uvue                           App entry, imports tokens outside web
+├── main.uts                           Creates the app; imports tokens on web
+├── manifest.json                      Vapor mode, style isolation 2.0
+├── pages.json                         Routes, easycom and native tab bar
+├── pages/
+│   ├── index/index.uvue               Component catalog
+│   ├── api/                           JS API catalog with examples
+│   ├── mine/mine.uvue                 Theme and version
+│   └── demo/
+│       ├── shared/                    Catalog data, theme state, shared CSS
+│       └── button/button.uvue         One page per component, 54 total
+├── static/                            Tab bar icons, demo assets, README shots
+└── uni_modules/vaporix-ui/
+    ├── components/                    One directory per component
+    ├── libs/style/variables.css       Tokens and core icon font faces
+    ├── libs/style/icons-extend.css    Extended icon font faces (optional)
+    ├── libs/                          JS modules: theme, form rules, dates, lunar, QR
+    ├── readme.md                      Component API
+    └── changelog.md                   Release notes
+```
+
+## Run locally
+
+1. Open this directory in HBuilderX 5.26 or newer.
+2. Confirm vapor mode is on in `manifest.json`. After moving machines, click "regenerate" for your own appid.
+3. Run to a browser or a device. The browser build uses VDOM and does not represent App vapor rendering.
+
+The demo has three tabs: 54 component pages, runnable examples for the `libs` modules, and theme plus version. Theme state lives in `pages/demo/shared/theme.ts`; switching `vx-theme-light` / `vx-theme-dark` on the page root swaps tokens.
+
+To add a demo page, write `pages/demo/<name>/<name>.uvue`, register the route in `pages.json`, and add an entry to `DEMO_COMPONENTS` in `catalog.ts`.
 
 ## Conventions
 
-- `<script setup>` only. Do not set `lang`. On 5.26 the script is compiled with uts2js; from 5.31 an omitted `lang` defaults to TypeScript.
-- Do not write UTS in components. Native plugins go under `utssdk/`.
-- `size` is `sm | md | lg`, default `md`. Interactive controls use 32 / 40 / 48 heights with 12 / 16 / 24 horizontal padding and control text sizes 14 / 16 / 18; tags use their own heights 20 / 24 / 28. List rows use their own minimum heights 44 / 52 / 60 with titles at 13 / 15 / 17. Card headers reuse those list row heights; images and avatars have their own sizes. Button types are `primary | success | info | warning | danger | default`; variants are `solid | plain | soft | link`; shapes are `rounded | pill | square`. Tag variants are `solid | soft | plain`; tag shapes add `half` (pill on the left, square on the right). Rate stars have their own sizes 20 / 24 / 28 and a fixed 8px gap. Toast has its own 40px icon and a 120px minimum box, blocks the page while visible and sits at layer 1100, above Tips at 1010. The action sheet sits at layer 1000, below Tips 1010, Loading 1050 and Toast 1100; it blocks the page, keeps 2–6 short actions and has no internal scroll. Icon `type` uses the same six values. Footer links emit `click` with the link object; the component never routes on its own. List views own the group heading and surface; list cells own the rows, arrows and clicks. Turn off the last divider in each group and turn `clickable` off for static rows. Cards are bordered containers with optional header, body and footer; they use their own padding and avatar sizes, never a shadow, and `bodyPadded=false` lets images and list rows reach the edges. Grids own only the surface and frame; columns, size and content live on grid items, and `index` keeps the first row and column free of inner lines. Loading uses the icon sizes 14 / 18 / 22 for its spinner and body-small 13 / 20 for copy; `type` only colors the spinner. The overlay mode is fixed, centered, masked, blocks the page and sits at layer 1050, between Tips and Toast. Load more and no more share one 16px footer rhythm, so switching between them does not shift the layout.
-- Selectors are single classes. Combined states use one class, such as `vx-button--plain-primary`.
+1. `<script setup>` without `lang`. 5.26 compiles through uts2js; from 5.31 the default is TypeScript.
+2. No UTS in components; native plugins go under `utssdk/`.
+3. `size` is `sm | md | lg`, default `md`.
+4. Single-class selectors; combined states use one class, such as `vx-button--plain-primary`.
+5. A new component needs its own demo page plus entries in `catalog.ts`, `pages.json` and the library readme; new tokens go into both themes and `DESIGN.md`.
+
+## Licensing
+
+| Tier | Contents | License |
+| --- | --- | --- |
+| Free `vaporix-ui` | 60 components, 1112 icons, design tokens | [MIT](./LICENSE); personal and commercial use |
+| Advanced `vaporix-ui-pro` | 31 components including table, virtual list, image preview | Sold separately; see the [Pro page](https://www.vaporix-ui.com/en/docs/pro) |
+
+Icons come from Phosphor 2.1.2 (MIT); the license ships at `uni_modules/vaporix-ui/libs/icons/LICENSE`.
+
+## Contributing
+
+Fork the repository, create a `feat/<component>` branch, commit, then open a pull request.
+
+Report bugs and ideas in [issues](https://gitee.com/DonkeySmall/vaporix-ui/issues). A star is welcome if the library helps you.

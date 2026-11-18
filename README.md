@@ -1,216 +1,194 @@
-<p align="center"><img src="static/logo.png" width="72" height="72" alt="元汽UI"></p>
+<p align="center">
+	<img src="static/logo.png" width="88" height="88" alt="元汽UI">
+</p>
 
-# 元汽UI（Vaporix UI）
+<h1 align="center">元汽UI · Vaporix UI</h1>
 
-uni-app x 蒸汽模式的原生渲染组件库。基础组件开源，按 `uni_modules` 组织。
+<p align="center">
+	uni-app x 蒸汽模式的原生渲染组件库<br>
+	60 个组件 · 1112 个图标 · 亮暗两套令牌 · 免费层 MIT
+</p>
 
-- 中文名：元汽UI
-- 英文名：Vaporix UI
-- 技术栈：Vue 3 组合式 API、TypeScript、uvue、蒸汽模式
-- 平台：Android、iOS、鸿蒙、Web、小程序
-- 组件前缀：`vx-`
-- 设计令牌：`--vx-*`
-- HBuilderX：5.26 及以上。App 端 `@keyframes` 要 5.31 起才支持，5.26 上加载圈可能不旋转。
+<p align="center">
+	<a href="https://www.vaporix-ui.com">文档</a> ·
+	<a href="https://www.vaporix-ui.com/components">组件</a> ·
+	<a href="https://www.vaporix-ui.com/docs/install">安装</a> ·
+	<a href="https://www.vaporix-ui.com/docs/pro">Pro 组件</a> ·
+	<a href="uni_modules/vaporix-ui/changelog.md">更新日志</a> ·
+	<a href="README.en.md">English</a>
+</p>
 
-## 授权
+<p align="center">
+	<a href="https://www.vaporix-ui.com/docs/install"><img src="https://img.shields.io/badge/uni--app%20x-%E8%92%B8%E6%B1%BD%E6%A8%A1%E5%BC%8F-2b6be0?style=flat-square" alt="uni-app x 蒸汽模式"></a>
+	<a href="https://www.vaporix-ui.com/docs/install"><img src="https://img.shields.io/badge/HBuilderX-5.26%2B-6b7280?style=flat-square" alt="HBuilderX 5.26 及以上"></a>
+	<a href="https://www.vaporix-ui.com/components"><img src="https://img.shields.io/badge/%E7%BB%84%E4%BB%B6-60-2b6be0?style=flat-square" alt="60 个组件"></a>
+	<a href="https://www.vaporix-ui.com/components/icon"><img src="https://img.shields.io/badge/%E5%9B%BE%E6%A0%87-1112-0b7c46?style=flat-square" alt="1112 个图标"></a>
+	<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT 许可"></a>
+</p>
 
-基础组件（按钮、图标、输入框、多行输入框、表单容器、表单项、文本、超链接、单项选择器、多项选择器、开关选择器、数字框、倒计时、步骤条、进度条、操作菜单、气泡弹框、抽屉、弹出层、弹框、日期时间选择器、标签页、标签栏、滑动菜单、标签、徽章、页脚、消息提示、轻提示、评分、列表分组、列表行、折叠面板、折叠项、卡片、标题栏、图片、头像、分割线、安全区、上下留白、左右留白、宫格、宫格项、栅格布局、多端适配、图片组合、二维码、加载中、加载更多、没有更多、暂无数据、吸顶容器、导航栏、状态栏、时间轴、滚动消息、通告栏，以及后续同类基础组件）使用 [MIT](./LICENSE)，个人和商业项目都可以用。
+## 设计概念
 
-图标来自 Phosphor 2.1.2（MIT），分 core 112 / extend 1000 两档，每档都有 regular / fill；许可证全文随组件放在 `uni_modules/vaporix-ui/libs/icons/LICENSE`。core 默认加载，extend 按需引入 `libs/style/icons-extend.css`。
+冷色、低饱和、细描边。层级靠留白和 1px 描边，阴影只给浮层。
 
-高级组件单独销售（`vaporix-ui-pro`），不包含在本仓库；范围、价格与授权见文档站的「Pro 组件」页。
+| 项 | 取值 |
+| --- | --- |
+| 令牌 | 颜色、字号、间距、圆角、高度全取 `--vx-*`，亮暗各一份 |
+| 字号 | 页面品牌 28、区块标题 17、正文 15、辅助 13 |
+| 控件 | 高度 32 / 40 / 48，文案 14 / 16 / 18 |
+| 圆角 | 控件 6 / 8 / 10，容器 8，贴边面板 12 |
+| 动效 | 按下 120ms，过渡 220ms，加载旋转 700ms |
 
-## 目录
+## 截图
 
+<p align="center">
+	<img src="static/readme/showcase-catalog.png" width="200" alt="组件目录">
+	<img src="static/readme/showcase-button.png" width="200" alt="按钮演示页">
+	<img src="static/readme/showcase-card.png" width="200" alt="卡片演示页">
+</p>
+
+<p align="center">
+	<sub>组件目录 · 按钮 · 卡片（Web 演示，App 为原生渲染）</sub>
+</p>
+
+## 为什么用元汽UI
+
+| 能力 | 说明 |
+| --- | --- |
+| **原生渲染** | 蒸汽模式把 uvue 编译成原生视图，App 端不走 WebView。 |
+| **免费层不缺件** | 60 个组件够空项目走到上线，Pro 只补高配版和重型件。 |
+| **复制即用** | `uni_modules` 加 easycom，放目录、引令牌、开蒸汽模式三步。 |
+| **图标够用** | Phosphor 2.1.2，core 112 默认加载，extend 1000 按需引入。 |
+
+## 快速开始
+
+| 项 | 要求 |
+| --- | --- |
+| HBuilderX | 5.26 及以上 |
+| 项目 | uni-app x，蒸汽模式 |
+| 样式隔离 | `manifest.json` 里开启 2.0 |
+| App 动效 | `@keyframes` 要 5.31 起，更早版本加载圈不旋转 |
+
+**1. 放入模块**
+
+复制 `uni_modules/vaporix-ui` 到项目的 `uni_modules` 下。`pages/`、`App.uvue` 属于演示工程，不复制。
+
+**2. 引入令牌**
+
+App 端在 `App.uvue`：
+
+```vue
+<style>
+	/* #ifndef WEB */
+	@import "@/uni_modules/vaporix-ui/libs/style/variables.css";
+	/* #endif */
+</style>
 ```
-vaporix-ui/
-├── DESIGN.md                          设计规范
-├── App.uvue                           应用入口，非 Web 端引入令牌和演示样式
-├── main.uts                           创建应用；Web 端引入令牌和演示样式
-├── manifest.json                      蒸汽模式、样式隔离 2.0
-├── pages.json                         路由、easycom 和原生 tabBar
-├── pages/
-│   ├── index/index.uvue               组件目录（第一个 tab）
-│   ├── api/api.uvue                   接口目录（第二个 tab）
-│   ├── api-detail/api-detail.uvue     JS 接口详情与可运行示例
-│   ├── mine/mine.uvue                 我的（第三个 tab）：外观、文档和版本
-│   └── demo/
-│       ├── shared/                    目录数据、主题状态、演示页公共 CSS
-│       ├── button/button.uvue         组件演示页，按组件一页
-│       └── …                          其余 53 个组件演示页
-├── static/
-│   ├── tabbar/                        tabBar 图标（亮 / 暗 × 常规 / 选中）
-│   └── demo/                          轻提示和卡片演示素材
-└── uni_modules/vaporix-ui/
-    ├── package.json
-    ├── readme.md                      组件 API
-    ├── libs/style/variables.css       设计令牌与 core 图标字体声明
-    ├── libs/style/icons-extend.css    extend 图标字体声明（可选）
-    ├── libs/types/common.ts           尺寸、语义色
-    ├── libs/theme.ts                  JS API 用的主题色
-    ├── libs/motion.ts                 按下态和加载旋转时长常量
-    ├── libs/rate.ts                   评分手势用的像素常量
-    ├── libs/swipe-action.ts           滑动菜单的像素常量和实例登记
-    ├── libs/datetime.ts               日期时间的模式、解析、格式化和天数
-    ├── libs/calendar.ts               公历网格、星期和翻月
-    ├── libs/form.ts                   表单规则引擎与内置校验文案
-    ├── libs/overlay.ts                弹层层级、时长、安全区和滚动锁常量
-    ├── libs/lunar.ts                  公历转农历
-    ├── libs/qrcode.ts                 二维码编码、分块、掩码与边长常量
-    ├── libs/icons/codepoints.ts       图标名、码点与 core/extend tier
-    ├── libs/icons/LICENSE             图标上游许可证
-    ├── static/fonts/vx-icons.ttf      core regular
-    ├── static/fonts/vx-icons-fill.ttf core fill
-    ├── static/fonts/vx-icons-extend.ttf extend regular
-    ├── static/fonts/vx-icons-extend-fill.ttf extend fill
-    └── components/                    组件，一个目录一个组件
+
+Web 端在 `main.uts`：
+
+```ts
+// #ifdef WEB
+import "@/uni_modules/vaporix-ui/libs/style/variables.css"
+// #endif
 ```
 
-## 本地运行
+**3. 开蒸汽模式，挂主题**
 
-1. 用 HBuilderX 5.26+ 打开本目录。当前工程按 5.26 编写。
-2. 在 `manifest.json` 可视化界面确认已勾选蒸汽模式。换机器后点「重新获取」生成自己的 appid。
-3. 运行到浏览器做快速查看，或连接真机运行到 Android / iOS。浏览器走 VDOM，不能代表 App 蒸汽模式。
-4. 首页是「组件」目录；底部原生 tabBar 切换组件 / 接口 / 我的。
+`manifest.json`：
 
-## 示例项目
+```json
+{
+	"uni-app-x": {
+		"vapor": true,
+		"styleIsolationVersion": "2",
+		"vapor-render-target": "bytecode"
+	}
+}
+```
 
-示例本体是一个三 tab 的 uni-app x 应用：
-
-- **组件**：54 个组件演示页，按基础 / 表单 / 反馈 / 布局 / 导航与展示分类。点分类下的组件进入独立页面，首屏不再一次性渲染全部区块。
-- **接口**：libs 里 6 个可独立引用的 JS 模块，另有表单规则引擎 `libs/form.ts`；配有可运行的取值、图标搜索、日期格式化、日历和农历示例。
-- **我的**：亮色 / 暗色外观、文档路径和版本信息。
-
-主题状态在 `pages/demo/shared/theme.ts`，内存和本地缓存双写，同时同步原生导航栏、窗口底色和原生 tabBar（含亮 / 暗两套图标）。页面根节点仍只用 `vx-theme-light` / `vx-theme-dark` 切令牌。
-
-新增组件演示页：
-
-1. 在 `pages/demo/<name>/<name>.uvue` 写页面。
-2. 在 `pages.json` 注册路由。
-3. 在 `pages/demo/shared/catalog.ts` 的 `DEMO_COMPONENTS` 里登记分类、图标、说明和示例数量。
-
-## App 端已知警告
-
-HBuilderX 5.26 的 App 蒸汽模式还不支持 CSS `@keyframes`，`vx-button` 和 `vx-loading` 的加载头会静态显示，编译日志会出现 `animation-*` 与 `@keyframes` 不受支持的提示。升级到 5.31 及以上即可恢复动画并消除这些提示。
-
-其余 Web 专用样式（`cursor`、百分比 `max-width`、`@font-face` 的 `font-weight` / `font-style` / `font-display`、`aria-hidden`）已经移除或用条件编译隔离，App 端不再报相关提示。
-
-## 使用
+页面根节点挂 `vx-theme-light` 或 `vx-theme-dark`：
 
 ```vue
 <template>
 	<view class="vx-theme-light">
-		<vx-icon name="search" />
-		<vx-icon name="check" type="success" />
-		<vx-icon name="info" type="info" />
-		<vx-icon name="heart" variant="fill" />
 		<vx-input v-model="keyword" placeholder="请输入关键词" clearable />
-		<vx-number-box v-model="quantity" :min="1" :max="99" />
-		<vx-countdown :time="967" type="danger" />
-		<vx-countdown :time="239953" show-days separator="unit" variant="soft" />
-		<vx-steps :items="checkoutSteps" :active="1" />
-		<vx-steps :items="checkoutSteps" :active="1" variant="number" />
-		<vx-steps direction="vertical" :items="checkoutSteps" :active="1" type="success" />
-		<vx-steps :items="checkoutSteps" :active="1" line-style="dashed" />
-		<vx-tabs v-model="tabActive" :items="tabs" />
-		<vx-tabs v-model="tabActive" :items="tabs" variant="soft" />
-		<vx-tabs v-model="tabActive" :items="tabs" variant="inverse" />
-		<vx-tabbar v-model="tabbarActive" :items="tabbarTabs" />
-		<vx-tabbar v-model="tabbarActive" :items="tabbarTabs" :fixed="false" />
-		<vx-tabbar v-model="tabbarActive" :items="tabbarRaised" :fixed="false" />
-		<vx-swipe-action :name="order.id" :actions="swipeActions">
-			<vx-list-cell title="向左滑查看操作" :divider="false" />
-		</vx-swipe-action>
-		<vx-collapse v-model="openPanels">
-			<vx-collapse-item name="ship" title="配送与运费">
-				<text>满 99 元包邮，偏远地区加收 10 元运费。</text>
-			</vx-collapse-item>
-			<vx-collapse-item name="return" title="退换货政策">
-				<text>签收后 7 天内支持无理由退货。</text>
-			</vx-collapse-item>
-		</vx-collapse>
-		<vx-textarea v-model="intro" label="简介" label-width="72px" required counter :maxlength="140" />
-		<vx-tag type="primary" text="标签" />
 		<vx-tag type="success" variant="soft" text="已完成" />
-		<vx-tag type="warning" variant="plain" size="sm" text="待处理" />
-		<vx-tag type="danger" shape="half" closable text="已过期" @close="removeTag" />
 		<vx-button text="确定" type="primary" size="lg" />
-		<vx-button text="继续" type="primary">
-			<vx-icon name="chevron-right" color="var(--vx-color-on-primary)" />
-		</vx-button>
-		<vx-button text="删除" type="danger" variant="plain" />
-		<vx-button text="稍后处理" type="default" variant="soft" shape="pill" />
-		<vx-button text="查看说明" type="info" variant="soft" />
-		<vx-button text="查看详情" type="primary" variant="link" />
-		<vx-button text="加载中" type="primary" :loading="true" />
-		<vx-badge :value="12" />
-		<vx-badge :value="88" type="default" />
-		<vx-badge type="danger" dot />
-		<vx-badge absolute ring :value="9" type="danger" size="sm">
-			<vx-icon name="bell" size="lg" />
-		</vx-badge>
-		<vx-footer :links="footerLinks" copyright="© 2026 Vaporix UI · MIT" @click="onFooterLink" />
-		<vx-tips v-model:show="tipsVisible" text="已保存" type="success" />
-		<vx-tips v-model:show="tipsVisible" position="top" type="warning" text="网络已断开" />
-		<vx-toast v-model:show="toastVisible" text="操作成功" type="success" />
-		<vx-toast v-model:show="toastVisible" text="操作失败" type="danger" />
-		<vx-toast v-model:show="toastVisible" type="success" icon="heart" text="已加入收藏" />
-		<vx-actionsheet v-model:show="sheetVisible" description="确认退出登录吗？" :items="sheetItems" />
-		<vx-drawer v-model:show="drawerVisible" title="筛选" closable>
-			<vx-tag type="primary" variant="soft" text="包邮" />
-		</vx-drawer>
-		<vx-drawer v-model:show="shareVisible" position="bottom" height="42%">
-			<text>分享面板</text>
-		</vx-drawer>
-		<vx-actionsheet v-model:show="sheetVisible" title="选择您的性别" :items="genderItems"
-			@select="onGenderSelect" />
-		<vx-modal v-model:show="modalVisible" title="提示" content="确认提交本次修改吗？"
-			@confirm="onConfirm" />
-		<vx-datetime v-model="bookDate" v-model:show="dateVisible" mode="date" title="选择预约日期" />
-		<vx-datetime v-model="bookTime" v-model:show="timeVisible" mode="time" format="HH:mm" />
-		<vx-rate v-model="score" show-text />
-		<vx-rate v-model="score" allow-half show-text />
-		<vx-rate :model-value="3.45" readonly />
-		<vx-list-view title="账户与订单">
-			<vx-list-cell title="我的钱包" value="¥128.00" arrow @click="openWallet" />
-			<vx-list-cell title="收货地址" value="上海市浦东新区" arrow :divider="false" />
-		</vx-list-view>
-		<vx-list-view title="通知设置" variant="plain">
-			<vx-list-cell title="系统通知" value="已开启" arrow :divider="false" />
-		</vx-list-view>
-		<vx-card title="CSDN云计算" meta="1小时前" avatar="/static/demo/card/avatar-cs.png"
-			content="卡片正文" footer="来源 · Vaporix UI" />
-		<vx-section title="今日推荐" description="根据你的浏览记录更新。" marker />
-		<vx-section title="账户安全" description="最近 30 天内更新" variant="soft" marker />
-		<vx-grid>
-			<vx-grid-item :columns="3" :index="0" icon="wallet" title="钱包" />
-			<vx-grid-item :columns="3" :index="1" icon="receipt" title="订单" />
-			<vx-grid-item :columns="3" :index="2" icon="settings" title="设置" />
-		</vx-grid>
-		<vx-bubble-popup v-model:show="menuVisible" placement="bottom" align="end" :items="menuItems">
-			<vx-button text="更多" @click="menuVisible = !menuVisible" />
-		</vx-bubble-popup>
 	</view>
 </template>
 ```
 
-core 112 个图标默认可用；extend 1000 个需要在 `App.uvue` 的全局样式里额外引入 `@/uni_modules/vaporix-ui/libs/style/icons-extend.css`，否则扩展字形不会加载。
+easycom 自动扫描，不用写 `custom` 正则。属性表见[组件文档](https://www.vaporix-ui.com/components)。
 
-主题来自页面根节点的 `vx-theme-light` / `vx-theme-dark`。
+## 组件一览
 
-接入步骤和属性表见 [`uni_modules/vaporix-ui/readme.md`](./uni_modules/vaporix-ui/readme.md)。设计数值见 [`DESIGN.md`](./DESIGN.md)。
+| 分类 | 数量 | 组件 |
+| --- | :---: | --- |
+| 基础 | 6 | [按钮](https://www.vaporix-ui.com/components/button) · [图标](https://www.vaporix-ui.com/components/icon) · [标签](https://www.vaporix-ui.com/components/tag) · [徽章](https://www.vaporix-ui.com/components/badge) · [文本](https://www.vaporix-ui.com/components/text) · [超链接](https://www.vaporix-ui.com/components/link) |
+| 表单 | 12 | [输入框](https://www.vaporix-ui.com/components/input) · [多行输入框](https://www.vaporix-ui.com/components/textarea) · [数字框](https://www.vaporix-ui.com/components/number-box) · [单项选择器](https://www.vaporix-ui.com/components/radio) · [多项选择器](https://www.vaporix-ui.com/components/checkbox) · [开关选择器](https://www.vaporix-ui.com/components/switch) · [评分](https://www.vaporix-ui.com/components/rate) · [日期时间](https://www.vaporix-ui.com/components/datetime) · [联动选择](https://www.vaporix-ui.com/components/picker) · [日历](https://www.vaporix-ui.com/components/calendar) · [表单](https://www.vaporix-ui.com/components/form) · [表单项](https://www.vaporix-ui.com/components/form-item) |
+| 反馈 | 11 | [消息提示](https://www.vaporix-ui.com/components/tips) · [轻提示](https://www.vaporix-ui.com/components/toast) · [加载中](https://www.vaporix-ui.com/components/loading) · [加载更多](https://www.vaporix-ui.com/components/loadmore) · [没有更多](https://www.vaporix-ui.com/components/nomore) · [暂无数据](https://www.vaporix-ui.com/components/no-data) · [操作菜单](https://www.vaporix-ui.com/components/actionsheet) · [弹框](https://www.vaporix-ui.com/components/modal) · [抽屉](https://www.vaporix-ui.com/components/drawer) · [气泡弹框](https://www.vaporix-ui.com/components/bubble-popup) · [弹出层](https://www.vaporix-ui.com/components/popup) |
+| 布局 | 18 | [列表分组](https://www.vaporix-ui.com/components/list-view) · [列表行](https://www.vaporix-ui.com/components/list-cell) · [卡片](https://www.vaporix-ui.com/components/card) · [标题栏](https://www.vaporix-ui.com/components/section) · [上下留白](https://www.vaporix-ui.com/components/white-space) · [左右留白](https://www.vaporix-ui.com/components/wing-blank) · [宫格](https://www.vaporix-ui.com/components/grid) · [宫格项](https://www.vaporix-ui.com/components/grid-item) · [栅格布局](https://www.vaporix-ui.com/components/row) · [多端适配](https://www.vaporix-ui.com/components/col) · [图片组合](https://www.vaporix-ui.com/components/image-group) · [折叠面板](https://www.vaporix-ui.com/components/collapse) · [折叠项](https://www.vaporix-ui.com/components/collapse-item) · [标签页](https://www.vaporix-ui.com/components/tabs) · [吸顶容器](https://www.vaporix-ui.com/components/sticky) · [图片](https://www.vaporix-ui.com/components/image) · [分割线](https://www.vaporix-ui.com/components/divider) · [安全区](https://www.vaporix-ui.com/components/safe-area) |
+| 导航与展示 | 13 | [二维码](https://www.vaporix-ui.com/components/qrcode) · [导航栏](https://www.vaporix-ui.com/components/navigation-bar) · [状态栏](https://www.vaporix-ui.com/components/status-bar) · [标签栏](https://www.vaporix-ui.com/components/tabbar) · [页脚](https://www.vaporix-ui.com/components/footer) · [滑动菜单](https://www.vaporix-ui.com/components/swipe-action) · [时间轴](https://www.vaporix-ui.com/components/time-axis) · [步骤条](https://www.vaporix-ui.com/components/steps) · [进度条](https://www.vaporix-ui.com/components/progress) · [倒计时](https://www.vaporix-ui.com/components/countdown) · [滚动消息](https://www.vaporix-ui.com/components/rolling-news) · [通告栏](https://www.vaporix-ui.com/components/notice-bar) · [头像](https://www.vaporix-ui.com/components/avatar) |
+
+上表是免费层。表格、虚拟列表、图片预览等 31 个高级组件在 `vaporix-ui-pro`，见 [Pro 组件](https://www.vaporix-ui.com/docs/pro)。
+
+## 仓库结构
+
+本仓库同时是演示工程，组件库在 `uni_modules/vaporix-ui`。
+
+```
+vaporix-ui/
+├── DESIGN.md                          设计规范
+├── App.uvue                           应用入口，非 Web 端引入令牌
+├── main.uts                           创建应用；Web 端引入令牌
+├── manifest.json                      蒸汽模式、样式隔离 2.0
+├── pages.json                         路由、easycom 和原生 tabBar
+├── pages/
+│   ├── index/index.uvue               组件目录
+│   ├── api/                           接口目录与示例
+│   ├── mine/mine.uvue                 外观与版本
+│   └── demo/
+│       ├── shared/                    目录数据、主题状态、公共 CSS
+│       └── button/button.uvue         组件演示页，共 54 页
+├── static/                            tabBar 图标、演示素材、README 截图
+└── uni_modules/vaporix-ui/
+    ├── components/                    一个目录一个组件
+    ├── libs/style/variables.css       设计令牌与 core 图标字体
+    ├── libs/style/icons-extend.css    extend 图标字体（可选）
+    ├── libs/                          JS 模块：主题、表单规则、日期、农历、二维码
+    ├── readme.md                      组件 API
+    └── changelog.md                   版本记录
+```
+
+## 本地运行
+
+1. 用 HBuilderX 5.26+ 打开本目录。
+2. 在 `manifest.json` 里确认已勾选蒸汽模式。换机器后点「重新获取」生成自己的 appid。
+3. 运行到浏览器或真机。浏览器走 VDOM，不代表 App 蒸汽模式。
+
+演示工程分三个 tab：组件是 54 个演示页，接口是 `libs` 模块的可运行示例，我的是外观与版本。主题状态在 `pages/demo/shared/theme.ts`，页面根节点切 `vx-theme-light` / `vx-theme-dark` 即换令牌。
+
+新增演示页：写 `pages/demo/<name>/<name>.uvue`，在 `pages.json` 注册路由，在 `catalog.ts` 的 `DEMO_COMPONENTS` 登记。
 
 ## 开发约定
 
-1. 组件使用 `<script setup>`，不写 `lang`。5.26 会按 uts2js 编译 TypeScript 写法；5.31 起默认就是 TypeScript，仍然不要补 `lang`。
-2. 组件实现不写 UTS。原生插件才放 `utssdk/`。
-3. `size` 只有 `sm`、`md`、`lg`，默认 `md`。
-4. 样式只用单个 class 选择器。组合态写成一个 class，例如 `vx-button--plain-primary`。
-5. 新增组件要补独立演示页，在 `pages/demo/shared/catalog.ts`、`pages.json` 和组件库 readme 登记。新增令牌要同时改亮色、暗色和 `DESIGN.md`。
+1. `<script setup>`，不写 `lang`。5.26 按 uts2js 编译，5.31 起默认 TypeScript。
+2. 组件不写 UTS，原生插件才放 `utssdk/`。
+3. `size` 只有 `sm | md | lg`，默认 `md`。
+4. 样式只用单个 class，组合态写成一个，例如 `vx-button--plain-primary`。
+5. 新组件补独立演示页，并在 `catalog.ts`、`pages.json` 和组件库 readme 登记；新令牌同时改亮色、暗色和 `DESIGN.md`。
+
+## 授权
+
+| 范围 | 内容 | 许可 |
+| --- | --- | --- |
+| 免费层 `vaporix-ui` | 60 个组件、1112 个图标、设计令牌 | [MIT](./LICENSE)，个人和商业项目都能用 |
+| 高级层 `vaporix-ui-pro` | 表格、虚拟列表、图片预览等 31 个组件 | 单独销售，见 [Pro 组件](https://www.vaporix-ui.com/docs/pro) |
+
+图标来自 Phosphor 2.1.2（MIT），许可全文在 `uni_modules/vaporix-ui/libs/icons/LICENSE`。
 
 ## 参与贡献
 
-1. Fork 本仓库
-2. 新建 `feat/组件名` 分支
-3. 提交代码
-4. 新建 Pull Request
+Fork 本仓库，新建 `feat/组件名` 分支，提交后发 Pull Request。
+
+问题和建议提到 [Issues](https://gitee.com/DonkeySmall/vaporix-ui/issues)。觉得好用，点个 Star。
