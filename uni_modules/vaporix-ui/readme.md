@@ -4170,7 +4170,7 @@ const onClose = () => {
 
 <vx-qrcode text="xyz0900100200" size="lg" />
 
-<vx-qrcode text="https://vaporix.dev/components/qrcode" level="Q" />
+<vx-qrcode text="https://www.vaporix-ui.com/components/qrcode" level="Q" />
 
 <vx-qrcode text="xyz0900100200" width="224px" />
 

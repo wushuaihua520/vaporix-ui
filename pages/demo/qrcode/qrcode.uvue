@@ -279,7 +279,7 @@
 	// 二维码演示：验证码内容一处维护，基础、尺寸、颜色、组合几组共用。
 	const couponText = ref('xyz0900100200')
 
-	const longText = 'https://vaporix.dev/components/qrcode?from=demo&level=M&theme=light'
+	const longText = 'https://www.vaporix-ui.com/components/qrcode?from=demo&level=M&theme=light'
 
 	const emptyText = ''
 
