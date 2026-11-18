@@ -5,7 +5,11 @@
 <h1 align="center">Vaporix UI</h1>
 
 <p align="center">
-	Native-rendered component library for uni-app x vapor mode<br>
+	Polished, native-rendered component library for uni-app x vapor mode<br>
+	<a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
+</p>
+
+<p align="center">
 	60 components · 1112 icons · light and dark tokens · MIT free tier
 </p>
 
@@ -130,7 +134,20 @@ Easycom auto-scans, so no `custom` regex is needed. Prop tables live in the [com
 | Layout | 18 | [List view](https://www.vaporix-ui.com/en/components/list-view) · [List cell](https://www.vaporix-ui.com/en/components/list-cell) · [Card](https://www.vaporix-ui.com/en/components/card) · [Section](https://www.vaporix-ui.com/en/components/section) · [White space](https://www.vaporix-ui.com/en/components/white-space) · [Wing blank](https://www.vaporix-ui.com/en/components/wing-blank) · [Grid](https://www.vaporix-ui.com/en/components/grid) · [Grid item](https://www.vaporix-ui.com/en/components/grid-item) · [Row](https://www.vaporix-ui.com/en/components/row) · [Col](https://www.vaporix-ui.com/en/components/col) · [Image group](https://www.vaporix-ui.com/en/components/image-group) · [Collapse](https://www.vaporix-ui.com/en/components/collapse) · [Collapse item](https://www.vaporix-ui.com/en/components/collapse-item) · [Tabs](https://www.vaporix-ui.com/en/components/tabs) · [Sticky](https://www.vaporix-ui.com/en/components/sticky) · [Image](https://www.vaporix-ui.com/en/components/image) · [Divider](https://www.vaporix-ui.com/en/components/divider) · [Safe area](https://www.vaporix-ui.com/en/components/safe-area) |
 | Navigation and display | 13 | [QR code](https://www.vaporix-ui.com/en/components/qrcode) · [Navigation bar](https://www.vaporix-ui.com/en/components/navigation-bar) · [Status bar](https://www.vaporix-ui.com/en/components/status-bar) · [Tab bar](https://www.vaporix-ui.com/en/components/tabbar) · [Footer](https://www.vaporix-ui.com/en/components/footer) · [Swipe action](https://www.vaporix-ui.com/en/components/swipe-action) · [Time axis](https://www.vaporix-ui.com/en/components/time-axis) · [Steps](https://www.vaporix-ui.com/en/components/steps) · [Progress](https://www.vaporix-ui.com/en/components/progress) · [Countdown](https://www.vaporix-ui.com/en/components/countdown) · [Rolling news](https://www.vaporix-ui.com/en/components/rolling-news) · [Notice bar](https://www.vaporix-ui.com/en/components/notice-bar) · [Avatar](https://www.vaporix-ui.com/en/components/avatar) |
 
-The table covers the free tier. The 31 advanced components, including table, virtual list and image preview, ship in `vaporix-ui-pro`; see the [Pro page](https://www.vaporix-ui.com/en/docs/pro).
+The table covers the free tier; Pro is the next section.
+
+## Pro components
+
+The free tier carries a project to launch. Pro adds upgraded versions of the same ideas, cross-component composites and heavy items: 31 components sharing the same `--vx-*` tokens and `vx-` prefix, sitting side by side in `uni_modules` so easycom scans both.
+
+| Type | Components |
+| --- | --- |
+| Heavy items | [Table](https://www.vaporix-ui.com/en/components/table) · [Virtual list](https://www.vaporix-ui.com/en/components/virtual-list) · [Upload](https://www.vaporix-ui.com/en/components/upload) · [Rich text](https://www.vaporix-ui.com/en/components/rich-text) · [Drag list](https://www.vaporix-ui.com/en/components/drag-list) |
+| Composite | [Page](https://www.vaporix-ui.com/en/components/page): navigation bar, pull to refresh and load more in one tag |
+| Selection and input | [Select](https://www.vaporix-ui.com/en/components/select) · [Cascader](https://www.vaporix-ui.com/en/components/cascader) · [Tree view](https://www.vaporix-ui.com/en/components/tree-view) · [Slider](https://www.vaporix-ui.com/en/components/slider) · [Segmented control](https://www.vaporix-ui.com/en/components/segmented-control) · [Data checkbox](https://www.vaporix-ui.com/en/components/data-checkbox) · [Code input](https://www.vaporix-ui.com/en/components/code-input) · [Keyboard](https://www.vaporix-ui.com/en/components/keyboard) · [Keyboard input](https://www.vaporix-ui.com/en/components/keyboard-input) |
+| Display and motion | [Gallery](https://www.vaporix-ui.com/en/components/gallery) · [Swiper](https://www.vaporix-ui.com/en/components/swiper) · [Waterfall](https://www.vaporix-ui.com/en/components/waterfall) · [Scroll list](https://www.vaporix-ui.com/en/components/scroll-list) · [Index list](https://www.vaporix-ui.com/en/components/index-list) · [Divide list](https://www.vaporix-ui.com/en/components/divide-list) · [Pagination](https://www.vaporix-ui.com/en/components/pagination) · [Dropdown](https://www.vaporix-ui.com/en/components/dropdown) · [Circular progress](https://www.vaporix-ui.com/en/components/circular-progress) · [Count to](https://www.vaporix-ui.com/en/components/count-to) · [Skeleton](https://www.vaporix-ui.com/en/components/skeleton) · [Loader](https://www.vaporix-ui.com/en/components/loader) · [Msg](https://www.vaporix-ui.com/en/components/msg) · [Landscape](https://www.vaporix-ui.com/en/components/landscape) · [Guide](https://www.vaporix-ui.com/en/components/guide) · [Back top](https://www.vaporix-ui.com/en/components/back-top) |
+
+**From ¥99** at launch, licensed per person, source optional, 12 months of updates within the same major version. Components that are free never move into Pro. Scope, pricing and licensing are on the [Pro page](https://www.vaporix-ui.com/en/docs/pro).
 
 ## Repository layout
 
