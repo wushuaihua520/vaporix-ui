@@ -1905,7 +1905,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - Markdown 先转 HTML 再走同一套解析，过滤只有一份。只承诺文档里列出的子集，不追 CommonMark；脚注、公式和任务列表不做。
 - 长度护栏是 100000 字 / 3000 块：先截断再解析，并抛 `error('too-large')`。阈值和演示页的「大文档」对照一起改。
 - 图片按源里的宽高比和实测正文宽换算高度：挂载后量一次正文宽，首帧按 180 兜底，约一帧后落到正确高度；量不到宽度时一直是 180。`preview` 只负责调 `vx-gallery`，关掉后仍抛 `image-click`。
-- 每个组件同时交付：`vx-<block>.uvue`、`props.ts`、独立的 `pages/demo/<name>/<name>.uvue` 演示页、`pages/demo/shared/catalog.ts` 登记和 `uni_modules/vaporix-ui/readme.md` 登记。
+- 每个组件同时交付：`vx-<block>.uvue`、`props.ts`、独立的 `pages/demo/<name>/<name>.uvue` 演示页、`pages/demo/shared/catalog.ts` 登记、`uni_modules/vaporix-ui/api/README.md` 清单和 `uni_modules/vaporix-ui/api/vx-<name>.md`。`readme.md` 只留接入和组件清单，属性表写进 api 目录。
 - 单文件顺序：`template` → `script setup` → `style`。`style` 与元素 class 字符串都按「基础 → 尺寸 → 类型 → 形状 → 状态 → 文本」排列。
 
 ## Do's and Don'ts

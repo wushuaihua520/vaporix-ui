@@ -16,6 +16,7 @@
 	<a href="https://www.vaporix-ui.com/en">Docs</a> ·
 	<a href="https://www.vaporix-ui.com/en/components">Components</a> ·
 	<a href="https://www.vaporix-ui.com/en/docs/install">Install</a> ·
+	<a href="https://ext.dcloud.net.cn/plugin?name=vaporix-ui">Plugin market</a> ·
 	<a href="https://www.vaporix-ui.com/en/docs/pro">Pro components</a> ·
 	<a href="uni_modules/vaporix-ui/changelog.md">Changelog</a> ·
 	<a href="README.md">简体中文</a>
@@ -77,7 +78,7 @@ Cool, low saturation, thin borders. Depth comes from whitespace and 1px borders;
 
 **1. Drop in the module**
 
-Copy `uni_modules/vaporix-ui` into your project's `uni_modules`. `pages/` and `App.uvue` belong to the demo.
+Copy `uni_modules/vaporix-ui` into your project's `uni_modules`, or import it from the [DCloud plugin marketplace](https://ext.dcloud.net.cn/plugin?name=vaporix-ui). `pages/` and `App.uvue` belong to the demo.
 
 **2. Import tokens**
 

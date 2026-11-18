@@ -143,7 +143,7 @@
 							</template>
 						</vx-list-cell>
 						<vx-list-cell title="组件 API" value="复制路径" arrow
-							@click="copyPath('uni_modules/vaporix-ui/readme.md')">
+							@click="copyPath('uni_modules/vaporix-ui/api/README.md')">
 							<template #prefix>
 								<vx-icon name="files" size="lg" color="var(--vx-color-text-secondary)" />
 							</template>

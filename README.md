@@ -16,6 +16,7 @@
 	<a href="https://www.vaporix-ui.com">文档</a> ·
 	<a href="https://www.vaporix-ui.com/components">组件</a> ·
 	<a href="https://www.vaporix-ui.com/docs/install">安装</a> ·
+	<a href="https://ext.dcloud.net.cn/plugin?name=vaporix-ui">插件市场</a> ·
 	<a href="https://www.vaporix-ui.com/docs/pro">Pro 组件</a> ·
 	<a href="uni_modules/vaporix-ui/changelog.md">更新日志</a> ·
 	<a href="README.en.md">English</a>
@@ -77,7 +78,7 @@
 
 **1. 放入模块**
 
-复制 `uni_modules/vaporix-ui` 到项目的 `uni_modules` 下。`pages/`、`App.uvue` 属于演示工程，不复制。
+复制 `uni_modules/vaporix-ui` 到项目的 `uni_modules` 下，也可以从 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?name=vaporix-ui) 导入。`pages/`、`App.uvue` 属于演示工程，不复制。
 
 **2. 引入令牌**
 

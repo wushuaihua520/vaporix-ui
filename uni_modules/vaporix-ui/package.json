@@ -1,14 +1,13 @@
 {
 	"id": "vaporix-ui",
 	"displayName": "元汽UI",
-	"version": "0.72.0",
-	"description": "元汽UI（Vaporix UI），uni-app x 蒸汽模式原生渲染组件库。",
+	"version": "0.72.1",
+	"description": "元汽UI（Vaporix UI），uni-app x 蒸汽模式的高颜值、原生渲染组件库。",
 	"keywords": [
 		"uni-app x",
 		"蒸汽模式",
 		"UI",
-		"组件库",
-		"元汽UI"
+		"组件库"
 	],
 	"license": "MIT",
 	"repository": "https://gitee.com/DonkeySmall/vaporix-ui",
@@ -37,7 +36,12 @@
 		},
 		"darkmode": "√",
 		"i18n": "x",
-		"widescreen": "√"
+		"widescreen": "√",
+		"vapor": "√",
+		"contact": {
+			"qq": "986673513"
+		},
+		"npmurl": ""
 	},
 	"uni_modules": {
 		"dependencies": [],
