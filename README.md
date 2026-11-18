@@ -6,7 +6,6 @@
 
 <p align="center">
 	uni-app x 蒸汽模式的高颜值、原生渲染组件库<br>
-	<a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
 </p>
 
 <p align="center">
@@ -28,6 +27,10 @@
 	<a href="https://www.vaporix-ui.com/components"><img src="https://img.shields.io/badge/%E7%BB%84%E4%BB%B6-60-2b6be0?style=flat-square" alt="60 个组件"></a>
 	<a href="https://www.vaporix-ui.com/components/icon"><img src="https://img.shields.io/badge/%E5%9B%BE%E6%A0%87-1112-0b7c46?style=flat-square" alt="1112 个图标"></a>
 	<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT 许可"></a>
+</p>
+
+<p align="center">
+	官网链接：<a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
 </p>
 
 ## 设计概念
@@ -138,7 +141,7 @@ easycom 自动扫描，不用写 `custom` 正则。属性表见[组件文档](ht
 
 ## Pro 组件
 
-免费层够把项目做到上线，Pro 补的是同一件事的高配版、跨控件的组合件和重型件。31 个组件，与免费层共用一套 `--vx-*` 令牌和 `vx-` 前缀，并列放在 `uni_modules`，easycom 一起扫描。
+31 个组件，与免费层共用一套 `--vx-*` 令牌和 `vx-` 前缀，并列放在 `uni_modules`，easycom 一起扫描。
 
 | 类型 | 组件 |
 | --- | --- |
@@ -147,7 +150,7 @@ easycom 自动扫描，不用写 `custom` 正则。属性表见[组件文档](ht
 | 选择与输入 | [选择框](https://www.vaporix-ui.com/components/select) · [级联选择](https://www.vaporix-ui.com/components/cascader) · [树型菜单](https://www.vaporix-ui.com/components/tree-view) · [滑动选择](https://www.vaporix-ui.com/components/slider) · [分段器](https://www.vaporix-ui.com/components/segmented-control) · [数据选择器](https://www.vaporix-ui.com/components/data-checkbox) · [验证码输入框](https://www.vaporix-ui.com/components/code-input) · [数字键盘](https://www.vaporix-ui.com/components/keyboard) · [数字键盘输入框](https://www.vaporix-ui.com/components/keyboard-input) |
 | 展示与动效 | [图片预览](https://www.vaporix-ui.com/components/gallery) · [轮播图](https://www.vaporix-ui.com/components/swiper) · [瀑布流](https://www.vaporix-ui.com/components/waterfall) · [滚动列表](https://www.vaporix-ui.com/components/scroll-list) · [索引列表](https://www.vaporix-ui.com/components/index-list) · [分隔列表](https://www.vaporix-ui.com/components/divide-list) · [分页器](https://www.vaporix-ui.com/components/pagination) · [筛选栏](https://www.vaporix-ui.com/components/dropdown) · [环形进度条](https://www.vaporix-ui.com/components/circular-progress) · [数字动画](https://www.vaporix-ui.com/components/count-to) · [骨架屏](https://www.vaporix-ui.com/components/skeleton) · [加载动画](https://www.vaporix-ui.com/components/loader) · [提示页](https://www.vaporix-ui.com/components/msg) · [压屏窗](https://www.vaporix-ui.com/components/landscape) · [新手引导](https://www.vaporix-ui.com/components/guide) · [返回顶部](https://www.vaporix-ui.com/components/back-top) |
 
-**首发 ¥99 起**，按人授权，可选源码，12 个月同主版本更新。已免费的组件不会挪进 Pro。范围、价格和授权见 [Pro 组件](https://www.vaporix-ui.com/docs/pro)。
+详见 [Pro 组件](https://www.vaporix-ui.com/docs/pro)。
 
 ## 仓库结构
 

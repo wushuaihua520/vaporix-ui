@@ -6,7 +6,6 @@
 
 <p align="center">
 	Polished, native-rendered component library for uni-app x vapor mode<br>
-	<a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
 </p>
 
 <p align="center">
@@ -28,6 +27,10 @@
 	<a href="https://www.vaporix-ui.com/en/components"><img src="https://img.shields.io/badge/components-60-2b6be0?style=flat-square" alt="60 components"></a>
 	<a href="https://www.vaporix-ui.com/en/components/icon"><img src="https://img.shields.io/badge/icons-1112-0b7c46?style=flat-square" alt="1112 icons"></a>
 	<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT license"></a>
+</p>
+
+<p align="center">
+	Website: <a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
 </p>
 
 ## Design language
@@ -138,7 +141,7 @@ The table covers the free tier; Pro is the next section.
 
 ## Pro components
 
-The free tier carries a project to launch. Pro adds upgraded versions of the same ideas, cross-component composites and heavy items: 31 components sharing the same `--vx-*` tokens and `vx-` prefix, sitting side by side in `uni_modules` so easycom scans both.
+31 components sharing the same `--vx-*` tokens and `vx-` prefix, sitting side by side in `uni_modules` so easycom scans both.
 
 | Type | Components |
 | --- | --- |
@@ -147,7 +150,7 @@ The free tier carries a project to launch. Pro adds upgraded versions of the sam
 | Selection and input | [Select](https://www.vaporix-ui.com/en/components/select) · [Cascader](https://www.vaporix-ui.com/en/components/cascader) · [Tree view](https://www.vaporix-ui.com/en/components/tree-view) · [Slider](https://www.vaporix-ui.com/en/components/slider) · [Segmented control](https://www.vaporix-ui.com/en/components/segmented-control) · [Data checkbox](https://www.vaporix-ui.com/en/components/data-checkbox) · [Code input](https://www.vaporix-ui.com/en/components/code-input) · [Keyboard](https://www.vaporix-ui.com/en/components/keyboard) · [Keyboard input](https://www.vaporix-ui.com/en/components/keyboard-input) |
 | Display and motion | [Gallery](https://www.vaporix-ui.com/en/components/gallery) · [Swiper](https://www.vaporix-ui.com/en/components/swiper) · [Waterfall](https://www.vaporix-ui.com/en/components/waterfall) · [Scroll list](https://www.vaporix-ui.com/en/components/scroll-list) · [Index list](https://www.vaporix-ui.com/en/components/index-list) · [Divide list](https://www.vaporix-ui.com/en/components/divide-list) · [Pagination](https://www.vaporix-ui.com/en/components/pagination) · [Dropdown](https://www.vaporix-ui.com/en/components/dropdown) · [Circular progress](https://www.vaporix-ui.com/en/components/circular-progress) · [Count to](https://www.vaporix-ui.com/en/components/count-to) · [Skeleton](https://www.vaporix-ui.com/en/components/skeleton) · [Loader](https://www.vaporix-ui.com/en/components/loader) · [Msg](https://www.vaporix-ui.com/en/components/msg) · [Landscape](https://www.vaporix-ui.com/en/components/landscape) · [Guide](https://www.vaporix-ui.com/en/components/guide) · [Back top](https://www.vaporix-ui.com/en/components/back-top) |
 
-**From ¥99** at launch, licensed per person, source optional, 12 months of updates within the same major version. Components that are free never move into Pro. Scope, pricing and licensing are on the [Pro page](https://www.vaporix-ui.com/en/docs/pro).
+See the [Pro page](https://www.vaporix-ui.com/en/docs/pro).
 
 ## Repository layout
 
