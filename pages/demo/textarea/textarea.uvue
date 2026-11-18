@@ -211,19 +211,19 @@
 								required counter :maxlength="200" min-height="60px" placeholder="sm · 请描述你遇到的问题" />
 						</view>
 						<view class="demo-field">
-							<vx-input v-model="feedbackTitleMd" label="反馈标题" label-width="72px" required
+							<vx-input v-model="feedbackTitleMd" label="反馈标题" label-width="80px" required
 								placeholder="md · 一句话说明问题" />
 						</view>
 						<view class="demo-field">
-							<vx-textarea v-model="feedbackValue" label="反馈内容" label-width="72px" required counter
+							<vx-textarea v-model="feedbackValue" label="反馈内容" label-width="80px" required counter
 								:maxlength="200" min-height="88px" placeholder="md · 请描述你遇到的问题" />
 						</view>
 						<view class="demo-field">
-							<vx-input v-model="feedbackTitleLg" label="反馈标题" label-width="72px" size="lg" required
+							<vx-input v-model="feedbackTitleLg" label="反馈标题" label-width="88px" size="lg" required
 								placeholder="lg · 一句话说明问题" />
 						</view>
 						<view class="demo-field">
-							<vx-textarea v-model="feedbackValueLg" label="反馈内容" label-width="72px" size="lg"
+							<vx-textarea v-model="feedbackValueLg" label="反馈内容" label-width="88px" size="lg"
 								required counter :maxlength="200" min-height="104px" placeholder="lg · 请描述你遇到的问题">
 								<template #extra>
 									<text class="demo-hint">最多 200 字</text>

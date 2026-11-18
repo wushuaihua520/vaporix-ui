@@ -1,3 +1,8 @@
+## 0.71.2（2026-11-18）
+
+- `vx-textarea` / `vx-input` 标题防裁字（App 端）：`labelWidth` 给得比「星号 + 标题」内容窄时，最后一个 text 节点被 flex 压缩后在自身边界裁字——「反馈内容」四字标题在 72px 下末字被切掉约 40%（实测墨迹 173px，自然墨迹 182px）。两个组件的标题位加 `overflow: visible`，星号和标题 text 加 `flex-shrink: 0`：宽度不够时墨迹溢进右边距，不再裁字；后续兄弟节点位置不变。运行时 `createSelectorQuery` 实测 label 盒宽度生效。
+- 演示工程 `textarea` 页反馈表单的 `labelWidth` 修正：md 档 72 → 80px（星号 9 + 间距 4 + 四字 64 ≈ 78，72 装不下），lg 档 72 → 88px（18px 字号下约 87）；sm 档 72 够用不动。
+
 ## 0.71.1（2026-11-17）
 
 - `vx-input` 修 App 端两处布局（iOS 模拟器像素级验证，建议真机复验）：

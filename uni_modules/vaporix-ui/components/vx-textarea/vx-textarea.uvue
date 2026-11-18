@@ -276,6 +276,8 @@
 		flex-direction: row;
 		flex-shrink: 0;
 		margin-right: var(--vx-space-md);
+		/* labelWidth 给小了时让墨迹溢进右边距，不在节点边界裁字。 */
+		overflow: visible;
 	}
 
 	.vx-textarea__label--lg {
@@ -308,6 +310,7 @@
 	}
 
 	.vx-textarea__required {
+		flex-shrink: 0;
 		margin-right: var(--vx-space-xs);
 		font-weight: var(--vx-weight-semibold);
 		color: var(--vx-color-danger);
@@ -320,6 +323,7 @@
 
 	/* 标题比内容重一档，多行输入里也保持层级。 */
 	.vx-textarea__label-text {
+		flex-shrink: 0;
 		font-weight: var(--vx-weight-medium);
 	}
 
