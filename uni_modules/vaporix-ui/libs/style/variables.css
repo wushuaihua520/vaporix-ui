@@ -179,7 +179,7 @@
 	--vx-checkbox-radius-md: 5px;
 	--vx-checkbox-radius-lg: 6px;
 
-	/* 开关：轨道、滑块和加载圈三档，轨道宽高含两侧各 2px 内边距；
+	/* 开关：轨道、滑块、加载圈和轨道文字字号四组三档，轨道宽高含两侧各 2px 内边距；
 	   滑块位移 = 轨道宽 - 滑块 - 4px，写在 vx-switch 里，不另开令牌。 */
 	--vx-switch-width-sm: 36px;
 	--vx-switch-width-md: 44px;
@@ -196,6 +196,10 @@
 	--vx-switch-spinner-sm: 8px;
 	--vx-switch-spinner-md: 10px;
 	--vx-switch-spinner-lg: 12px;
+
+	--vx-switch-text-sm: 9px;
+	--vx-switch-text-md: 10px;
+	--vx-switch-text-lg: 11px;
 
 	--vx-switch-inset: 2px;
 
@@ -956,6 +960,10 @@
 	--vx-switch-spinner-sm: 8px;
 	--vx-switch-spinner-md: 10px;
 	--vx-switch-spinner-lg: 12px;
+
+	--vx-switch-text-sm: 9px;
+	--vx-switch-text-md: 10px;
+	--vx-switch-text-lg: 11px;
 
 	--vx-switch-inset: 2px;
 

@@ -4,6 +4,13 @@
 		@click.stop="onToggle">
 		<!-- 轨道在文案前时先画；列表里文案用 flex 撑开，轨道仍被推到行尾。 -->
 		<view v-if="!trackEnd" :class="trackClass" :style="trackStyle">
+			<!-- 轨道文字画在另一半的空白区：on 常驻左半、off 常驻右半，只靠透明度换帧。 -->
+			<view v-if="hasOnSide" :class="onSideClass">
+				<slot name="on"><text :class="onTextClass">{{ onText }}</text></slot>
+			</view>
+			<view v-if="hasOffSide" :class="offSideClass">
+				<slot name="off"><text :class="offTextClass">{{ offText }}</text></slot>
+			</view>
 			<view :class="thumbClass" :style="thumbStyle">
 				<view v-if="loadingActive" :class="spinnerClass" :style="spinnerStyle"></view>
 			</view>
@@ -25,6 +32,12 @@
 		</view>
 
 		<view v-if="trackEnd" :class="trackClass" :style="trackStyle">
+			<view v-if="hasOnSide" :class="onSideClass">
+				<slot name="on"><text :class="onTextClass">{{ onText }}</text></slot>
+			</view>
+			<view v-if="hasOffSide" :class="offSideClass">
+				<slot name="off"><text :class="offTextClass">{{ offText }}</text></slot>
+			</view>
 			<view :class="thumbClass" :style="thumbStyle">
 				<view v-if="loadingActive" :class="spinnerClass" :style="spinnerStyle"></view>
 			</view>
@@ -50,6 +63,8 @@
 		divider: false,
 		disabled: false,
 		loading: false,
+		onText: '',
+		offText: '',
 		color: '',
 		trackColor: '',
 		thumbColor: '',
@@ -128,6 +143,15 @@
 
 	const showDivider = computed((): boolean => {
 		return layoutKey.value === 'list' && props.divider
+	})
+
+	// 轨道文字画在轨道另一半的空白区，不占轨道宽；插槽优先于同名属性。
+	const hasOnSide = computed((): boolean => {
+		return slots['on'] != null || props.onText.length > 0
+	})
+
+	const hasOffSide = computed((): boolean => {
+		return slots['off'] != null || props.offText.length > 0
 	})
 
 	// class 顺序：基础 → 排布 → 尺寸 → 状态。和样式表一致，后写的盖过先写的。
@@ -212,6 +236,39 @@
 		let name = 'vx-switch__spinner'
 		if (sizeKey.value !== 'md') name += ` vx-switch__spinner--${sizeKey.value}`
 		if (checked.value) name += ` vx-switch__spinner--${typeKey.value}`
+		return name
+	})
+
+	// 两个侧盒常驻各自一半：on 固定在左半，off 固定在右半，只用透明度随状态换帧，
+	// 位置不参与动画；拍平读不到过渡时直接切换，左右盒也永远不会和滑块同处一半。
+	const onSideClass = computed((): string => {
+		let name = 'vx-switch__side vx-switch__side--on'
+		if (sizeKey.value !== 'md') name += ` vx-switch__side--${sizeKey.value}`
+		if (checked.value) name += ' vx-switch__side--show'
+		return name
+	})
+
+	const offSideClass = computed((): string => {
+		let name = 'vx-switch__side vx-switch__side--off'
+		if (sizeKey.value !== 'md') name += ` vx-switch__side--${sizeKey.value}`
+		if (!checked.value) name += ' vx-switch__side--show'
+		return name
+	})
+
+	// 打开时文字取 on-* 前景，default 轨道用反色；禁用跟滑块一样转灰。
+	const onTextClass = computed((): string => {
+		let name = 'vx-switch__side-text'
+		if (sizeKey.value !== 'md') name += ` vx-switch__side-text--${sizeKey.value}`
+		if (props.disabled) name += ' vx-switch__side-text--on-disabled'
+		else if (typeKey.value === 'default') name += ' vx-switch__side-text--on-default'
+		else name += ` vx-switch__side-text--on-${typeKey.value}`
+		return name
+	})
+
+	const offTextClass = computed((): string => {
+		let name = 'vx-switch__side-text'
+		if (sizeKey.value !== 'md') name += ` vx-switch__side-text--${sizeKey.value}`
+		if (props.disabled) name += ' vx-switch__side-text--off-disabled'
 		return name
 	})
 
@@ -509,6 +566,96 @@
 	.vx-switch__thumb--on-disabled {
 		border-color: var(--vx-color-surface);
 		background-color: var(--vx-color-surface);
+	}
+
+	/* 轨道文字：两个侧盒常驻轨道另一半的空白区，宽同滑块位移（轨道宽 - 滑块 - 4px，
+	   和脚本里 VX_SWITCH_TRAVEL 同值），高同滑块。on 固定在左半、off 固定在右半，
+	   只用透明度换帧；拍平读不到过渡时直接切换，位置不参与动画。
+	   文字超出侧盒宽时被裁掉，文档建议 1 个汉字或 2~3 个英文字母。 */
+	.vx-switch__side {
+		position: absolute;
+		top: var(--vx-switch-inset);
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 20px;
+		height: var(--vx-switch-thumb-md);
+		opacity: 0;
+		transition-property: opacity;
+		transition-duration: var(--vx-duration-normal);
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-switch__side--on {
+		left: var(--vx-switch-inset);
+	}
+
+	.vx-switch__side--off {
+		right: var(--vx-switch-inset);
+	}
+
+	.vx-switch__side--sm {
+		width: 16px;
+		height: var(--vx-switch-thumb-sm);
+	}
+
+	.vx-switch__side--lg {
+		width: 24px;
+		height: var(--vx-switch-thumb-lg);
+	}
+
+	.vx-switch__side--show {
+		opacity: 1;
+	}
+
+	/* 字号 9 / 10 / 11 走 token；颜色跟轨道状态：关闭灰字，打开取 on-* 前景。 */
+	.vx-switch__side-text {
+		flex-shrink: 0;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-switch-text-md);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	.vx-switch__side-text--sm {
+		font-size: var(--vx-switch-text-sm);
+	}
+
+	.vx-switch__side-text--lg {
+		font-size: var(--vx-switch-text-lg);
+	}
+
+	.vx-switch__side-text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	.vx-switch__side-text--on-success {
+		color: var(--vx-color-on-success);
+	}
+
+	.vx-switch__side-text--on-info {
+		color: var(--vx-color-on-info);
+	}
+
+	.vx-switch__side-text--on-warning {
+		color: var(--vx-color-on-warning);
+	}
+
+	.vx-switch__side-text--on-danger {
+		color: var(--vx-color-on-danger);
+	}
+
+	.vx-switch__side-text--on-default {
+		color: var(--vx-color-text-inverse);
+	}
+
+	/* 禁用：打开的灰轨道上文字用 surface，和滑块一致；关闭用 disabled-text。 */
+	.vx-switch__side-text--on-disabled {
+		color: var(--vx-color-surface);
+	}
+
+	.vx-switch__side-text--off-disabled {
+		color: var(--vx-color-disabled-text);
 	}
 
 	/* 加载圈画在滑块里：半圈缺口圆环，打开时跟语义色，关闭时用正文色，

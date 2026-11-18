@@ -27,6 +27,10 @@ export type VxSwitchProps = {
 	disabled?: boolean
 	/** 请求进行中：滑块里显示缺口圆环并拦下点击，轨道保持当前状态。 */
 	loading?: boolean
+	/** 打开时轨道另一侧的文字，建议 1 个汉字或 2~3 个英文字母；on 插槽优先。 */
+	onText?: string
+	/** 关闭时轨道另一侧的文字；off 插槽优先。 */
+	offText?: string
 	/** 自定义打开轨道色，字面值；滑块仍按 type 取 on-*。 */
 	color?: string
 	/** 自定义关闭轨道色，字面值。 */

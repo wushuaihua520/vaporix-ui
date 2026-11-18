@@ -26,7 +26,7 @@
 						<view class="demo-hero__heading">
 							<view class="demo-hero__title-wrap">
 								<text class="demo-hero__title">开关选择器</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
+								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
 							</view>
 						</view>
 					</view>
@@ -209,6 +209,47 @@
 						</view>
 					</view>
 					<text class="demo-hint">自定义色都是字面值、不跟随主题；打开轨道的自定义色会同时改加载圈，关闭轨道的不会。</text>
+				</view>
+
+				<view class="demo-section">
+					<view class="demo-section__head">
+						<view class="demo-section__num">
+							<text class="demo-section__num-text">08</text>
+						</view>
+						<view class="demo-section__copy">
+							<text class="demo-section__title">轨道文字</text>
+							<text class="demo-section__desc">on-text / off-text 写在轨道另一半，随状态换边换字；on / off 插槽可以放图标。</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage">
+						<vx-switch v-model="notify" on-text="开" off-text="关" />
+						<view class="demo-sw-row">
+							<vx-switch v-model="silent" on-text="On" off-text="Off" />
+							<text class="demo-sw-row__text">英文也行，建议 2~3 个字母</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage demo-sw-stage--next">
+						<vx-switch v-model="sound" size="sm" on-text="开" off-text="关" />
+						<view class="demo-sw-gap">
+							<vx-switch v-model="sound" size="lg" on-text="开" off-text="关" />
+						</view>
+						<view class="demo-sw-gap">
+							<vx-switch :model-value="true" type="success" on-text="开" off-text="关" />
+						</view>
+					</view>
+					<view class="demo-sw-stage demo-sw-stage--next">
+						<view class="demo-sw-row">
+							<vx-switch v-model="notify">
+								<template #on><vx-icon name="check" size="sm" color="var(--vx-color-on-primary)" /></template>
+								<template #off><vx-icon name="close" size="sm" color="var(--vx-color-text-secondary)" /></template>
+							</vx-switch>
+							<text class="demo-sw-row__text">on / off 插槽放图标，颜色自己带</text>
+						</view>
+					</view>
+					<view class="demo-sw-stage demo-sw-stage--next">
+						<vx-switch v-model="notify" layout="list" label="接收推送" description="订单和物流提醒" on-text="开" off-text="关" divider />
+					</view>
+					<text class="demo-hint">文字画在轨道的另一半空白区，建议 1 个汉字或 2~3 个英文字母，过长会被裁掉；颜色跟轨道走，禁用一起转灰。</text>
 				</view>
 
 				<view class="demo-page-nav">

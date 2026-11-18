@@ -1,3 +1,7 @@
+## 0.72.0（2026-11-18）
+
+- `vx-switch` 新增轨道文字：`onText` / `offText` 把「开 / 关」「On / Off」写进轨道另一半的空白区，随状态换边换字；`on` / `off` 具名插槽放图标（颜色自己带，画在滑块之下）。做法对齐 antd `checkedChildren` 与 arco、semi 的 `checkedText`：滑块保持圆形，轨道尺寸、滑块位移和过渡完全不变，文字只占另一半空白区。颜色跟轨道走：打开取 `on-*` 前景（default 用 `text-inverse`），关闭 `text-secondary`，禁用与滑块一起转灰，自定义 `color` 不例外。侧盒宽同滑块位移（sm 16 / md 20 / lg 24），建议 1 个汉字或 2~3 个英文字母，超出裁掉；字号走新令牌 `--vx-switch-text-sm/md/lg`（9 / 10 / 11）。演示页新增「08 轨道文字」组（中英文、尺寸、语义色、插槽图标、list 行）。iOS 模拟器已验证渲染与点按换边，建议真机复验。
+
 ## 0.71.2（2026-11-18）
 
 - `vx-textarea` / `vx-input` 标题防裁字（App 端）：`labelWidth` 给得比「星号 + 标题」内容窄时，最后一个 text 节点被 flex 压缩后在自身边界裁字——「反馈内容」四字标题在 72px 下末字被切掉约 40%（实测墨迹 173px，自然墨迹 182px）。两个组件的标题位加 `overflow: visible`，星号和标题 text 加 `flex-shrink: 0`：宽度不够时墨迹溢进右边距，不再裁字；后续兄弟节点位置不变。运行时 `createSelectorQuery` 实测 label 盒宽度生效。

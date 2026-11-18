@@ -118,8 +118,8 @@ export const DEMO_COMPONENTS: DemoComponent[] = [
 		en: 'vx-switch',
 		icon: 'toggle-right',
 		category: '表单',
-		desc: '整行切换、加载中、尺寸和自定义颜色。',
-		sections: 7
+		desc: '轨道文字、整行切换、加载中、尺寸和自定义颜色。',
+		sections: 8
 	},
 	{
 		key: 'rate',
