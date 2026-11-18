@@ -6,7 +6,7 @@
 			<!-- 背景单独一层：渐显只改这一层，标题、图标和插槽始终不透明。 -->
 			<view class="vx-navigation-bar__bg" :style="bgStyle"></view>
 
-			<view v-if="statusBar" class="vx-navigation-bar__status"></view>
+			<view v-if="statusBar" class="vx-navigation-bar__status" :style="statusStyle"></view>
 
 			<view class="vx-navigation-bar__safe">
 				<view class="vx-navigation-bar__main">
@@ -77,6 +77,11 @@
 	const VX_NAVIGATION_BAR_LINE_OPACITY = 0.85
 
 	const windowInfo = uni.getWindowInfo()
+	// 小程序运行时只在根节点写 --status-bar-height，不写 --uni-safe-area-inset-top。
+	// 状态栏占位若仍读后者，高度是 0，整条导航栏钻进系统状态栏，胶囊压到页面内容上。
+	// #ifdef MP
+	const statusBarInset = (props.statusBar && windowInfo.statusBarHeight > 0) ? Math.round(windowInfo.statusBarHeight) : 0
+	// #endif
 	// 只进 ready，不参与渲染。
 	let windowWidth = windowInfo.windowWidth
 	let windowHeight = windowInfo.windowHeight
@@ -135,6 +140,14 @@
 	const rootStyle = computed((): string => {
 		if (!props.fixed || !props.placeholder) return ''
 		return `height: ${barHeight.value}px;`
+	})
+
+	// 行内高度只在小程序盖过样式表。App / Web 继续用 --uni-safe-area-inset-top。
+	const statusStyle = computed((): string => {
+		// #ifdef MP
+		if (statusBarInset > 0) return `height: ${statusBarInset}px;`
+		// #endif
+		return ''
 	})
 
 	const barStyle = computed((): string => {
@@ -414,7 +427,9 @@
 		background-color: var(--vx-color-surface);
 	}
 
-	/* 状态栏留白跟安全区走；Web 上没有状态栏，变量为 0。 */
+	/* 状态栏留白跟安全区走；Web 上没有状态栏，变量为 0。
+	   小程序不注入 --uni-safe-area-inset-top，根节点只有 --status-bar-height；
+	   行内高度再写一份系统值，变量没继承到时也不会塌成 0。 */
 	.vx-navigation-bar__status {
 		position: relative;
 		z-index: 1;
@@ -422,6 +437,12 @@
 		width: 100%;
 		height: var(--uni-safe-area-inset-top, 0px);
 	}
+
+	/* #ifdef MP */
+	.vx-navigation-bar__status {
+		height: var(--status-bar-height, 0px);
+	}
+	/* #endif */
 
 	/* 左右安全区只让内容避开，不缩背景，横屏刘海两侧也不会有缺口。 */
 	.vx-navigation-bar__safe {

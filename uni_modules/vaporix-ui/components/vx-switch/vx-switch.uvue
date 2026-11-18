@@ -147,11 +147,13 @@
 
 	// 轨道文字画在轨道另一半的空白区，不占轨道宽；插槽优先于同名属性。
 	const hasOnSide = computed((): boolean => {
-		return slots['on'] != null || props.onText.length > 0
+		const text = props.onText != null ? props.onText : ''
+		return slots['on'] != null || text.length > 0
 	})
 
 	const hasOffSide = computed((): boolean => {
-		return slots['off'] != null || props.offText.length > 0
+		const text = props.offText != null ? props.offText : ''
+		return slots['off'] != null || text.length > 0
 	})
 
 	// class 顺序：基础 → 排布 → 尺寸 → 状态。和样式表一致，后写的盖过先写的。

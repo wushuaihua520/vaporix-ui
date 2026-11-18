@@ -1,5 +1,9 @@
 # 更新日志
 
+## 0.72.2（2026-11-18）
+
+- `vx-switch` 修微信小程序整件不渲染：`hasOnSide` / `hasOffSide` 在 `onText` / `offText` 未注入时读 `.length` 抛错，轨道和文案都不画；改空串再比长度。
+
 ## 0.72.1（2026-11-18）
 
 - 插件市场的兼容性表把蒸汽模式标成了不支持：`package.json` 的 `dcloudext.vapor` 从 `x` 改为 `√`。

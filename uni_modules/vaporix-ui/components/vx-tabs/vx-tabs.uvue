@@ -7,7 +7,7 @@
 		     滑动区里再套一层 track（参照 vx-scroll-list）：Web 端 scroll-view 的内容层是 block，
 		     不套一行式容器页签会竖着堆。 -->
 		<scroll-view v-if="isScrollable" class="vx-tabs__scroller" direction="horizontal" :show-scrollbar="false"
-			:scroll-into-view="scrollIntoView">
+			:scroll-into-view="scrollIntoView" :style="scrollerStyle">
 			<view class="vx-tabs__track">
 				<view v-for="row in rows" :key="row.index" :id="row.itemId" :class="itemClassOf(row)"
 					:hover-class="row.hoverClass" :hover-stay-time="VX_PRESSED_STAY_TIME"
@@ -319,6 +319,20 @@
 	const sizeName = computed((): string => {
 		if (props.size === 'sm' || props.size === 'lg') return props.size
 		return 'md'
+	})
+
+	// 小程序 scroll-view 不认 height: 100%，行高会塌成文字高，底色和分割线都看不出来。
+	// 行内直接写列表行令牌，和根节点同一档。其它端仍用样式表里的 100%。
+	const scrollerStyle = computed((): string => {
+		// #ifndef MP
+		return ''
+		// #endif
+		// #ifdef MP
+		let height = 'var(--vx-list-height-md)'
+		if (sizeName.value === 'sm') height = 'var(--vx-list-height-sm)'
+		else if (sizeName.value === 'lg') height = 'var(--vx-list-height-lg)'
+		return 'height: ' + height + ';'
+		// #endif
 	})
 
 	// 横向的角标上移 4 压在字形右上角；竖排改用行内排布，不再需要偏移量。
@@ -1062,6 +1076,54 @@
 		left: 0;
 		width: 0;
 	}
+
+	/* 小程序全局把 scroll-view 设成纵向 flex，height: 100% 又不生效。
+	   滑动区和页签改用列表行令牌撑高，轨道按内容宽排，多出来的页签才能横滑，不会被裁成一排纯文字。 */
+	/* #ifdef MP */
+	.vx-tabs__scroller {
+		flex-direction: row;
+		align-items: stretch;
+		height: var(--vx-list-height-md);
+	}
+
+	.vx-tabs--sm .vx-tabs__scroller {
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-tabs--lg .vx-tabs__scroller {
+		height: var(--vx-list-height-lg);
+	}
+
+	.vx-tabs__track {
+		flex-shrink: 0;
+		height: var(--vx-list-height-md);
+	}
+
+	.vx-tabs--sm .vx-tabs__track {
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-tabs--lg .vx-tabs__track {
+		height: var(--vx-list-height-lg);
+	}
+
+	.vx-tabs__item {
+		height: var(--vx-list-height-md);
+	}
+
+	.vx-tabs--sm .vx-tabs__item {
+		height: var(--vx-list-height-sm);
+	}
+
+	.vx-tabs--lg .vx-tabs__item {
+		height: var(--vx-list-height-lg);
+	}
+
+	/* 下划线伸出 1px 会被 scroll-view 裁掉，小程序贴着行内底边画。 */
+	.vx-tabs__indicator--on-divider {
+		bottom: 0;
+	}
+	/* #endif */
 
 	/* #ifdef WEB */
 	.vx-tabs__item {
