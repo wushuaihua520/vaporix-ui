@@ -23,6 +23,12 @@
 				<text class="vx-form-item__live-text">{{ displayMessage }}</text>
 			</view>
 			<!-- #endif -->
+
+			<!-- #ifdef MP -->
+			<!-- 补发节拍（作用见脚本 watch 说明）：只当渲染依赖用，隐藏不占位。
+			     它的值变化驱动本组件重渲染，插槽随之重新下发一份有效 props 引用。 -->
+			<text class="vx-form-item__slot-tick">{{ mpSlotTick }}</text>
+			<!-- #endif -->
 		</view>
 	</view>
 </template>
@@ -309,6 +315,26 @@
 	watch(() => props.value, () => {
 		validateSeq.value = validateSeq.value + 1
 	})
+
+	// #ifdef MP
+	// 小程序端（uni-app Vue3 编译）作用域插槽的 props 存在 propsCaches 缓存里，wxml 上的
+	// u-p 只携带引用号；页面级重渲染会先整表清空再重建这份缓存。校验态在表单项内部变化时，
+	// 插槽的新引用先入队、业务随后的页面渲染（如回填状态文案）把缓存清空，引用落地时解析到
+	// 失效条目，控件的 props 会整体退回默认值——标题、值、清除按钮一起消失，只剩插槽内容还在。
+	// 这里在校验态变化后补一拍重渲染：页面缓存已重建完毕，重跑插槽拿到的是有效引用，同一轮
+	// setData 里后写入的引用覆盖先写入的失效引用，控件 props 不会丢。App / Web 无此机制，不参与。
+	const mpSlotTick = ref(0)
+
+	const repairSlotProps = () => {
+		nextTick(() => {
+			mpSlotTick.value = mpSlotTick.value + 1
+		})
+	}
+
+	watch(localError, repairSlotProps)
+
+	watch(() => props.error, repairSlotProps)
+	// #endif
 </script>
 
 <style>
@@ -478,6 +504,13 @@
 	.vx-form-item__live-text {
 		font-size: 1px;
 		line-height: 1px;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 补发节拍节点：值变化触发组件重渲染，本身隐藏不占位。 */
+	.vx-form-item__slot-tick {
+		display: none;
 	}
 	/* #endif */
 </style>
