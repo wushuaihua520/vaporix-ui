@@ -49,6 +49,7 @@
 
 ## 说明
 
+- 横排单项视觉高度 32 / 40 / 48；`sm` / `md` 点击热区已外扩到 44（占位不变），`lg` 48 本身达标。列表行最小高度 44 / 48 / 52，整行可点。
 - `indeterminate` 只用于单独使用的「全选」类开关：父级根据已选数量算出 `checked` 和 `indeterminate`，在 `change` 里全选或清空。分组里的每个 value 非勾即否，不读该属性。
 - 单项 `disabled` 只停这一项；文字和方框转 `disabled-text`，选中填充用 `disabled-text`、对号用 `surface`，只画对号时对号用 `disabled-text`。
 - 方框模式里 `color` 只改填充，对号仍按 `type` 取 `on-*`，需要一起改时同时传 `checkColor`；三者都是字面值，禁用时都不生效。

@@ -1,5 +1,11 @@
-# 更新日志
+## 0.73.0（2026-11-19）
 
+- **行内单选 / 复选 / 开关热区外扩到 44**（`--vx-hit-size`）：`vx-radio` / `vx-checkbox` / `vx-switch` 的 inline 形态 sm / md 视觉高度仍是 32 / 40，纵向 padding 撑热区、等值负 margin 抵掉占位，行占位、轨道位置和项间距都不变；lg 48 已达标不动。list 形态行高本来就 ≥44，不受影响。
+- App 端 min-height 按内容盒算：inline 三档在 `#ifdef APP` 里把 min-height 降回控件高，内容高 + 纵向 padding 才是 44 热区。
+- `vx-icon` 新增 `hit`：单独可点的图标开 `hit` 撑出 44×44 热区，字形居中、字号不变，Web 补 pointer；默认 false，装饰图标和组件内部图标不受影响。
+
+## 0.72.1 (2026-11-19)
+修复小程序导航栏、吸顶和页签高度，开关空文案不再整件不渲染。
 ## 0.72.2（2026-11-18）
 
 - `vx-switch` 修微信小程序整件不渲染：`hasOnSide` / `hasOffSide` 在 `onText` / `offText` 未注入时读 `.length` 抛错，轨道和文案都不画；改空串再比长度。

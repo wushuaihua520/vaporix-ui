@@ -284,21 +284,51 @@
 	}
 
 	/* md / lg 项间距都是 16，只写在这里。min-width 压成 0，长文案才会换行；
-	   否则 flex 项的最小宽度是内容宽度，整行会被撑出父级。 */
+	   否则 flex 项的最小宽度是内容宽度，整行会被撑出父级。
+	   sm / md 视觉高度仍是 32 / 40，纵向 padding 把热区撑到 44，负 margin 抵掉占位：
+	   2 = (44 − 40) / 2，6 = (44 − 32) / 2。lg 48 已达标，不加。 */
 	.vx-radio--inline {
 		flex-shrink: 1;
 		min-width: 0;
+		margin-top: -2px;
 		margin-right: var(--vx-space-lg);
+		margin-bottom: -2px;
+		padding-top: 2px;
+		padding-bottom: 2px;
+		min-height: var(--vx-hit-size);
+	}
+
+	.vx-radio--inline-sm {
+		margin-top: -6px;
+		margin-right: var(--vx-space-md);
+		margin-bottom: -6px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+		min-height: var(--vx-hit-size);
+	}
+
+	.vx-radio--inline-lg {
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+		min-height: var(--vx-control-height-lg);
+	}
+
+	/* App 端 min-height 按内容盒算：内容高 + 纵向 padding 才是 44 热区。 */
+	/* #ifdef APP */
+	.vx-radio--inline {
+		min-height: var(--vx-control-height-md);
 	}
 
 	.vx-radio--inline-sm {
 		min-height: var(--vx-control-height-sm);
-		margin-right: var(--vx-space-md);
 	}
 
 	.vx-radio--inline-lg {
 		min-height: var(--vx-control-height-lg);
 	}
+	/* #endif */
 
 	/* 列表项：一项一行，行高沿用列表行 44 / 48 / 52，左右内边距与列表行相同。
 	   分割线绝对定位在行底，行本身不画圆角，外轮廓交给外层卡片。

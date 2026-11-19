@@ -10,4 +10,6 @@ export type VxIconProps = {
 	variant?: VxIconVariant
 	/** 局部颜色，接受 CSS 值，通常传 var(--vx-color-*)。 */
 	color?: string
+	/** 单独可点时撑出 44×44 热区，字形居中；装饰图标不开。 */
+	hit?: boolean
 }

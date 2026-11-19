@@ -20,6 +20,7 @@
 | type | `primary` \| `success` \| `info` \| `warning` \| `danger` \| `default` | `default` | 语义色；warning 使用 `warning-ink` |
 | variant | `regular` \| `fill` | `regular` | 线性 / 实心；两套共用同一组 name 和码点 |
 | color | string | `''` | 局部颜色，接受 CSS 值，通常传 `var(--vx-color-*)` |
+| hit | boolean | `false` | 单独可点时撑出 44×44 热区（`--vx-hit-size`），字形居中；装饰图标不开 |
 
 **core / extend**：core 112 个默认加载；extend 1000 个需要额外引入扩展字体样式，`vx-icon` 会按名字自动选字体：
 
@@ -64,7 +65,7 @@ import '@/uni_modules/vaporix-ui/libs/style/icons-extend.css'
 
 ## 说明
 
-- 图标是展示件，不触发点击；可点击的图标由业务包一层 44×44 热区。
+- 图标默认是展示件，不触发点击；单独可点时开 `hit` 撑出 44×44 热区，点击事件绑在组件上即可。按钮、单元格里的图标不开 `hit`，热区由外层控件提供。
 - `sm` 14 / `md` 18 / `lg` 22。`sm` 只放简单轮廓，齿轮、日历这类复杂图形用 `md` 或 `lg`。
 - `regular` 线性、`fill` 实心，名字和码点同一套。`fill` 给选中和强调，同一组不要混用。
 - 用到 extend 图标必须引入 `icons-extend.css`，否则字形不加载；core 组件不依赖它。

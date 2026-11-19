@@ -10,7 +10,8 @@
 		size: 'md',
 		type: 'default',
 		variant: 'regular',
-		color: ''
+		color: '',
+		hit: false
 	})
 
 	const glyph = computed((): string => {
@@ -30,6 +31,8 @@
 		} else if (tier === 'extend') {
 			name += ' vx-icon--extend'
 		}
+		// 热区档挂在尺寸之后，line-height 才能盖过字号档把字形垂直居中。
+		if (props.hit) name += ' vx-icon--hit'
 		return name
 	})
 
@@ -70,6 +73,13 @@
 		line-height: var(--vx-icon-sm);
 	}
 
+	/* 单独可点的图标撑到 44 热区，字号不变，行高同热区把字形垂直居中。 */
+	.vx-icon--hit {
+		width: var(--vx-hit-size);
+		height: var(--vx-hit-size);
+		line-height: var(--vx-hit-size);
+	}
+
 	.vx-icon--primary {
 		color: var(--vx-color-primary);
 	}
@@ -102,4 +112,10 @@
 	.vx-icon--extend-fill {
 		font-family: VaporixIconsExtendFill;
 	}
+
+	/* #ifdef WEB */
+	.vx-icon--hit {
+		cursor: pointer;
+	}
+	/* #endif */
 </style>
