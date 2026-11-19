@@ -1,6 +1,7 @@
 <template>
 	<!-- 提示是浮层：fixed 定位，挂在页面根节点，不要放进 scroll-view 或卡片里。
-	     App 上 fixed 的原点是页面内容顶，顶部横幅由脚本让开状态栏和导航栏行；Web 上相对视口，偏移由安全区变量补齐。 -->
+	     App 上 fixed 的原点是页面内容顶，小程序上是屏幕顶，顶部横幅都由脚本让开状态栏和导航栏行；
+	     Web 上相对视口，框架导航栏按 windowTop 让开，自绘导航栏补一行行高。 -->
 	<view v-if="show" :class="rootClass" :style="rootStyle">
 		<view :class="boxClass" :style="boxStyle" :hover-class="boxHoverClass"
 			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onBoxTap">
@@ -166,18 +167,31 @@
 		return style
 	})
 
-	// 顶部横幅从页面内容顶往下排：原生导航栏的页面，内容顶就是导航栏底，不用让；自绘导航栏的页面，
-	// 内容顶在窗口顶，状态栏和一行导航栏都要自己补出来。两者靠可用高度差区分——原生导航栏会把
-	// windowHeight 额外压掉这一段。不能挪到 setup 里量：页面首帧还没换成自绘导航栏时会判错。
+	// 顶部横幅要落在导航栏下方，让位按 fixed 原点分平台算：App 的原点是页面内容顶，小程序的原点是
+	// 屏幕顶——这两种平台上，原生导航栏的页面原点都已在导航栏下方，不用让；自绘导航栏的页面原点
+	// 还在窗口/屏幕顶，状态栏和一行导航栏要自己补出来。两者靠可用高度差区分——原生导航栏会把
+	// windowHeight 额外压掉这一段。原生导航栏行高最低 44（iOS），判定余量只能取 40，不能拿行高
+	// 48 当阈值，否则 44 行高的 iOS 会被判成自绘导航栏页，横幅多让出一行。不能挪到 setup 里量：
+	// 页面首帧还没换成自绘导航栏时会判错。
 	// VX_NAVIGATION_BAR_HEIGHT 与 --vx-navigation-bar-height 同值，脚本读不到 CSS 变量。
 	const VX_NAVIGATION_BAR_HEIGHT = 48
 
+	// 可用高度差压掉状态栏后还能剩 40 以上，才算原生导航栏页；低于它按自绘导航栏页补让位。
+	const VX_NATIVE_NAV_BAR_MIN_HEIGHT = 40
+
 	const navBarHeight = (): number => {
-		// #ifdef APP
+		// #ifdef APP || MP
 		const info = uni.getWindowInfo()
 		const statusBar = info.statusBarHeight > 0 ? Math.round(info.statusBarHeight) : 0
 		const pageTopGap = Math.round(info.screenHeight - info.windowHeight)
-		if (pageTopGap < statusBar + VX_NAVIGATION_BAR_HEIGHT) return statusBar + VX_NAVIGATION_BAR_HEIGHT
+		if (pageTopGap < statusBar + VX_NATIVE_NAV_BAR_MIN_HEIGHT) return statusBar + VX_NAVIGATION_BAR_HEIGHT
+		// #endif
+		// #ifdef WEB
+		const webInfo = uni.getWindowInfo()
+		// 带框架导航栏的页面 windowTop 是导航栏高，fixed 要让出这一段才不压在导航栏上；
+		// 自绘导航栏的页面 windowTop 为 0，按设计系统导航栏行高补一行，和 App、小程序同口径。
+		if (webInfo.windowTop > 0) return Math.round(webInfo.windowTop)
+		return VX_NAVIGATION_BAR_HEIGHT
 		// #endif
 		return 0
 	}
@@ -251,20 +265,16 @@
 		overflow: visible;
 	}
 
-	/* App 上 fixed 的原点是页面内容顶：原生导航栏的页面已经在导航栏下方，从 0 开始；自绘导航栏的
-	   那一段由盒子的上边距补出来。Web 和小程序页面本来就在导航栏下方，读安全区就够。 */
+	/* App 上 fixed 的原点是页面内容顶，小程序上是屏幕顶：原生导航栏的页面定位层已经在导航栏下方，
+	   从 0 开始；自绘导航栏让出的状态栏和导航栏行走盒子的上边距（脚本 navBarHeight）。
+	   Web 相对视口，安全区变量保底，导航栏让位同样交给盒子的上边距。 */
 	.vx-tips--top {
 		top: 0;
 	}
 
-	/* #ifndef APP */
+	/* #ifdef WEB */
 	.vx-tips--top {
-		/* #ifdef MP */
-		top: var(--status-bar-height, 0px);
-		/* #endif */
-		/* #ifndef MP */
 		top: var(--uni-safe-area-inset-top, 0px);
-		/* #endif */
 	}
 	/* #endif */
 
