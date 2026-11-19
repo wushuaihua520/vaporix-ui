@@ -31,7 +31,9 @@
 				<!-- picker-view 的原生蒙层写死了白色渐变，暗色主题下会发白，这里用 mask-class 去掉。 -->
 				<!-- 先占位、等弹层这一帧落屏后再挂原生滚轮：picker-view 和 fixed 根节点同一帧创建时，
 				     App 端会拒绝创建，整棵弹层跟着不落屏（vx-picker 用空状态分支避开了同一个坑）。
-				     下标在 prepare() 里已经备好才换成滚轮，picker-view 不会拿到空 value；挂上后关闭只隐藏，不再卸。 -->
+				     下标在 prepare() 里已经备好才换成滚轮，picker-view 不会拿到空 value。
+				     关闭即把滚轮卸回占位，下次打开重新走这条安全链路：常驻滚轮在小程序端经不住
+				     换列重建——重建和弹层去掉隐藏落在同一拍，原生滚轮拿到零尺寸，整块画成空白。 -->
 				<view v-if="!wheelMounted" class="vx-datetime__picker"></view>
 				<picker-view v-else :key="wheelKey" class="vx-datetime__picker" :value="columnIndices"
 					:indicator-style="indicatorStyle" mask-class="vx-datetime__fade" @change="onColumnChange">
@@ -211,7 +213,9 @@
 		return columns.value.length > 0 && columnIndices.value.length === columns.value.length
 	})
 
-	// 滚轮只在首次打开落屏后的下一拍挂上，之后常驻；关闭走底座的隐藏 class，不再卸掉原生子树。
+	// 滚轮不常驻：关闭就卸回占位，每次打开在弹层落屏后的下一拍重新挂上。
+	// 常驻方案在小程序端有坑——换模式重建滚轮和弹层去掉隐藏落在同一拍，
+	// 原生 picker-view 初始化拿到零尺寸，整块画成空白；卸掉重挂让每次打开都和首次打开同链路。
 	const wheelMounted = ref(false)
 
 	// 模式切换时列数会变，整只换掉滚轮，避免原生列沿用旧下标停在空行。
@@ -384,7 +388,7 @@
 
 	// 打开时先只画占位，等下一拍再挂原生滚轮：picker-view 和 fixed 根节点同一帧创建时，
 	// App 端会创建失败，整棵弹层跟着不落屏。下标由 prepare() 同步备好，挂上时不会给空 value。
-	// 挂上以后不再因关闭卸载；列数变化仍由 wheelKey 整只换滚轮。
+	// 关闭已把滚轮卸掉，这里每次打开都重走一遍；开着时换列仍由 wheelKey 整只换滚轮。
 	const mountWheel = () => {
 		if (wheelMounted.value) return
 		nextTick(() => {
@@ -395,8 +399,12 @@
 
 	// 打开时重新读 value，滚轮挂载时就能停在正确的位置。
 	// 打开期间父级改 value 不跟，避免把正在滚的轮子拽走。
+	// 关闭时卸回占位：底座 duration 固定为 0，卸载和隐藏落在同一拍，收起过程看不到滚轮消失。
 	watch(show, (visible: boolean) => {
-		if (!visible) return
+		if (!visible) {
+			wheelMounted.value = false
+			return
+		}
 		prepare()
 		mountWheel()
 	})
