@@ -440,7 +440,12 @@
 	}
 
 	.vx-drawer__panel--left {
+		/* #ifdef MP */
+		padding-top: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		padding-top: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 		padding-left: var(--uni-safe-area-inset-left, 0px);
 		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
 		border-top-right-radius: var(--vx-radius-lg);
@@ -448,7 +453,12 @@
 	}
 
 	.vx-drawer__panel--right {
+		/* #ifdef MP */
+		padding-top: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		padding-top: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 		padding-right: var(--uni-safe-area-inset-right, 0px);
 		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
 		border-top-left-radius: var(--vx-radius-lg);
@@ -456,7 +466,12 @@
 	}
 
 	.vx-drawer__panel--top {
+		/* #ifdef MP */
+		padding-top: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		padding-top: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 		padding-left: var(--uni-safe-area-inset-left, 0px);
 		padding-right: var(--uni-safe-area-inset-right, 0px);
 		border-bottom-left-radius: var(--vx-radius-lg);

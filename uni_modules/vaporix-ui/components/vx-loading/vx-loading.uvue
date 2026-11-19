@@ -366,4 +366,40 @@
 		}
 	}
 	/* #endif */
+
+	/* 小程序端与 Web 同源的关键帧：App 不支持 CSS 动画，保持静态姿态（审计 2026-11-19）。 */
+	/* #ifndef APP */
+	.vx-loading--overlay {
+		touch-action: none;
+		user-select: none;
+		cursor: progress;
+	}
+
+	.vx-loading__shield {
+		cursor: progress;
+	}
+
+	/* 和轻提示一样，淡入只在 Web 生效；5.26 的 App 没有关键帧，元素直接出现。 */
+	.vx-loading__mask {
+		animation-name: vx-loading-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-loading__body--panel {
+		animation-name: vx-loading-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-loading-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+	/* #endif */
 </style>

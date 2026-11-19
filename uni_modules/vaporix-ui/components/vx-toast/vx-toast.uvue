@@ -316,4 +316,29 @@
 		}
 	}
 	/* #endif */
+
+	/* 小程序端与 Web 同源的关键帧：App 不支持 CSS 动画，保持静态姿态（审计 2026-11-19）。 */
+	/* #ifndef APP */
+	.vx-toast {
+		touch-action: none;
+		user-select: none;
+		cursor: pointer;
+	}
+
+	.vx-toast__box {
+		animation-name: vx-toast-in;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-toast-in {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+	/* #endif */
 </style>

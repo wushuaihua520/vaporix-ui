@@ -255,7 +255,12 @@
 	   拍平不支持 pointer-events，这层不要加 flatten。 */
 	.vx-sticky__ruler {
 		position: fixed;
+		/* #ifdef MP */
+		top: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		top: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 		left: 0;
 		width: 1px;
 		height: 1px;

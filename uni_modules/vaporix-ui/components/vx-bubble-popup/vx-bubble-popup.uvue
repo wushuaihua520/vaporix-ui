@@ -1291,4 +1291,51 @@
 		}
 	}
 	/* #endif */
+
+	/* 小程序端与 Web 同源的关键帧：App 不支持 CSS 动画，保持静态姿态（审计 2026-11-19）。 */
+	/* #ifndef APP */
+	.vx-bubble-popup__catcher {
+		touch-action: none;
+	}
+
+	.vx-bubble-popup__bubble--enter {
+		animation-name: vx-bubble-popup-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-bubble-popup__panel--enter {
+		animation-name: vx-bubble-popup-pop;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-bubble-popup__item {
+		cursor: pointer;
+	}
+
+	.vx-bubble-popup__item--disabled {
+		cursor: not-allowed;
+	}
+
+	@keyframes vx-bubble-popup-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-bubble-popup-pop {
+		from {
+			transform: scale(0.96);
+		}
+
+		to {
+			transform: scale(1);
+		}
+	}
+	/* #endif */
 </style>

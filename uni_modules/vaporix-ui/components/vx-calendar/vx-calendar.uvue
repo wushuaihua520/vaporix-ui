@@ -1336,4 +1336,75 @@
 		}
 	}
 	/* #endif */
+
+	/* 小程序端与 Web 同源的关键帧：App 不支持 CSS 动画，保持静态姿态（审计 2026-11-19）。 */
+	/* #ifndef APP */
+	.vx-calendar--popup {
+		touch-action: none;
+	}
+
+	.vx-calendar__mask {
+		animation-name: vx-calendar-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-calendar__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-calendar__close {
+		cursor: pointer;
+	}
+
+	.vx-calendar__arrow {
+		cursor: pointer;
+	}
+
+	.vx-calendar__cell {
+		cursor: pointer;
+	}
+
+	.vx-calendar__cell--disabled {
+		cursor: default;
+	}
+
+	.vx-calendar__arrow--disabled {
+		cursor: default;
+	}
+
+	.vx-calendar__confirm {
+		cursor: pointer;
+	}
+
+	.vx-calendar__confirm--disabled {
+		cursor: not-allowed;
+	}
+
+	.vx-calendar__sheet--popup {
+		animation-name: vx-calendar-up;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-calendar-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-calendar-up {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
 </style>

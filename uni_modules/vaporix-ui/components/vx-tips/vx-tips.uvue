@@ -259,7 +259,12 @@
 
 	/* #ifndef APP */
 	.vx-tips--top {
+		/* #ifdef MP */
+		top: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		top: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 	}
 	/* #endif */
 
@@ -412,6 +417,34 @@
 	   App 上 pointer-events: none 会连子节点一起关掉，不能写。
 	   淡入挂在定位层而不是盒子：关键帧的 opacity 优先级高于行内值，挂在盒子上会把 props.opacity 盖掉。 */
 	/* #ifdef WEB */
+	.vx-tips {
+		pointer-events: none;
+		animation-name: vx-tips-in;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-tips__box {
+		pointer-events: auto;
+	}
+
+	.vx-tips__box--closable {
+		cursor: pointer;
+	}
+
+	@keyframes vx-tips-in {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+	/* #endif */
+
+	/* 小程序端与 Web 同源的关键帧：App 不支持 CSS 动画，保持静态姿态（审计 2026-11-19）。 */
+	/* #ifndef APP */
 	.vx-tips {
 		pointer-events: none;
 		animation-name: vx-tips-in;

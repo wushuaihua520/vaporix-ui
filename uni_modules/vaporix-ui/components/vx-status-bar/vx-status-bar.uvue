@@ -270,7 +270,12 @@
 
 	/* 占位和条同源：默认都读安全区顶部，传 height 时由内联样式盖过。 */
 	.vx-status-bar--placeholder {
+		/* #ifdef MP */
+		height: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		height: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 	}
 
 	/* 条满宽，底色和插槽都在这一层里。高度跟随安全区，Web 上为 0。
@@ -281,7 +286,12 @@
 		flex-shrink: 0;
 		width: 100%;
 		min-width: 0;
+		/* #ifdef MP */
+		height: var(--status-bar-height, 0px);
+		/* #endif */
+		/* #ifndef MP */
 		height: var(--uni-safe-area-inset-top, 0px);
+		/* #endif */
 		flex-direction: column;
 		overflow: hidden;
 	}

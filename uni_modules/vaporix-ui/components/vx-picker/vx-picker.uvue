@@ -780,4 +780,55 @@
 		}
 	}
 	/* #endif */
+
+	/* 小程序端与 Web 同源的关键帧：App 不支持 CSS 动画（审计 2026-11-19）。 */
+	/* #ifndef APP */
+	.vx-picker {
+		touch-action: none;
+	}
+
+	.vx-picker__mask {
+		animation-name: vx-picker-fade;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-picker__mask--closable {
+		cursor: pointer;
+	}
+
+	.vx-picker__action {
+		cursor: pointer;
+	}
+
+	.vx-picker__action--disabled {
+		cursor: default;
+	}
+
+	.vx-picker__sheet {
+		animation-name: vx-picker-up;
+		animation-duration: var(--vx-duration-normal);
+		animation-timing-function: var(--vx-ease-standard);
+	}
+
+	@keyframes vx-picker-fade {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes vx-picker-up {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+	/* #endif */
 </style>
