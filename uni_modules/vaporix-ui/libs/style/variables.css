@@ -409,11 +409,6 @@
 	--vx-steps-center-md: 12px;
 	--vx-steps-center-lg: 14px;
 
-	/* line-out 是 center 的相反数。App 没有 calc，不能写成负的 var()，改半径时一起改。 */
-	--vx-steps-line-out-sm: -10px;
-	--vx-steps-line-out-md: -12px;
-	--vx-steps-line-out-lg: -14px;
-
 	/* 数字框：中间数值区宽度，不并入控件高度；按钮宽高都跟控件档位 */
 	--vx-number-box-field-sm: 44px;
 	--vx-number-box-field-md: 52px;
@@ -1158,10 +1153,6 @@
 	--vx-steps-center-sm: 10px;
 	--vx-steps-center-md: 12px;
 	--vx-steps-center-lg: 14px;
-
-	--vx-steps-line-out-sm: -10px;
-	--vx-steps-line-out-md: -12px;
-	--vx-steps-line-out-lg: -14px;
 
 	/* 数字框中间数值区宽度（与亮色一致） */
 	--vx-number-box-field-sm: 44px;

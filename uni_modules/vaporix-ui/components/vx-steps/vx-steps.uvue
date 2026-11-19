@@ -4,8 +4,10 @@
 	<view v-if="rows.length > 0" :class="rootClass">
 		<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="hoverClass"
 			:hover-stay-time="VX_PRESSED_STAY_TIME">
-			<!-- 连线从当前节点中心画到下一个节点中心，下一节点盖住末端。 -->
-			<view v-if="row.lineClass.length > 0" :class="row.lineClass"></view>
+			<!-- 连线拆成前后两半，各画在本步边界内：小程序和 App 的 view 都裁切溢出，跨步的整线会被截断。
+			     后半从本节点中心画到步边缘，前半从步边缘接到本节点中心，拼起来仍是中心到中心。 -->
+			<view v-if="row.lineInClass.length > 0" :class="row.lineInClass"></view>
+			<view v-if="row.lineOutClass.length > 0" :class="row.lineOutClass"></view>
 
 			<view :class="markerBoxClass">
 				<view v-if="row.dot" :class="row.dotClass"></view>
@@ -54,7 +56,8 @@
 	type StepsRow = {
 		index: number
 		itemClass: string
-		lineClass: string
+		lineInClass: string
+		lineOutClass: string
 		dot: boolean
 		dotClass: string
 		markerClass: string
@@ -111,7 +114,7 @@
 	})
 
 	// 尺寸、方向和语义色整组相同，class 在循环外拼好；循环里只挑状态、图标和留白。
-	// 连线的尺寸 class 写在方向后面，才能盖过 md 的 top / left / bottom。语义色写在最后。
+	// 连线的进出段和尺寸 class 写在方向后面，才能盖过 md 的 top / left / height。语义色写在最后。
 	const rows = computed((): Array<StepsRow> => {
 		const list: Array<StepsRow> = []
 		const source = props.items
@@ -165,11 +168,21 @@
 		const timeBase = vertical ? 'vx-steps__time vx-steps__time--vertical' : 'vx-steps__time'
 		const timeOffset = timeBase + ' vx-steps__time--offset'
 
-		let linePending = vertical ? 'vx-steps__line vx-steps__line--vertical' : 'vx-steps__line vx-steps__line--horizontal'
-		if (size === 'sm') linePending += vertical ? ' vx-steps__line--vertical-sm' : ' vx-steps__line--horizontal-sm'
-		else if (size === 'lg') linePending += vertical ? ' vx-steps__line--vertical-lg' : ' vx-steps__line--horizontal-lg'
-		if (props.lineStyle === 'dashed') linePending += ' vx-steps__line--dashed'
-		const lineDone = linePending + ` vx-steps__line--${typeName}`
+		let lineIn = vertical ? 'vx-steps__line vx-steps__line--vertical vx-steps__line--vertical-in' : 'vx-steps__line vx-steps__line--horizontal vx-steps__line--horizontal-in'
+		let lineOut = vertical ? 'vx-steps__line vx-steps__line--vertical vx-steps__line--vertical-out' : 'vx-steps__line vx-steps__line--horizontal vx-steps__line--horizontal-out'
+		if (size === 'sm') {
+			lineIn += vertical ? ' vx-steps__line--vertical-in-sm' : ' vx-steps__line--horizontal-sm'
+			lineOut += vertical ? ' vx-steps__line--vertical-out-sm' : ' vx-steps__line--horizontal-sm'
+		} else if (size === 'lg') {
+			lineIn += vertical ? ' vx-steps__line--vertical-in-lg' : ' vx-steps__line--horizontal-lg'
+			lineOut += vertical ? ' vx-steps__line--vertical-out-lg' : ' vx-steps__line--horizontal-lg'
+		}
+		if (props.lineStyle === 'dashed') {
+			lineIn += ' vx-steps__line--dashed'
+			lineOut += ' vx-steps__line--dashed'
+		}
+		const lineInDone = lineIn + ` vx-steps__line--${typeName}`
+		const lineOutDone = lineOut + ` vx-steps__line--${typeName}`
 
 		for (let index = 0; index < count; index++) {
 			const entry = source[index]
@@ -204,13 +217,17 @@
 			if (isCurrent) titleClass = titleCurrent
 			else if (!isCompleted) titleClass = titlePending
 
-			let lineClass = ''
-			if (!last) lineClass = index < current ? lineDone : linePending
+			// 前半段属于上一步的进度：上一步完成就染语义色；后半段看本步是否完成。
+			let lineInClass = ''
+			if (index > 0) lineInClass = index - 1 < current ? lineInDone : lineIn
+			let lineOutClass = ''
+			if (!last) lineOutClass = index < current ? lineOutDone : lineOut
 
 			list.push({
 				index: index,
 				itemClass: itemClass,
-				lineClass: lineClass,
+				lineInClass: lineInClass,
+				lineOutClass: lineOutClass,
 				dot: dot,
 				dotClass: isCompleted ? dotDone : dotBase,
 				markerClass: markerClass,
@@ -507,7 +524,8 @@
 	/* 连线用 1px 边框画，solid / dashed 只换 border-style。
 	   四边宽度先归零，只留一侧 1px；否则其余三边取默认 medium，线会被撑粗并向下 / 向右偏。
 	   横向 translateY(-50%)、纵向 translateX(-50%) 让 1px 线压在节点中心。
-	   纵向 bottom 用 --vx-steps-line-out-*，数值是 center 的相反数；App 没有 calc，不能写成负的 var()。 */
+	   小程序和 App 的 view 都裁切溢出，连线不能跨步：拆成前后两半各画在本步内，
+	   后半从节点中心到步边缘，前半从步边缘到节点中心，前半颜色跟上一步进度。 */
 	.vx-steps__line {
 		box-sizing: border-box;
 		position: absolute;
@@ -519,11 +537,19 @@
 
 	.vx-steps__line--horizontal {
 		top: var(--vx-steps-center-md);
-		left: 50%;
-		width: 100%;
 		height: var(--vx-border-width);
 		border-top-width: var(--vx-border-width);
 		transform: translateY(-50%);
+	}
+
+	.vx-steps__line--horizontal-in {
+		left: 0;
+		width: 50%;
+	}
+
+	.vx-steps__line--horizontal-out {
+		left: 50%;
+		width: 50%;
 	}
 
 	.vx-steps__line--horizontal-sm {
@@ -535,24 +561,40 @@
 	}
 
 	.vx-steps__line--vertical {
-		top: var(--vx-steps-center-md);
-		bottom: var(--vx-steps-line-out-md);
 		left: var(--vx-steps-center-md);
 		width: var(--vx-border-width);
 		border-left-width: var(--vx-border-width);
 		transform: translateX(-50%);
 	}
 
-	.vx-steps__line--vertical-sm {
-		top: var(--vx-steps-center-sm);
-		bottom: var(--vx-steps-line-out-sm);
-		left: var(--vx-steps-center-sm);
+	.vx-steps__line--vertical-in {
+		top: 0;
+		height: var(--vx-steps-center-md);
 	}
 
-	.vx-steps__line--vertical-lg {
-		top: var(--vx-steps-center-lg);
-		bottom: var(--vx-steps-line-out-lg);
+	.vx-steps__line--vertical-out {
+		top: var(--vx-steps-center-md);
+		bottom: 0;
+	}
+
+	.vx-steps__line--vertical-in-sm {
+		left: var(--vx-steps-center-sm);
+		height: var(--vx-steps-center-sm);
+	}
+
+	.vx-steps__line--vertical-out-sm {
+		left: var(--vx-steps-center-sm);
+		top: var(--vx-steps-center-sm);
+	}
+
+	.vx-steps__line--vertical-in-lg {
 		left: var(--vx-steps-center-lg);
+		height: var(--vx-steps-center-lg);
+	}
+
+	.vx-steps__line--vertical-out-lg {
+		left: var(--vx-steps-center-lg);
+		top: var(--vx-steps-center-lg);
 	}
 
 	.vx-steps__line--dashed {
