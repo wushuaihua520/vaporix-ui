@@ -63,6 +63,7 @@
 		closable: false,
 		bodyPadded: true,
 		maskClosable: true,
+		coverNavbar: true,
 		maskColor: '',
 		bgColor: '',
 		zIndex: VX_OVERLAY_LAYER
@@ -101,9 +102,24 @@
 		return 'right'
 	})
 
-	// class 顺序：基础 → 方向 → 隐藏。样式表顺序与此一致。
+	// 导航栏行高与 vx-navigation-bar 的 VX_NAVIGATION_BAR_HEIGHT、--vx-navigation-bar-height 手工对齐。
+	const VX_NAVBAR_ROW_HEIGHT = 48
+
+	// coverNavbar=false 时让出的顶部高度：状态栏 + 导航栏行高。Web 上状态栏是 0，正好只剩行高。
+	const navOffset = computed((): number => {
+		if (props.coverNavbar) return 0
+		const statusBar = uni.getWindowInfo().statusBarHeight
+		return (statusBar > 0 ? statusBar : 0) + VX_NAVBAR_ROW_HEIGHT
+	})
+
+	// 让出导航栏后根节点高度要写成像素：只靠 top/bottom 定位时，子项百分比高度在 App 上会落成 auto。
+	// 打开时再读一次窗口，转屏后下一次打开按新高度落位。
+	const viewportHeight = ref(uni.getWindowInfo().windowHeight)
+
+	// class 顺序：基础 → 方向 → 让出导航栏 → 隐藏。样式表顺序与此一致。
 	const rootClass = computed((): string => {
 		let name = `vx-drawer vx-drawer--${placement.value}`
+		if (navOffset.value > 0) name += ' vx-drawer--clipped'
 		if (hidden.value) name += ' vx-drawer--hidden'
 		return name
 	})
@@ -119,7 +135,9 @@
 	})
 
 	const panelClass = computed((): string => {
-		return `vx-drawer__panel vx-drawer__panel--${placement.value}`
+		let name = `vx-drawer__panel vx-drawer__panel--${placement.value}`
+		if (navOffset.value > 0) name += ' vx-drawer__panel--below-nav'
+		return name
 	})
 
 	// 有关闭叉时右侧留 8，44 的热区右缘离面板 8；没有时回到正常内边距。
@@ -142,7 +160,14 @@
 	})
 
 	const rootStyle = computed((): string => {
-		return `z-index: ${props.zIndex};`
+		let style = `z-index: ${props.zIndex};`
+		const offset = navOffset.value
+		if (offset > 0) {
+			style += ` top: ${offset}px;`
+			const height = viewportHeight.value - offset
+			if (height > 0) style += ` height: ${height}px;`
+		}
+		return style
 	})
 
 	// 只覆盖当前方向那一条边；另一条边的默认尺寸在样式表里。
@@ -218,6 +243,7 @@
 	// duration>0 时先挂起手 class、等一帧再落位，过渡才有起点（与 vx-popup 同款）。
 	const enter = () => {
 		openedAt = Date.now()
+		viewportHeight.value = uni.getWindowInfo().windowHeight
 		clearSettle()
 		clearLeave()
 		const justMounted = !rendered.value
@@ -361,6 +387,13 @@
 		justify-content: flex-end;
 	}
 
+	/* 让出导航栏时根节点从导航栏下方开始，改用 hidden 裁掉进出场：
+	   top 抽屉的起手位平移出根节点，不裁会画到导航栏上。
+	   阴影只在根节点边缘（屏幕边和导航栏交界）被裁，朝向页面的一侧不受影响。 */
+	.vx-drawer--clipped {
+		overflow: hidden;
+	}
+
 	/* 首开后根节点常驻。关闭只加这个 class：display: none 只停绘制，正文的原生 scroll-view 不销毁；
 	   下次打开去掉它再入场。class 字符串排在最后，这条规则也排在方向类之后。 */
 	.vx-drawer--hidden {
@@ -484,6 +517,12 @@
 		padding-right: var(--uni-safe-area-inset-right, 0px);
 		border-top-left-radius: var(--vx-radius-lg);
 		border-top-right-radius: var(--vx-radius-lg);
+	}
+
+	/* 让出导航栏后顶部安全区已由导航栏占掉，面板不再重复留。
+	   class 字符串里排在方向类之后，这条规则也排在方向规则之后。 */
+	.vx-drawer__panel--below-nav {
+		padding-top: 0;
 	}
 
 	/* 头部和底栏整块不收缩，分割线跟着自己那一行；正文滚动不带动它们。 */

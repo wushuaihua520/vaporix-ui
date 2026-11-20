@@ -1,3 +1,7 @@
+## 0.74.0（2026-11-20）
+
+- `vx-drawer` 新增 `coverNavbar`：默认 `true` 保持整页覆盖；传 `false` 时遮罩和面板整体让出状态栏 + 48px 导航栏行高（`--vx-navigation-bar-height`），自定义导航栏保持可见可点，面板不再重复留顶部安全区，进出场在让位后的层内裁切，四个方向都适用。只对 `navigationStyle: custom` 的页面有意义；导航栏带 `extra` 第二行时仍按标准行高让位。
+
 ## 0.73.0（2026-11-19）
 
 - **行内单选 / 复选 / 开关热区外扩到 44**（`--vx-hit-size`）：`vx-radio` / `vx-checkbox` / `vx-switch` 的 inline 形态 sm / md 视觉高度仍是 32 / 40，纵向 padding 撑热区、等值负 margin 抵掉占位，行占位、轨道位置和项间距都不变；lg 48 已达标不动。list 形态行高本来就 ≥44，不受影响。

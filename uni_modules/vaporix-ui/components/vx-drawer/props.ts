@@ -18,6 +18,8 @@ export type VxDrawerProps = {
 	bodyPadded?: boolean
 	/** 点击遮罩收起并抛 close，默认打开；关掉后要靠关闭叉、内容里的按钮或 close() 退出。 */
 	maskClosable?: boolean
+	/** 是否盖住自定义导航栏，默认 true。false 时遮罩和面板整体让出状态栏 + 48px 导航栏行高，导航栏保持可见可点；只对 navigationStyle: custom 的页面有意义，导航栏带 extra 第二行时高度按标准行算。 */
+	coverNavbar?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
 	/** 自定义面板底色，字面值；不传时用 --vx-color-surface。 */

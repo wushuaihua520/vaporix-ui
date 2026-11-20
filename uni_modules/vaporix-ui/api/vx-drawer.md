@@ -41,6 +41,7 @@
 | closable | boolean | `false` | 头部右侧显示关闭叉，点击收起并抛 `close` |
 | bodyPadded | boolean | `true` | 正文保留四边内边距 16；列表、图片贴边时传 `false` |
 | maskClosable | boolean | `true` | 点击遮罩收起并抛 `close` |
+| coverNavbar | boolean | `true` | 是否盖住自定义导航栏；`false` 时遮罩和面板整体让出状态栏 + 48px 导航栏行高，导航栏保持可见可点 |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
 | bgColor | string | `''` | 自定义面板底色，字面值 |
 | zIndex | number | `1000` | 浮层层级 |
@@ -78,6 +79,7 @@
 - `suffix` 上边一条分割线，放 1–2 个动作，不做主导航和长表单。
 - `maskClosable=false` 时点遮罩不关闭，要保留关闭叉；`close()` 只收起，`cancel()` 收起并抛 `close`。
 - 四个方向的安全区都由面板内边距承担。
+- 默认盖住整页，包括 `navigationStyle: custom` 页面的自定义导航栏（原生导航栏本来就盖不住）。`coverNavbar=false` 时根节点从状态栏 + 48px（`--vx-navigation-bar-height`）下方开始，面板不再重复留顶部安全区，进出场也在这一层内裁切；导航栏带 `extra` 第二行时仍按标准行高让位，自定义更高的导航栏目前不能按实际高度让。
 - 挂在页面根节点，同一屏只开一个；层级 1000，低于消息提示、弹框和轻提示。
 - 第一次打开后根节点常驻，关闭只切 `display: none`；要完全释放时用 `v-if` 包住整个抽屉。
 - 从 ThorUI `tui-drawer` 迁移：`visible` → `v-model:show`，`mode` → `position`，`backgroundColor` → `bgColor`；`mask` 不再提供，抽屉始终带遮罩，常驻侧栏用页面布局。
