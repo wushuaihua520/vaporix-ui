@@ -688,20 +688,22 @@
 		margin-left: var(--vx-space-xs);
 	}
 
-	.vx-input__placeholder {
+	/* uvue.wxss 全局 input .input-placeholder 的特异性是 (0,1,1)，单 class 盖不过它，
+	   借祖先 .vx-input 抬到 (0,2,0)，token 色才能压过全局的 #808080 / 暗色 #5f5f5f。 */
+	.vx-input .vx-input__placeholder {
 		color: var(--vx-color-text-secondary);
 		font-size: var(--vx-font-control-md);
 	}
 
-	.vx-input__placeholder--lg {
+	.vx-input .vx-input__placeholder--lg {
 		font-size: var(--vx-font-control-lg);
 	}
 
-	.vx-input__placeholder--sm {
+	.vx-input .vx-input__placeholder--sm {
 		font-size: var(--vx-font-control-sm);
 	}
 
-	.vx-input__placeholder--disabled {
+	.vx-input .vx-input__placeholder--disabled {
 		color: var(--vx-color-disabled-text);
 	}
 

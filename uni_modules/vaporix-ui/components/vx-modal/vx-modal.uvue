@@ -30,7 +30,7 @@
 			<!-- 一个动作铺满，两个并排，三个及以上纵向排列；动作本身复用 vx-button。 -->
 			<view v-if="rows.length > 0" :class="footerClass" @touchmove.stop.prevent>
 				<view v-for="row in rows" :key="row.key" :class="row.wrapperClass">
-					<vx-button block size="sm" :type="row.type" :variant="row.variant" :shape="actionShape"
+					<vx-button block size="md" :type="row.type" :variant="row.variant" :shape="actionShape"
 						:text="row.text" :disabled="row.disabled" :loading="row.loading" @click="onActionTap(row)" />
 				</view>
 			</view>
@@ -85,7 +85,7 @@
 	// 首次渲染就显示时直接挂上；之后 rendered 只从 false 变 true，不再回头。
 	const rendered = ref(show.value === true)
 	const hidden = ref(show.value !== true)
-	// 落位态：false 时面板停在 scale(0.96)、遮罩全透明；挂上一帧后置 true 触发过渡。
+	// 落位态：false 时面板和遮罩全透明；挂上一帧后置 true 触发淡入过渡。
 	// 与 vx-popup 同款两帧式进出场（2026-11-14 起 App 端也有动画，此前关键帧只在 Web）。
 	const inState = ref(show.value === true)
 
@@ -708,7 +708,7 @@
 		margin-left: var(--vx-space-md);
 	}
 
-	/* 纵向排列时不收缩，短屏先挤定位层，不把 32 的按钮压扁。 */
+	/* 纵向排列时不收缩，短屏先挤定位层，不把 40 的按钮压扁。 */
 	.vx-modal__action--stacked {
 		flex-shrink: 0;
 		width: 100%;
@@ -718,9 +718,11 @@
 		margin-bottom: var(--vx-space-sm);
 	}
 
-	/* 进出场统一用 vx-popup 同款 transition 两帧式（全平台一条路径）：
-	   面板常驻 scale(0.96)、遮罩全透明；inState 挂上 --in 后按行内时长过渡到落位，
-	   关闭反向播放后再隐藏。duration=0 时不挂过渡类，enter 同帧置 inState。 */
+	/* 进出场用 transition 两帧式（全平台一条路径）：面板常驻全透明，
+	   inState 挂上 --in 后按行内时长淡入到落位，关闭反向播放后再隐藏。
+	   duration=0 时不挂过渡类，enter 同帧置 inState。
+	   面板只做 opacity 过渡，不做 scale：transform 过渡期间原生 input / textarea
+	   的同层渲染会退回独立绘制，动画结束切回时 placeholder 垂直位置跳约 1px。 */
 	.vx-modal__mask {
 		opacity: 0;
 	}
@@ -736,17 +738,15 @@
 
 	.vx-modal__panel {
 		opacity: 0;
-		transform: scale(0.96);
 	}
 
 	.vx-modal__panel--animated {
-		transition-property: transform, opacity;
+		transition-property: opacity;
 		transition-timing-function: var(--vx-ease-standard);
 	}
 
 	.vx-modal__panel--in {
 		opacity: 1;
-		transform: scale(1);
 	}
 
 	/* #ifdef WEB */

@@ -95,7 +95,7 @@ const actions = [
 ## 说明
 
 - 面板用 `surface` 底、`lg` 圆角加阴影，不加描边；`size` 只改最大宽度 280 / 320 / 400，字号不变。
-- 标题 17 / 24 / 600，正文 15 / 22 次要色，动作沿用 `sm` 控件的 14 / 20 / 500；内边距固定 24。
+- 标题 17 / 24 / 600，正文 15 / 22 次要色，动作沿用 `md` 控件的 16 / 22 / 500；内边距固定 24。
 - 动作一个铺满、两个并排、三个以上纵向；并排文案控制在 2–4 个字。删除、退出这类不可逆操作至少把确定改成 `danger`。
 - `actions` 非空时整组替换默认按钮，`showCancel` / `confirmText` / `confirmType` / `confirmLoading` 只在默认动作里生效。
 - `role="cancel"` 的动作、关闭叉和可关闭遮罩始终收起并抛 `cancel`；`role="confirm"` 抛 `confirm`；没有 `role` 的抛 `action(index, action)`。

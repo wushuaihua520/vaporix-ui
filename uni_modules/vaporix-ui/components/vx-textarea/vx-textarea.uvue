@@ -368,20 +368,22 @@
 		height: var(--vx-height-textarea-sm);
 	}
 
-	.vx-textarea__placeholder {
+	/* 同 vx-input：uvue.wxss 全局 textarea .textarea-placeholder 特异性 (0,1,1)，
+	   借祖先 .vx-textarea 抬到 (0,2,0) 才盖得过全局色。 */
+	.vx-textarea .vx-textarea__placeholder {
 		color: var(--vx-color-text-secondary);
 		font-size: var(--vx-font-control-md);
 	}
 
-	.vx-textarea__placeholder--lg {
+	.vx-textarea .vx-textarea__placeholder--lg {
 		font-size: var(--vx-font-control-lg);
 	}
 
-	.vx-textarea__placeholder--sm {
+	.vx-textarea .vx-textarea__placeholder--sm {
 		font-size: var(--vx-font-control-sm);
 	}
 
-	.vx-textarea__placeholder--disabled {
+	.vx-textarea .vx-textarea__placeholder--disabled {
 		color: var(--vx-color-disabled-text);
 	}
 
