@@ -264,8 +264,11 @@
 	})
 
 	// 外层只负责贴边和裁掉方块的下半截；尾巴本身是一块旋转 45° 的方块。
+	// solid 没有描边和接缝，窗口向面板里多伸 1px，底边压进同色面板，亚像素坐标下不再露缝。
 	const arrowClass = computed((): string => {
-		return `vx-bubble-popup__arrow vx-bubble-popup__arrow--${activePlacement.value}`
+		let name = `vx-bubble-popup__arrow vx-bubble-popup__arrow--${activePlacement.value}`
+		if (props.variant === 'solid') name += ` vx-bubble-popup__arrow--solid-${activePlacement.value}`
+		return name
 	})
 
 	const arrowTipClass = computed((): string => {
@@ -1003,6 +1006,25 @@
 		right: var(--vx-bubble-arrow-out);
 		width: var(--vx-bubble-arrow);
 		height: var(--vx-bubble-arrow-base);
+	}
+
+	/* solid 没有描边，也没有接缝去盖面板边：窗口向面板里多伸 1px，尾巴底边压进面板同色底，
+	   亚像素定位时两块同色形状不再各画半透明边、拼出一条浅色缝。尖端外伸 6，正好不压头像。
+	   写在方向后面，App 按 class 先后盖属性；surface 有描边和接缝，不走这组。 */
+	.vx-bubble-popup__arrow--solid-bottom {
+		height: var(--vx-bubble-arrow-overlap);
+	}
+
+	.vx-bubble-popup__arrow--solid-top {
+		height: var(--vx-bubble-arrow-overlap);
+	}
+
+	.vx-bubble-popup__arrow--solid-right {
+		width: var(--vx-bubble-arrow-overlap);
+	}
+
+	.vx-bubble-popup__arrow--solid-left {
+		width: var(--vx-bubble-arrow-overlap);
 	}
 
 	/* 方块旋转 45°，圆心落在面板边上；外面一半留在窗口里，里面一半被裁掉。

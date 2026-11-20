@@ -502,12 +502,14 @@
 
 	/* 气泡弹框：气泡宽度、尾巴和最小宽度。arrow-base 是尾巴底边，arrow 是伸出高度，
 	   arrow-tip 是旋转方块的边长（arrow-base / √2）；App 没有 calc，不能写成负的 var() 或除法，
-	   这几处一起改。聊天模式比菜单窄一档。 */
+	   这几处一起改。聊天模式比菜单窄一档。
+	   arrow-overlap = arrow + 1：solid 尾巴的裁切窗口向面板里多伸 1px，底边压进同色面板盖掉亚像素接缝。 */
 	--vx-bubble-arrow: 7px;
 	--vx-bubble-arrow-base: 14px;
 	--vx-bubble-arrow-seam: 13px;
 	--vx-bubble-arrow-tip: 9.9px;
 	--vx-bubble-arrow-out: -7px;
+	--vx-bubble-arrow-overlap: 8px;
 	--vx-bubble-min-width: 120px;
 	--vx-bubble-max-width: 280px;
 	--vx-bubble-chat-max-width: 260px;
@@ -1244,6 +1246,7 @@
 	--vx-bubble-arrow-seam: 13px;
 	--vx-bubble-arrow-tip: 9.9px;
 	--vx-bubble-arrow-out: -7px;
+	--vx-bubble-arrow-overlap: 8px;
 	--vx-bubble-min-width: 120px;
 	--vx-bubble-max-width: 280px;
 	--vx-bubble-chat-max-width: 260px;
