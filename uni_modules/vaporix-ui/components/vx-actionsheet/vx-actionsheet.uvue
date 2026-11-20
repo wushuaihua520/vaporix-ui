@@ -699,16 +699,22 @@
 	   退场动画播完才摘，所以进出场都有动画；重新打开会取消计时，节点不重建。
 	   5.26–5.30 的 App 端不支持关键帧，元素直接按正常样式出现，不会留在透明态。
 	   这一层接住触摸，页面在菜单打开期间不跟着滚。 */
+	/* fill-mode 必须是 both：默认 none 时动画一播完（220ms）属性就弹回自身样式，
+	   遮罩从全透明跳回全黑、面板从屏幕外跳回原位，而节点要等 220+16ms 的计时才摘，
+	   中间这段（小程序上 setTimeout 还可能更晚）就是关闭时看到的闪动。
+   forwards 让退场终点保持到节点摘掉，backwards 让入场首帧就落在起点。 */
 	.vx-actionsheet__mask {
 		animation-name: vx-actionsheet-fade;
 		animation-duration: var(--vx-duration-normal);
 		animation-timing-function: var(--vx-ease-standard);
+		animation-fill-mode: both;
 	}
 
 	.vx-actionsheet__sheet {
 		animation-name: vx-actionsheet-up;
 		animation-duration: var(--vx-duration-normal);
 		animation-timing-function: var(--vx-ease-standard);
+		animation-fill-mode: both;
 	}
 
 	/* 退场：换一条反向动画，时长和曲线跟入场一致；节点在计时结束时才摘掉。 */
