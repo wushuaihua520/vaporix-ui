@@ -532,11 +532,12 @@
 	--vx-loader-panel-min: 120px;
 	--vx-loader-panel-max: 240px;
 
-	/* 加载动画各自的循环时长；音律柱按 130ms 错开，写在 vx-loader 的柱子 class 上 */
+	/* 加载动画各自的循环时长；音律柱按 130ms 错开，写在 vx-loader 的柱子 class 上。
+	   液面最慢：横移幅度大，再快会显得急躁 */
 	--vx-loader-duration-bar: 900ms;
 	--vx-loader-duration-dot: 960ms;
-	--vx-loader-duration-wave: 2800ms;
-	--vx-loader-duration-wave-alt: 3200ms;
+	--vx-loader-duration-wave: 1800ms;
+	--vx-loader-duration-wave-alt: 2200ms;
 
 	/* 暂无数据：插图方框、图标圆和字形三档；拷贝最大宽度统一 */
 	--vx-no-data-art-sm: 96px;
@@ -1271,8 +1272,8 @@
 	/* 加载动画循环时长（与亮色一致） */
 	--vx-loader-duration-bar: 900ms;
 	--vx-loader-duration-dot: 960ms;
-	--vx-loader-duration-wave: 2800ms;
-	--vx-loader-duration-wave-alt: 3200ms;
+	--vx-loader-duration-wave: 1800ms;
+	--vx-loader-duration-wave-alt: 2200ms;
 
 	/* 暂无数据（与亮色一致） */
 	--vx-no-data-art-sm: 96px;
