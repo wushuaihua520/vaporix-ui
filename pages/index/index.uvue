@@ -1,92 +1,106 @@
 <template>
 	<view :class="pageClass">
-		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
-			<view class="demo-shell">
-				<view class="demo-hero demo-home">
-					<view class="demo-home__head">
-						<view class="demo-brand">
-							<image class="demo-brand__logo" src="/static/logo.png" mode="aspectFit" />
-							<view class="demo-brand__copy">
-								<text class="demo-brand__name">元汽UI</text>
-								<text class="demo-brand__meta">VAPORIX UI</text>
-							</view>
-						</view>
-						<view class="demo-home__actions">
-							<vx-tag type="primary" variant="soft" size="sm" text="v0.68.1" />
-							<view class="demo-theme-toggle demo-home__theme" hover-class="demo-theme-toggle--pressed"
-								@click="onToggleTheme">
-								<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-							</view>
-						</view>
-					</view>
+		<demo-topbar title="元汽UI" :back="false" tab />
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" :scroll-into-view="contentScrollIntoView"
+			:scroll-with-animation="scrollWithAnimation" @scroll="onContentScroll">
+			<!-- 顶部锚点：回到顶部的落点。Web 端 scroll-top 属性不响应，统一用 scroll-into-view 落到这个 1px 占位。 -->
+			<view :id="HOME_TOP_ANCHOR_ID" class="home-top-anchor"></view>
 
-					<text class="demo-hero__eyebrow demo-home__eyebrow">VAPORIX UI · COMPONENT LAB</text>
-					<view class="demo-hero__title-wrap">
-						<text class="demo-hero__title">组件实验室</text>
-						<text class="demo-hero__title demo-hero__title--accent">按分类慢慢看</text>
-					</view>
-					<text class="demo-hero__lead">每个组件单独一个演示页，首屏只加载目录。点开之后只渲染这一页的示例。</text>
-
-					<view class="demo-hero__stats">
-						<view class="demo-stat demo-stat--first">
-							<text class="demo-stat__value">{{ demoCount }}</text>
-							<text class="demo-stat__label">演示页</text>
+			<!-- 顶部轮播：第一屏是品牌信息，后面三屏介绍优势。
+			     免费库没有 vx-swiper（pro-only），用原生 swiper + 自绘计数指示器：
+			     外框裁圆角，swiper 铺满外框，计数胶囊压右下角（vx-swiper number--solid 同款视觉）。 -->
+			<view class="home-banner">
+				<view class="home-banner__stage">
+					<view class="home-swiper-frame" :style="slideStyle">
+						<swiper class="home-swiper" :autoplay="true" :interval="4200" :duration="500" :circular="true"
+							:indicator-dots="false" :current="currentSlide" @change="onSlideChange">
+							<swiper-item v-for="(item, index) in slideItems" :key="item.key">
+								<view v-if="isBrandSlide(index)" class="home-cover">
+									<view class="home-glow"></view>
+									<view class="home-glow home-glow--soft"></view>
+									<view class="home-cover__body">
+										<view class="home-cover__title-row">
+											<text class="home-cover__name">元汽UI</text>
+											<view class="home-cover__version">
+												<text class="home-cover__version-text">v0.74.0</text>
+											</view>
+										</view>
+										<text class="home-cover__meta">uni-app x 跨端组件库</text>
+										<view class="home-cover__pills">
+											<view v-for="(pill, pillIndex) in homePills" :key="pill" :class="pillClass(pillIndex)">
+												<text class="home-cover__pill-text">{{ pill }}</text>
+											</view>
+										</view>
+									</view>
+									<image class="home-cover__logo" src="/static/logo.png" mode="aspectFill" />
+								</view>
+								<view v-else :class="slideClass(index)">
+									<view class="home-glow"></view>
+									<view class="home-glow home-glow--soft"></view>
+									<view class="home-slide__body">
+										<text class="home-slide__eyebrow">{{ slideOf(index).eyebrow }}</text>
+										<text class="home-slide__title">{{ slideOf(index).title }}</text>
+										<text class="home-slide__desc">{{ slideOf(index).desc }}</text>
+									</view>
+									<view class="home-slide__badge">
+										<vx-icon :name="slideOf(index).icon" size="lg" color="#ffffff" />
+									</view>
+								</view>
+							</swiper-item>
+						</swiper>
+						<view class="home-swiper__pill">
+							<text class="home-swiper__pill-text">{{ currentSlide + 1 }} / {{ slideItems.length }}</text>
 						</view>
-						<view class="demo-stat">
-							<text class="demo-stat__value">{{ componentCount }}</text>
-							<text class="demo-stat__label">组件</text>
-						</view>
-						<view class="demo-stat">
-							<text class="demo-stat__value">{{ iconCount }}</text>
-							<text class="demo-stat__label">图标</text>
-						</view>
-					</view>
-				</view>
-
-				<view class="demo-catalog-search">
-					<vx-input v-model="keyword" placeholder="搜索组件名或 vx-xxx" clearable>
-						<template #prefix>
-							<view class="demo-catalog-search__prefix">
-								<vx-icon name="search" size="md" />
-							</view>
-						</template>
-					</vx-input>
-				</view>
-
-				<view class="demo-catalog-chips">
-					<view v-for="option in categoryOptions" :key="option.key" :class="chipClass(option.key)"
-						:hover-class="chipHoverClass(option.key)" :hover-stay-time="120"
-						@click="selectCategory(option.key)">
-						<text :class="chipTextClass(option.key)">{{ option.label }}</text>
-						<text :class="chipCountClass(option.key)">{{ option.count }}</text>
 					</view>
 				</view>
+			</view>
 
+			<!-- 吸顶块：搜索 + 页签，通栏贴边；滚过导航栏下缘后 fixed 吸住，vx-sticky 自带等高占位。
+			     内容包一层页面自有节点，选择器查询量吸顶块高度时不用钻组件内部。 -->
+			<vx-sticky ref="dockStickyRef" :scroll-top="contentScrollTop" :offset-top="dockStickyOffset"
+				@change="onDockStuckChange">
+				<view class="home-dock__body">
+					<view class="home-dock__search">
+						<vx-input v-model="keyword" variant="search" placeholder="搜索组件名或 vx-xxx" clearable />
+					</view>
+					<!-- 分类页签：line 形态，选中项带下划线；可滚动解除等宽约束，点页签滚到对应分组，滚动列表也会回选页签。 -->
+					<vx-tabs v-model="activeTabIndex" :items="tabItems" variant="line" scrollable
+						@change="onTabChange" />
+				</view>
+			</vx-sticky>
+
+			<view class="demo-shell home-shell">
+				<!-- 这层常驻：空态也要保住分类区和页签行之间的一段呼吸，文案只在搜索时出。 -->
 				<view class="demo-catalog-meta">
-					<text class="demo-catalog-meta__text">{{ resultText }}</text>
+					<text v-if="resultText !== ''" class="demo-catalog-meta__text">{{ resultText }}</text>
 				</view>
 
-				<view v-for="group in visibleGroups" :key="group.key" class="demo-catalog-group">
-					<view class="demo-catalog-group__head">
-						<text class="demo-catalog-group__title">{{ group.title }}</text>
-						<text class="demo-catalog-group__count">{{ group.items.length }} 个组件</text>
+				<view v-for="group in visibleGroups" :key="group.key" class="demo-catalog-group home-group"
+					:class="'home-group-idx-' + anchorIndex(group.key)">
+					<!-- 锚点：负偏移补上吸顶块的高度，scroll-into-view 落点正好在吸顶块下方。 -->
+					<view :id="'home-group-anchor-' + anchorIndex(group.key)" class="home-anchor"
+						:style="anchorStyle"></view>
+					<view class="home-group__head">
+						<view :class="groupTileClass(group.key)">
+							<vx-icon :name="groupIcon(group.key)" size="sm" :type="groupType(group.key)" />
+						</view>
+						<text class="home-group__title">{{ group.title }}</text>
+						<view class="home-group__count">
+							<text class="home-group__count-text">{{ group.componentCount }}</text>
+						</view>
 					</view>
 					<view class="demo-catalog-grid">
 						<view v-for="(item, index) in group.items" :key="item.key" :class="cellClass(index)">
-							<view class="demo-catalog-card" hover-class="demo-catalog-card--pressed"
-								:hover-stay-time="120" @click="openComponent(item.key)">
-								<view class="demo-catalog-card__top">
-									<view class="demo-catalog-card__icon">
-										<vx-icon :name="item.icon" size="md" type="primary" />
+							<view class="home-card" hover-class="home-card--pressed" :hover-stay-time="120"
+								@click="openComponent(item.key)">
+								<view class="home-card__head">
+									<view :class="cardTileClass(group.key)">
+										<vx-icon :name="item.icon" size="md" :type="groupType(group.key)" />
 									</view>
+									<text class="home-card__name">{{ item.name }}</text>
 									<vx-icon name="chevron-right" size="sm" />
 								</view>
-								<text class="demo-catalog-card__name">{{ item.name }}</text>
-								<text class="demo-catalog-card__en">{{ item.en }}</text>
-								<text class="demo-catalog-card__desc">{{ item.desc }}</text>
-								<view class="demo-catalog-card__meta">
-									<text class="demo-catalog-card__meta-text">{{ item.sections }} 组示例</text>
-								</view>
+								<text class="home-card__desc">{{ item.desc }}</text>
 							</view>
 						</view>
 					</view>
@@ -97,71 +111,238 @@
 						action-text="清空搜索" @action="clearSearch" />
 				</view>
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">MIT · Vaporix UI</text>
-					<text class="demo-footer__meta">组件 · 接口 · 我的 · 亮色 / 暗色 · v0.68.1</text>
+				<!-- 页脚：与各组件演示页同款统一页脚，默认文案即免费库版式。 -->
+				<view class="home-footer">
+					<demo-footer />
 				</view>
 			</view>
 		</scroll-view>
+
+		<!-- 长目录的回到顶部：免费库没有 vx-back-top（pro-only），内联一个圆钮。
+		     滚过 400 才出现，点击滚回顶部锚点。固定层压在页面内容上，不挡吸顶块。 -->
+		<view v-if="showBackTop" class="home-back-top" hover-class="home-back-top--pressed" :hover-stay-time="120"
+			@click="scrollToTop">
+			<vx-icon name="arrow-up" size="lg" />
+		</view>
 	</view>
 </template>
 
 <script setup>
-	import { DEMO_CATEGORIES, DEMO_COMPONENT_COUNT, DEMO_COMPONENTS, DEMO_ICON_COUNT, demoPagePath } from '@/pages/demo/shared/catalog'
+	import { DEMO_CATEGORIES, DEMO_COMPONENTS, DemoComponent, countDemoGroupNames, demoPagePath } from '@/pages/demo/shared/catalog'
 	import { demoIsDark, setDemoTabTheme, syncDemoTabTheme } from '@/pages/demo/shared/theme'
-
-	type DemoCard = {
-		key: string
-		name: string
-		en: string
-		icon: string
-		category: string
-		desc: string
-		sections: number
-	}
+	import { VxIconName } from '@/uni_modules/vaporix-ui/libs/icons/codepoints'
+	import { VxSemantic } from '@/uni_modules/vaporix-ui/libs/types/common'
+	import { VxTabItem } from '@/uni_modules/vaporix-ui/components/vx-tabs/props'
 
 	type DemoGroup = {
 		key: string
 		title: string
-		items: DemoCard[]
+		items: DemoComponent[]
+		componentCount: number
 	}
 
-	type DemoCategoryOption = {
+	type HomeSlide = {
 		key: string
-		label: string
-		count: number
+		icon: VxIconName
+		eyebrow: string
+		title: string
+		desc: string
+	}
+
+	type StickyApi = {
+		refresh(): void
 	}
 
 	const isDark = demoIsDark
 	const keyword = ref('')
-	const activeCategory = ref('全部')
+	const activeTabIndex = ref(0)
+	const contentScrollTop = ref(0)
+	const contentScrollIntoView = ref('')
+	// 两套坐标并存：dockOffsetTop 是 rect 坐标（scroll-view 的页面偏移，量分组位置用）；
+	// dockStickyOffset 是 fixed 坐标（vx-sticky 的 offsetTop 从安全区之外算起，只收导航栏内容行高度）。
+	const dockOffsetTop = ref(0)
+	const dockStickyOffset = ref(0)
+	const dockStickyRef = ref<StickyApi | null>(null)
 
-	const demoCount = DEMO_COMPONENTS.length
-	const componentCount = DEMO_COMPONENT_COUNT
-	const iconCount = DEMO_ICON_COUNT
+	// ---------- 顶部轮播：第一屏品牌，后面三屏优势。原生 swiper 只吃下标，内容直接写在 swiper-item 里 ----------
+	const homePills: string[] = ['统一令牌', 'MIT 开源', '独立演示']
+
+	const HOME_SLIDES: HomeSlide[] = [
+		{
+			key: 'components',
+			icon: 'package',
+			eyebrow: 'COMPONENTS',
+			title: '60 组件，开箱即用',
+			desc: '基础、表单、反馈、布局与导航组件，一套设计令牌贯通全部示例。'
+		},
+		{
+			key: 'platforms',
+			icon: 'rocket',
+			eyebrow: 'CROSS PLATFORM',
+			title: '一次开发，多端交付',
+			desc: 'uni-app x 原生渲染，Android、iOS、Web 与小程序同构交付。'
+		},
+		{
+			key: 'theme',
+			icon: 'moon',
+			eyebrow: 'LIGHT / DARK',
+			title: '亮暗主题，一键切换',
+			desc: '全部组件接入设计令牌，点导航栏右侧图标即刻体验暗色模式。'
+		}
+	]
+
+	const slideItems: Array<{ key: string }> = [{ key: 'brand' }]
+	for (let index = 0; index < HOME_SLIDES.length; index++) {
+		slideItems.push({ key: HOME_SLIDES[index].key })
+	}
+
+	const currentSlide = ref(0)
+
+	// 下标 0 是品牌屏；优势屏从 1 起，要减 1 才对得上 HOME_SLIDES。
+	const isBrandSlide = (index: number): boolean => Number(index) === 0
+
+	const slideOf = (index: number): HomeSlide => {
+		const i = Number(index) - 1
+		if (i >= 0 && i < HOME_SLIDES.length) return HOME_SLIDES[i]
+		return HOME_SLIDES[0]
+	}
+
+	const slideClass = (index: number): string => {
+		return 'home-slide home-slide--' + slideOf(index).key
+	}
+
+	const pillClass = (index: number): string => {
+		if (Number(index) === homePills.length - 1) return 'home-cover__pill home-cover__pill--last'
+		return 'home-cover__pill'
+	}
+
+	const onSlideChange = (event: UniSwiperChangeEvent) => {
+		currentSlide.value = Number(event.detail.current)
+	}
+
+	// ---------- 轮播高度：高 = 宽 × 0.52，宽屏限宽 600 后高度跟着封顶 ----------
+	// Web 桌面端滚动条会让窗口宽和布局宽差一档，所以用 createSelectorQuery 量舞台的真实宽度；
+	// 量不到（首帧前）先用窗口宽顶住，量到后自动校准。
+	const HOME_BANNER_MAX_WIDTH = 600
+	const HOME_BANNER_FALLBACK_WIDTH = 375
+	const HOME_BANNER_HEIGHT_RATIO = 0.52
+
+	// 舞台左右各收 16，和 .home-banner 的内边距同值；首帧量不到节点时先按这个估。
+	const HOME_BANNER_INSET = 32
+
+	const initialBannerWidth = (): number => {
+		const w = Number(uni.getWindowInfo().windowWidth)
+		if (!isFinite(w) || w <= 0) return HOME_BANNER_FALLBACK_WIDTH
+		const outer = w > HOME_BANNER_MAX_WIDTH ? HOME_BANNER_MAX_WIDTH : Math.round(w)
+		const stage = outer - HOME_BANNER_INSET
+		return stage > 0 ? stage : HOME_BANNER_FALLBACK_WIDTH
+	}
+
+	const bannerWidth = ref(initialBannerWidth())
+	// 必须在 setup 里取实例。写在 onReady 回调里再取，小程序拿不到页面，选择器不会回调。
+	const bannerPage = getCurrentInstance()
+
+	const measureBannerWidth = () => {
+		// 不带页面实例时，小程序选择器进不了页面节点，量到的宽是 0，高度就一直停在窗口宽的估算上。
+		const proxy = bannerPage != null ? bannerPage.proxy : null
+		if (proxy == null) return
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select('.home-banner__stage')
+			.boundingClientRect()
+			.exec((result) => {
+				const rect = result.length > 0 ? result[0] as NodeInfo | null : null
+				if (rect == null || rect.width == null || rect.width <= 0) return
+				bannerWidth.value = Math.round(rect.width)
+			})
+	}
+
+	// 首帧前查询拿不到节点，只按窗口宽顶住；onReady 后再量真实宽度校准。
+	// 轮播高度落定会平移下方所有分组，所以量完顺带补测一次分组位置。
+	onReady(() => {
+		measureBannerWidth()
+		measureDock()
+		measureSections()
+	})
+	onResize(() => {
+		measureBannerWidth()
+		measureDock()
+		measureSections()
+		if (dockStickyRef.value != null) dockStickyRef.value.refresh()
+	})
+
+	const bannerHeight = computed((): number => {
+		const w = bannerWidth.value > 0 ? bannerWidth.value : HOME_BANNER_FALLBACK_WIDTH
+		return Math.round(w * HOME_BANNER_HEIGHT_RATIO)
+	})
+
+	// 外框高度写像素：比例才是宽的 0.52，指示器也落在画面里。
+	const slideStyle = computed((): string => {
+		return 'height: ' + bannerHeight.value + 'px;'
+	})
+
+	// ---------- 分类配色：每个分类走一个语义色，软底色块 + 同色图标 ----------
+	const groupType = (category: string): VxSemantic => {
+		switch (category) {
+			case '表单': return 'success'
+			case '反馈': return 'warning'
+			case '布局': return 'info'
+			case '导航与展示': return 'danger'
+			default: return 'primary'
+		}
+	}
+
+	const groupIcon = (category: string): VxIconName => {
+		switch (category) {
+			case '基础': return 'package'
+			case '表单': return 'list-checks'
+			case '反馈': return 'message-square'
+			case '布局': return 'grid-2x2'
+			case '导航与展示': return 'compass'
+			default: return 'package'
+		}
+	}
+
+	const groupTitle = (category: string): string => {
+		switch (category) {
+			case '基础': return '基础组件'
+			case '表单': return '表单组件'
+			case '反馈': return '反馈组件'
+			case '布局': return '布局组件'
+			case '导航与展示': return '导航与展示'
+			default: return category
+		}
+	}
+
+	const toneKey = (category: string): string => {
+		switch (groupType(category)) {
+			case 'success': return 'success'
+			case 'warning': return 'warning'
+			case 'info': return 'info'
+			case 'danger': return 'danger'
+			default: return 'primary'
+		}
+	}
+
+	const groupTileClass = (category: string): string => {
+		return 'home-group__tile home-tone--' + toneKey(category)
+	}
+
+	const cardTileClass = (category: string): string => {
+		return 'home-card__tile home-tone--' + toneKey(category)
+	}
 
 	const pageClass = computed((): string => {
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const buildCategoryOptions = (): DemoCategoryOption[] => {
-		const options: DemoCategoryOption[] = [
-			{ key: '全部', label: '全部', count: DEMO_COMPONENTS.length }
-		]
-		for (let index = 0; index < DEMO_CATEGORIES.length; index++) {
-			const category = DEMO_CATEGORIES[index]
-			let count = 0
-			for (let itemIndex = 0; itemIndex < DEMO_COMPONENTS.length; itemIndex++) {
-				if (DEMO_COMPONENTS[itemIndex].category === category) count += 1
-			}
-			options.push({ key: category, label: category, count: count })
-		}
-		return options
+	// ---------- 分类页签：五个分类，页签只做锚点定位 + 当前位置指示，不再承担筛选 ----------
+	const tabItems: VxTabItem[] = []
+	for (let index = 0; index < DEMO_CATEGORIES.length; index++) {
+		tabItems.push({ text: DEMO_CATEGORIES[index] })
 	}
 
-	const categoryOptions: DemoCategoryOption[] = buildCategoryOptions()
-
-	const matchesKeyword = (item: DemoCard, query: string): boolean => {
+	const matchesKeyword = (item: DemoComponent, query: string): boolean => {
 		if (query === '') return true
 		const haystack = (item.name + ' ' + item.en + ' ' + item.desc + ' ' + item.category).toLowerCase()
 		return haystack.indexOf(query) >= 0
@@ -172,49 +353,333 @@
 		const groups: DemoGroup[] = []
 		for (let categoryIndex = 0; categoryIndex < DEMO_CATEGORIES.length; categoryIndex++) {
 			const category = DEMO_CATEGORIES[categoryIndex]
-			if (activeCategory.value !== '全部' && activeCategory.value !== category) continue
-			const items: DemoCard[] = []
+			const items: DemoComponent[] = []
 			for (let itemIndex = 0; itemIndex < DEMO_COMPONENTS.length; itemIndex++) {
-				const item: DemoCard = DEMO_COMPONENTS[itemIndex]
+				const item: DemoComponent = DEMO_COMPONENTS[itemIndex]
 				if (item.category !== category) continue
 				if (!matchesKeyword(item, query)) continue
 				items.push(item)
 			}
 			if (items.length > 0) {
-				groups.push({ key: category, title: category, items: items })
+				groups.push({
+					key: category,
+					title: groupTitle(category),
+					items: items,
+					componentCount: countDemoGroupNames(items)
+				})
 			}
 		}
 		return groups
 	})
 
 	const resultText = computed((): string => {
+		if (keyword.value.trim() === '') return ''
 		let total = 0
 		for (let index = 0; index < visibleGroups.value.length; index++) {
-			total += visibleGroups.value[index].items.length
+			total += visibleGroups.value[index].componentCount
 		}
-		if (keyword.value.trim() !== '') return `找到 ${total} 个组件`
-		if (activeCategory.value !== '全部') return '只看「' + activeCategory.value + '」'
-		return '点开任意组件进入独立演示页'
+		return `找到 ${total} 个组件`
 	})
 
-	const chipClass = (key: string): string => {
-		if (activeCategory.value === key) return 'demo-catalog-chip demo-catalog-chip--active'
-		return 'demo-catalog-chip'
+	// ---------- 吸顶与双向联动 ----------
+	// 吸顶：vx-sticky 吃 scroll-view 的 @scroll，滚过导航栏下缘就 fixed 吸住。
+	// 联动：量出每个分组在内容坐标系里的顶部；滚动时取最后越线的分组回选页签，
+	// 点页签时把目标分组的锚点（带负偏移，补偿吸顶块高度）滚到顶部。
+	// 用 scroll-into-view 而不是 scroll-top：Web 端 scroll-view 没实现 scroll-top 属性响应。
+	// 平滑滚动分平台：Web 端靠 CSS scroll-behavior: smooth（demo.css，全局样式才选得到
+	// runtime 内部节点），不能开 scroll-with-animation——那是 transform 动画，会把 fixed
+	// 吸顶块带离视口再弹回；App 端没有这个问题，交给原生动画，不支持时退回瞬跳也不倒退。
+	// #ifndef WEB
+	const scrollWithAnimation = true
+	// #endif
+	// #ifdef WEB
+	const scrollWithAnimation = false
+	// #endif
+	const HOME_SYNC_GAP = 8
+	const HOME_MEASURE_RETRY_MAX = 3
+	const HOME_VERIFY_MAX = 3
+	// 程序化滚动的动画窗口：实测 Web 端整页长度的 CSS smooth 约 1.4s，留出余量；
+	// App 端原生动画更短，同值无害。
+	const HOME_ANIM_WINDOW = 1500
+	// 回到顶部的落点：内容最前面的 1px 锚点。
+	const HOME_TOP_ANCHOR_ID = 'home-top-anchor'
+	// 回到顶部圆钮的出现阈值：滚过 400 才值得给一个常驻入口。
+	const HOME_BACK_TOP_THRESHOLD = 400
+
+	const dockHeight = ref(0)
+	const viewportHeight = ref(0)
+	const contentBottom = ref(0)
+	const sectionTops = ref<number[]>([])
+	const sectionCategories = ref<string[]>([])
+	const dockStuck = ref(false)
+
+	let remeasuredOnScroll = false
+	let measureSeq = 0
+	let measureRetry = 0
+	let scrollRetryCount = 0
+	// 程序化滚动动画进行中：这期间测量的 rect 和 scrollTop 会错位，测量顺延；
+	// @scroll 的中间值还会把页签高亮拉回途经的分类，滚动回选一并暂停。
+	let scrollAnimatingUntil = 0
+	// 程序化滚动的意图号：发起分类滚动或返回顶部时换号，上一轮留下的看门狗和落点校验看到号变了就收手。
+	let scrollIntent = 0
+
+	// 页面级查询要挂上页面实例才会回调（Web 端实测：不带 in() 回调不执行）。
+	const pageInstance = getCurrentInstance()
+	const pageProxy = pageInstance != null ? pageInstance.proxy : null
+
+	// 锚点往上让出吸顶块 + 间隙，落点在吸顶块下方；吸顶块高度量到前先用 0 顶住。
+	const anchorStyle = computed((): string => {
+		return 'top: -' + (dockHeight.value + HOME_SYNC_GAP) + 'px;'
+	})
+
+	const anchorIndex = (category: string): number => {
+		return DEMO_CATEGORIES.indexOf(category)
 	}
 
-	const chipHoverClass = (key: string): string => {
-		if (activeCategory.value === key) return 'demo-catalog-chip--active-pressed'
-		return 'demo-catalog-chip--pressed'
+	const showBackTop = computed((): boolean => {
+		return contentScrollTop.value > HOME_BACK_TOP_THRESHOLD
+	})
+
+	// 状态栏高度启动时读一次（Web 恒为 0）；取值口径与 vx-page、vx-navigation-bar 的初始估算一致。
+	const windowInfo = uni.getWindowInfo()
+	const statusBarHeight = windowInfo.statusBarHeight > 0 ? Math.round(windowInfo.statusBarHeight) : 0
+
+	// 吸顶线：导航栏底边就是 scroll-view 的页面坐标 top，量一次（Web 是 44，App 是状态栏 + 44）。
+	// 量出的值是 rect 坐标；传 vx-sticky 的 offsetTop 必须先减掉状态栏留白——吸顶组件的标尺
+	// 已把 fixed 原点（安全区顶部）量进吸顶线，整条传会把状态栏算两次，App 端吸顶块下方
+	// 空出一条状态栏高度的空白（Web 两套坐标重合，减 0 无感）。
+	const measureDock = () => {
+		if (pageProxy == null) return
+		uni.createSelectorQuery()
+			.in(pageProxy)
+			.select('#demo-scroll')
+			.boundingClientRect()
+			.exec((result) => {
+				const rect = result.length > 0 ? result[0] as NodeInfo | null : null
+				if (rect == null || rect.top == null) return
+				dockOffsetTop.value = Math.round(rect.top)
+				dockStickyOffset.value = Math.max(0, dockOffsetTop.value - statusBarHeight)
+			})
 	}
 
-	const chipTextClass = (key: string): string => {
-		if (activeCategory.value === key) return 'demo-catalog-chip__text demo-catalog-chip__text--active'
-		return 'demo-catalog-chip__text'
+	const measureSections = (done?: () => void) => {
+		if (pageProxy == null) return
+		if (Date.now() < scrollAnimatingUntil) {
+			// 程序化滚动动画中，rect 和 scrollTop 会错位；等动画结束再量。
+			setTimeout(() => {
+				measureSections(done)
+			}, 120)
+			return
+		}
+		const id = ++measureSeq
+		try {
+			// 链式规则和 vx-sticky 一致：每次 select / selectAll 后都要接一次 boundingClientRect，
+			// select 返回的是 NodesRef，直接再 select 会报 not a function。
+			// 视口高度不用查 #demo-scroll：Web 端这个自定义元素的 rect.height 恒为 0，
+			// 用窗口高减导航栏底边算（measureDock 已量出 dockOffsetTop）。
+			uni.createSelectorQuery()
+				.in(pageProxy)
+				.select('.home-dock__body')
+				.boundingClientRect()
+				.selectAll('.demo-catalog-group')
+				.boundingClientRect()
+				.select('.home-footer')
+				.boundingClientRect()
+				.exec((result) => {
+					// 后发起的测量覆盖先发起的，过期回调不再写状态。
+					if (id !== measureSeq) return
+					const barRect = result.length > 0 ? result[0] as NodeInfo | null : null
+					const groupRects = result.length > 1 ? result[1] as Array<NodeInfo> | null : null
+					const footerRect = result.length > 2 ? result[2] as NodeInfo | null : null
+					if (barRect == null || barRect.height == null) {
+						retryMeasure(done)
+						return
+					}
+					dockHeight.value = Math.round(barRect.height)
+					viewportHeight.value = Math.round(Number(uni.getWindowInfo().windowHeight) - dockOffsetTop.value)
+					// 排版没结束（首帧高度还是 0）时先不落数，过一会儿再量。
+					if (viewportHeight.value <= 0 || dockHeight.value <= 0) {
+						retryMeasure(done)
+						return
+					}
+					const groups = visibleGroups.value
+					const tops: number[] = []
+					const keys: string[] = []
+					if (groupRects != null) {
+						for (let index = 0; index < groupRects.length; index++) {
+							const rect = groupRects[index]
+							if (rect == null || rect.top == null) continue
+							// rect.top 是页面视口坐标：减去 scroll-view 自身的页面偏移（导航栏高度），
+							// 再加回调时刻的滚动值，才是滚动内容坐标系。
+							tops.push(Math.round(rect.top - dockOffsetTop.value + contentScrollTop.value))
+							keys.push(index < groups.length ? groups[index].key : '')
+						}
+					}
+					sectionTops.value = tops
+					sectionCategories.value = keys
+					if (footerRect != null && footerRect.top != null && footerRect.height != null) {
+						contentBottom.value = Math.round(footerRect.top - dockOffsetTop.value + footerRect.height + contentScrollTop.value)
+					}
+					measureRetry = 0
+					syncActiveFromScroll()
+					if (done != null) done()
+				})
+		} catch (e) {
+			// 查询链异常不该拖垮页面；本次测量放弃，等下一次触发。
+		}
 	}
 
-	const chipCountClass = (key: string): string => {
-		if (activeCategory.value === key) return 'demo-catalog-chip__count demo-catalog-chip__count--active'
-		return 'demo-catalog-chip__count'
+	// 排版未就绪的补测：连试三次，间隔 60ms（vx-sticky 同款节奏）。
+	const retryMeasure = (done?: () => void) => {
+		if (measureRetry >= HOME_MEASURE_RETRY_MAX) {
+			if (done != null) done()
+			return
+		}
+		measureRetry++
+		setTimeout(() => {
+			measureSections(done)
+		}, 60)
+	}
+
+	const syncActiveFromScroll = () => {
+		const tops = sectionTops.value
+		if (tops.length === 0) {
+			if (activeTabIndex.value !== -1) activeTabIndex.value = -1
+			return
+		}
+		// 分界线比锚点落点多让 4px：点页签后分组头正好落在分界线上，取整抖动不至于翻回上一个分组。
+		const line = contentScrollTop.value + dockHeight.value + HOME_SYNC_GAP + 4
+		let section = 0
+		for (let index = 0; index < tops.length; index++) {
+			if (tops[index] <= line) section = index
+		}
+		// 触底时最后一个分组可能永远越不了线，强制选中最后一项。
+		const maxScroll = contentBottom.value - viewportHeight.value
+		if (maxScroll > 0 && contentScrollTop.value >= maxScroll - 2) section = tops.length - 1
+		const key = section < sectionCategories.value.length ? sectionCategories.value[section] : ''
+		const tabIndex = DEMO_CATEGORIES.indexOf(key)
+		const next = tabIndex >= 0 ? tabIndex : -1
+		if (activeTabIndex.value !== next) activeTabIndex.value = next
+	}
+
+	const onContentScroll = (event: UniScrollEvent) => {
+		contentScrollTop.value = Math.round(event.detail.scrollTop)
+		// 首屏字体、轮播高度晚于挂载落位时，第一次滚动补测一次（vx-sticky 同款处理）。
+		if (!remeasuredOnScroll) {
+			remeasuredOnScroll = true
+			measureSections()
+		}
+		// 程序化滚动进行中不回选页签：平滑滚动的中间值会把高亮拉回途经的分类，
+		// 高亮已在点击时乐观指向目标分组，动画窗口过后再恢复滚动回选。
+		if (Date.now() < scrollAnimatingUntil) return
+		syncActiveFromScroll()
+	}
+
+	// 吸顶状态变化只影响落点校验是否跳过，顺便暴露给调试。
+	const onDockStuckChange = (stuck: boolean) => {
+		dockStuck.value = stuck
+	}
+
+	const scrollToCategory = (category: string) => {
+		const index = DEMO_CATEGORIES.indexOf(category)
+		if (index < 0) return
+		const intent = ++scrollIntent
+		const id = 'home-group-anchor-' + index
+		const before = contentScrollTop.value
+		// 必须先写空串、下一帧再落 id：空串让 Web 端 scroll-into-view 的模拟触摸管线
+		// 归零内部状态，直接改值会被当成无变化吞掉（实测两种写法一好一坏）。
+		contentScrollIntoView.value = ''
+		nextTick(() => {
+			contentScrollIntoView.value = id
+			scrollAnimatingUntil = Date.now() + HOME_ANIM_WINDOW
+			// 乐观同步：锚点内容坐标 = 分组头内容坐标 - 吸顶块 - 间隙。
+			// 原生跳转在 Web 端不派发 @scroll，不乐观写回页签高亮会停在旧位置。
+			if (index < sectionTops.value.length) {
+				contentScrollTop.value = Math.max(0, sectionTops.value[index] - dockHeight.value - HOME_SYNC_GAP)
+				syncActiveFromScroll()
+			}
+			// 位移看门狗：700ms 后没滚动且页签也没选中，说明这次触发被吞了，重试。
+			// 平滑滚动在动就会改 contentScrollTop，不会被这里误判成触发失败。
+			setTimeout(() => {
+				// 中途点了返回顶部或另一页签，这次重试和落点校验都作废。
+				if (intent !== scrollIntent) return
+				if (Math.abs(contentScrollTop.value - before) < 1 && activeTabIndex.value !== index) {
+					if (scrollRetryCount < HOME_VERIFY_MAX) {
+						scrollRetryCount++
+						scrollToCategory(category)
+					}
+					return
+				}
+				scrollRetryCount = 0
+				// 落定后重测一次：修正搜索恢复等场景的过期 tops，让高亮对齐真实落点。
+				measureSections()
+				verifyLanding(category, id, 1, intent)
+			}, 700)
+		})
+	}
+
+	// 落点校验：分组头应停在吸顶块下方一档间隙处；偏差超过 6px 就重试。
+	const verifyLanding = (category: string, id: string, attempt: number, intent: number) => {
+		if (pageProxy == null || attempt > HOME_VERIFY_MAX) return
+		// 返回顶部或另一轮滚动已经接管，这一轮不再校验，也不重触发。
+		if (intent !== scrollIntent) return
+		if (!dockStuck.value) return
+		const index = DEMO_CATEGORIES.indexOf(category)
+		if (index < 0) return
+		uni.createSelectorQuery()
+			.in(pageProxy)
+			.select('.home-dock__body')
+			.boundingClientRect()
+			.select('.home-group-idx-' + index)
+			.boundingClientRect()
+			.exec((result) => {
+				const dockRect = result.length > 0 ? result[0] as NodeInfo | null : null
+				const groupRect = result.length > 1 ? result[1] as NodeInfo | null : null
+				if (dockRect == null || dockRect.top == null || groupRect == null || groupRect.top == null) return
+				if (intent !== scrollIntent) return
+				const actual = Math.round(groupRect.top - dockRect.top)
+				const desired = dockHeight.value + HOME_SYNC_GAP
+				if (Math.abs(actual - desired) <= 6) return
+				// 没滚到位：同样走空串 → 落 id 的两段式重触发。
+				contentScrollIntoView.value = ''
+				nextTick(() => {
+					contentScrollIntoView.value = id
+					scrollAnimatingUntil = Date.now() + HOME_ANIM_WINDOW
+					setTimeout(() => {
+						verifyLanding(category, id, attempt + 1, intent)
+					}, 700)
+				})
+			})
+	}
+
+	const onTabChange = (index: number) => {
+		if (index < 0 || index >= DEMO_CATEGORIES.length) return
+		const category = DEMO_CATEGORIES[index]
+		// 搜索词可能把目标分组过滤掉：先清空，等分组恢复、位置量好后再滚过去。
+		if (keyword.value.trim() !== '') {
+			keyword.value = ''
+			nextTick(() => {
+				measureSections(() => {
+					scrollToCategory(category)
+				})
+			})
+			return
+		}
+		scrollToCategory(category)
+	}
+
+	// 回到顶部：滚到内容最前面的锚点。同一 id 连着写会被 Web 端当成无变化吞掉，
+	// 所以和分类滚动一样先清空、下一帧再落值。
+	const scrollToTop = () => {
+		// 顶掉上一轮分类滚动留下的重试与落点校验，免得回到顶部后又被拽回某个分组。
+		scrollIntent++
+		scrollRetryCount = 0
+		// 往上滚的过程页签该跟着回选，取消分类滚动的动画窗口。
+		scrollAnimatingUntil = 0
+		contentScrollIntoView.value = ''
+		nextTick(() => {
+			contentScrollIntoView.value = HOME_TOP_ANCHOR_ID
+		})
 	}
 
 	const cellClass = (index: number): string => {
@@ -222,33 +687,444 @@
 		return 'demo-catalog-cell demo-catalog-cell--end'
 	}
 
-	const selectCategory = (key: string) => {
-		activeCategory.value = key
-	}
-
 	const clearSearch = () => {
 		keyword.value = ''
 	}
+
+	// 搜索词改变分组数量，等 DOM 更新完重测分组位置，页签高亮才跟得上。
+	watch(keyword, () => {
+		nextTick(() => {
+			measureSections()
+		})
+	})
 
 	const openComponent = (key: string) => {
 		uni.navigateTo({ url: demoPagePath(key) })
 	}
 
-	const onToggleTheme = () => {
-		setDemoTabTheme(!isDark.value)
-	}
-
 	onShow(() => {
 		syncDemoTabTheme()
+		// 这里不量轮播宽度：tab 页启动会被 preload，onShow 跑在挂载之前，
+		// 选择器查不到节点（Web 端会在组件内部抛 null.parentElement）。宽度在 onReady 里量。
 	})
 </script>
 
 <style>
-	.demo-home__theme {
-		margin-left: var(--vx-space-sm);
+	/* ---------- 顶部轮播：渐变底白字，不跟主题反色 ---------- */
+	.home-slide {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		padding-right: var(--vx-space-lg);
+		padding-left: var(--vx-space-xl);
+		overflow: hidden;
 	}
 
-	.demo-home__eyebrow {
-		margin-top: var(--vx-space-xl);
+	.home-slide--components {
+		background-image: linear-gradient(to bottom right, #1a3f86, #3d74d6);
+	}
+
+	.home-slide--platforms {
+		background-image: linear-gradient(to bottom right, #0d4554, #1c7f9c);
+	}
+
+	.home-slide--theme {
+		background-image: linear-gradient(to bottom right, #2c246e, #6556c8);
+	}
+
+	/* 两枚柔光压在渐变上，破开纯色块；父级 overflow 裁掉伸出圆角的部分。 */
+	.home-glow {
+		position: absolute;
+		top: -56px;
+		right: -40px;
+		width: 168px;
+		height: 168px;
+		border-radius: var(--vx-radius-pill);
+		background-color: rgba(255, 255, 255, 0.14);
+	}
+
+	.home-glow--soft {
+		top: auto;
+		right: auto;
+		bottom: -64px;
+		left: -48px;
+		width: 140px;
+		height: 140px;
+		background-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.home-slide__body {
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.home-slide__eyebrow {
+		margin-bottom: var(--vx-space-xs);
+		color: rgba(255, 255, 255, 0.72);
+		font-size: 11px;
+		line-height: 16px;
+		font-weight: var(--vx-weight-semibold);
+		letter-spacing: 2px;
+	}
+
+	.home-slide__title {
+		color: #ffffff;
+		font-size: 20px;
+		line-height: 28px;
+		font-weight: var(--vx-weight-bold);
+	}
+
+	.home-slide__desc {
+		margin-top: var(--vx-space-xs);
+		height: 40px;
+		overflow: hidden;
+		color: rgba(255, 255, 255, 0.85);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.home-slide__badge {
+		width: 52px;
+		height: 52px;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-pill);
+		background-color: rgba(255, 255, 255, 0.18);
+		margin-left: var(--vx-space-md);
+	}
+
+	/* ---------- 顶部锚点：回到顶部的落点，1px 挂在内容最前面，不接点击 ---------- */
+	.home-top-anchor {
+		width: 1px;
+		height: 1px;
+		pointer-events: none;
+	}
+
+	/* ---------- 轮播舞台：左右内收，宽屏仍限宽居中；圆角由外框裁 ---------- */
+	.home-banner {
+		box-sizing: border-box;
+		width: 100%;
+		max-width: 600px;
+		align-self: center;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
+		padding-left: var(--vx-space-lg);
+	}
+
+	.home-banner__stage {
+		width: 100%;
+	}
+
+	/* 外框裁圆角：原生 swiper 不吃 border-radius，圆角和 overflow 都收在外框上。 */
+	.home-swiper-frame {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	.home-swiper {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 计数胶囊压右下角：半透明黑底白字，压在任意一屏渐变上都读得清（vx-swiper 同款）。 */
+	.home-swiper__pill {
+		position: absolute;
+		right: 12px;
+		bottom: 10px;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding-top: var(--vx-space-xs);
+		padding-right: var(--vx-space-sm);
+		padding-bottom: var(--vx-space-xs);
+		padding-left: var(--vx-space-sm);
+		border-radius: var(--vx-radius-pill);
+		background-color: rgba(0, 0, 0, 0.45);
+	}
+
+	.home-swiper__pill-text {
+		color: #ffffff;
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-regular);
+	}
+
+	/* ---------- 第一屏：品牌信息铺满轮播高度，左文右 logo，底边让开计数指示器 ---------- */
+	.home-cover {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		padding-top: var(--vx-space-md);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: 28px;
+		padding-left: var(--vx-space-xl);
+		overflow: hidden;
+		background-image: linear-gradient(to bottom right, #14284f, #2b6be0);
+	}
+
+	.home-cover__body {
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.home-cover__title-row {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.home-cover__name {
+		color: #ffffff;
+		font-size: 20px;
+		line-height: 28px;
+		font-weight: var(--vx-weight-bold);
+	}
+
+	.home-cover__version {
+		flex-direction: row;
+		align-items: center;
+		height: 22px;
+		padding-left: 8px;
+		padding-right: 8px;
+		margin-left: var(--vx-space-sm);
+		border-width: 1px;
+		border-style: solid;
+		border-color: rgba(255, 255, 255, 0.28);
+		border-radius: var(--vx-radius-pill);
+		background-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.home-cover__version-text {
+		color: #ffffff;
+		font-size: 12px;
+		line-height: 16px;
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.home-cover__meta {
+		margin-top: var(--vx-space-xs);
+		color: rgba(255, 255, 255, 0.85);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	.home-cover__pills {
+		flex-direction: row;
+		align-items: center;
+		margin-top: var(--vx-space-md);
+	}
+
+	.home-cover__pill {
+		flex-direction: row;
+		align-items: center;
+		height: 24px;
+		padding-left: 10px;
+		padding-right: 10px;
+		margin-right: var(--vx-space-sm);
+		border-width: 1px;
+		border-style: solid;
+		border-color: rgba(255, 255, 255, 0.28);
+		border-radius: var(--vx-radius-pill);
+		background-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.home-cover__pill--last {
+		margin-right: 0;
+	}
+
+	.home-cover__pill-text {
+		color: #ffffff;
+		font-size: 12px;
+		line-height: 16px;
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.home-cover__logo {
+		width: 52px;
+		height: 52px;
+		border-radius: var(--vx-radius-lg);
+		margin-left: var(--vx-space-md);
+	}
+
+	/* ---------- 分组头：语义色小方块 + 标题 + 计数胶囊 ---------- */
+	/* 分组根节点 relative：锚点绝对定位在头部上方，负偏移由脚本按吸顶块高度给。
+	   锚点只有 1px、不接点击；Android 拍平裁掉也无所谓，scroll-into-view 读的是布局位置。 */
+	.home-group {
+		position: relative;
+	}
+
+	.home-anchor {
+		position: absolute;
+		left: 0;
+		width: 1px;
+		height: 1px;
+		pointer-events: none;
+	}
+
+	.home-group__head {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.home-group__tile {
+		width: 28px;
+		height: 28px;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-md);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.home-group__title {
+		flex: 1;
+		min-width: 0;
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.home-group__count {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		height: 22px;
+		padding-left: 10px;
+		padding-right: 10px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-primary);
+	}
+
+	.home-group__count-text {
+		color: var(--vx-color-on-primary);
+		font-size: 12px;
+		line-height: 16px;
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	/* ---------- 组件卡：标题行（图标块 + 名称 + 箭头）+ 通栏两行说明 ---------- */
+	.home-card {
+		flex-direction: column;
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-lg);
+		background-color: var(--vx-color-surface);
+	}
+
+	.home-card--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	.home-card__head {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.home-card__tile {
+		width: 36px;
+		height: 36px;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--vx-radius-md);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.home-card__name {
+		flex: 1;
+		min-width: 0;
+		margin-right: var(--vx-space-xs);
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-semibold);
+	}
+
+	.home-card__desc {
+		margin-top: var(--vx-space-sm);
+		height: 40px;
+		overflow: hidden;
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+	}
+
+	/* ---------- 吸顶块：搜索 + 页签 ---------- */
+	.home-dock__body {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.home-dock__search {
+		box-sizing: border-box;
+		width: 100%;
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		padding-top: var(--vx-space-md);
+		padding-bottom: var(--vx-space-md);
+	}
+
+	/* ---------- 语义色软底：分组头和卡片图标块共用 ---------- */
+	.home-tone--primary {
+		background-color: var(--vx-color-primary-soft);
+	}
+
+	.home-tone--success {
+		background-color: var(--vx-color-success-soft);
+	}
+
+	.home-tone--info {
+		background-color: var(--vx-color-info-soft);
+	}
+
+	.home-tone--warning {
+		background-color: var(--vx-color-warning-soft);
+	}
+
+	.home-tone--danger {
+		background-color: var(--vx-color-danger-soft);
+	}
+
+	/* ---------- 回到顶部：内联圆钮，贴在原生 tabBar 之上（H5 端 tabBar 占的是 --window-bottom） ---------- */
+	.home-back-top {
+		position: fixed;
+		right: 16px;
+		bottom: calc(24px + var(--window-bottom, 0px));
+		width: 48px;
+		height: 48px;
+		align-items: center;
+		justify-content: center;
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-surface);
+	}
+
+	.home-back-top--pressed {
+		background-color: var(--vx-color-surface-pressed);
+	}
+
+	/* ---------- 页脚壳：壳的底部留白收小，让统一页脚贴一点（演示页 .bt-shell 同款做法） ---------- */
+	.home-shell {
+		padding-bottom: var(--vx-space-sm);
 	}
 </style>
