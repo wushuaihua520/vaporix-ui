@@ -1,9 +1,7 @@
-## 0.75.0（2026-11-22）
-
+## 0.75.0 (2026-11-22)
 - `vx-loader` 液面动画节奏调快：2800/3200ms → 1800/2200ms（亮暗两套令牌同步），横移幅度大，再快不显急躁。
 - 演示工程对齐 Pro 版式：`demo-topbar` / `demo-hero` / `demo-section-head` / `demo-page-nav` / `demo-footer` 5 个壳组件与 demo.css / pro-demo.css / catalog 54 条目录数据搬进免费库单源；54 个组件演示页整页替换（`navigationStyle: custom`）；首页重写为轮播 hero + 吸顶搜索/页签目录。
 - 演示首页视觉改版：卡片图标块 8 色彩虹轮换（按组件全局下标取色，搜索过滤不漂移）、5 类专属渐变分组头与计数胶囊（白字对比度 ≥4.5:1）、蓝→紫→粉三停渐变首屏与彩色玻璃胶囊、回顶渐变圆钮；版本号/组件数单源进 `catalog.ts`（`DEMO_VERSION` / `DEMO_COMPONENT_COUNT`）。
-
 ## 0.74.0（2026-11-20）
 
 - `vx-drawer` 新增 `coverNavbar`：默认 `true` 保持整页覆盖；传 `false` 时遮罩和面板整体让出状态栏 + 48px 导航栏行高（`--vx-navigation-bar-height`），自定义导航栏保持可见可点，面板不再重复留顶部安全区，进出场在让位后的层内裁切，四个方向都适用。只对 `navigationStyle: custom` 的页面有意义；导航栏带 `extra` 第二行时仍按标准行高让位。
