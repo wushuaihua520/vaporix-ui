@@ -5,6 +5,7 @@ import { createSSRApp } from 'vue'
 import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 import "@/uni_modules/vaporix-ui/libs/style/icons-extend.css"
 import "@/pages/demo/shared/demo.css"
+import "@/pages/demo/shared/pro-demo.css"
 // #endif
 
 export function createApp() {

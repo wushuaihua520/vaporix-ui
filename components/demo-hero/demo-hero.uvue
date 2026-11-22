@@ -1,0 +1,203 @@
+<template>
+	<view class="dhero">
+		<!-- 渐变面板：波浪条必须是本节点的兄弟（而不是子节点），
+		     否则面板自己的渐变底会从扇齿缝隙里透出来，波浪就不透明了。 -->
+		<view class="dhero__panel">
+			<view class="dhero__inner">
+				<view class="dhero__head">
+					<view class="dhero__brand">
+						<view class="dhero__dot"></view>
+						<!-- 眉标要 1.5px 字距，vx-text 没有字距属性，这里保留自绘文本。 -->
+						<text class="dhero__eyebrow">{{ eyebrow }}</text>
+					</view>
+					<vx-tag :text="info.category" type="primary" variant="solid" size="sm" shape="rounded" />
+				</view>
+				<text class="dhero__title">{{ info.name }}</text>
+				<view class="dhero__lead">
+					<vx-text :text="info.desc" type="secondary" size="sm" block :max-lines="2" />
+				</view>
+			</view>
+		</view>
+		<!-- 波浪条：面板的兄弟节点，扇齿之间透明，直接露出页面底色。
+		     MP/Web 是 webview 渲染，背景平铺即可；App（蒸汽模式）不支持背景平铺，用一排扇齿 view 拼。 -->
+		<!-- #ifdef APP -->
+		<view class="dhero__scallop">
+			<view class="dhero__scallop-tooth" v-for="(n, index) in teeth" :key="index">
+				<view class="dhero__scallop-tooth-ring"></view>
+				<view class="dhero__scallop-tooth-body"></view>
+			</view>
+		</view>
+		<!-- #endif -->
+		<!-- #ifndef APP -->
+		<view class="dhero__scallop"></view>
+		<!-- #endif -->
+	</view>
+</template>
+
+<script setup>
+	// 示例页统一雨棚页头：标题、眉标、徽标、导语全部从组件目录（catalog.ts）查表，
+	// 页面只传 current-key。版式规范见 plans/demo-page-spec.md。
+	import { DEMO_COMPONENTS, type DemoComponent } from '@/pages/demo/shared/catalog'
+
+	const props = defineProps<{
+		currentKey: string
+	}>()
+
+	function findInfo(key: string): DemoComponent {
+		for (let i = 0; i < DEMO_COMPONENTS.length; i++) {
+			if (DEMO_COMPONENTS[i].key === key) {
+				return DEMO_COMPONENTS[i]
+			}
+		}
+		// 目录缺登记时兜底成空壳，页面仍然能渲染（眉标/标题会是空白，提醒补登记）
+		return { key: key, name: '', en: '', icon: '', category: '', desc: '' }
+	}
+
+	const info: DemoComponent = findInfo(props.currentKey)
+
+	const eyebrow = 'VAPORIX UI · ' + info.en.toUpperCase()
+
+	// 波浪扇齿数：按屏宽算，多铺一枚防右端缝隙。
+	// App（蒸汽模式）不支持 background-size / repeat，波浪只能用视图拼。
+	const teeth = computed((): number[] => {
+		const width = uni.getWindowInfo().windowWidth
+		const count = Math.ceil(width / 28) + 1
+		const list: number[] = []
+		for (let i = 0; i < count; i++) {
+			list.push(i)
+		}
+		return list
+	})
+</script>
+
+<style>
+	/* 组件根只是壳：渐变画在面板层，波浪条是面板的兄弟，齿缝才透明 */
+	.dhero {
+		/* 无背景、无间距——间距由波浪条的 margin-bottom 提供 */
+	}
+
+	/* 渐变面板：primary-soft → surface 一路铺到底，扇齿颜色正好接住；
+	   深色令牌自动换成就近的两档暗色；渐变不支持的环境退回纯 surface 底。
+	   方向必须用 to bottom 关键字：App 端 linear-gradient 不认角度写法，
+	   180deg 实测会被画成横向（左白右蓝），只有关键字可靠。 */
+	.dhero__panel {
+		background-color: var(--vx-color-surface);
+		background-image: linear-gradient(to bottom, var(--vx-color-primary-soft), var(--vx-color-surface));
+	}
+
+	/* 面板内容：左右 16，和下方 demo-shell 的内容对齐 */
+	.dhero__inner {
+		padding-top: 20px;
+		padding-left: var(--vx-space-lg);
+		padding-right: var(--vx-space-lg);
+		padding-bottom: var(--vx-space-md);
+	}
+
+	.dhero__head {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.dhero__brand {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		margin-right: var(--vx-space-sm);
+	}
+
+	.dhero__dot {
+		width: 6px;
+		height: 6px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-primary);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.dhero__eyebrow {
+		flex: 1;
+		font-size: 10px;
+		line-height: 14px;
+		font-weight: var(--vx-weight-semibold);
+		letter-spacing: 1.5px;
+		color: var(--vx-color-text-secondary);
+	}
+
+	.dhero__title {
+		font-size: var(--vx-font-xl);
+		line-height: 34px;
+		font-weight: var(--vx-weight-bold);
+		letter-spacing: -0.5px;
+		color: var(--vx-color-text);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.dhero__lead {
+		margin-bottom: var(--vx-space-md);
+	}
+
+	/* 雨棚波浪条：在面板外，扇齿之间是透明的，直接露出页面底色。
+	   MP/Web 是 webview 渲染，背景平铺（radial-gradient + repeat-x）即可；
+	   App（蒸汽模式）不支持 background-size / repeat（编译器有告警），
+	   改用一排扇齿 view 拼，每枚扇齿一枚径向渐变画出「白色主体 + 灰色投影边」的弧。
+	   条件编译必须用 #ifndef APP：#ifdef WEB 会把 mp 一并剥掉，
+	   波浪条在小程序端就只剩空 view（BUG-2 同款坑）。 */
+	.dhero__scallop {
+		height: 16px;
+		margin-bottom: var(--vx-space-md);
+	}
+
+	/* #ifndef APP */
+	.dhero__scallop {
+		background-image:
+			radial-gradient(circle 14px at 50% 0, var(--vx-color-surface) 13px, rgba(0, 0, 0, 0) 14px),
+			radial-gradient(circle 14px at 50% 3px, var(--vx-color-border) 13px, rgba(0, 0, 0, 0) 14px);
+		background-size: 28px 16px;
+		background-repeat: repeat-x;
+	}
+	/* #endif */
+
+	/* #ifdef APP */
+	.dhero__scallop {
+		flex-direction: row;
+		height: 16px;
+		overflow: hidden;
+	}
+
+	/* 扇齿：把 Web 的双层错位圆几何原样搬过来——
+	   齿座 28px 一格，里面放两个 26×26 的整圆（纯底色 + 圆角，不碰渐变：
+	   App 原生对 radial-gradient 的绘制不可靠），圆心都钉在格子中线上，
+	   白圆（齿体）圆心在格顶，灰圆（描边）圆心在格顶下 3px，
+	   灰圆多露出的 3px 月牙就是描边弧，几何上和 Web 的双层 radial-gradient 逐像素同构。
+	   圆的上半在格顶之上，用负 top 钉进格子、靠 overflow:hidden 裁掉。
+	   描边不用 border 画：App 原生 border 在圆角吃满整边的视图上只画 45° 以下那截，
+	   齿顶会缺一段，一格格像鱼鳞（旧版 10 圆角 + 肩部就是为了绕这个坑，弧线才不圆）。 */
+	.dhero__scallop-tooth {
+		position: relative;
+		width: 28px;
+		height: 16px;
+		overflow: hidden;
+	}
+
+	.dhero__scallop-tooth-ring {
+		position: absolute;
+		left: 1px;
+		top: -10px;
+		width: 26px;
+		height: 26px;
+		border-radius: 13px;
+		background-color: var(--vx-color-border);
+	}
+
+	.dhero__scallop-tooth-body {
+		position: absolute;
+		left: 1px;
+		top: -13px;
+		width: 26px;
+		height: 26px;
+		border-radius: 13px;
+		background-color: var(--vx-color-surface);
+	}
+	/* #endif */
+</style>

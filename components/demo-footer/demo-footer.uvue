@@ -1,0 +1,37 @@
+<template>
+	<view class="dfoot">
+		<vx-footer style="padding-top: 12px; padding-bottom: 12px;">
+			<vx-text :text="title" size="sm" weight="semibold" type="secondary" align="center" block />
+			<view class="dfoot__sub">
+				<vx-text :text="sub" size="sm" type="secondary" align="center" block />
+			</view>
+		</vx-footer>
+	</view>
+</template>
+
+<script setup>
+	// 示例页统一页脚：默认文案跟免费库走，发版时与 uni_modules/vaporix-ui/package.json 的
+	// version 保持一致；首页等要换自己文案的页面传 title / sub，版式不变。
+	const version = 'v0.74.0'
+	withDefaults(defineProps<{
+		title?: string
+		sub?: string
+	}>(), {
+		title: '元汽UI · MIT',
+		sub: 'VAPORIX UI · 组件演示 · ' + version
+	})
+</script>
+
+<style>
+	/* 发丝线用比 border 更浅的 divider 色，收尾贴一点（底部由页面 bt-shell 控制）。 */
+	.dfoot {
+		margin-top: var(--vx-space-md);
+		border-top-width: var(--vx-border-width);
+		border-top-style: solid;
+		border-top-color: var(--vx-color-divider);
+	}
+
+	.dfoot__sub {
+		margin-top: 2px;
+	}
+</style>

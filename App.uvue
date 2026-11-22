@@ -9,5 +9,7 @@
 	@import "@/uni_modules/vaporix-ui/libs/style/variables.css";
 	@import "@/uni_modules/vaporix-ui/libs/style/icons-extend.css";
 	@import "@/pages/demo/shared/demo.css";
+	/* 会员示例的舞台与标注容器（demo-pro-*）：示例页引用的同一套补充样式。 */
+	@import "@/pages/demo/shared/pro-demo.css";
 	/* #endif */
 </style>

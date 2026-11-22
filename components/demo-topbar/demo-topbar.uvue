@@ -1,0 +1,60 @@
+<template>
+	<vx-navigation-bar :title="title" :back="back" divider @back="goBack">
+		<template #suffix>
+			<view class="demo-topbar__toggle" hover-class="demo-topbar__toggle--pressed" :hover-stay-time="120"
+				@click="onToggleTheme">
+				<vx-icon :name="isDark ? 'sun' : 'moon'" size="lg" />
+			</view>
+		</template>
+	</vx-navigation-bar>
+</template>
+
+<script setup>
+	import { demoIsDark, setDemoTabTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+
+	// tab 页（首页）原生 tabBar 读不到 CSS 变量：tab 传 true 时切主题连带换 tabBar 底色和图标，
+	// 演示页（无 tabBar）保持默认，只换页面和导航栏。
+	const props = withDefaults(defineProps<{
+		title: string
+		back?: boolean
+		tab?: boolean
+	}>(), {
+		back: true,
+		tab: false
+	})
+
+	const isDark = demoIsDark
+
+	const onToggleTheme = () => {
+		if (props.tab) {
+			setDemoTabTheme(!isDark.value)
+			return
+		}
+		toggleDemoPageTheme()
+	}
+
+	const goBack = () => {
+		const pages = getCurrentPages()
+		if (pages.length > 1) {
+			uni.navigateBack({ delta: 1 })
+			return
+		}
+		uni.reLaunch({ url: '/pages/index/index' })
+	}
+</script>
+
+<style>
+	/* 主题开关只留图标和热区，不加圆框和底色；目录页与示例页共用。
+	   热区跟导航栏行高，和内置返回同大。 */
+	.demo-topbar__toggle {
+		box-sizing: border-box;
+		width: var(--vx-navigation-bar-height);
+		height: var(--vx-navigation-bar-height);
+		align-items: center;
+		justify-content: center;
+	}
+
+	.demo-topbar__toggle--pressed {
+		opacity: var(--vx-opacity-pressed);
+	}
+</style>

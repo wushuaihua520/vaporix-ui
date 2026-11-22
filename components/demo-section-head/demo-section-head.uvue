@@ -1,0 +1,55 @@
+<template>
+	<view class="shead">
+		<view class="shead__head">
+			<view class="shead__bar"></view>
+			<text class="shead__title">{{ title }}</text>
+		</view>
+		<text v-if="desc.length > 0" class="shead__desc">{{ desc }}</text>
+	</view>
+</template>
+
+<script setup>
+	// 示例页统一分区头：主色小竖条 + 加粗标题 + 灰色说明（ ThorUI 的 tui-section 版式）。
+	// 禁止编号；根自带与 demo-card 的 12px 间距，页面里直接跟 <view class="demo-card">。
+	withDefaults(defineProps<{
+		title: string
+		desc?: string
+	}>(), {
+		desc: ''
+	})
+</script>
+
+<style>
+	.shead {
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.shead__head {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.shead__bar {
+		width: 4px;
+		height: 14px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-primary);
+		margin-right: var(--vx-space-sm);
+	}
+
+	.shead__title {
+		font-size: var(--vx-font-lg);
+		line-height: var(--vx-line-lg);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	/* 说明缩进到标题文字下（竖条 4 + 间距 8），与标题左缘对齐 */
+	.shead__desc {
+		margin-top: var(--vx-space-xs);
+		margin-left: 12px;
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+</style>

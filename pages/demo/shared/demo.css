@@ -10,6 +10,17 @@
 	flex: 1;
 }
 
+/* #ifdef WEB */
+/* 页面里写的选择器会被编译成带 data-v 的 scoped 规则，选不到 runtime 生成的内部节点，
+   程序化滚动的平滑只能放在这份全局样式里。scroll-into-view 的落点在 runtime 里就是
+   直接赋值 scrollTop，scroll-behavior: smooth 让浏览器自己把它变成动画：
+   不动 transform，吸顶条不受影响。不要改用 scroll-with-animation——
+   那是 transform 动画，fixed 吸顶条会被带离视口再弹回。 */
+.demo-scroll .uni-scroll-view {
+	scroll-behavior: smooth;
+}
+/* #endif */
+
 .demo-shell {
 	box-sizing: border-box;
 	width: 100%;
@@ -17,6 +28,9 @@
 	align-self: center;
 	padding: var(--vx-space-lg);
 	padding-bottom: var(--vx-space-xl);
+	/* 通栏演示靠负外边距伸出内边距；App 默认 hidden 会按内容盒裁掉，这里放开。
+	   页面横向溢出由外层 scroll-view 收口，不会带出横向滚动条。 */
+	overflow: visible;
 }
 
 /* ---------- 顶栏 ---------- */
@@ -49,13 +63,6 @@
 	font-weight: var(--vx-weight-bold);
 	letter-spacing: 1px;
 	color: var(--vx-color-on-primary);
-}
-
-.demo-brand__logo {
-	width: 40px;
-	height: 40px;
-	border-radius: var(--vx-radius-lg);
-	margin-right: var(--vx-space-md);
 }
 
 .demo-brand__copy {
@@ -156,46 +163,8 @@
 /* ---------- 分区 ---------- */
 .demo-section {
 	margin-bottom: var(--vx-space-xl);
-}
-
-.demo-section__head {
-	flex-direction: row;
-	margin-bottom: var(--vx-space-md);
-}
-
-.demo-section__num {
-	width: 30px;
-	height: 30px;
-	align-items: center;
-	justify-content: center;
-	border-radius: var(--vx-radius-pill);
-	background-color: var(--vx-color-primary-soft);
-	margin-right: var(--vx-space-md);
-}
-
-.demo-section__num-text {
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-	font-weight: var(--vx-weight-semibold);
-	color: var(--vx-color-primary-pressed);
-}
-
-.demo-section__copy {
-	flex: 1;
-}
-
-.demo-section__title {
-	font-size: var(--vx-font-lg);
-	line-height: var(--vx-line-lg);
-	font-weight: var(--vx-weight-semibold);
-	color: var(--vx-color-text);
-	margin-bottom: var(--vx-space-xs);
-}
-
-.demo-section__desc {
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-	color: var(--vx-color-text-secondary);
+	/* 和 .demo-shell 一样，不裁负外边距的通栏演示。 */
+	overflow: visible;
 }
 
 .demo-card {
@@ -389,12 +358,16 @@
 	margin-bottom: var(--vx-space-sm);
 }
 
+/* 一行四列而不是五列：五列时 13px 的英文名放不进一格，App 会在单词中间硬断，
+   相邻列的标签还会粘在一起。左右各留 4 让标签之间有 8px 间隙，长名先在连字符处换行。 */
 .demo-icon-cell {
 	box-sizing: border-box;
-	width: 20%;
+	width: 25%;
 	align-items: center;
 	padding-top: var(--vx-space-md);
+	padding-right: 4px;
 	padding-bottom: var(--vx-space-md);
+	padding-left: 4px;
 }
 
 .demo-icon-cell__name {
@@ -635,6 +608,7 @@
 	border-top-color: var(--vx-color-border);
 }
 
+/* 用 vx-footer 的示例页：只补顶部发丝线，居中交给组件。 */
 .demo-footer__text {
 	font-size: var(--vx-font-sm);
 	line-height: var(--vx-line-sm);
@@ -1144,6 +1118,21 @@
 
 .demo-loading-size--last {
 	margin-right: 0;
+}
+
+/* 行内 loading 根节点自带 align-self: flex-start，组件自身样式盖过外部 class，
+   直接传 class 居不了中；套一层撑满宽度的横向容器，用 justify-content 居中。 */
+.demo-loading-center {
+	align-self: stretch;
+	flex-direction: row;
+	justify-content: center;
+}
+
+/* 横排 / 纵排内容高度不同，整块居中会把两卡标题顶离同一水平线；槽位定高、槽内居中。 */
+.demo-loading-columns .demo-loading-center,
+.demo-loading-sizes .demo-loading-center {
+	height: 56px;
+	align-items: center;
 }
 
 .demo-loading-types {
@@ -1965,8 +1954,11 @@
 	padding-bottom: var(--vx-space-xl);
 }
 
+/* 线稿 96 比图标圆 64 高，body 撑满拉伸后的格子，六块底色才一样高。 */
 .demo-no-data-type__body {
 	width: 100%;
+	flex-grow: 1;
+	justify-content: center;
 	overflow: hidden;
 	border-radius: var(--vx-radius-md);
 	background-color: var(--vx-color-bg);
@@ -2846,23 +2838,6 @@
 	width: 100%;
 }
 
-/* 07 吸顶页的导航栏 second 行：固定高度 45，量出来的高度才是 44 + 45，吸顶线跟着下移。 */
-.demo-sticky-nav-extra {
-	flex-direction: row;
-	align-items: center;
-	box-sizing: border-box;
-	width: 100%;
-	height: 45px;
-	padding-left: var(--vx-space-lg);
-	padding-right: var(--vx-space-lg);
-}
-
-.demo-sticky-nav-extra__text {
-	color: var(--vx-color-text-secondary);
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-}
-
 .demo-nav-message {
 	flex-direction: row;
 	align-items: center;
@@ -3049,167 +3024,7 @@
 	margin-right: 0;
 }
 
-/* ---------- 演示页框架：面包屑、首屏、标签、翻页 ---------- */
-.demo-pagebar {
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: var(--vx-space-md);
-}
-
-.demo-crumb {
-	flex-direction: row;
-	align-items: center;
-}
-
-.demo-crumb__back {
-	flex-direction: row;
-	align-items: center;
-	height: 36px;
-	padding-right: var(--vx-space-sm);
-}
-
-.demo-crumb__back--pressed {
-	opacity: var(--vx-opacity-pressed);
-}
-
-.demo-crumb__back-text {
-	margin-left: var(--vx-space-xs);
-	color: var(--vx-color-text-secondary);
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-	font-weight: var(--vx-weight-medium);
-}
-
-.demo-crumb__sep {
-	margin-left: var(--vx-space-xs);
-	margin-right: var(--vx-space-xs);
-	color: var(--vx-color-disabled-text);
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-}
-
-.demo-crumb__current {
-	color: var(--vx-color-text);
-	font-size: var(--vx-font-sm);
-	line-height: var(--vx-line-sm);
-	font-weight: var(--vx-weight-medium);
-}
-
-.demo-theme-toggle {
-	width: 36px;
-	height: 36px;
-	align-items: center;
-	justify-content: center;
-	border-width: var(--vx-border-width);
-	border-style: solid;
-	border-color: var(--vx-color-border);
-	border-radius: var(--vx-radius-pill);
-	background-color: var(--vx-color-surface);
-}
-
-.demo-theme-toggle--pressed {
-	background-color: var(--vx-color-surface-pressed);
-}
-
-.demo-hero__top {
-	flex-direction: row;
-	align-items: center;
-	margin-bottom: var(--vx-space-md);
-}
-
-.demo-hero__icon {
-	width: 44px;
-	height: 44px;
-	align-items: center;
-	justify-content: center;
-	border-radius: var(--vx-radius-lg);
-	background-color: var(--vx-color-primary-soft);
-	margin-right: var(--vx-space-md);
-}
-
-.demo-hero__heading {
-	flex: 1;
-}
-
-.demo-hero__chips {
-	flex-direction: row;
-	flex-wrap: wrap;
-}
-
-.demo-chip {
-	height: 24px;
-	flex-direction: row;
-	align-items: center;
-	padding-left: var(--vx-space-sm);
-	padding-right: var(--vx-space-sm);
-	border-radius: var(--vx-radius-pill);
-	background-color: var(--vx-color-primary-soft);
-	margin-right: var(--vx-space-sm);
-	margin-bottom: var(--vx-space-xs);
-}
-
-.demo-chip__text {
-	color: var(--vx-color-primary-pressed);
-	font-size: 12px;
-	line-height: var(--vx-line-sm);
-	font-weight: var(--vx-weight-medium);
-}
-
-.demo-chip--neutral {
-	background-color: var(--vx-color-default-soft);
-}
-
-.demo-chip__text--neutral {
-	color: var(--vx-color-text-secondary);
-	font-weight: var(--vx-weight-regular);
-}
-
-.demo-page-nav {
-	flex-direction: row;
-	margin-top: var(--vx-space-xl);
-}
-
-.demo-page-nav__item {
-	flex: 1;
-	min-height: 56px;
-	justify-content: center;
-	padding: var(--vx-space-md);
-	border-width: var(--vx-border-width);
-	border-style: solid;
-	border-color: var(--vx-color-border);
-	border-radius: var(--vx-radius-md);
-	background-color: var(--vx-color-surface);
-	margin-right: var(--vx-space-sm);
-}
-
-.demo-page-nav__item--next {
-	align-items: flex-end;
-	margin-right: 0;
-}
-
-.demo-page-nav__item--pressed {
-	background-color: var(--vx-color-surface-pressed);
-}
-
-.demo-page-nav__item--disabled {
-	opacity: var(--vx-opacity-disabled);
-}
-
-.demo-page-nav__label {
-	color: var(--vx-color-text-secondary);
-	font-size: 12px;
-	line-height: var(--vx-line-sm);
-}
-
-.demo-page-nav__name {
-	margin-top: var(--vx-space-xs);
-	color: var(--vx-color-text);
-	font-size: var(--vx-font-md);
-	line-height: var(--vx-line-md);
-	font-weight: var(--vx-weight-medium);
-}
-
+/* ---------- 演示页框架：翻页 ---------- */
 /* ---------- 目录页公共件：品牌行、搜索、分类胶囊、组件卡 ---------- */
 .demo-home__head {
 	flex-direction: row;
@@ -4051,6 +3866,33 @@
 	line-height: var(--vx-line-sm);
 }
 
+/* ---------- 免费演示页同步：hero 头部、chip、弹出层示例专用类 ---------- */
+
+.demo-hero__top {
+	flex-direction: row;
+	align-items: center;
+	margin-bottom: var(--vx-space-md);
+}
+
+.demo-hero__icon {
+	width: 44px;
+	height: 44px;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--vx-radius-lg);
+	background-color: var(--vx-color-primary-soft);
+	margin-right: var(--vx-space-md);
+}
+
+.demo-hero__heading {
+	flex: 1;
+}
+
+.demo-hero__chips {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
 /* ---------- 弹出层实验室 ---------- */
 
 /* 面板本身不带内边距，内容由业务自己留白；简单面板统一用这一层补 16。 */
@@ -4207,3 +4049,145 @@
 .demo-popup-filter {
 	flex-direction: column;
 }
+
+
+/* ===== 以下为免费库独有样式块：mine / api / api-detail / probe 页仍在引用 ===== */
+
+.demo-brand__logo {
+	width: 40px;
+	height: 40px;
+	border-radius: var(--vx-radius-lg);
+	margin-right: var(--vx-space-md);
+}
+
+.demo-section__head {
+	flex-direction: row;
+	margin-bottom: var(--vx-space-md);
+}
+
+.demo-section__num {
+	width: 30px;
+	height: 30px;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--vx-radius-pill);
+	background-color: var(--vx-color-primary-soft);
+	margin-right: var(--vx-space-md);
+}
+
+.demo-section__num-text {
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+	font-weight: var(--vx-weight-semibold);
+	color: var(--vx-color-primary-pressed);
+}
+
+.demo-section__copy {
+	flex: 1;
+}
+
+.demo-section__title {
+	font-size: var(--vx-font-lg);
+	line-height: var(--vx-line-lg);
+	font-weight: var(--vx-weight-semibold);
+	color: var(--vx-color-text);
+	margin-bottom: var(--vx-space-xs);
+}
+
+.demo-section__desc {
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+	color: var(--vx-color-text-secondary);
+}
+
+/* ---------- 演示页框架：面包屑、首屏、标签、翻页 ---------- */
+.demo-pagebar {
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--vx-space-md);
+}
+
+.demo-crumb {
+	flex-direction: row;
+	align-items: center;
+}
+
+.demo-crumb__back {
+	flex-direction: row;
+	align-items: center;
+	height: 36px;
+	padding-right: var(--vx-space-sm);
+}
+
+.demo-crumb__back--pressed {
+	opacity: var(--vx-opacity-pressed);
+}
+
+.demo-crumb__back-text {
+	margin-left: var(--vx-space-xs);
+	color: var(--vx-color-text-secondary);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+	font-weight: var(--vx-weight-medium);
+}
+
+.demo-crumb__sep {
+	margin-left: var(--vx-space-xs);
+	margin-right: var(--vx-space-xs);
+	color: var(--vx-color-disabled-text);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+}
+
+.demo-crumb__current {
+	color: var(--vx-color-text);
+	font-size: var(--vx-font-sm);
+	line-height: var(--vx-line-sm);
+	font-weight: var(--vx-weight-medium);
+}
+
+.demo-theme-toggle {
+	width: 36px;
+	height: 36px;
+	align-items: center;
+	justify-content: center;
+	border-width: var(--vx-border-width);
+	border-style: solid;
+	border-color: var(--vx-color-border);
+	border-radius: var(--vx-radius-pill);
+	background-color: var(--vx-color-surface);
+}
+
+.demo-theme-toggle--pressed {
+	background-color: var(--vx-color-surface-pressed);
+}
+
+.demo-chip {
+	height: 24px;
+	flex-direction: row;
+	align-items: center;
+	padding-left: var(--vx-space-sm);
+	padding-right: var(--vx-space-sm);
+	border-radius: var(--vx-radius-pill);
+	background-color: var(--vx-color-primary-soft);
+	margin-right: var(--vx-space-sm);
+	margin-bottom: var(--vx-space-xs);
+}
+
+.demo-chip__text {
+	color: var(--vx-color-primary-pressed);
+	font-size: 12px;
+	line-height: var(--vx-line-sm);
+	font-weight: var(--vx-weight-medium);
+}
+
+.demo-chip--neutral {
+	background-color: var(--vx-color-default-soft);
+}
+
+.demo-chip__text--neutral {
+	color: var(--vx-color-text-secondary);
+	font-weight: var(--vx-weight-regular);
+}
+
