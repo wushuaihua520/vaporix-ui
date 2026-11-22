@@ -94,6 +94,9 @@ function countNamedComponents(): number {
 	return names.length
 }
 
+// 版本号单源：页脚、首页胶囊都引这里，发版时与 uni_modules/vaporix-ui/package.json 一致。
+export const DEMO_VERSION = 'v0.74.0'
+
 export const DEMO_PAGE_COUNT = DEMO_COMPONENTS.length
 export const DEMO_COMPONENT_COUNT = countNamedComponents()
 // core 112 + extend 1000。不要从 codepoints 再引一份，否则组件 tab 会带上整张图标表。

@@ -10,15 +10,17 @@
 </template>
 
 <script setup>
-	// 示例页统一页脚：默认文案跟免费库走，发版时与 uni_modules/vaporix-ui/package.json 的
-	// version 保持一致；首页等要换自己文案的页面传 title / sub，版式不变。
-	const version = 'v0.74.0'
+	import { DEMO_VERSION } from '@/pages/demo/shared/catalog'
+
+	// 示例页统一页脚：默认文案跟免费库走，版本号单源在 catalog.ts（发版对 package.json）；
+	// 首页等要换自己文案的页面传 title / sub，版式不变。
+	// 注意 defineProps 默认值会被提升到 setup 外，只能引用模块级的 import，不能引 setup 内局部常量。
 	withDefaults(defineProps<{
 		title?: string
 		sub?: string
 	}>(), {
 		title: '元汽UI · MIT',
-		sub: 'VAPORIX UI · 组件演示 · ' + version
+		sub: 'VAPORIX UI · 组件演示 · ' + DEMO_VERSION
 	})
 </script>
 
