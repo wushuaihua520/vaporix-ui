@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="标签栏" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="tabbar" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-tabbar</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="layout-dashboard" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">标签栏</text>
-								<text class="demo-hero__title demo-hero__title--accent">11 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">自定义底部标签栏：图标与文案、计数角标、凸起主按钮；固定时贴住安全区，内容不被盖住。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-tabbar</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标签栏基础</text>
-							<text class="demo-section__desc">四个页签等宽排列，选中项换文字色和字重。</text>
-						</view>
-					</view>
+					<demo-section-head title="标签栏基础" desc="四个页签等宽排列，选中项换文字色和字重。" />
 					<view class="demo-card">
 						<vx-tabbar v-model="basicActive" :items="basicEntries" :fixed="false" :safe-area="false" @change="onBasicChange"
 							@click="onBasicClick" />
@@ -69,15 +25,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">字体图标与图片图标</text>
-							<text class="demo-section__desc">字体图标跟随选中色，选中可转实心；图片成对传 activeImage，亮暗各一套。</text>
-						</view>
-					</view>
+					<demo-section-head title="字体图标与图片图标" desc="字体图标跟随选中色，选中可转实心；图片成对传 activeImage，亮暗各一套。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">字体图标 · regular</text>
@@ -97,15 +45,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">凸起主按钮</text>
-							<text class="demo-section__desc">中间项凸起成圆钮，用 action 只做按钮、不参与选中。</text>
-						</view>
-					</view>
+					<demo-section-head title="凸起主按钮" desc="中间项凸起成圆钮，用 action 只做按钮、不参与选中。" />
 					<view class="demo-card">
 						<vx-tabbar v-model="raisedActive" :items="raisedEntries" :fixed="false" :safe-area="false" @click="onRaisedClick" />
 						<view class="demo-tabbar-status">
@@ -119,15 +59,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">角标与圆点</text>
-							<text class="demo-section__desc">计数超过 badgeMax 显示 max+，dot 优先于计数。</text>
-						</view>
-					</view>
+					<demo-section-head title="角标与圆点" desc="计数超过 badgeMax 显示 max+，dot 优先于计数。" />
 					<view class="demo-card">
 						<vx-tabbar v-model="badgeActive" :items="badgeEntries" :fixed="false" :safe-area="false" />
 						<text class="demo-hint demo-tabbar-hint">角标默认 danger，不参与布局；同一含义的计数一屏只出现一处。</text>
@@ -135,15 +67,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标签栏尺寸</text>
-							<text class="demo-section__desc">栏高 48 / 56 / 64，图标位 20 / 24 / 28，角标跟着换档。</text>
-						</view>
-					</view>
+					<demo-section-head title="标签栏尺寸" desc="栏高 48 / 56 / 64，图标位 20 / 24 / 28，角标跟着换档。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">sm · 48</text>
@@ -161,15 +85,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">语义色</text>
-							<text class="demo-section__desc">type 同时改选中文字、图标和凸起圆钮；warning 用 ink。</text>
-						</view>
-					</view>
+					<demo-section-head title="语义色" desc="type 同时改选中文字、图标和凸起圆钮；warning 用 ink。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">success</text>
@@ -189,15 +105,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用</text>
-							<text class="demo-section__desc">单项禁用只停这一项：图标、文字和角标一起转灰。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用" desc="单项禁用只停这一项：图标、文字和角标一起转灰。" />
 					<view class="demo-card">
 						<vx-tabbar v-model="disabledActive" :items="disabledEntries" :fixed="false" :safe-area="false" />
 						<text class="demo-hint demo-tabbar-hint">不可用入口优先隐藏，禁用不要用来掩盖权限问题；当前项不要设成禁用。</text>
@@ -205,15 +113,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">分割线</text>
-							<text class="demo-section__desc">默认 1px 分割线；放进卡片或自己带边界时关掉。</text>
-						</view>
-					</view>
+					<demo-section-head title="分割线" desc="默认 1px 分割线；放进卡片或自己带边界时关掉。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">divider = true</text>
@@ -228,15 +128,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">bgColor 改整条底色，color 改未选中文字和字体图标。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="bgColor 改整条底色，color 改未选中文字和字体图标。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">bgColor = primary-soft</text>
@@ -253,15 +145,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">固定与安全区</text>
-							<text class="demo-section__desc">打开固定后贴住屏幕底部，栏底色铺到安全区，页面内容自动让位。</text>
-						</view>
-					</view>
+					<demo-section-head title="固定与安全区" desc="打开固定后贴住屏幕底部，栏底色铺到安全区，页面内容自动让位。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-actions">
 							<view class="demo-tabbar-actions__button">
@@ -275,15 +159,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">11</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标签栏与内容</text>
-							<text class="demo-section__desc">标签栏只切视图，内容按索引换；外框交给画布或页面。</text>
-						</view>
-					</view>
+					<demo-section-head title="标签栏与内容" desc="标签栏只切视图，内容按索引换；外框交给画布或页面。" />
 					<view class="demo-card demo-tabbar-stage-card">
 						<view class="demo-tabbar-screen">
 							<view class="demo-tabbar-screen__head">
@@ -307,66 +183,19 @@
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">12</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">凸起与固定</text>
-							<text class="demo-section__desc">fixed 时页面内容滚到栏下；透明带上的点击落到页面，只有圆钮能点。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<vx-button block :type="fixedRaisedVisible ? 'default' : 'primary'"
-							:text="fixedRaisedVisible ? '收起凸起固定栏' : '显示凸起固定栏'"
-							@click="fixedRaisedVisible = !fixedRaisedVisible" />
-						<view class="demo-tabbar-status">
-							<view class="demo-tabbar-status__cell">
-								<text class="demo-tabbar-status__label">当前页签</text>
-								<text class="demo-tabbar-status__text">{{ fixedRaisedActive }}</text>
-							</view>
-							<view class="demo-tabbar-status__cell demo-tabbar-status__cell--last">
-								<text class="demo-tabbar-status__label">click</text>
-								<text class="demo-tabbar-status__text">{{ fixedRaisedClickText }}</text>
-							</view>
-						</view>
-						<text class="demo-hint demo-tabbar-hint">显示后点圆钮两侧、栏顶以上的透明带：页签下标不变，落到页面内容；点圆钮本身仍触发 click。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="tabbar" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
 		<!-- 固定演示：放在页面根节点的末尾，占位和滚动区各让出栏高。 -->
 		<vx-tabbar v-if="fixedVisible" v-model="fixedActive" :items="fixedEntries" />
-		<!-- 凸起 + 固定：透明带压在页面内容上，只有圆钮接点击。 -->
-		<vx-tabbar v-if="fixedRaisedVisible" v-model="fixedRaisedActive" :items="raisedEntries"
-			@click="onFixedRaisedClick" />
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 标签栏演示：图标、角标、凸起和内容组合各用一份数据，切换尺寸和颜色时文字不变。
 	type TabbarDemoItem = {
@@ -467,10 +296,6 @@
 	const fixedActive = ref(0)
 	const composeActive = ref(0)
 	const fixedVisible = ref(false)
-	// 12 凸起 + 固定：单独一组状态，页签下标和 click 分开记，才看得出透明带上的点击落到哪
-	const fixedRaisedVisible = ref(false)
-	const fixedRaisedActive = ref(0)
-	const fixedRaisedClickText = ref('还没有点击')
 
 	const basicClickText = ref('还没有点击')
 	const basicChangeText = ref('还没有切换')
@@ -526,38 +351,10 @@
 		raisedClickText.value = index === 0 ? '点击了首页' : '点击了我的'
 	}
 
-	// 12 凸起 + 固定：只关心圆钮有没有收到 click，两侧页签和透明带都不该改这里
-	const onFixedRaisedClick = (index: number) => {
-		fixedRaisedClickText.value = index === 1 ? '点击了发布圆钮' : `点击了第 ${index + 1} 个页签`
-	}
-
 	const toggleFixed = () => {
 		fixedVisible.value = !fixedVisible.value
 	}
 
-	const prevPath: string = '/pages/demo/status-bar/status-bar'
-	const nextPath: string = '/pages/demo/footer/footer'
-	const prevName = '状态栏'
-	const nextName = '页脚'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

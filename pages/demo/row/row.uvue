@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="栅格布局" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="row" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-row · vx-col</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="rows" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">栅格布局</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">行管排列，列管占宽。24 份制，一份是行宽的 4.1667%；列间距一半铺在列两侧，行用等量负外边距抵掉外侧半格。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-row · vx-col</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">三个 span=8 正好占满一行；行本身不画底色和描边。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="三个 span=8 正好占满一行；行本身不画底色和描边。" />
 					<view class="demo-row-stage">
 						<vx-row :gutter="12">
 							<vx-col :span="8">
@@ -74,15 +30,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">列间距</text>
-							<text class="demo-section__desc">gutter 0 / 12 / 24。只改列的内边距，列宽不变。</text>
-						</view>
-					</view>
+					<demo-section-head title="列间距" desc="gutter 0 / 12 / 24。只改列的内边距，列宽不变。" />
 					<view class="demo-row-stage">
 						<text class="demo-row-label">gutter=0</text>
 						<vx-row>
@@ -147,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">行间距</text>
-							<text class="demo-section__desc">gutter 12 配 lineGutter 12，换行后每一列的上方留一格。</text>
-						</view>
-					</view>
+					<demo-section-head title="行间距" desc="gutter 12 配 lineGutter 12，换行后每一列的上方留一格。" />
 					<view class="demo-row-stage">
 						<vx-row :gutter="12" :line-gutter="12">
 							<vx-col :span="8">
@@ -194,15 +134,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">水平排列</text>
-							<text class="demo-section__desc">一行只占 8 列时，剩余的 16 列怎么分，由 justify 决定。</text>
-						</view>
-					</view>
+					<demo-section-head title="水平排列" desc="一行只占 8 列时，剩余的 16 列怎么分，由 justify 决定。" />
 					<view class="demo-row-stage">
 						<text class="demo-row-label">justify="start" · 默认贴左</text>
 						<vx-row justify="start" :gutter="12">
@@ -297,15 +229,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">垂直对齐</text>
-							<text class="demo-section__desc">同一行的列高不一致时，按 align 贴顶、居中、贴底或拉平。</text>
-						</view>
-					</view>
+					<demo-section-head title="垂直对齐" desc="同一行的列高不一致时，按 align 贴顶、居中、贴底或拉平。" />
 					<view class="demo-row-stage">
 						<text class="demo-row-label">align="start"</text>
 						<vx-row align="start" :gutter="12">
@@ -390,15 +314,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">换行</text>
-							<text class="demo-section__desc">五个 span=6 超过一行；默认换行，关掉后按比例压缩。</text>
-						</view>
-					</view>
+					<demo-section-head title="换行" desc="五个 span=6 超过一行；默认换行，关掉后按比例压缩。" />
 					<view class="demo-row-stage">
 						<text class="demo-row-label">wrap=true · 默认</text>
 						<vx-row :gutter="12" :line-gutter="12">
@@ -463,15 +379,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">嵌套</text>
-							<text class="demo-section__desc">16 + 8 两栏，左栏里再开一行。内层的 24 份按外层列宽算。</text>
-						</view>
-					</view>
+					<demo-section-head title="嵌套" desc="16 + 8 两栏，左栏里再开一行。内层的 24 份按外层列宽算。" />
 					<view class="demo-row-stage">
 						<vx-row :gutter="12">
 							<vx-col :span="16">
@@ -499,15 +407,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">四张卡片：手机一列，平板两列，桌面三列和四列。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="四张卡片：手机一列，平板两列，桌面三列和四列。" />
 					<view class="demo-row-stage">
 						<vx-row :gutter="12" :line-gutter="12">
 							<vx-col :span="24" :sm="12" :md="8" :lg="6">
@@ -539,32 +439,18 @@
 					<text class="demo-hint">断点写在列上：span 管最窄的一档，sm / md / lg 分别从 576 / 768 / 992 往上覆盖。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="row" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
+
+
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 栅格演示：行管排列，列管宽度；每组的列数都写死在 span 上，一眼能对上。
 	const isDark = demoIsDark
@@ -573,29 +459,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/grid/grid'
-	const nextPath: string = '/pages/demo/col/col'
-	const prevName = '宫格'
-	const nextName = '多端适配'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

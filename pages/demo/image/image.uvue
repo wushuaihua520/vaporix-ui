@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="图片" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="image" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-image</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="image" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">图片</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">占位底色、失败回落、四档圆角和按比例排布；加载、失败和点击只抛事件。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-image</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础用法</text>
-							<text class="demo-section__desc">加载中铺占位底色，加载完成后 200ms 淡入；重新加载会回到占位态。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础用法" desc="加载中铺占位底色，加载完成后 200ms 淡入；重新加载会回到占位态。" />
 					<view class="demo-card demo-img-basic">
 						<view class="demo-img-basic__media">
 							<vx-image :key="basicKey" src="/static/demo/card/cover.jpg" width="240px" :ratio="1.78"
@@ -71,15 +27,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">失败态</text>
-							<text class="demo-section__desc">地址读不到和 src 传空串都走失败态，只回落一次，不重试。</text>
-						</view>
-					</view>
+					<demo-section-head title="失败态" desc="地址读不到和 src 传空串都走失败态，只回落一次，不重试。" />
 					<view class="demo-img-grid">
 						<view class="demo-img-grid__item">
 							<view class="demo-img-grid__media">
@@ -101,15 +49,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">圆角四档</text>
-							<text class="demo-section__desc">sm / md / lg 取 --vx-radius-*，circle 取胶囊圆角；只裁外框。</text>
-						</view>
-					</view>
+					<demo-section-head title="圆角四档" desc="sm / md / lg 取 --vx-radius-*，circle 取胶囊圆角；只裁外框。" />
 					<view class="demo-img-lab">
 						<view class="demo-img-lab__item">
 							<view class="demo-img-lab__media">
@@ -145,15 +85,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">固定宽高</text>
-							<text class="demo-section__desc">width / height 传带单位的值；两个都给时盒子就是这两个值。</text>
-						</view>
-					</view>
+					<demo-section-head title="固定宽高" desc="width / height 传带单位的值；两个都给时盒子就是这两个值。" />
 					<view class="demo-card">
 						<view class="demo-img-size-row">
 							<view class="demo-img-size__box">
@@ -188,15 +120,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">按比例</text>
-							<text class="demo-section__desc">width 240px + ratio 1 / 1.78 / 0.75；最后一行用 240rpx，随屏宽换算。</text>
-						</view>
-					</view>
+					<demo-section-head title="按比例" desc="width 240px + ratio 1 / 1.78 / 0.75；最后一行用 240rpx，随屏宽换算。" />
 					<view class="demo-img-ratio">
 						<view class="demo-img-ratio__row">
 							<view class="demo-img-ratio__copy">
@@ -239,15 +163,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">mode 四档</text>
-							<text class="demo-section__desc">同一张 1200 × 640 的横图放进 140 × 140 的盒子，裁切方式一眼能分开。</text>
-						</view>
-					</view>
+					<demo-section-head title="mode 四档" desc="同一张 1200 × 640 的横图放进 140 × 140 的盒子，裁切方式一眼能分开。" />
 					<view class="demo-img-modes">
 						<view class="demo-img-modes__item">
 							<view class="demo-img-modes__media">
@@ -285,15 +201,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">事件与淡入</text>
-							<text class="demo-section__desc">load / error / click 只抛事件；fade=false 去掉 200ms 淡入。</text>
-						</view>
-					</view>
+					<demo-section-head title="事件与淡入" desc="load / error / click 只抛事件；fade=false 去掉 200ms 淡入。" />
 					<view class="demo-card">
 						<view class="demo-img-event__media">
 							<vx-image :key="eventKey" :src="eventSrc" height="120px" radius="md" :fade="fadeEnabled"
@@ -320,32 +228,16 @@
 					<text class="demo-hint demo-img-hint">点图片只会抛 click，不会打开预览；预览、长按保存和裁剪分别属于 vx-gallery、业务和裁剪件。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="image" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.64.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	const isDark = demoIsDark
 
@@ -368,15 +260,6 @@
 	const eventCount = ref(0)
 	const lastEvent = ref('还没有触发')
 	const fadeEnabled = ref(true)
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
 
 	const goPrev = () => {
 		if (prevPath === '') return

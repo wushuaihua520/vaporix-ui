@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="列表" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="list-view" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-list-view · vx-list-cell</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="list" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">列表</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">分组和行可以一起用，也可以各自独立；双行说明、箭头和按下态各就各位。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-list-view · vx-list-cell</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">分组与静态行</text>
-							<text class="demo-section__desc">标题在卡片外，静态行关闭按下态；最后一行关掉分割线。</text>
-						</view>
-					</view>
+					<demo-section-head title="分组与静态行" desc="标题在卡片外，静态行关闭按下态；最后一行关掉分割线。" />
 					<view class="demo-card">
 						<vx-list-view title="账号信息" description="这些内容由系统同步，不能在这里修改。">
 							<vx-list-cell title="账号" value="vaporix@example.com" :clickable="false" />
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">可点击行</text>
-							<text class="demo-section__desc">箭头加按下态，点击整行抛 click；右侧值放短文本。</text>
-						</view>
-					</view>
+					<demo-section-head title="可点击行" desc="箭头加按下态，点击整行抛 click；右侧值放短文本。" />
 					<view class="demo-card">
 						<vx-list-view title="账户与订单">
 							<vx-list-cell title="我的钱包" value="¥128.00" arrow @click="onListAction('我的钱包')" />
@@ -84,15 +32,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">菜单列表</text>
-							<text class="demo-section__desc">prefix 放图标，extra 放标签或短文案，箭头统一收在右侧。</text>
-						</view>
-					</view>
+					<demo-section-head title="菜单列表" desc="prefix 放图标，extra 放标签或短文案，箭头统一收在右侧。" />
 					<view class="demo-card">
 						<vx-list-view title="菜单列表">
 							<vx-list-cell title="我的钱包" value="¥128.00" arrow @click="onListAction('我的钱包')">
@@ -130,15 +70,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">消息列表</text>
-							<text class="demo-section__desc">prefix 放头像，description 放摘要，extra 叠时间和未读徽章。</text>
-						</view>
-					</view>
+					<demo-section-head title="消息列表" desc="prefix 放头像，description 放摘要，extra 叠时间和未读徽章。" />
 					<view class="demo-card">
 						<vx-list-view title="消息列表">
 							<template #extra>
@@ -216,45 +148,21 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">44 / 48 / 52，主文案 13 / 15 / 17。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="44 / 48 / 52，主文案 13 / 15 / 17。" />
 					<view class="demo-card">
 						<vx-list-view title="行尺寸">
 							<vx-list-cell size="sm" title="小号行 · 44" description="13 / 20，工具条和密集信息"
 								:clickable="false" />
-							<vx-list-cell size="md" title="常规行 · 52" description="15 / 22，默认尺寸" :clickable="false" />
-							<vx-list-cell size="lg" title="大号行 · 60" description="17 / 24，设置页和强调入口"
+							<vx-list-cell size="md" title="常规行 · 48" description="15 / 22，默认尺寸" :clickable="false" />
+							<vx-list-cell size="lg" title="大号行 · 52" description="17 / 24，设置页和强调入口"
 								:clickable="false" :divider="false" />
 						</vx-list-view>
-						<view class="demo-list-size-gap">
-							<vx-list-view title="小号分组" size="sm">
-								<vx-list-cell size="sm" title="小号行 · 44" description="标题左缘和行文字对齐"
-									:clickable="false" />
-								<vx-list-cell size="sm" title="另一行小号" description="13 / 20，分组 size 不改行高"
-									:clickable="false" :divider="false" />
-							</vx-list-view>
-						</view>
-						<text class="demo-hint">行高是下限，双行时由上下内边距自然撑高；sm 已经满足 44 的可点热区。上面一组仍是默认标题缩进，三档行混在一起。下面 size="sm" 只收标题左右，行高和字号还是各行自己的 size。</text>
+						<text class="demo-hint">行高是下限，双行时由上下内边距自然撑高；sm 已经满足 44 的可点热区。</text>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">平面分组</text>
-							<text class="demo-section__desc">variant="plain" 去掉描边和圆角，只保留分组底色。</text>
-						</view>
-					</view>
+					<demo-section-head title="平面分组" desc="variant=&quot;plain&quot; 去掉描边和圆角，只保留分组底色。" />
 					<view class="demo-card">
 						<view class="demo-list-plain-stage">
 							<vx-list-view title="通知设置" variant="plain">
@@ -268,15 +176,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用与静态</text>
-							<text class="demo-section__desc">disabled 转灰且不抛 click；静态行只展示，不加箭头。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用与静态" desc="disabled 转灰且不抛 click；静态行只展示，不加箭头。" />
 					<view class="demo-card">
 						<vx-list-view title="可用状态">
 							<vx-list-cell title="已绑定手机" value="138****8888" arrow @click="onListAction('已绑定手机')" />
@@ -289,15 +189,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">独立使用</text>
-							<text class="demo-section__desc">不套 vx-list-view，把单行放进任意卡片或容器。</text>
-						</view>
-					</view>
+					<demo-section-head title="独立使用" desc="不套 vx-list-view，把单行放进任意卡片或容器。" />
 					<view class="demo-card">
 						<view class="demo-list-solo">
 							<vx-list-cell title="独立列表行" description="不套 vx-list-view，放进任意卡片或容器。"
@@ -308,15 +200,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">分割线</text>
-							<text class="demo-section__desc">默认线更浅；可单独改颜色和深浅，两者也能叠加。</text>
-						</view>
-					</view>
+					<demo-section-head title="分割线" desc="默认线更浅；可单独改颜色和深浅，两者也能叠加。" />
 					<view class="demo-card">
 						<vx-list-view title="分割线">
 							<vx-list-cell title="默认分割线" value="divider 令牌" :clickable="false" />
@@ -333,32 +217,16 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="list-view" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 列表演示：多个分组共用一个「最近点击」，用来对照 click 和静态 / 禁用行。
 	const listLastAction = ref('还没有点击')
@@ -373,38 +241,8 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/bubble-popup/bubble-popup'
-	const nextPath: string = '/pages/demo/card/card'
-	const prevName = '气泡弹框'
-	const nextName = '卡片'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
 	})
 </script>
-
-<style>
-	/* 同一节里两组标题，隔开 24，方便对左缘。 */
-	.demo-list-size-gap {
-		margin-top: var(--vx-space-xl);
-	}
-</style>

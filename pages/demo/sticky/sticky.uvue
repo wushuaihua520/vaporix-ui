@@ -1,68 +1,17 @@
 <template>
 	<view :class="pageClass">
-		<!-- 07 自定义导航栏：放在滚动区之前，默认 placeholder 才会在文档流里补出等高占位；
-		     ready 回传的高度写进下面 sticky 的 offsetTop，吸顶条才不会钻到导航栏底下。 -->
-		<vx-navigation-bar v-if="stickyNavVisible" ref="stickyNavRef" :status-bar="false" title="商品详情" back
-			divider :z-index="30" @ready="onStickyNavReady">
-			<template v-if="stickyNavTall" #extra>
-				<view class="demo-sticky-nav-extra">
-					<text class="demo-sticky-nav-extra__text">第二行：搜索或筛选，45 高的整行</text>
-				</view>
-			</template>
-		</vx-navigation-bar>
-		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" @scroll="onDemoScroll">
+		<!-- 吸顶线要贴到顶栏下沿：offsetTop 直接用导航栏内容行高（--vx-navigation-bar-height = 48，
+		     与 vx-page 插槽 navHeight 同源），滚动值走 scroll-view 的 @scroll 自己取整。 -->
+		<demo-topbar title="吸顶容器" />
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" @scroll="onContentScroll">
+			<demo-hero current-key="sticky" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-sticky</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="map-pin" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">吸顶容器</text>
-								<text class="demo-hero__title demo-hero__title--accent">4 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">吸顶前透明，贴顶后铺 surface 底加 1px 分割线；suffix 决定吸顶范围。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-sticky</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">吸顶基础</text>
-							<text class="demo-section__desc">吸顶条贴到页面顶部后停住，suffix 里的内容滚完再复位。</text>
-						</view>
-					</view>
+					<demo-section-head title="吸顶基础" desc="吸顶条贴到顶栏下沿后停住，suffix 里的内容滚完再复位。" />
 					<view class="demo-sticky-card">
-						<vx-sticky :scroll-top="demoScrollTop" @change="onStickyBasicChange">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight"
+							@change="onStickyBasicChange">
 							<view class="demo-sticky-bar">
 								<view class="demo-sticky-bar__main">
 									<text class="demo-sticky-bar__title">商品详情</text>
@@ -85,15 +34,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">吸顶距离</text>
-							<text class="demo-section__desc">在安全区之外再让出 56px，用阴影和下面的内容分开。</text>
-						</view>
-					</view>
+					<demo-section-head title="吸顶距离" desc="在安全区之外再让出 56px，吸顶位置比上一组更低，用阴影和下面的内容分开。" />
 					<view class="demo-sticky-card">
 						<vx-sticky :scroll-top="demoScrollTop" :offset-top="56" shadow
 							@change="onStickyOffsetChange">
@@ -113,21 +54,14 @@
 							</template>
 						</vx-sticky>
 					</view>
-					<text class="demo-hint">offsetTop 是在顶部安全区之外再让出的距离，单位 px；Web 的导航栏和刘海由安全区变量自动避开。</text>
+					<text class="demo-hint">offsetTop 是在顶部安全区之外再让出的距离，单位 px；基础组让出的是顶栏内容行（48），这一组固定让 56。</text>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">指定范围</text>
-							<text class="demo-section__desc">两组各自带 suffix，上一组滚完把吸顶条顶出去，下一组接上。</text>
-						</view>
-					</view>
+					<demo-section-head title="指定范围" desc="两组各自带 suffix，上一组滚完把吸顶条顶出去，下一组接上。" />
 					<view class="demo-sticky-card">
-						<vx-sticky :scroll-top="demoScrollTop" @change="onStickyRangeFirstChange">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight"
+							@change="onStickyRangeFirstChange">
 							<view class="demo-sticky-bar">
 								<view class="demo-sticky-bar__main">
 									<text class="demo-sticky-bar__title">第一组</text>
@@ -145,7 +79,8 @@
 								</view>
 							</template>
 						</vx-sticky>
-						<vx-sticky :scroll-top="demoScrollTop" @change="onStickyRangeSecondChange">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight"
+							@change="onStickyRangeSecondChange">
 							<view class="demo-sticky-bar">
 								<view class="demo-sticky-bar__main">
 									<text class="demo-sticky-bar__title">第二组</text>
@@ -168,17 +103,10 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">阴影与底色</text>
-							<text class="demo-section__desc">shadow 用浮层阴影代替分割线；bgColor 不跟主题，未吸顶也生效。</text>
-						</view>
-					</view>
+					<demo-section-head title="阴影与底色" desc="shadow 用浮层阴影代替分割线；bgColor 不跟主题，未吸顶也生效。" />
 					<view class="demo-sticky-card">
-						<vx-sticky :scroll-top="demoScrollTop" shadow @change="onStickyShadowChange">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight" shadow
+							@change="onStickyShadowChange">
 							<view class="demo-sticky-bar">
 								<view class="demo-sticky-bar__main">
 									<text class="demo-sticky-bar__title">浮层阴影</text>
@@ -196,7 +124,7 @@
 						</vx-sticky>
 					</view>
 					<view class="demo-sticky-card demo-sticky-card--gap">
-						<vx-sticky :scroll-top="demoScrollTop" bg-color="#2b6be0" shadow
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight" bg-color="#2b6be0" shadow
 							@change="onStickyBrandChange">
 							<view :class="stickyBrandBarClass">
 								<view class="demo-sticky-bar__main">
@@ -217,134 +145,28 @@
 					<text class="demo-hint">阴影只使用 --vx-shadow-md；bgColor 是字面值，亮色、暗色都保持同一个品牌色，对比度由业务保证。</text>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">隐藏与变高</text>
-							<text class="demo-section__desc">先隐藏再显示仍能吸顶、位置不跳；吸顶条内容变高后，占位高度跟着变。</text>
-						</view>
-					</view>
-					<view class="demo-sticky-card">
-						<view class="demo-actions">
-							<view class="demo-actions__item">
-								<vx-button block size="sm" type="default"
-									:text="stickyToggleVisible ? '隐藏吸顶条' : '显示吸顶条'"
-									@click="stickyToggleVisible = !stickyToggleVisible" />
-							</view>
-							<view class="demo-actions__item demo-actions__item--last">
-								<vx-button block size="sm" type="default"
-									:text="stickyToggleTall ? '收回第二行' : '加一行说明'"
-									@click="toggleStickyTall" />
-							</view>
-						</view>
-							<vx-sticky v-if="stickyToggleVisible" ref="stickyToggleRef" :scroll-top="demoScrollTop"
-								@change="onStickyToggleChange">
-							<view class="demo-sticky-bar">
-								<view class="demo-sticky-bar__main">
-									<text class="demo-sticky-bar__title">隐藏与变高</text>
-									<text class="demo-sticky-bar__meta">{{ stickyToggleTall ? '两行' : '一行' }}</text>
-								</view>
-								<text class="demo-sticky-bar__state">{{ stickyToggleStuck ? '吸顶中' : '未吸顶' }}</text>
-							</view>
-							<!-- 第二行放在条下面，条高才跟着变；放进 .demo-sticky-bar 里会被行排布吃掉 -->
-							<view v-if="stickyToggleTall" class="demo-sticky-bar">
-								<text class="demo-sticky-bar__meta">第二行说明：吸顶条变高后，占位高度和吸顶线都要跟着更新。</text>
-							</view>
-							<template #suffix>
-								<view class="demo-sticky-rows">
-									<vx-list-cell v-for="(row, index) in stickyToggleRows" :key="row.title"
-										:title="row.title" :value="row.value" :clickable="false"
-										:divider="index < stickyToggleRows.length - 1" />
-								</view>
-							</template>
-						</vx-sticky>
-						<text class="demo-hint">先滚到这一段的阈值附近，再点隐藏 / 显示和加一行，看吸顶条位置和占位高度。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="sticky" />
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义导航栏 + 吸顶</text>
-							<text class="demo-section__desc">导航栏 ready 回传高度后写进 offsetTop；加一行 extra 重新测量，吸顶线跟着下移。</text>
-						</view>
-					</view>
-					<view class="demo-sticky-card">
-						<view class="demo-actions">
-							<view class="demo-actions__item">
-								<vx-button block size="sm" type="default"
-									:text="stickyNavVisible ? '收起导航栏' : '显示固定导航栏'"
-									@click="toggleStickyNav" />
-							</view>
-							<view class="demo-actions__item demo-actions__item--last">
-								<vx-button block size="sm" type="default"
-									:text="stickyNavTall ? '收起 extra' : '加一行 extra'"
-									@click="toggleStickyNavExtra" />
-							</view>
-						</view>
-						<vx-sticky :scroll-top="demoScrollTop" :offset-top="stickyNavOffset"
-							@change="onStickyNavChange">
-							<view class="demo-sticky-bar">
-								<view class="demo-sticky-bar__main">
-									<text class="demo-sticky-bar__title">导航栏下的吸顶条</text>
-									<text class="demo-sticky-bar__meta">offsetTop {{ stickyNavOffset }}</text>
-								</view>
-								<text class="demo-sticky-bar__state">{{ stickyNavStuck ? '吸顶中' : '未吸顶' }}</text>
-							</view>
-							<template #suffix>
-								<view class="demo-sticky-rows">
-									<vx-list-cell v-for="(row, index) in stickyNavRows" :key="row.title"
-										:title="row.title" :value="row.value" :clickable="false"
-										:divider="index < stickyNavRows.length - 1" />
-								</view>
-							</template>
-						</vx-sticky>
-						<text class="demo-hint">导航栏高度 {{ stickyNavHeight }}；吸顶条贴到 offsetTop 就该停在导航栏下面，不钻进去。</text>
-					</view>
-				</view>
-
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
+	// 顶栏内容行高：--vx-navigation-bar-height 的值（48）。vx-sticky 的 offsetTop 从安全区
+	// 之外算起，让出这一档吸顶条正好停在顶栏下沿（vx-page 插槽 navHeight 同源同值）。
+	const navHeight = 48
+
+	// scroll-view 的 @scroll 取整后喂给所有吸顶条；回弹的负值按 0 收口。
 	const demoScrollTop = ref(0)
 
-	type StickyApi = {
-		refresh(): void
-	}
-
-	// 吸顶靠 scrollTop 驱动，滚动值必须一路喂给每个 vx-sticky；漏了这一句整页都不会吸顶
-	const onDemoScroll = (event: UniScrollEvent) => {
-		demoScrollTop.value = Math.round(event.detail.scrollTop)
+	const onContentScroll = (event: UniScrollEvent) => {
+		const top = Math.max(0, Math.round(event.detail.scrollTop))
+		if (demoScrollTop.value === top) return
+		demoScrollTop.value = top
 	}
 
 	// 吸顶演示：suffix 里的内容决定推到哪结束，这里记每个示例的吸顶状态。
@@ -389,96 +211,21 @@
 		{ title: '底色', value: 'surface' }
 	]
 
+	// 最后一组的 suffix 多给几行：页面要有足够的尾部内容，最后两根条才滚得到吸顶线，
+	// shadow 和吸顶后的品牌底色才看得见。
 	const stickyBrandRows: StickyDemoRow[] = [
 		{ title: '底色来源', value: 'bgColor' },
 		{ title: '跟随主题', value: '否' },
-		{ title: '未吸顶也生效', value: '是' }
+		{ title: '未吸顶也生效', value: '是' },
+		{ title: '吸顶后底色', value: '品牌色不变' },
+		{ title: '文字对比', value: '白字 4.5:1' },
+		{ title: '暗色模式', value: '同一品牌色' },
+		{ title: '分割线', value: '不画' },
+		{ title: '阴影', value: 'shadow' },
+		{ title: '滚过内容', value: '从条下穿过' },
+		{ title: '占位高度', value: '与条等高' },
+		{ title: '复位时机', value: 'suffix 滚完' }
 	]
-
-	// 06 隐藏与变高：v-if 控制显隐，stickyToggleTall 加一行看占位是否跟着长
-	const stickyToggleRows: StickyDemoRow[] = [
-		{ title: '隐藏后重挂', value: '还能吸顶' },
-		{ title: '变高', value: '占位跟着变' },
-		{ title: '位置', value: '不跳' },
-		{ title: '范围一', value: '留在本段' },
-		{ title: '范围二', value: '不越界' },
-		{ title: '范围三', value: '滚到底复位' },
-		{ title: '范围四', value: '复位不跳' },
-		{ title: '范围五', value: '占位收掉' }
-	]
-
-	const stickyToggleVisible = ref(true)
-	const stickyToggleTall = ref(false)
-	const stickyToggleStuck = ref(false)
-	const stickyToggleRef = ref<StickyApi | null>(null)
-
-	// 吸顶条内容变了要自己调 refresh()：组件不在滚动里重测，占位高度才不会跟着内容走
-	const toggleStickyTall = () => {
-		stickyToggleTall.value = !stickyToggleTall.value
-		setTimeout(() => {
-			stickyToggleRef.value?.refresh()
-		}, 20)
-	}
-
-	const onStickyToggleChange = (stuck: boolean) => {
-		stickyToggleStuck.value = stuck
-	}
-
-	// 07 自定义导航栏：ready 给的高度写进 offsetTop，加 extra 后重新测量再写一次
-	type StickyNavInfo = {
-		height: number
-	}
-
-	type StickyNavApi = {
-		refresh(): void
-	}
-
-	const stickyNavRows: StickyDemoRow[] = [
-		{ title: '导航栏高度', value: 'ready 回传' },
-		{ title: '吸顶线', value: '跟着高度走' },
-		{ title: 'extra 变高', value: 'refresh 重测' },
-		{ title: '行 4', value: '撑出滚动空间' },
-		{ title: '行 5', value: '撑出滚动空间' },
-		{ title: '行 6', value: '撑出滚动空间' },
-		{ title: '行 7', value: '撑出滚动空间' },
-		{ title: '行 8', value: '撑出滚动空间' },
-		{ title: '行 9', value: '撑出滚动空间' },
-		{ title: '行 10', value: '撑出滚动空间' },
-		{ title: '行 11', value: '撑出滚动空间' },
-		{ title: '行 12', value: '撑出滚动空间' }
-	]
-
-	const stickyNavVisible = ref(true)
-	const stickyNavTall = ref(false)
-	const stickyNavHeight = ref(0)
-	const stickyNavOffset = ref(0)
-	const stickyNavStuck = ref(false)
-	const stickyNavRef = ref<StickyNavApi | null>(null)
-
-	const onStickyNavReady = (info: StickyNavInfo) => {
-		stickyNavHeight.value = info.height
-		stickyNavOffset.value = info.height
-	}
-
-	const onStickyNavChange = (stuck: boolean) => {
-		stickyNavStuck.value = stuck
-	}
-
-	const toggleStickyNavExtra = () => {
-		stickyNavTall.value = !stickyNavTall.value
-		setTimeout(() => {
-			stickyNavRef.value?.refresh()
-		}, 20)
-	}
-
-	// 收起导航栏时 offset 要归 0：导航栏不在，吸顶线还留在 101 就悬在半空
-	const toggleStickyNav = () => {
-		stickyNavVisible.value = !stickyNavVisible.value
-		if (!stickyNavVisible.value) {
-			stickyNavHeight.value = 0
-			stickyNavOffset.value = 0
-		}
-	}
 
 	const stickyBasicStuck = ref(false)
 
@@ -529,29 +276,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/tabs/tabs'
-	const nextPath: string = '/pages/demo/navigation-bar/navigation-bar'
-	const prevName = '标签页'
-	const nextName = '导航栏'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

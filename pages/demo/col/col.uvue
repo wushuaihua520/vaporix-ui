@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="多端适配" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="col" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-col</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="columns" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">多端适配</text>
-								<text class="demo-hero__title demo-hero__title--accent">6 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">列管占宽：24 栅格跨度、左侧偏移、视觉位移和断点。蒸汽模式没有 @media，断点按窗口宽度在脚本里算。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-col</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">跨度</text>
-							<text class="demo-section__desc">span 24 / 12 / 8 / 6，默认 24 占满一整行。</text>
-						</view>
-					</view>
+					<demo-section-head title="跨度" desc="span 24 / 12 / 8 / 6，默认 24 占满一整行。" />
 					<view class="demo-col-stage">
 						<vx-row :gutter="12" :line-gutter="12">
 							<vx-col :span="24">
@@ -109,15 +65,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">偏移</text>
-							<text class="demo-section__desc">offset 在左边空出几列，上限是 24 - span。</text>
-						</view>
-					</view>
+					<demo-section-head title="偏移" desc="offset 在左边空出几列，上限是 24 - span。" />
 					<view class="demo-col-stage">
 						<text class="demo-col-label">offset=0</text>
 						<vx-row :gutter="12">
@@ -152,15 +100,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">位移</text>
-							<text class="demo-section__desc">push 右移、pull 左移，只改视觉位置，占位不变。</text>
-						</view>
-					</view>
+					<demo-section-head title="位移" desc="push 右移、pull 左移，只改视觉位置，占位不变。" />
 					<view class="demo-col-stage">
 						<text class="demo-col-label">push=4</text>
 						<vx-row :gutter="12">
@@ -172,9 +112,9 @@
 						</vx-row>
 					</view>
 					<view class="demo-col-stage demo-col-stage--next">
-						<text class="demo-col-label">pull=4</text>
+						<text class="demo-col-label">offset=8 + pull=4 · 左移回 4</text>
 						<vx-row :gutter="12">
-							<vx-col :span="8" :pull="4">
+							<vx-col :span="8" :offset="8" :pull="4">
 								<view class="demo-col-box demo-col-box--soft">
 									<text class="demo-col-box__text demo-col-box__text--soft">8 · pull 4</text>
 								</view>
@@ -185,15 +125,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">隐藏</text>
-							<text class="demo-section__desc">三列里中间那列写 span=0：这一档不显示，但仍留在页面里。</text>
-						</view>
-					</view>
+					<demo-section-head title="隐藏" desc="三列里中间那列写 span=0：这一档不显示，但仍留在页面里。" />
 					<view class="demo-col-stage">
 						<vx-row :gutter="12">
 							<vx-col :span="8">
@@ -217,15 +149,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">断点</text>
-							<text class="demo-section__desc">span=24 sm=12 md=8 lg=6，按窗口宽度往上覆盖。</text>
-						</view>
-					</view>
+					<demo-section-head title="断点" desc="span=24 sm=12 md=8 lg=6，按窗口宽度往上覆盖。" />
 					<view class="demo-col-stage">
 						<view class="demo-col-meter">
 							<text class="demo-col-meter__value">窗口 {{ windowWidth }}px</text>
@@ -258,15 +182,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">四个数据格排两行，下面一张通栏卡片。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="四个数据格排两行，下面一张通栏卡片。" />
 					<view class="demo-col-stage">
 						<vx-row :gutter="12" :line-gutter="12">
 							<vx-col :span="12" :md="6">
@@ -300,32 +216,16 @@
 					<text class="demo-hint">列只负责宽度，卡片的外框、内边距和内容都在列里；同一行用同一种卡片，行距交给 lineGutter。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="col" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 多端适配演示：断点按窗口宽度算，这里把当前宽度和档位读出来给用户对照。
 	const isDark = demoIsDark
@@ -344,29 +244,6 @@
 		return 'span · 手机'
 	})
 
-	const prevPath: string = '/pages/demo/row/row'
-	const nextPath: string = '/pages/demo/image-group/image-group'
-	const prevName = '栅格布局'
-	const nextName = '图片组合'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

@@ -1,216 +1,170 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="按钮" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
-			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">基础</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
+			<demo-hero current-key="button" />
 
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-button</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="check-circle" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">按钮</text>
-								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一套按钮覆盖主操作、次操作、危险操作和纯文字链接，加载与禁用不改尺寸。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">基础</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-button</text>
-						</view>
-					</view>
-				</view>
-
+			<view class="demo-shell bt-shell">
+				<!-- 分区头借 ThorUI 的 tui-section：主色小竖条 + 加粗标题 + 灰色说明 -->
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">默认按钮</text>
-							<text class="demo-section__desc">实心主操作。加载、禁用不改尺寸。</text>
-						</view>
-					</view>
+					<demo-section-head title="按钮类型" desc="六种语义色实心按钮，危险操作放在最后。" />
 					<view class="demo-card">
-						<view class="demo-stack">
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="页面主操作" />
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="主要按钮" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="页面主操作" loading />
+							<view class="bt-row__item">
+								<vx-button block type="default" text="默认按钮" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="页面主操作 · 禁用" disabled />
+						</view>
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="info" text="信息按钮" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="default" text="页面次要操作" />
+							<view class="bt-row__item">
+								<vx-button block type="success" text="成功按钮" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="default" text="页面次要操作 · 禁用" disabled />
+						</view>
+						<view class="bt-row bt-row--last">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="warning" text="警告按钮" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="danger" text="页面辅助操作" />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="danger" text="页面辅助操作 · 禁用" disabled />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="warning" text="页面辅助操作" />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="success" text="页面辅助操作" />
-							</view>
-							<view class="demo-stack__item demo-stack__item--last">
-								<vx-button block type="info" text="页面辅助操作" />
+							<view class="bt-row__item">
+								<vx-button block type="danger" text="危险按钮" />
 							</view>
 						</view>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">空心按钮</text>
-							<text class="demo-section__desc">只留描边，给次要操作。</text>
-						</view>
-					</view>
+					<demo-section-head title="加载与禁用" desc="转圈在前、文案在后，两种状态都不改尺寸。" />
 					<view class="demo-card">
-						<view class="demo-stack">
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="页面主操作" variant="plain" />
+						<view class="bt-row bt-row--last">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="加载中…" loading />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="success" text="页面辅助操作" variant="plain" />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="info" text="页面辅助操作" variant="plain" />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="warning" text="页面辅助操作" variant="plain" />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="danger" text="页面辅助操作" variant="plain" />
-							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="default" text="页面次要操作" variant="plain" />
-							</view>
-							<view class="demo-stack__item demo-stack__item--last">
-								<vx-button block type="primary" text="页面主操作 · 禁用" variant="plain" disabled />
+							<view class="bt-row__item">
+								<vx-button block type="primary" text="已禁用" disabled />
 							</view>
 						</view>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">纯文字按钮</text>
-							<text class="demo-section__desc">没有底和边框，热区仍在。</text>
-						</view>
-					</view>
+					<demo-section-head title="空心按钮" desc="只留描边，给次要操作。" />
 					<view class="demo-card">
-						<view class="demo-stack">
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="页面主操作 link" variant="link" />
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="主要按钮" variant="plain" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="success" text="页面辅助操作 link" variant="link" />
+							<view class="bt-row__item">
+								<vx-button block type="info" text="信息按钮" variant="plain" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="info" text="页面辅助操作 link" variant="link" />
+						</view>
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="success" text="成功按钮" variant="plain" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="warning" text="页面辅助操作 link" variant="link" />
+							<view class="bt-row__item">
+								<vx-button block type="warning" text="警告按钮" variant="plain" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="danger" text="页面辅助操作 link" variant="link" />
+						</view>
+						<view class="bt-row bt-row--last">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="danger" text="危险按钮" variant="plain" />
 							</view>
-							<view class="demo-stack__item demo-stack__item--last">
-								<vx-button block type="default" text="页面次要操作 link" variant="link" />
+							<view class="bt-row__item">
+								<vx-button block type="default" text="次要按钮" variant="plain" />
 							</view>
 						</view>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">浅底按钮</text>
-							<text class="demo-section__desc">浅底，用来做轻确认和状态。</text>
-						</view>
-					</view>
+					<demo-section-head title="浅底按钮" desc="淡色底，用来做轻确认和状态。" />
 					<view class="demo-card">
-						<view class="demo-stack">
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="页面主操作" variant="soft" />
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="主要按钮" variant="soft" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="success" text="页面辅助操作" variant="soft" />
+							<view class="bt-row__item">
+								<vx-button block type="info" text="信息按钮" variant="soft" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="info" text="页面辅助操作" variant="soft" />
+						</view>
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="success" text="成功按钮" variant="soft" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="warning" text="页面辅助操作" variant="soft" />
+							<view class="bt-row__item">
+								<vx-button block type="warning" text="警告按钮" variant="soft" />
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="danger" text="页面辅助操作" variant="soft" />
+						</view>
+						<view class="bt-row bt-row--last">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="danger" text="危险按钮" variant="soft" />
 							</view>
-							<view class="demo-stack__item demo-stack__item--last">
-								<vx-button block type="default" text="页面次要操作" variant="soft" />
+							<view class="bt-row__item">
+								<vx-button block type="default" text="次要按钮" variant="soft" />
 							</view>
 						</view>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">轮廓形状</text>
-							<text class="demo-section__desc">圆角、胶囊、直角。同页圆角不超过两档。</text>
+					<demo-section-head title="纯文字按钮" desc="没有底和边框，热区仍在，按内容宽度排。" />
+					<view class="demo-card">
+						<view class="bt-flow">
+							<view class="bt-flow__item">
+								<vx-button type="primary" text="主要按钮" variant="link" />
+							</view>
+							<view class="bt-flow__item">
+								<vx-button type="success" text="成功按钮" variant="link" />
+							</view>
+							<view class="bt-flow__item">
+								<vx-button type="info" text="信息按钮" variant="link" />
+							</view>
+							<view class="bt-flow__item">
+								<vx-button type="warning" text="警告按钮" variant="link" />
+							</view>
+							<view class="bt-flow__item">
+								<vx-button type="danger" text="危险按钮" variant="link" />
+							</view>
+							<view class="bt-flow__item">
+								<vx-button type="default" text="次要按钮" variant="link" />
+							</view>
 						</view>
 					</view>
+				</view>
+
+				<view class="demo-section">
+					<demo-section-head title="图标与形状" desc="图标走插槽；圆角、胶囊、平角三档。" />
 					<view class="demo-card">
-						<view class="demo-stack">
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="默认圆角" shape="rounded" />
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary">
+									<view class="bt-inline">
+										<vx-icon name="search" size="sm" color="var(--vx-color-on-primary)" />
+										<text class="bt-inline__text bt-inline__text--on-primary">搜索</text>
+									</view>
+								</vx-button>
 							</view>
-							<view class="demo-stack__item">
-								<vx-button block type="primary" text="胶囊圆角" shape="pill" />
+							<view class="bt-row__item">
+								<vx-button block type="warning" variant="plain">
+									<view class="bt-inline">
+										<vx-icon name="heart" size="sm" color="var(--vx-color-warning-ink)" />
+										<text class="bt-inline__text bt-inline__text--warning-ink">收藏</text>
+									</view>
+								</vx-button>
 							</view>
-							<view class="demo-stack__item demo-stack__item--last">
+						</view>
+						<view class="bt-row bt-row--last">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="圆角" />
+							</view>
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="胶囊" shape="pill" />
+							</view>
+							<view class="bt-row__item">
 								<vx-button block type="primary" text="平角" shape="square" />
 							</view>
 						</view>
@@ -218,65 +172,49 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">带阴影按钮</text>
-							<text class="demo-section__desc">只加在实心和浅底上。</text>
-						</view>
-					</view>
+					<demo-section-head title="带阴影按钮" desc="只加在实心和浅底上，浮层和悬浮操作用。" />
 					<view class="demo-card">
-						<view class="demo-stack">
-							<view class="demo-stack__item demo-stack__item--shadow">
-								<vx-button block type="primary" text="页面主操作" shadow />
+						<view class="bt-row bt-row--shadow">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="主要按钮" shadow />
 							</view>
-							<view class="demo-stack__item demo-stack__item--shadow">
-								<vx-button block type="danger" text="页面辅助操作" shadow />
+							<view class="bt-row__item">
+								<vx-button block type="danger" text="危险按钮" shadow />
 							</view>
-							<view class="demo-stack__item demo-stack__item--last">
-								<vx-button block type="primary" text="页面辅助操作" variant="soft" shadow />
-							</view>
+						</view>
+						<view class="bt-row bt-row--shadow">
+							<vx-button block type="primary" text="浅底按钮 · 阴影" variant="soft" shadow />
 						</view>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">按钮尺寸</text>
-							<text class="demo-section__desc">lg 页面操作，md 默认，sm 给工具条。</text>
-						</view>
-					</view>
+					<demo-section-head title="按钮尺寸" desc="lg 页面操作，md 默认，sm 给工具条。" />
 					<view class="demo-card">
-						<view class="demo-size-row">
-							<view class="demo-size-row__key">
-								<text class="demo-size-row__name">lg</text>
-								<text class="demo-size-row__meta">48</text>
+						<view class="bt-size">
+							<view class="bt-size__key">
+								<text class="bt-size__name">lg</text>
+								<text class="bt-size__meta">48px</text>
 							</view>
-							<view class="demo-size-row__control">
+							<view class="bt-size__control">
 								<vx-button block type="primary" text="页面主操作" size="lg" />
 							</view>
 						</view>
-						<view class="demo-size-row">
-							<view class="demo-size-row__key">
-								<text class="demo-size-row__name">md</text>
-								<text class="demo-size-row__meta">40</text>
+						<view class="bt-size">
+							<view class="bt-size__key">
+								<text class="bt-size__name">md</text>
+								<text class="bt-size__meta">40px</text>
 							</view>
-							<view class="demo-size-row__control">
+							<view class="bt-size__control">
 								<vx-button block type="primary" text="页面主操作" size="md" />
 							</view>
 						</view>
-						<view class="demo-size-row demo-size-row--last">
-							<view class="demo-size-row__key">
-								<text class="demo-size-row__name">sm</text>
-								<text class="demo-size-row__meta">32</text>
+						<view class="bt-size bt-size--last">
+							<view class="bt-size__key">
+								<text class="bt-size__name">sm</text>
+								<text class="bt-size__meta">32px</text>
 							</view>
-							<view class="demo-size-row__control">
+							<view class="bt-size__control">
 								<vx-button block type="primary" text="页面主操作" size="sm" />
 							</view>
 						</view>
@@ -284,27 +222,19 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义尺寸</text>
-							<text class="demo-section__desc">特殊布局才传 width / height。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义尺寸" desc="特殊布局才传 width / height。" />
 					<view class="demo-card">
-						<view class="demo-cluster">
-							<view class="demo-cluster__item">
+						<view class="bt-flow">
+							<view class="bt-flow__item">
 								<vx-button type="primary" text="160 × 48" width="160px" height="48px" />
 							</view>
-							<view class="demo-cluster__item">
+							<view class="bt-flow__item">
 								<vx-button type="danger" text="136 × 40" width="136px" height="40px" />
 							</view>
-							<view class="demo-cluster__item">
+							<view class="bt-flow__item">
 								<vx-button type="success" text="112 × 36" width="112px" height="36px" />
 							</view>
-							<view class="demo-cluster__item demo-cluster__item--last">
+							<view class="bt-flow__item">
 								<vx-button type="default" text="mini" size="sm" width="88px" height="28px" />
 							</view>
 						</view>
@@ -312,40 +242,24 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合操作</text>
-							<text class="demo-section__desc">主次并排，或整行提交。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合操作" desc="主次并排，或整行提交。" />
 					<view class="demo-card">
-						<view class="demo-actions">
-							<view class="demo-actions__item">
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
 								<vx-button block type="default" text="取消" variant="plain" />
 							</view>
-							<view class="demo-actions__item demo-actions__item--last">
+							<view class="bt-row__item">
 								<vx-button block type="primary" text="保存更改" :loading="saving" @click="onSave" />
 							</view>
 						</view>
-						<view class="demo-block-item">
+						<view class="bt-block">
 							<vx-button block type="primary" text="提交订单" :loading="submitting" @click="onSubmit" />
 						</view>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">配套输入框</text>
-							<text class="demo-section__desc">高度、圆角、描边和按钮同一套。</text>
-						</view>
-					</view>
+					<demo-section-head title="配套输入框" desc="高度、圆角、描边和按钮同一套。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="keyword" placeholder="请输入关键词" clearable @change="onKeywordChange" />
@@ -363,32 +277,16 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="button" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	const saving = ref(false)
 
@@ -428,31 +326,131 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = ''
-	const nextPath: string = '/pages/demo/icon/icon'
-	const prevName = '已经是第一个'
-	const nextName = '图标'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
+	// 雨棚波浪的扇齿数：按屏宽算，多铺一枚防右端缝隙。
+	// App（蒸汽模式）不支持 background-size / repeat，波浪只能用视图拼。
+	const teeth = computed((): number[] => {
+		const width = uni.getWindowInfo().windowWidth
+		const count = Math.ceil(width / 28) + 1
+		const list: number[] = []
+		for (let i = 0; i < count; i++) {
+			list.push(i)
 		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
+		return list
+	})
 
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
 	})
 </script>
+
+<style>
+	/* 按钮示例页专属样式，只在本页使用，名字带 bt- 前缀避免和共享 demo.css 冲突。
+	   版式借 ThorUI / uView 的示例页：页头平铺不套卡片，分区头是主色小竖条 + 加粗标题 + 灰说明，
+	   按钮成行陈列，不再一列到底。页头尽量用自家组件（vx-tag / vx-text / vx-divider），
+	   自绘文本只留需要 1.5px 字距的眉标。颜色全走令牌，暗色主题自动跟随。 */
+	/* ---------- 页脚 ---------- */
+	/* 页脚和页导航都抽成了共享组件（components/demo-footer、demo-page-nav），
+	   这里只负责把壳的底部留白收小，让页脚贴一点。 */
+	.bt-shell {
+		padding-bottom: var(--vx-space-sm);
+	}
+
+	/* ---------- 按钮陈列 ---------- */
+	/* 两列 / 三列等分行：行距一档，列距半档。
+	   运行时默认 view overflow hidden，会把带阴影按钮的阴影裁成矩形，这里统一放开。 */
+	.bt-row {
+		flex-direction: row;
+		margin-bottom: var(--vx-space-md);
+		overflow: visible;
+	}
+
+	.bt-row--last {
+		margin-bottom: 0;
+	}
+
+	/* 阴影按钮所在行：底部留出比阴影扩散（8 偏移 + 20 模糊 ≈ 28px）更大的空档，
+	   让阴影在卡片内部完整渐隐，不顶到卡片描边。 */
+	.bt-row--shadow {
+		margin-bottom: 24px;
+	}
+
+	.bt-row__item {
+		flex: 1;
+		overflow: visible;
+	}
+
+	.bt-row__item--gap {
+		margin-right: var(--vx-space-sm);
+	}
+
+	/* 按内容宽度流式排：纯文字按钮、自定义尺寸用 */
+	.bt-flow {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.bt-flow__item {
+		margin-right: var(--vx-space-sm);
+		margin-bottom: var(--vx-space-sm);
+	}
+
+	.bt-block {
+		width: 100%;
+	}
+
+	/* 尺寸行：左侧是尺寸名和高度，右侧是按钮 */
+	.bt-size {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: var(--vx-space-md);
+	}
+
+	.bt-size--last {
+		margin-bottom: 0;
+	}
+
+	.bt-size__key {
+		width: 48px;
+	}
+
+	.bt-size__name {
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		color: var(--vx-color-text);
+	}
+
+	.bt-size__meta {
+		font-size: 11px;
+		line-height: 15px;
+		color: var(--vx-color-text-secondary);
+	}
+
+	.bt-size__control {
+		flex: 1;
+	}
+
+	/* ---------- 按钮里的图标组合 ---------- */
+	/* 和组件内部文字同字号同字重，图标与文案留半档间距 */
+	.bt-inline {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.bt-inline__text {
+		margin-left: var(--vx-space-sm);
+		font-size: var(--vx-font-control-md);
+		line-height: var(--vx-line-md);
+		font-weight: var(--vx-weight-medium);
+	}
+
+	.bt-inline__text--on-primary {
+		color: var(--vx-color-on-primary);
+	}
+
+	/* 黄描边配 ink 色，白底上才够对比 */
+	.bt-inline__text--warning-ink {
+		color: var(--vx-color-warning-ink);
+	}
+</style>

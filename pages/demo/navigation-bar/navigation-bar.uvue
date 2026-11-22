@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="导航栏" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="navigation-bar" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-navigation-bar</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="compass" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">导航栏</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">标题居中单行省略，右侧动作和标题行下方各留插槽；固定实例自带占位。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-navigation-bar</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础导航栏</text>
-							<text class="demo-section__desc">标题居中，返回和右侧动作各占 48 热区；固定时默认占位。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础导航栏" desc="标题居中，返回和右侧动作各占 48 热区；固定时默认占位。" />
 					<view class="demo-card">
 						<view class="demo-nav-device">
 							<vx-navigation-bar :fixed="false" :status-bar="false" title="订单详情" back divider
@@ -82,15 +38,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">沉浸式与非沉浸式</text>
-							<text class="demo-section__desc">状态栏高度由页面决定；真机打开 statusBar，组件自己留白。</text>
-						</view>
-					</view>
+					<demo-section-head title="沉浸式与非沉浸式" desc="状态栏高度由页面决定；真机打开 statusBar，组件自己留白。" />
 					<view class="demo-card">
 						<view class="demo-nav-status">
 							<view class="demo-nav-status__item">
@@ -121,15 +69,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">透明与渐变</text>
-							<text class="demo-section__desc">transparent 只保留内容；bgColor 接受颜色或渐变。</text>
-						</view>
-					</view>
+					<demo-section-head title="透明与渐变" desc="transparent 只保留内容；bgColor 接受颜色或渐变。" />
 					<view class="demo-card">
 						<view class="demo-nav-art">
 							<vx-navigation-bar :fixed="false" :status-bar="false" transparent title="城市漫游"
@@ -161,15 +101,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">滚动渐显</text>
-							<text class="demo-section__desc">fade 让背景从 0 增到 maxOpacity，change 回传透明度。</text>
-						</view>
-					</view>
+					<demo-section-head title="滚动渐显" desc="fade 让背景从 0 增到 maxOpacity，change 回传透明度。" />
 					<view class="demo-card">
 						<view class="demo-nav-fade">
 							<view class="demo-nav-fade__bar">
@@ -209,15 +141,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">分割线与阴影</text>
-							<text class="demo-section__desc">divider 画线，shadow 用 --vx-shadow-md 并代替线。</text>
-						</view>
-					</view>
+					<demo-section-head title="分割线与阴影" desc="divider 画线，shadow 用 --vx-shadow-md 并代替线。" />
 					<view class="demo-card">
 						<view class="demo-nav-shadow">
 							<view class="demo-nav-shadow__item">
@@ -250,15 +174,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">插槽与搜索</text>
-							<text class="demo-section__desc">prefix 换头像，suffix 放通知，extra 再排一行搜索。</text>
-						</view>
-					</view>
+					<demo-section-head title="插槽与搜索" desc="prefix 换头像，suffix 放通知，extra 再排一行搜索。" />
 					<view class="demo-card">
 						<view class="demo-nav-device">
 							<vx-navigation-bar :fixed="false" :status-bar="false" title="消息">
@@ -307,15 +223,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">商品页组合</text>
-							<text class="demo-section__desc">透明头图导航、搜索、消息和商品卡片放在同一屏。</text>
-						</view>
-					</view>
+					<demo-section-head title="商品页组合" desc="透明头图导航、搜索、消息和商品卡片放在同一屏。" />
 					<view class="demo-card">
 						<view class="demo-nav-compose">
 							<view class="demo-nav-compose__hero">
@@ -359,15 +267,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">固定与事件</text>
-							<text class="demo-section__desc">打开一个 placeholder=false 的固定实例，ready 回传布局。</text>
-						</view>
-					</view>
+					<demo-section-head title="固定与事件" desc="打开一个 placeholder=false 的固定实例，ready 回传布局。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -386,25 +286,9 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="navigation-bar" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -422,7 +306,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type NavigationBarDemoInfo = {
 		width: number
@@ -526,29 +410,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/sticky/sticky'
-	const nextPath: string = '/pages/demo/status-bar/status-bar'
-	const prevName = '吸顶容器'
-	const nextName = '状态栏'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

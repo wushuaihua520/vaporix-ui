@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="多项选择器" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="checkbox" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-checkbox · vx-checkbox-group</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="check-square" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">多项选择器</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一组可选多项。分组管排布、标记、上限和全选，单项管文案、说明和部分选中。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-checkbox · vx-checkbox-group</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">v-model 绑 value 数组，顺序按勾选先后追加。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="v-model 绑 value 数组，顺序按勾选先后追加。" />
 					<view class="demo-cb-stage">
 						<vx-checkbox-group v-model="toppings">
 							<vx-checkbox value="cheese" label="芝士" />
@@ -63,15 +19,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">列表与卡片</text>
-							<text class="demo-section__desc">layout="list" 一项一行；card 收进描边卡片，divider 画分割线。</text>
-						</view>
-					</view>
+					<demo-section-head title="列表与卡片" desc="layout=&quot;list&quot; 一项一行；card 收进描边卡片，divider 画分割线。" />
 					<view class="demo-cb-stage">
 						<vx-checkbox-group v-model="services" layout="list" card>
 							<vx-checkbox value="photo" label="相册" description="上传图片时需要" />
@@ -90,15 +38,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标记位置</text>
-							<text class="demo-section__desc">placement="start" 在文案前，end 推到行尾。</text>
-						</view>
-					</view>
+					<demo-section-head title="标记位置" desc="placement=&quot;start&quot; 在文案前，end 推到行尾。" />
 					<view class="demo-cb-stage">
 						<text class="demo-cb-label">placement="start" · 默认</text>
 						<vx-checkbox-group v-model="toppings" layout="list">
@@ -117,15 +57,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">样式与尺寸</text>
-							<text class="demo-section__desc">variant 切方框或只画对号；size 三档 28 / 32 / 36。</text>
-						</view>
-					</view>
+					<demo-section-head title="样式与尺寸" desc="variant 切方框或只画对号；size 三档 28 / 32 / 36。" />
 					<view class="demo-cb-stage">
 						<text class="demo-cb-label">variant="box" · 默认</text>
 						<vx-checkbox-group v-model="toppings">
@@ -163,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">可选上限</text>
-							<text class="demo-section__desc">max 到上限后点未选项被拦下并抛 exceed，已选项仍可取消。</text>
-						</view>
-					</view>
+					<demo-section-head title="可选上限" desc="max 到上限后点未选项被拦下并抛 exceed，已选项仍可取消。" />
 					<view class="demo-cb-stage">
 						<vx-checkbox-group v-model="tags" :max="2" @exceed="onExceed" @change="onTagsChange">
 							<vx-checkbox value="new" label="新品" />
@@ -184,15 +108,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">全选与部分选中</text>
-							<text class="demo-section__desc">全选是一个独立的 checkbox；部分选中用 indeterminate。</text>
-						</view>
-					</view>
+					<demo-section-head title="全选与部分选中" desc="全选是一个独立的 checkbox；部分选中用 indeterminate。" />
 					<view class="demo-cb-stage">
 						<vx-checkbox :model-value="allPicked" :indeterminate="partialPicked" label="全选"
 							@change="onToggleAll" />
@@ -207,15 +123,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">color 改填充，borderColor 改未选中描边，checkColor 改对号和横线。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="color 改填充，borderColor 改未选中描边，checkColor 改对号和横线。" />
 					<view class="demo-cb-stage">
 						<vx-checkbox-group v-model="colorDemo">
 							<vx-checkbox value="a" label="color · #8a2b33" color="#8a2b33" />
@@ -232,15 +140,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态与组合</text>
-							<text class="demo-section__desc">单项禁用不抛 change；整组禁用一起转灰；extra 贴行尾。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态与组合" desc="单项禁用不抛 change；整组禁用一起转灰；extra 贴行尾。" />
 					<view class="demo-cb-stage">
 						<vx-checkbox-group v-model="services" layout="list" card>
 							<vx-checkbox value="photo" label="相册" description="已授权" />
@@ -262,32 +162,16 @@
 					<text class="demo-hint">disabled 只停这一项；整组 disabled 让所有项一起转灰。禁用原因写在外层说明里。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="checkbox" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 多选演示：整组共用一个数组，全选和部分选中由父级算出来。
 	const isDark = demoIsDark
@@ -331,29 +215,6 @@
 		exceedText.value = '当前是 ' + values.join('、') + '。'
 	}
 
-	const prevPath: string = '/pages/demo/radio/radio'
-	const nextPath: string = '/pages/demo/switch/switch'
-	const prevName = '单项选择器'
-	const nextName = '开关选择器'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

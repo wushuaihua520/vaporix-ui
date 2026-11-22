@@ -1,57 +1,13 @@
 <template>
 	<view :class="pageClass">
-		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical" :scroll-top="demoScrollTop"
-			scroll-with-animation @scroll="onDemoScroll">
+		<demo-topbar title="表单" />
+		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical"
+			:scroll-top="demoScrollTop" scroll-with-animation @scroll="onDemoScroll">
+			<demo-hero current-key="form" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-form · vx-form-item</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="list-checks" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">表单</text>
-								<text class="demo-hero__title demo-hero__title--accent">11 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">不托管数据，只按注册顺序串行校验；错误落在控件下方，必要时滚到第一项。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-form · vx-form-item</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">登录表单</text>
-							<text class="demo-section__desc">手机号、密码和协议三项一起校验，按钮跟随 loading。</text>
-						</view>
-					</view>
+					<demo-section-head title="登录表单" desc="手机号、密码和协议三项一起校验，按钮跟随 loading。" />
 					<view class="demo-card">
 						<vx-form ref="loginFormRef" label-width="72px">
 							<view class="demo-field">
@@ -91,15 +47,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">规则一览</text>
-							<text class="demo-section__desc">required、len、min/max、pattern、type 五条规则各来一项。</text>
-						</view>
-					</view>
+					<demo-section-head title="规则一览" desc="required、len、min/max、pattern、type 五条规则各来一项。" />
 					<view class="demo-card">
 						<vx-form ref="ruleFormRef" label-width="72px">
 							<view class="demo-field">
@@ -177,15 +125,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">错误定位</text>
-							<text class="demo-section__desc">第三个字段故意不合法，submit 时滚到第一个错误项。</text>
-						</view>
-					</view>
+					<demo-section-head title="错误定位" desc="第三个字段故意不合法，submit 时滚到第一个错误项。" />
 					<view class="demo-card">
 						<vx-form ref="scrollFormRef" label-width="72px" :scroll-to-error="true">
 							<view class="demo-field">
@@ -224,15 +164,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">非输入类字段</text>
-							<text class="demo-section__desc">开关、评分、多选组没有标题位，label 交给表单项。</text>
-						</view>
-					</view>
+					<demo-section-head title="非输入类字段" desc="开关、评分、多选组没有标题位，label 交给表单项。" />
 					<view class="demo-card">
 						<vx-form ref="controlFormRef" label-width="88px">
 							<view class="demo-field">
@@ -268,15 +200,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标签位置</text>
-							<text class="demo-section__desc">左侧一列吃 labelWidth，顶部独占一行。</text>
-						</view>
-					</view>
+					<demo-section-head title="标签位置" desc="左侧一列吃 labelWidth，顶部独占一行。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -305,15 +229,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸三档</text>
-							<text class="demo-section__desc">sm / md / lg 只改标签的字号、行高和标签最小高度。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸三档" desc="sm / md / lg 只改标签的字号、行高和标签最小高度。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-form size="sm" label-width="80px">
@@ -330,7 +246,7 @@
 							</vx-form>
 						</view>
 						<view class="demo-field demo-field--last">
-							<vx-form size="lg" label-width="88px">
+							<vx-form size="lg" label-width="80px">
 								<vx-form-item label="大号标签" required :value="sizeLgNotify">
 									<vx-switch v-model="sizeLgNotify" size="lg" />
 								</vx-form-item>
@@ -341,15 +257,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用态</text>
-							<text class="demo-section__desc">整组 disabled，校验直接跳过，星号仍显示。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用态" desc="整组 disabled，校验直接跳过，星号仍显示。" />
 					<view class="demo-card">
 						<vx-form ref="disabledFormRef" disabled label-width="88px">
 							<view class="demo-field">
@@ -377,15 +285,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">受控错误</text>
-							<text class="demo-section__desc">外部 error 非空时以它为准，清掉后回到本地结果。</text>
-						</view>
-					</view>
+					<demo-section-head title="受控错误" desc="外部 error 非空时以它为准，清掉后回到本地结果。" />
 					<view class="demo-card">
 						<vx-form ref="controlledFormRef" label-width="88px">
 							<view class="demo-field">
@@ -432,15 +332,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法与事件</text>
-							<text class="demo-section__desc">validate()、validateField()、clearValidate() 和 @validate。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法与事件" desc="validate()、validateField()、clearValidate() 和 @validate。" />
 					<view class="demo-card">
 						<vx-form ref="methodFormRef" label-width="72px">
 							<view class="demo-field">
@@ -487,15 +379,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">完整表单</text>
-							<text class="demo-section__desc">收货地址：输入、选择、多行和开关，一次提交走完。</text>
-						</view>
-					</view>
+					<demo-section-head title="完整表单" desc="收货地址：输入、选择、多行和开关，一次提交走完。" />
 					<view class="demo-card">
 						<vx-form ref="addressFormRef" label-width="88px">
 							<view class="demo-field">
@@ -550,65 +434,9 @@
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">11</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">异步校验的先后顺序</text>
-							<text class="demo-section__desc">后发起的校验盖过先发起的；clearValidate 之后晚到的失败不再写回。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<vx-form ref="asyncFormRef" label-width="88px">
-							<view class="demo-field demo-field--last">
-								<vx-form-item prop="asyncValue" :value="asyncValue" :rules="asyncRules">
-									<template #default="{ invalid }">
-										<vx-input v-model="asyncValue" label="异步字段" label-width="88px"
-											:invalid="invalid" placeholder="点下面的按钮写入值" />
-									</template>
-								</vx-form-item>
-							</view>
-						</vx-form>
-						<view class="demo-actions">
-							<view class="demo-actions__item">
-								<vx-button block size="sm" type="primary" text="连续改两次"
-									@click="onAsyncTwice" />
-							</view>
-							<view class="demo-actions__item demo-actions__item--last">
-								<vx-button block size="sm" type="default" text="clearValidate 后晚到"
-									@click="onAsyncClear" />
-							</view>
-						</view>
-						<view class="demo-datetime-status">
-							<text class="demo-datetime-status__text">{{ asyncStatus }}</text>
-							<text class="demo-datetime-status__meta">validateField()</text>
-						</view>
-						<text class="demo-hint">连续改两次：先写 a，校验器 600ms 后失败；200ms 后再写 b，校验器 100ms 后失败。b 的结果先回来，a 的结果回来时序号已经对不上，屏幕上只留「第二次校验」。</text>
-						<text class="demo-hint">clearValidate 后晚到：先写 c 触发一次 800ms 后失败的校验，100ms 时调 clearValidate()；看 800ms 的失败会不会把错误行带回来。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="form" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.62.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -619,10 +447,10 @@
 </template>
 
 <script setup>
-	import { VxFormRule, VxFormValue } from '@/uni_modules/vaporix-ui/libs/form'
+	import { VxFormRule } from '@/uni_modules/vaporix-ui/libs/form'
 	import { VxPickerResult } from '@/uni_modules/vaporix-ui/libs/picker'
 	import { regionOptions } from '@/pages/demo/shared/picker-data'
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 只声明要用的三个方法，模板里的 ref 拿到的是组件的公开实例。
 	type FormApi = {
@@ -639,7 +467,6 @@
 	const disabledFormRef = ref<FormApi | null>(null)
 	const methodFormRef = ref<FormApi | null>(null)
 	const addressFormRef = ref<FormApi | null>(null)
-	const asyncFormRef = ref<FormApi | null>(null)
 
 	// 演示页用 scroll-view 承载，pageScrollTo 碰不到它；这里自己量一次并写回 scroll-top。
 	const demoScrollTop = ref(0)
@@ -778,68 +605,6 @@
 		{ required: true, message: '请填写详细地址' },
 		{ min: 5, message: '详细地址至少 5 个字' }
 	]
-
-	// 11 异步校验的先后顺序
-	const asyncValue = ref('')
-	const asyncStatus = ref('等待操作')
-
-	// 只建一套规则，按校验那一刻的值挑延迟：a 是第一次（600ms），b 是第二次（100ms），
-	// c 只用来测 clearValidate 之后晚到的那次失败（800ms）。
-	const asyncRules: Array<VxFormRule> = [
-		{
-			validator: (value: VxFormValue): Promise<string> => {
-				const text = `${value}`
-				let delay = 600
-				let message = '第一次校验'
-				if (text === 'b') {
-					delay = 100
-					message = '第二次校验'
-				} else if (text === 'c') {
-					delay = 800
-					message = '晚到的校验结果'
-				}
-				return new Promise<string>((resolve) => {
-					setTimeout(() => {
-						resolve(message)
-					}, delay)
-				})
-			}
-		}
-	]
-
-	// 写完值要等这一帧渲染，表单项拿到的才是新值。
-	const validateAsyncValue = () => {
-		const form = asyncFormRef.value
-		if (form == null) return
-		nextTick(() => {
-			form.validateField('asyncValue')
-		})
-	}
-
-	const onAsyncTwice = () => {
-		asyncValue.value = 'a'
-		asyncStatus.value = '已写入 a · 600ms 后返回'
-		validateAsyncValue()
-		setTimeout(() => {
-			asyncValue.value = 'b'
-			asyncStatus.value = '已写入 b · 100ms 后返回'
-			validateAsyncValue()
-		}, 200)
-	}
-
-	const onAsyncClear = () => {
-		const form = asyncFormRef.value
-		if (form == null) return
-		// 先收掉上一次的错误，再写 c 触发 800ms 的失败。
-		form.clearValidate()
-		asyncValue.value = 'c'
-		asyncStatus.value = '已写入 c · 800ms 后返回'
-		validateAsyncValue()
-		setTimeout(() => {
-			form.clearValidate()
-			asyncStatus.value = '已调 clearValidate() · 等 800ms 的结果'
-		}, 100)
-	}
 
 	const onLoginSubmit = async () => {
 		if (signingIn.value) return
@@ -1004,31 +769,26 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/calendar/calendar'
-	const nextPath: string = '/pages/demo/tips/tips'
-	const prevName = '日历'
-	const nextName = '消息提示'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
 	})
 </script>
+
+<style>
+	/* 用空白把第 4 项顶到首屏之外，校验失败后才有可滚的距离。 */
+	.demo-scroll-gap {
+		flex-direction: column;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: 560px;
+		margin-top: var(--vx-space-md);
+		margin-bottom: var(--vx-space-md);
+		padding: var(--vx-space-md);
+		border-width: var(--vx-border-width);
+		border-style: dashed;
+		border-color: var(--vx-color-border);
+		border-radius: var(--vx-radius-md);
+	}
+</style>

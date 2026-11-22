@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="弹出层" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="popup" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-popup</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="files" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">弹出层</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">通用浮层：四向贴边或居中，只圆朝向页面的那一侧；安全区、滚动锁和进出场都走同一套底座。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-popup</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">四向与居中</text>
-							<text class="demo-section__desc">top / bottom / left / right / center，五个方向各开一次。</text>
-						</view>
-					</view>
+					<demo-section-head title="四向与居中" desc="top / bottom / left / right / center，五个方向各开一次。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -78,15 +34,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">圆角</text>
-							<text class="demo-section__desc">none / sm / md / lg 四档，贴边那条边始终是直角。</text>
-						</view>
-					</view>
+					<demo-section-head title="圆角" desc="none / sm / md / lg 四档，贴边那条边始终是直角。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -113,15 +61,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">关闭方式</text>
-							<text class="demo-section__desc">closable 和 maskClosable 两个开关，点遮罩会记一次日志。</text>
-						</view>
-					</view>
+					<demo-section-head title="关闭方式" desc="closable 和 maskClosable 两个开关，点遮罩会记一次日志。" />
 					<view class="demo-card">
 						<vx-switch v-model="closableOn" layout="list" label="显示关闭叉" description="closable"
 							divider />
@@ -139,15 +79,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">安全区</text>
-							<text class="demo-section__desc">底部面板里放一行按钮，验证手势条不压内容。</text>
-						</view>
-					</view>
+					<demo-section-head title="安全区" desc="底部面板里放一行按钮，验证手势条不压内容。" />
 					<view class="demo-card">
 						<vx-switch v-model="safeAreaOn" layout="list" label="让开底部安全区" description="safeArea"
 							:divider="false" />
@@ -163,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">宽高</text>
-							<text class="demo-section__desc">width 只作用于左右和居中，height 只作用于上下，都要带单位。</text>
-						</view>
-					</view>
+					<demo-section-head title="宽高" desc="width 只作用于左右和居中，height 只作用于上下，都要带单位。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -193,8 +117,6 @@
 									@click="onSize('bottom', '', '320px', '底部 · 320px')" />
 							</view>
 						</view>
-						<vx-button block size="sm" type="default" text="底部 maxWidth 480"
-							@click="maxWidthVisible = true" />
 						<view class="demo-popup-status">
 							<text class="demo-popup-status__text">当前：{{ sizeLabel }}</text>
 							<text class="demo-popup-status__meta">width · height</text>
@@ -204,15 +126,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">长内容</text>
-							<text class="demo-section__desc">面板固定高度，正文在内部滚动，头尾不动。</text>
-						</view>
-					</view>
+					<demo-section-head title="长内容" desc="面板固定高度，正文在内部滚动，头尾不动。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="订单面板 · 列表滚动" @click="orderVisible = true" />
 						<view class="demo-popup-status">
@@ -224,15 +138,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法与层级</text>
-							<text class="demo-section__desc">ref 上的三个方法，以及和弹框、抽屉同屏时的层级。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法与层级" desc="ref 上的三个方法，以及和弹框、抽屉同屏时的层级。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -264,15 +170,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">业务组合</text>
-							<text class="demo-section__desc">商品页的筛选面板：复选组加底部两个按钮。</text>
-						</view>
-					</view>
+					<demo-section-head title="业务组合" desc="商品页的筛选面板：复选组加底部两个按钮。" />
 					<view class="demo-card">
 						<view class="demo-popup-product">
 							<view class="demo-popup-product__copy">
@@ -289,25 +187,11 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="popup" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
-				</view>
+				<demo-footer />
+
+
 			</view>
 		</scroll-view>
 
@@ -315,7 +199,7 @@
 		<vx-popup v-model:show="placeVisible" :placement="placeCurrent" closable>
 			<view class="demo-popup-body">
 				<text class="demo-popup-title">{{ placeText }}</text>
-				<text class="demo-popup-text">上下占满宽度、左右占满高度，居中四周留 24；换个 placement 再看一次圆角。</text>
+				<text class="demo-popup-text">上下占满宽度、左右占满高度，居中四周留 24；换个 direction 再看一次圆角。</text>
 				<vx-button block type="primary" text="关闭弹出层" @click="placeVisible = false" />
 			</view>
 		</vx-popup>
@@ -358,14 +242,6 @@
 				<text class="demo-popup-title">{{ sizeLabel }}</text>
 				<text class="demo-popup-text">宽度和高度都必须带单位；不传时左右用 280，上下按内容排。</text>
 				<vx-button block type="default" text="关闭弹出层" @click="sizeVisible = false" />
-			</view>
-		</vx-popup>
-
-		<vx-popup v-model:show="maxWidthVisible" placement="bottom" max-width="480px" closable>
-			<view class="demo-popup-body">
-				<text class="demo-popup-title">底部 · maxWidth 480</text>
-				<text class="demo-popup-text">窄屏仍铺满；平板和宽屏收成 480 居中，左右露出遮罩。</text>
-				<vx-button block type="default" text="关闭弹出层" @click="maxWidthVisible = false" />
 			</view>
 		</vx-popup>
 
@@ -434,7 +310,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type PopupPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center'
 
@@ -477,7 +353,6 @@
 	const sizeWidth = ref('')
 	const sizeHeight = ref('')
 	const sizeLabel = ref('右侧 · 280px')
-	const maxWidthVisible = ref(false)
 
 	// 06 长内容
 	const orderVisible = ref(false)
@@ -642,29 +517,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/notice-bar/notice-bar'
-	const nextPath: string = '/pages/demo/image/image'
-	const prevName = '通告栏'
-	const nextName = '图片'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

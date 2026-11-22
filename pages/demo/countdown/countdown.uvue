@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="倒计时" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="countdown" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-countdown</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="clock" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">倒计时</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">只承载读数，不放标题和按钮；隐藏的上层单位会并入下一个可见单位。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-countdown</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础用法</text>
-							<text class="demo-section__desc">time 传剩余秒数，默认显示时、分、秒；自然到 0 抛 end。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础用法" desc="time 传剩余秒数，默认显示时、分、秒；自然到 0 抛 end。" />
 					<view class="demo-card">
 						<view class="demo-countdown-item">
 							<text class="demo-countdown-label">默认 · 冒号</text>
@@ -65,15 +21,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">天数与单位</text>
-							<text class="demo-section__desc">show-days 打开天数；separator="unit" 用单位文字代替冒号。</text>
-						</view>
-					</view>
+					<demo-section-head title="天数与单位" desc="show-days 打开天数；separator=&quot;unit&quot; 用单位文字代替冒号。" />
 					<view class="demo-card">
 						<view class="demo-countdown-item">
 							<text class="demo-countdown-label">中文单位</text>
@@ -87,34 +35,12 @@
 							<text class="demo-countdown-label">冒号模式</text>
 							<vx-countdown :time="countdownLongTime" show-days />
 						</view>
-						<view class="demo-countdown-item demo-countdown-item--spaced">
-							<text class="demo-countdown-label">三位数天数 · sm</text>
-							<vx-countdown :time="countdownHundredDays" size="sm" show-days
-								separator="unit" />
-						</view>
-						<view class="demo-countdown-item demo-countdown-item--spaced">
-							<text class="demo-countdown-label">三位数天数 · md</text>
-							<vx-countdown :time="countdownHundredDays" show-days separator="unit" />
-						</view>
-						<view class="demo-countdown-item demo-countdown-item--spaced">
-							<text class="demo-countdown-label">三位数天数 · lg</text>
-							<vx-countdown :time="countdownHundredDays" size="lg" show-days
-								separator="unit" />
-						</view>
 						<text class="demo-hint demo-countdown-hint">单位语言只在 separator="unit" 时出现；冒号模式保持紧凑，不显示单位。</text>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">隐藏单位</text>
-							<text class="demo-section__desc">被隐藏的上层单位并入下一个可见单位；四段全关时回落到秒。</text>
-						</view>
-					</view>
+					<demo-section-head title="隐藏单位" desc="被隐藏的上层单位并入下一个可见单位；四段全关时回落到秒。" />
 					<view class="demo-card">
 						<view class="demo-countdown-item">
 							<text class="demo-countdown-label">去掉小时</text>
@@ -129,26 +55,12 @@
 							<vx-countdown :time="countdownLongTime" show-days :show-seconds="false"
 								separator="unit" />
 						</view>
-						<view class="demo-countdown-item demo-countdown-item--spaced">
-							<text class="demo-countdown-label">只显示时分 · 最后一分钟</text>
-							<vx-countdown ref="lastMinuteRef" :time="60" :show-seconds="false" />
-						</view>
-						<vx-button size="sm" type="default" text="重置 60 秒"
-							@click="resetLastMinute" />
 						<text class="demo-hint demo-countdown-hint">只留秒时可以显示超过 59 的秒数；只留天时同理。可见单位按从大到小接管余数。</text>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">毫秒位</text>
-							<text class="demo-section__desc">show-milliseconds 在秒后加一位十分位，按 100ms 刷新。</text>
-						</view>
-					</view>
+					<demo-section-head title="毫秒位" desc="show-milliseconds 在秒后加一位十分位，按 100ms 刷新。" />
 					<view class="demo-card">
 						<view class="demo-countdown-item">
 							<text class="demo-countdown-label">十分位</text>
@@ -164,15 +76,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">24 / 32 / 40，数字 13 / 15 / 17；十分位盒同步收窄。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="24 / 32 / 40，数字 13 / 15 / 17；十分位盒同步收窄。" />
 					<view class="demo-card">
 						<view class="demo-countdown-size-row">
 							<text class="demo-countdown-size-key">sm · 24</text>
@@ -197,15 +101,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">形态</text>
-							<text class="demo-section__desc">outline 描边，soft 浅底，plain 去掉盒只留数字。</text>
-						</view>
-					</view>
+					<demo-section-head title="形态" desc="outline 描边，soft 浅底，plain 去掉盒只留数字。" />
 					<view class="demo-card">
 						<view class="demo-countdown-item">
 							<text class="demo-countdown-label">描边 · outline</text>
@@ -224,15 +120,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型与颜色</text>
-							<text class="demo-section__desc">type 用语义色；bgColor / color / borderColor 单独覆盖。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型与颜色" desc="type 用语义色；bgColor / color / borderColor 单独覆盖。" />
 					<view class="demo-card">
 						<view class="demo-countdown-item">
 							<text class="demo-countdown-label">primary</text>
@@ -256,15 +144,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法与事件</text>
-							<text class="demo-section__desc">auto-start=false 起步，start / pause / reset 控制，end 通知结束。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法与事件" desc="auto-start=false 起步，start / pause / reset 控制，end 通知结束。" />
 					<view class="demo-card">
 						<vx-countdown ref="countdownRef" :time="countdownMethodSeconds" :auto-start="false"
 							@tick="onCountdownTick" @end="onCountdownEnd" />
@@ -292,15 +172,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">放进秒杀卡片，倒计时只负责读数；标题、价格和操作交给外面。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="放进秒杀卡片，倒计时只负责读数；标题、价格和操作交给外面。" />
 					<vx-card title="限时秒杀" meta="今天 20:00 结束">
 						<view class="demo-countdown-sale">
 							<view class="demo-countdown-sale__copy">
@@ -314,32 +186,16 @@
 					<text class="demo-hint demo-countdown-hint">倒计时不承载点击，也不做按钮；需要抢购入口时由卡片底部或外部按钮承载。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="countdown" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 倒计时演示：固定时长用来对照单位组合；方法区单独一个 12 秒实例。
 	const countdownDefaultTime = 16 * 60 + 7
@@ -350,9 +206,6 @@
 
 	const countdownLongTime = 2 * 86400 + 18 * 3600 + 39 * 60 + 13
 
-// 三位数天数：验 sm / md / lg 的数字盒在 100 天以上时左右不贴边
-const countdownHundredDays = 103 * 86400 + 18 * 3600 + 39 * 60 + 13
-
 	const countdownMethodSeconds = 12
 
 	const countdownLastTick = ref(countdownMethodSeconds)
@@ -360,12 +213,6 @@ const countdownHundredDays = 103 * 86400 + 18 * 3600 + 39 * 60 + 13
 	const countdownStatus = ref('等待开始')
 
 	const countdownRef = ref<VxCountdownComponentPublicInstance | null>(null)
-	// 最后一分钟单独一个 ref：演示页不重挂，只有重置才能重新观察这一分钟
-	const lastMinuteRef = ref<VxCountdownComponentPublicInstance | null>(null)
-
-	const resetLastMinute = () => {
-		lastMinuteRef.value?.reset(60)
-	}
 
 	const onCountdownTick = (seconds: number) => {
 		countdownLastTick.value = seconds
@@ -401,29 +248,6 @@ const countdownHundredDays = 103 * 86400 + 18 * 3600 + 39 * 60 + 13
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/progress/progress'
-	const nextPath: string = '/pages/demo/rolling-news/rolling-news'
-	const prevName = '进度条'
-	const nextName = '滚动消息'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

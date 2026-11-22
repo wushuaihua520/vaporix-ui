@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="时间轴" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="time-axis" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-time-axis</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="clock" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">时间轴</text>
-								<text class="demo-hero__title demo-hero__title--accent">5 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">阶段名和说明按尺寸取档，时间固定次要色；首尾竖线收在节点中心。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-time-axis</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">订单物流</text>
-							<text class="demo-section__desc">阶段用图标节点，同一阶段下的多条动态用圆点；当前节点用主色。</text>
-						</view>
-					</view>
+					<demo-section-head title="订单物流" desc="阶段用图标节点，同一阶段下的多条动态用圆点；当前节点用主色。" />
 					<view class="demo-card">
 						<vx-time-axis :items="timeAxisOrderEntries" />
 					</view>
@@ -58,15 +14,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">节点类型</text>
-							<text class="demo-section__desc">type 表达状态；图标节点用实心底，没有图标时缩成圆点。</text>
-						</view>
-					</view>
+					<demo-section-head title="节点类型" desc="type 表达状态；图标节点用实心底，没有图标时缩成圆点。" />
 					<view class="demo-card">
 						<vx-time-axis :items="timeAxisTypeEntries" />
 					</view>
@@ -74,15 +22,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">节点 20 / 24 / 28，事件圆点 6 / 8 / 10；标题 13 / 15 / 17。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="节点 20 / 24 / 28，事件圆点 6 / 8 / 10；标题 13 / 15 / 17。" />
 					<view class="demo-card">
 						<view class="demo-timeaxis-group">
 							<text class="demo-timeaxis-label">sm · 节点 20 / 圆点 6</text>
@@ -101,15 +41,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">事件与竖线</text>
-							<text class="demo-section__desc">同一阶段下的多条动态不写 title；lineColor 只改 1px 竖线。</text>
-						</view>
-					</view>
+					<demo-section-head title="事件与竖线" desc="同一阶段下的多条动态不写 title；lineColor 只改 1px 竖线。" />
 					<view class="demo-card">
 						<text class="demo-timeaxis-caption">默认线 · --vx-color-border</text>
 						<vx-time-axis :items="timeAxisEventEntries" />
@@ -120,15 +52,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">订单卡片</text>
-							<text class="demo-section__desc">标题、单号和承运商交给卡片，时间轴只负责节点和文字。</text>
-						</view>
-					</view>
+					<demo-section-head title="订单卡片" desc="标题、单号和承运商交给卡片，时间轴只负责节点和文字。" />
 					<vx-card title="物流详情" meta="9136257866">
 						<vx-time-axis :items="timeAxisEventEntries" />
 						<template #suffix>
@@ -141,32 +65,16 @@
 					<text class="demo-hint">时间轴不染色卡片，卡片也不改时间轴的文字层级；需要状态时在卡片底部放标签。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="time-axis" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	const iconVariant = ref<'regular' | 'fill'>('regular')
 
@@ -272,29 +180,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/swipe-action/swipe-action'
-	const nextPath: string = '/pages/demo/steps/steps'
-	const prevName = '滑动菜单'
-	const nextName = '步骤条'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

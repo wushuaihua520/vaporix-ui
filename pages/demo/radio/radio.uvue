@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="单项选择器" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="radio" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-radio · vx-radio-group</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="radio-button" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">单项选择器</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一组只选一项。分组管排布、标记和语义色，单项管文案、说明和自己那一档颜色。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-radio · vx-radio-group</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">v-model 绑选中项的 value；点已选中项不重复抛 change。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="v-model 绑选中项的 value；点已选中项不重复抛 change。" />
 					<view class="demo-rd-stage">
 						<vx-radio-group v-model="plan" @change="onPlanChange">
 							<vx-radio value="basic" label="基础版" />
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">列表与卡片</text>
-							<text class="demo-section__desc">layout="list" 一项一行；配 card 收进描边卡片，divider 画分割线。</text>
-						</view>
-					</view>
+					<demo-section-head title="列表与卡片" desc="layout=&quot;list&quot; 一项一行；配 card 收进描边卡片，divider 画分割线。" />
 					<view class="demo-rd-stage">
 						<vx-radio-group v-model="channel" layout="list" card>
 							<vx-radio value="sms" label="短信" description="发到 151****2222" />
@@ -90,15 +38,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标记位置</text>
-							<text class="demo-section__desc">placement="start" 在文案前，end 推到行尾。</text>
-						</view>
-					</view>
+					<demo-section-head title="标记位置" desc="placement=&quot;start&quot; 在文案前，end 推到行尾。" />
 					<view class="demo-rd-stage">
 						<text class="demo-rd-label">placement="start" · 默认</text>
 						<vx-radio-group v-model="plan" layout="list">
@@ -117,15 +57,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">样式与尺寸</text>
-							<text class="demo-section__desc">variant 切圆圈或只画对号；size 三档 28 / 32 / 36。</text>
-						</view>
-					</view>
+					<demo-section-head title="样式与尺寸" desc="variant 切圆圈或只画对号；size 三档 28 / 32 / 36。" />
 					<view class="demo-rd-stage">
 						<text class="demo-rd-label">variant="circle" · 默认</text>
 						<vx-radio-group v-model="plan">
@@ -163,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">type 改选中标记的语义色；warning 用 warning-pressed 填充。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="type 改选中标记的语义色；warning 用 warning-pressed 填充。" />
 					<view class="demo-rd-stage">
 						<vx-radio-group v-model="tone" type="primary">
 							<vx-radio value="p" label="primary" />
@@ -197,15 +121,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">color 改填充，borderColor 改未选中描边，checkColor 改对号。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="color 改填充，borderColor 改未选中描边，checkColor 改对号。" />
 					<view class="demo-rd-stage">
 						<vx-radio-group v-model="colorDemo">
 							<vx-radio value="a" label="color · #8a2b33" color="#8a2b33" />
@@ -222,15 +138,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态与组合</text>
-							<text class="demo-section__desc">单项禁用不抛 change；整组禁用一起转灰；extra 贴行尾。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态与组合" desc="单项禁用不抛 change；整组禁用一起转灰；extra 贴行尾。" />
 					<view class="demo-rd-stage">
 						<vx-radio-group v-model="plan" layout="list" card>
 							<vx-radio value="basic" label="基础版" description="个人使用，含 45 个基础组件" />
@@ -252,53 +160,16 @@
 					<text class="demo-hint">extra 排在文案后方；标记在行尾时它落在文案与标记之间。禁用原因写在外层说明里。</text>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">中间插入</text>
-							<text class="demo-section__desc">v-for 中间插一项，只有真正的最后一项不画分割线。</text>
-						</view>
-					</view>
-					<view class="demo-rd-stage">
-						<vx-button block size="sm" type="default" text="在第 1 项后面插一项"
-							@click="insertRadioMiddle" />
-						<vx-radio-group v-model="radioInsertValue" layout="list" card>
-							<vx-radio v-for="(item, index) in radioInsertItems" :key="item.value" :index="index"
-								:value="item.value" :label="item.label" />
-						</vx-radio-group>
-						<text class="demo-hint">{{ radioInsertItems.length }} 项该有 {{ radioInsertDividers }} 条分割线；当前选中 {{ radioInsertValue }}。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="radio" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 单选演示：整组共用一个 v-model，单项只带自己的 value 和文案。
 	const isDark = demoIsDark
@@ -309,38 +180,6 @@
 
 	const plan = ref('pro')
 	const channel = ref('wechat')
-
-	// 08 中间插入：插完重排 index，验「最后一项」按 index 认，不按挂载先后
-	type RadioDemoItem = {
-		value: string
-		label: string
-	}
-
-	const radioInsertItems = ref<Array<RadioDemoItem>>([
-		{ value: 'insert-a', label: '第一项' },
-		{ value: 'insert-b', label: '第二项' },
-		{ value: 'insert-c', label: '第三项' }
-	])
-	const radioInsertValue = ref('insert-a')
-
-	const radioInsertDividers = computed((): number => {
-		const total = radioInsertItems.value.length
-		return total > 0 ? total - 1 : 0
-	})
-
-	const insertRadioMiddle = () => {
-		const list = radioInsertItems.value
-		const next: Array<RadioDemoItem> = []
-		for (let i = 0; i < list.length; i++) {
-			next.push(list[i])
-			// 插在第 1 项后面：新项 index 是 1，原来的第 2 项顺延
-			if (i === 0) {
-				const order = list.length
-				next.push({ value: `insert-x-${order}`, label: `插入的第 ${order} 项` })
-			}
-		}
-		radioInsertItems.value = next
-	}
 	const sizeDemo = ref('s')
 	const tone = ref('p')
 	const colorDemo = ref('a')
@@ -349,29 +188,6 @@
 		// value 已经写回 v-model；请求和埋点放这里
 	}
 
-	const prevPath: string = '/pages/demo/number-box/number-box'
-	const nextPath: string = '/pages/demo/checkbox/checkbox'
-	const prevName = '数字框'
-	const nextName = '多项选择器'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

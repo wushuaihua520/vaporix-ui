@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="文本" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="text" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">基础</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-text</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="text-aa" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">文本</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">正文、说明、金额和证件都用同一套字号、字重和语义色。内联按内容宽，block 铺满父级；截断、格式化和复制都在同一个组件上。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">基础</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-text</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">默认按内容宽度排；block 铺满父级，段落和表单行用它。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="默认按内容宽度排；block 铺满父级，段落和表单行用它。" />
 					<view class="demo-tx-stage">
 						<vx-text text="订单已提交，我们会尽快为你发货。" />
 						<view class="demo-tx-gap">
@@ -65,15 +21,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">default 和 secondary 是正文层级，其余语义色只表达状态。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="default 和 secondary 是正文层级，其余语义色只表达状态。" />
 					<view class="demo-tx-stage">
 						<vx-text block text="default · 正文与主要内容" />
 						<view class="demo-tx-gap">
@@ -99,15 +47,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸与字重</text>
-							<text class="demo-section__desc">三档正文字号 13 / 15 / 17，四档字重 400 / 500 / 600 / 700。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸与字重" desc="三档正文字号 13 / 15 / 17，四档字重 400 / 500 / 600 / 700。" />
 					<view class="demo-tx-stage">
 						<vx-text block size="sm" text="sm · 13 / 20，辅助说明与注释" />
 						<view class="demo-tx-gap">
@@ -132,15 +72,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">color 是字面值，优先于 type；禁用时两者都不生效。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="color 是字面值，优先于 type；禁用时两者都不生效。" />
 					<view class="demo-tx-stage">
 						<vx-text block color="#8a2b33" text="品牌红 · #8a2b33" />
 						<view class="demo-tx-gap">
@@ -157,15 +89,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">对齐与装饰</text>
-							<text class="demo-section__desc">align 在 block 或确定宽度下生效；decoration 只有下划线和删除线。</text>
-						</view>
-					</view>
+					<demo-section-head title="对齐与装饰" desc="align 在 block 或确定宽度下生效；decoration 只有下划线和删除线。" />
 					<view class="demo-tx-stage">
 						<vx-text block align="left" text="左对齐 · 默认" />
 						<view class="demo-tx-gap">
@@ -187,15 +111,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">截断</text>
-							<text class="demo-section__desc">maxLines 0 不限、1 单行省略、2 以上多行截断。</text>
-						</view>
-					</view>
+					<demo-section-head title="截断" desc="maxLines 0 不限、1 单行省略、2 以上多行截断。" />
 					<view class="demo-tx-stage">
 						<text class="demo-tx-label">maxLines=1</text>
 						<vx-text block :max-lines="1"
@@ -215,15 +131,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">格式化</text>
-							<text class="demo-section__desc">phone、amount、bank-card、id-card 四种；先格式化再显示。</text>
-						</view>
-					</view>
+					<demo-section-head title="格式化" desc="phone、amount、bank-card、id-card 四种；先格式化再显示。" />
 					<view class="demo-tx-stage">
 						<view class="demo-tx-row">
 							<text class="demo-tx-label">phone</text>
@@ -254,15 +162,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">复制与选中</text>
-							<text class="demo-section__desc">长按复制抛 copy；可选中的走系统菜单，两者只选一个。</text>
-						</view>
-					</view>
+					<demo-section-head title="复制与选中" desc="长按复制抛 copy；可选中的走系统菜单，两者只选一个。" />
 					<view class="demo-tx-stage">
 						<vx-text copyable text="长按这段文字可以复制订单号 VX202611010001" @copy="onCopy" />
 						<view class="demo-tx-gap">
@@ -272,21 +172,13 @@
 							<vx-text clickable text="这段文字可点击，点击会回传完整文本" @click="onTextClick" />
 						</view>
 						<view class="demo-tx-divider"></view>
-						<text class="demo-tx-label">最近一次：{{ lastAction }}</text>
+						<text class="demo-tx-status">最近一次：{{ lastAction }}</text>
 					</view>
 					<text class="demo-hint">copyable 按下同样压到 0.8，长按才复制；Web 桌面端没有长按，要另给可见的复制按钮。</text>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态与组合</text>
-							<text class="demo-section__desc">禁用同时关掉点击、复制和选择；下面是一张用文本拼成的订单卡。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态与组合" desc="禁用同时关掉点击、复制和选择；下面是一张用文本拼成的订单卡。" />
 					<view class="demo-tx-stage">
 						<vx-text block disabled text="已停用：不响应点击和复制，文字转 disabled-text" />
 						<view class="demo-tx-divider"></view>
@@ -312,32 +204,16 @@
 					<text class="demo-hint">禁用只灰化组件渲染的文案；插槽里的内容要自己处理禁用态。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="text" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 文本演示：只演示组件本身，标签用原生 text，避免把两个文本组件叠在一起看。
 	const isDark = demoIsDark
@@ -356,29 +232,6 @@
 		lastAction.value = '点击了「' + text + '」'
 	}
 
-	const prevPath: string = '/pages/demo/textarea/textarea'
-	const nextPath: string = '/pages/demo/link/link'
-	const prevName = '多行输入框'
-	const nextName = '超链接'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
@@ -424,6 +277,14 @@
 	.demo-tx-label {
 		width: 116px;
 		margin-right: var(--vx-space-sm);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		color: var(--vx-color-text-secondary);
+	}
+
+	/* 回显值是整行状态，不是 116 宽的格式标签；单独给一档铺满，避免折成窄列。 */
+	.demo-tx-status {
+		width: 100%;
 		font-size: var(--vx-font-sm);
 		line-height: var(--vx-line-sm);
 		color: var(--vx-color-text-secondary);

@@ -3,6 +3,7 @@
 		{
 			"path": "pages/index/index",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "元汽UI"
 			}
 		},
@@ -27,324 +28,378 @@
 		{
 			"path": "pages/demo/button/button",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "按钮"
 			}
 		},
 		{
 			"path": "pages/demo/icon/icon",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "图标"
 			}
 		},
 		{
 			"path": "pages/demo/tag/tag",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "标签"
 			}
 		},
 		{
 			"path": "pages/demo/badge/badge",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "徽章"
 			}
 		},
 		{
 			"path": "pages/demo/input/input",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "输入框"
 			}
 		},
 		{
 			"path": "pages/demo/textarea/textarea",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "多行输入框"
 			}
 		},
 		{
 			"path": "pages/demo/text/text",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "文本"
 			}
 		},
 		{
 			"path": "pages/demo/link/link",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "超链接"
 			}
 		},
 		{
 			"path": "pages/demo/number-box/number-box",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "数字框"
 			}
 		},
 		{
 			"path": "pages/demo/radio/radio",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "单项选择器"
 			}
 		},
 		{
 			"path": "pages/demo/checkbox/checkbox",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "多项选择器"
 			}
 		},
 		{
 			"path": "pages/demo/switch/switch",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "开关选择器"
 			}
 		},
 		{
 			"path": "pages/demo/rate/rate",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "评分"
 			}
 		},
 		{
 			"path": "pages/demo/datetime/datetime",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "日期时间"
 			}
 		},
 		{
 			"path": "pages/demo/picker/picker",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "联动选择"
 			}
 		},
 		{
 			"path": "pages/demo/calendar/calendar",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "日历"
 			}
 		},
 		{
 			"path": "pages/demo/form/form",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "表单"
 			}
 		},
 		{
 			"path": "pages/demo/tips/tips",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "消息提示"
 			}
 		},
 		{
 			"path": "pages/demo/toast/toast",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "轻提示"
 			}
 		},
 		{
 			"path": "pages/demo/loading/loading",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "加载与尾部"
 			}
 		},
 		{
 			"path": "pages/demo/no-data/no-data",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "暂无数据"
 			}
 		},
 		{
 			"path": "pages/demo/actionsheet/actionsheet",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "操作菜单"
 			}
 		},
 		{
 			"path": "pages/demo/modal/modal",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "弹框"
 			}
 		},
 		{
 			"path": "pages/demo/drawer/drawer",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "抽屉"
 			}
 		},
 		{
 			"path": "pages/demo/bubble-popup/bubble-popup",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "气泡弹框"
 			}
 		},
 		{
 			"path": "pages/demo/list-view/list-view",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "列表"
 			}
 		},
 		{
 			"path": "pages/demo/card/card",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "卡片"
 			}
 		},
 		{
 			"path": "pages/demo/section/section",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "标题栏"
 			}
 		},
 		{
 			"path": "pages/demo/white-space/white-space",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "上下留白"
 			}
 		},
 		{
 			"path": "pages/demo/wing-blank/wing-blank",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "左右留白"
 			}
 		},
 		{
 			"path": "pages/demo/grid/grid",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "宫格"
 			}
 		},
 		{
 			"path": "pages/demo/row/row",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "栅格布局"
 			}
 		},
 		{
 			"path": "pages/demo/col/col",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "多端适配"
 			}
 		},
 		{
 			"path": "pages/demo/image-group/image-group",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "图片组合"
 			}
 		},
 		{
 			"path": "pages/demo/qrcode/qrcode",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "二维码"
 			}
 		},
 		{
 			"path": "pages/demo/collapse/collapse",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "折叠面板"
 			}
 		},
 		{
 			"path": "pages/demo/tabs/tabs",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "标签页"
 			}
 		},
 		{
 			"path": "pages/demo/sticky/sticky",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "吸顶容器"
 			}
 		},
 		{
 			"path": "pages/demo/navigation-bar/navigation-bar",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "导航栏"
 			}
 		},
 		{
 			"path": "pages/demo/status-bar/status-bar",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "状态栏"
 			}
 		},
 		{
 			"path": "pages/demo/tabbar/tabbar",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "标签栏"
 			}
 		},
 		{
 			"path": "pages/demo/footer/footer",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "页脚"
 			}
 		},
 		{
 			"path": "pages/demo/swipe-action/swipe-action",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "滑动菜单"
 			}
 		},
 		{
 			"path": "pages/demo/time-axis/time-axis",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "时间轴"
 			}
 		},
 		{
 			"path": "pages/demo/steps/steps",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "步骤条"
 			}
 		},
 		{
 			"path": "pages/demo/progress/progress",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "进度条"
 			}
 		},
 		{
 			"path": "pages/demo/countdown/countdown",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "倒计时"
 			}
 		},
 		{
 			"path": "pages/demo/rolling-news/rolling-news",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "滚动消息"
 			}
 		},
 		{
 			"path": "pages/demo/notice-bar/notice-bar",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "通告栏"
 			}
 		},
 		{
 			"path": "pages/demo/popup/popup",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "弹出层"
 			}
 		},
 		{
 			"path": "pages/demo/image/image",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "图片"
 			}
 		},
 		{
 			"path": "pages/demo/divider/divider",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "分割线"
 			}
 		},
 		{
 			"path": "pages/demo/safe-area/safe-area",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "安全区"
 			}
 		},
 		{
 			"path": "pages/demo/avatar/avatar",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "头像"
 			}
 		},

@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="通告栏" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="notice-bar" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-notice-bar</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="volume-high" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">通告栏</text>
-								<text class="demo-hero__title demo-hero__title--accent">11 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一条通告的展开方式：单行、换行、滚动、语义色和关闭；默认琥珀浅底，信息、成功和失败各走自己的语义色。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-notice-bar</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">单行省略，图标可选；整条可点，关闭单独抛事件。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="单行省略，图标可选；整条可点，关闭单独抛事件。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view class="demo-notice-group">
@@ -70,15 +26,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">多行展示</text>
-							<text class="demo-section__desc">打开 wrap，文案自然换行，高度由内容撑开。</text>
-						</view>
-					</view>
+					<demo-section-head title="多行展示" desc="打开 wrap，文案自然换行，高度由内容撑开。" />
 					<view class="demo-card">
 						<vx-notice-bar :text="noticeLong" icon="volume-high" wrap />
 						<text class="demo-hint demo-notice-hint">wrap 时最小高度仍是这一档，上下各留 8；行高不随内容变化。</text>
@@ -86,15 +34,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">默认 warning；普通公告用 info，中性说明用 default，结果用 success / danger。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="默认 warning；普通公告用 info，中性说明用 default，结果用 success / danger。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view v-for="entry in noticeTypes" :key="entry.type" :class="entry.groupClass">
@@ -107,15 +47,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">视觉变体</text>
-							<text class="demo-section__desc">soft 语义浅底，solid 语义实心，plain 透明并交给外层。</text>
-						</view>
-					</view>
+					<demo-section-head title="视觉变体" desc="soft 语义浅底，solid 语义实心，plain 透明并交给外层。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view class="demo-notice-group">
@@ -139,15 +71,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">行高 32 / 40 / 48，字号 13 / 15 / 17，图标同档。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="行高 32 / 40 / 48，字号 13 / 15 / 17，图标同档。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view class="demo-notice-group">
@@ -168,15 +92,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">bgColor、color、iconColor 各改一处；字面值不跟随主题。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="bgColor、color、iconColor 各改一处；字面值不跟随主题。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view class="demo-notice-group">
@@ -193,15 +109,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">滚动通告</text>
-							<text class="demo-section__desc">长文案超出视口时横向匀速走完，重新从右侧进入。</text>
-						</view>
-					</view>
+					<demo-section-head title="滚动通告" desc="长文案超出视口时横向匀速走完，重新从右侧进入。" />
 					<view class="demo-card">
 						<vx-notice-bar :text="noticeScroll" icon="volume-high" scrollable :speed="60"
 							:closable="false" />
@@ -210,15 +118,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">速度与起点</text>
-							<text class="demo-section__desc">speed 是每秒移动的像素；activeMode 只改第一轮从哪里开始。</text>
-						</view>
-					</view>
+					<demo-section-head title="速度与起点" desc="speed 是每秒移动的像素；activeMode 只改第一轮从哪里开始。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view class="demo-notice-group">
@@ -240,15 +140,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">关闭</text>
-							<text class="demo-section__desc">closable 显示关闭叉，v-model:show 管显隐，close 交给业务。</text>
-						</view>
-					</view>
+					<demo-section-head title="关闭" desc="closable 显示关闭叉，v-model:show 管显隐，close 交给业务。" />
 					<view class="demo-card">
 						<vx-notice-bar v-model:show="noticeVisible" :text="noticeLong" type="danger"
 							icon="alert-triangle" closable @close="onDismiss" />
@@ -264,15 +156,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">图标与插槽</text>
-							<text class="demo-section__desc">iconColor 只改图标；prefix / suffix 是独立目标。</text>
-						</view>
-					</view>
+					<demo-section-head title="图标与插槽" desc="iconColor 只改图标；prefix / suffix 是独立目标。" />
 					<view class="demo-card">
 						<view class="demo-notice-stack">
 							<view class="demo-notice-group">
@@ -305,15 +189,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">11</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">页面级用平角通栏，卡片里用 plain 或 rounded；需要吸顶交给 vx-sticky。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="页面级用平角通栏，卡片里用 plain 或 rounded；需要吸顶交给 vx-sticky。" />
 					<view class="demo-card">
 						<vx-notice-bar :text="noticeLong" type="warning" icon="volume-high" closable
 							@close="onNoticeClose" />
@@ -330,32 +206,16 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="notice-bar" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type NoticeBarDemoType = {
 		type: 'default' | 'primary' | 'success' | 'info' | 'warning' | 'danger'
@@ -412,29 +272,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/rolling-news/rolling-news'
-	const nextPath: string = '/pages/demo/popup/popup'
-	const prevName = '滚动消息'
-	const nextName = '弹出层'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

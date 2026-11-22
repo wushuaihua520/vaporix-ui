@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="日历" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="calendar" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-calendar</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="calendar" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">日历</text>
-								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">42 格固定网格，五周和六周按当月收行；弹层点确定才写回模型。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-calendar</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">单个日期</text>
-							<text class="demo-section__desc">默认模式，打开时停在已选的那个月。</text>
-						</view>
-					</view>
+					<demo-section-head title="单个日期" desc="默认模式，打开时停在已选的那个月。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="选择日期" @click="onCalendarSingle" />
 						<view class="demo-datetime-status">
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">日期区间</text>
-							<text class="demo-section__desc">第一下点起点、第二下点终点，中间铺一层浅底。</text>
-						</view>
-					</view>
+					<demo-section-head title="日期区间" desc="第一下点起点、第二下点终点，中间铺一层浅底。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="选择日期区间" @click="onCalendarRange" />
 						<view class="demo-datetime-status">
@@ -82,15 +30,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">农历</text>
-							<text class="demo-section__desc">日期下方排一行农历日，初一、廿一这样的写法。</text>
-						</view>
-					</view>
+					<demo-section-head title="农历" desc="日期下方排一行农历日，初一、廿一这样的写法。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -107,15 +47,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">平铺展示</text>
-							<text class="demo-section__desc">不写 popup 就是普通块，点选当场写回模型。</text>
-						</view>
-					</view>
+					<demo-section-head title="平铺展示" desc="不写 popup 就是普通块，点选当场写回模型。" />
 					<view class="demo-card">
 						<view class="demo-calendar-board">
 							<vx-calendar v-model="calendarInlineValue" show-lunar />
@@ -129,15 +61,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">可选范围与翻月</text>
-							<text class="demo-section__desc">范围之外转灰不可选，箭头跟着自动禁用。</text>
-						</view>
-					</view>
+					<demo-section-head title="可选范围与翻月" desc="范围之外转灰不可选，箭头跟着自动禁用。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -156,15 +80,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标记</text>
-							<text class="demo-section__desc">按日期补一层底色、文案或对勾，适合打卡和排班。</text>
-						</view>
-					</view>
+					<demo-section-head title="标记" desc="按日期补一层底色、文案或对勾，适合打卡和排班。" />
 					<view class="demo-card">
 						<view class="demo-calendar-board">
 							<vx-calendar v-model="calendarMarksValue" :marks="calendarMarks" show-lunar />
@@ -178,15 +94,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">type 决定选中底色、区间浅底、文字和确定按钮。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="type 决定选中底色、区间浅底、文字和确定按钮。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -212,15 +120,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标题、区间文字与遮罩</text>
-							<text class="demo-section__desc">title 在头部正中，端点小字和遮罩色都能换。</text>
-						</view>
-					</view>
+					<demo-section-head title="标题、区间文字与遮罩" desc="title 在头部正中，端点小字和遮罩色都能换。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="选择出行日期" @click="onCalendarTrip" />
 						<text class="demo-hint">start-text / end-text 只在区间模式生效，建议 2 个字以内；maskColor 是字面值，不跟随主题。</text>
@@ -228,15 +128,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法与事件</text>
-							<text class="demo-section__desc">ref 上暴露 open() / close() / confirm()，confirm、cancel、change 各走各的。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法与事件" desc="ref 上暴露 open() / close() / confirm()，confirm、cancel、change 各走各的。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -258,15 +150,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">只读行点击打开；单日期和区间各用一个实例。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="只读行点击打开；单日期和区间各用一个实例。" />
 					<view class="demo-card">
 						<vx-input v-model="stayDate" label="入住日期" readonly arrow placeholder="请选择日期"
 							@click="stayVisible = true" />
@@ -276,25 +160,9 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="calendar" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -316,7 +184,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 日历：一个共享弹层实例跑完实验室，平铺示例和表单组合各自独立。
 	type CalendarDemoMode = 'single' | 'range'
@@ -334,6 +202,7 @@
 	type CalendarDemoApi = {
 		open?: () => void
 		close?: () => void
+		cancel?: () => void
 		confirm?: () => void
 	}
 
@@ -501,29 +370,23 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/picker/picker'
-	const nextPath: string = '/pages/demo/form/form'
-	const prevName = '联动选择'
-	const nextName = '表单'
 
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
+	// 系统返回键优先关浮层；主实例走组件 cancel，两个组合实例直接收起。
+	onBackPress(() => {
+		if (calendarVisible.value) {
+			calendarRef.value?.cancel?.()
+			return true
 		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
+		if (stayVisible.value) {
+			stayVisible.value = false
+			return true
+		}
+		if (tripVisible.value) {
+			tripVisible.value = false
+			return true
+		}
+		return false
+	})
 
 	onShow(() => {
 		syncDemoTheme()

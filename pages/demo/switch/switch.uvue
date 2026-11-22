@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="开关选择器" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="switch" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-switch</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="toggle-right" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">开关选择器</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">布尔切换。v-model 立即写回；list 排布让整行可点，loading 期间拦下点击并保持当前状态。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-switch</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">没有文案时是一只独立开关；带文案时点文案也切换。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="没有文案时是一只独立开关；带文案时点文案也切换。" />
 					<view class="demo-sw-stage">
 						<vx-switch v-model="notify" label="接收推送" @change="onNotifyChange" />
 						<view class="demo-sw-row">
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">整行与分割线</text>
-							<text class="demo-section__desc">layout="list" 一行一项并让整行可点；divider 画行底 1px。</text>
-						</view>
-					</view>
+					<demo-section-head title="整行与分割线" desc="layout=&quot;list&quot; 一行一项并让整行可点；divider 画行底 1px。" />
 					<view class="demo-sw-stage">
 						<vx-switch v-model="notify" layout="list" label="接收推送" description="订单和物流提醒" divider />
 						<vx-switch v-model="silent" layout="list" label="夜间免打扰" description="22:00 到 08:00" divider />
@@ -80,15 +28,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">轨道位置</text>
-							<text class="demo-section__desc">placement="end" 默认推到行尾，start 放在文案前。</text>
-						</view>
-					</view>
+					<demo-section-head title="轨道位置" desc="placement=&quot;end&quot; 默认推到行尾，start 放在文案前。" />
 					<view class="demo-sw-stage">
 						<text class="demo-sw-label">placement="end" · 默认</text>
 						<vx-switch v-model="notify" layout="list" label="接收推送" />
@@ -101,15 +41,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">三档 32 / 40 / 48，轨道、滑块和文案一起变。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="三档 32 / 40 / 48，轨道、滑块和文案一起变。" />
 					<view class="demo-sw-stage">
 						<vx-switch v-model="notify" size="sm" label="sm" />
 						<view class="demo-sw-gap">
@@ -123,15 +55,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">type 只改打开时的轨道色，warning 取 warning-pressed。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="type 改打开时的轨道和滑块：warning 轨道取 warning-pressed、滑块取 on-warning 深色。" />
 					<view class="demo-sw-stage">
 						<vx-switch :model-value="true" type="primary" label="primary" />
 						<view class="demo-sw-gap">
@@ -151,15 +75,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态</text>
-							<text class="demo-section__desc">loading 拦下点击并保持状态；disabled 整只转灰。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态" desc="loading 拦下点击并保持状态；disabled 整只转灰。" />
 					<view class="demo-sw-stage">
 						<vx-switch v-model="saving" label="保存中" loading />
 						<view class="demo-sw-gap">
@@ -179,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色与组合</text>
-							<text class="demo-section__desc">四个颜色各改一处；下面是一张通知设置卡。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色与组合" desc="四个颜色各改一处；下面是一张通知设置卡。" />
 					<view class="demo-sw-stage">
 						<vx-switch v-model="brand" label="color · 打开轨道" color="#8a2b33" />
 						<view class="demo-sw-gap">
@@ -212,15 +120,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">轨道文字</text>
-							<text class="demo-section__desc">on-text / off-text 写在轨道另一半，随状态换边换字；on / off 插槽可以放图标。</text>
-						</view>
-					</view>
+					<demo-section-head title="轨道文字" desc="on-text / off-text 写在轨道另一半，随状态换边换字；on / off 插槽可以放图标。" />
 					<view class="demo-sw-stage">
 						<vx-switch v-model="notify" on-text="开" off-text="关" />
 						<view class="demo-sw-row">
@@ -252,32 +152,16 @@
 					<text class="demo-hint">文字画在轨道的另一半空白区，建议 1 个汉字或 2~3 个英文字母，过长会被裁掉；颜色跟轨道走，禁用一起转灰。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="switch" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 开关演示：v-model 是布尔值；loading 由父级控制，用来模拟请求进行中。
 	const isDark = demoIsDark
@@ -307,29 +191,6 @@
 		saved.value = !saved.value
 	}
 
-	const prevPath: string = '/pages/demo/checkbox/checkbox'
-	const nextPath: string = '/pages/demo/datetime/datetime'
-	const prevName = '多项选择器'
-	const nextName = '日期时间选择器'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

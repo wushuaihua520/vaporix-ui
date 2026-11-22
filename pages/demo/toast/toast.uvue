@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="轻提示" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="toast" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-toast</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="check-circle" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">轻提示</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">图标加一句文案，点浮层可以提前关闭；默认半透明底，字和图标始终不透明。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-toast</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础用法</text>
-							<text class="demo-section__desc">成功、失败、信息三种结果，图标跟着 type 换。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础用法" desc="成功、失败、信息三种结果，图标跟着 type 换。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -68,15 +24,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">无图标</text>
-							<text class="demo-section__desc">关掉 showIcon，只留一行文案。</text>
-						</view>
-					</view>
+					<demo-section-head title="无图标" desc="关掉 showIcon，只留一行文案。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="提示信息，无icon" @click="onToastNoIcon" />
 						<text class="demo-hint">没有图标时不占那一行高度，盒子的最小宽度和左右留白不变。</text>
@@ -84,15 +32,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">多行文本</text>
-							<text class="demo-section__desc">超过最大宽度就换行，盒子跟着长高。</text>
-						</view>
-					</view>
+					<demo-section-head title="多行文本" desc="超过最大宽度就换行，盒子跟着长高。" />
 					<view class="demo-card">
 						<vx-button block type="success" text="操作成功，多行文本" @click="onToastLong" />
 						<text class="demo-hint">maxWidth 默认 240px，行高 22；超过三行说明信息量太大，改用页面区块。</text>
@@ -100,15 +40,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义图标</text>
-							<text class="demo-section__desc">字体图标传名字，图片传地址，图片优先。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义图标" desc="字体图标传名字，图片传地址，图片优先。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -123,15 +55,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">显示时间</text>
-							<text class="demo-section__desc">duration 单位毫秒，0 常驻。</text>
-						</view>
-					</view>
+					<demo-section-head title="显示时间" desc="duration 单位毫秒，0 常驻。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -149,15 +73,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">底色和文字各管一处，不随主题切换。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="底色和文字各管一处，不随主题切换。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="深色底 + 浅色字" @click="onToastCustomColor" />
 						<text class="demo-hint">bgColor 改底色，color 改文案和字体图标；图片不参与着色。</text>
@@ -165,15 +81,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">透明度</text>
-							<text class="demo-section__desc">底色默认 0.9，只调底色，文字和图标不跟着淡。</text>
-						</view>
-					</view>
+					<demo-section-head title="透明度" desc="底色默认 0.9，只调底色，文字和图标不跟着淡。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -191,15 +99,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法</text>
-							<text class="demo-section__desc">ref 拿实例，open() 重新计时，close() 立刻收起。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法" desc="ref 拿实例，open() 重新计时，close() 立刻收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -213,25 +113,9 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="toast" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -243,7 +127,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -374,29 +258,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/tips/tips'
-	const nextPath: string = '/pages/demo/loading/loading'
-	const prevName = '消息提示'
-	const nextName = '加载与尾部'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

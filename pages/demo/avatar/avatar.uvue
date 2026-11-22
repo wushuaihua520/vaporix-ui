@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="头像" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="avatar" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-avatar</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="user" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">头像</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">图片、首字、图标三态回落；首字按 code point 取，2px 描边画在内侧。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-avatar</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">三态回落</text>
-							<text class="demo-section__desc">图片失败才回落首字；首字为空再用图标，图标也为空用 user。</text>
-						</view>
-					</view>
+					<demo-section-head title="三态回落" desc="图片失败才回落首字；首字为空再用图标，图标也为空用 user。" />
 					<view class="demo-image-row">
 						<view class="demo-image-cell">
 							<text class="demo-image-label">图片</text>
@@ -77,15 +33,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸三档</text>
-							<text class="demo-section__desc">外框 32 / 40 / 48；首字 12 / 14 / 16，图标 14 / 16 / 18。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸三档" desc="外框 32 / 40 / 48；首字 12 / 14 / 16，图标 14 / 16 / 18。" />
 					<view class="demo-image-row">
 						<view class="demo-image-cell">
 							<text class="demo-image-label">sm · 32</text>
@@ -118,15 +66,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">形状三档</text>
-							<text class="demo-section__desc">circle 用胶囊；rounded 按档取 radius；square 为 0。</text>
-						</view>
-					</view>
+					<demo-section-head title="形状三档" desc="circle 用胶囊；rounded 按档取 radius；square 为 0。" />
 					<view class="demo-image-row">
 						<view class="demo-image-cell">
 							<text class="demo-image-label">circle</text>
@@ -145,15 +85,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">语义色</text>
-							<text class="demo-section__desc">六种 type 的浅底首字头像，前景按浅底配对规则取。</text>
-						</view>
-					</view>
+					<demo-section-head title="语义色" desc="六种 type 的浅底首字头像，前景按浅底配对规则取。" />
 					<view class="demo-image-row">
 						<view v-for="(tone, index) in tones" :key="tone.type"
 							:class="index === tones.length - 1 ? 'demo-image-cell demo-image-cell--last' : 'demo-image-cell'">
@@ -165,15 +97,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">描边</text>
-							<text class="demo-section__desc">ring 打开后外框仍是 32 / 40 / 48；和图片组合的堆叠对照。</text>
-						</view>
-					</view>
+					<demo-section-head title="描边" desc="ring 打开后外框仍是 32 / 40 / 48；和图片组合的堆叠对照。" />
 					<view class="demo-image-row">
 						<view class="demo-image-cell">
 							<text class="demo-image-label">vx-avatar · ring</text>
@@ -199,15 +123,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">失败回落</text>
-							<text class="demo-section__desc">坏地址回落到首字；换一个可用地址后重新加载图片。</text>
-						</view>
-					</view>
+					<demo-section-head title="失败回落" desc="坏地址回落到首字；换一个可用地址后重新加载图片。" />
 					<view class="demo-card">
 						<view class="demo-cluster">
 							<view class="demo-cluster__item">
@@ -232,34 +148,20 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">事件与自定义</text>
-							<text class="demo-section__desc">clickable 或只写 @click 都算可点；bgColor / color 各来一组。</text>
-						</view>
-					</view>
+					<demo-section-head title="事件与自定义" desc="clickable 才抛 click；bgColor / color 各来一组。" />
 					<view class="demo-card">
 						<view class="demo-cluster">
 							<view class="demo-cluster__item">
-								<vx-avatar text="监" type="warning" @click="onAvatarClick" />
-							</view>
-							<view class="demo-cluster__item">
-								<vx-avatar text="点" type="primary" clickable />
+								<vx-avatar text="点" type="primary" clickable @click="onAvatarClick" />
 							</view>
 							<view class="demo-cluster__item">
 								<vx-avatar text="静" />
 							</view>
 							<view class="demo-cluster__item">
-								<vx-avatar text="关" type="info" :clickable="false" @click="onAvatarClick" />
-							</view>
-							<view class="demo-cluster__item">
 								<vx-avatar size="lg" ring type="success" text="😀" clickable @click="onAvatarClick" />
 							</view>
 						</view>
-						<text class="demo-hint">只写 @click 也算可点，按下压到 0.8，点击停在头像上；显式 clickable=false 不淡也不拦；没写也没监听的点击继续冒泡。</text>
+						<text class="demo-hint">左边和右边写了 clickable，按下压到 0.8；中间没写，没有按下态，点击继续冒泡。</text>
 						<text class="demo-hint">点击：{{ clickLog }} · error 累计 {{ errorCount }} 次（来自失败回落）</text>
 					</view>
 					<view class="demo-card demo-card--spaced">
@@ -281,32 +183,18 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="avatar" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
-				</view>
+				<demo-footer />
+
+
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 演示页不引用组件库的类型：script setup 里只有 defineProps 用到的类型会被擦除，
 	// 普通 type 导入会留在运行时代码里，页面加载时报 missing export。
@@ -382,15 +270,6 @@
 	const onAvatarClick = () => {
 		clickCount.value += 1
 		clickLog.value = `已点击 ${clickCount.value} 次`
-	}
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
 	}
 
 	const goPrev = () => {

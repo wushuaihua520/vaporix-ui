@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="分割线" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="divider" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-divider</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="minus" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">分割线</text>
-								<text class="demo-hero__title demo-hero__title--accent">5 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">横竖两向、实线虚线、带文字的对齐，以及间距和颜色的覆盖方式。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-divider</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础横线</text>
-							<text class="demo-section__desc">1px，默认 border 色，上下各留 12；它就是一条线，没有插槽和点击。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础横线" desc="1px，默认 border 色，上下各留 12；它就是一条线，没有插槽和点击。" />
 					<view class="demo-card">
 						<text class="demo-div-paragraph">第一段内容：分割线只负责分隔，不代替区块之间的 24 留白。</text>
 						<vx-divider />
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">带文字三种对齐</text>
-							<text class="demo-section__desc">left 只画右侧线、right 只画左侧线、center 两侧各画一段等宽线。</text>
-						</view>
-					</view>
+					<demo-section-head title="带文字三种对齐" desc="left 只画右侧线、right 只画左侧线、center 两侧各画一段等宽线。" />
 					<view class="demo-card">
 						<text class="demo-div-label">align="left"</text>
 						<vx-divider text="最近更新" align="left" />
@@ -83,15 +31,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">虚线</text>
-							<text class="demo-section__desc">dashed 只把边框样式换成虚线，不画背景渐变。</text>
-						</view>
-					</view>
+					<demo-section-head title="虚线" desc="dashed 只把边框样式换成虚线，不画背景渐变。" />
 					<view class="demo-card">
 						<text class="demo-div-label">虚线横线</text>
 						<vx-divider dashed />
@@ -111,15 +51,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">纵向</text>
-							<text class="demo-section__desc">高度空串时撑满父级那一行，不自动水平居中。</text>
-						</view>
-					</view>
+					<demo-section-head title="纵向" desc="高度空串时撑满父级那一行，不自动水平居中。" />
 					<view class="demo-card">
 						<view class="demo-div-stats">
 							<view class="demo-div-stat">
@@ -151,15 +83,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义间距与颜色</text>
-							<text class="demo-section__desc">spacing 数字按 px，字符串带单位；color 同时改线和文字。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义间距与颜色" desc="spacing 数字按 px，字符串带单位；color 同时改线和文字。" />
 					<view class="demo-card">
 						<text class="demo-div-label">spacing 0</text>
 						<vx-divider :spacing="0" />
@@ -175,32 +99,16 @@
 					<text class="demo-hint demo-div-hint">color 是字面值，只覆盖线色和文字色，不跟随主题；跟主题时传 var(--vx-color-*)。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="divider" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.64.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	const isDark = demoIsDark
 
@@ -208,29 +116,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/image/image'
-	const nextPath: string = '/pages/demo/safe-area/safe-area'
-	const prevName = '图片'
-	const nextName = '安全区'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

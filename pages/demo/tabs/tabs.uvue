@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="标签页" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="tabs" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-tabs</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="layout-dashboard" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">标签页</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一屏 2–5 个页签，不横向滚动；选中态靠字重、文字色和短线 / 胶囊分层。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-tabs</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标签页基础</text>
-							<text class="demo-section__desc">等宽页签，选中项加字重并在底部画短线。</text>
-						</view>
-					</view>
+					<demo-section-head title="标签页基础" desc="等宽页签，选中项加字重并在底部画短线。" />
 					<view class="demo-card">
 						<vx-tabs v-model="tabsBasicActive" :items="tabsBasicEntries" @change="onTabsChange" />
 						<view class="demo-tabs-status">
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">三种外观</text>
-							<text class="demo-section__desc">下划线、浅底胶囊、反色条。反色条一屏最多一条。</text>
-						</view>
-					</view>
+					<demo-section-head title="三种外观" desc="下划线、浅底胶囊、反色条。反色条一屏最多一条。" />
 					<view class="demo-card">
 						<view class="demo-tabs-group">
 							<text class="demo-tabs-label">line · 下划线</text>
@@ -88,15 +36,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标签页尺寸</text>
-							<text class="demo-section__desc">高度 44 / 48 / 52，选中胶囊 28 / 32 / 36。</text>
-						</view>
-					</view>
+					<demo-section-head title="标签页尺寸" desc="高度 44 / 48 / 52，选中胶囊 28 / 32 / 36。" />
 					<view class="demo-card">
 						<view class="demo-tabs-group">
 							<text class="demo-tabs-label">sm · 44</text>
@@ -114,15 +54,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">页签角标</text>
-							<text class="demo-section__desc">计数超过 badgeMax 显示 max+，dot 优先于计数。</text>
-						</view>
-					</view>
+					<demo-section-head title="页签角标" desc="计数超过 badgeMax 显示 max+，dot 优先于计数。" />
 					<view class="demo-card">
 						<vx-tabs v-model="tabsPromoActive" :items="tabsPromoEntries" />
 						<text class="demo-hint demo-tabs-hint">角标默认 danger，不参与布局；同一含义的计数一屏只出现一处。</text>
@@ -130,15 +62,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用与状态色</text>
-							<text class="demo-section__desc">禁用项不响应点击；页签表达状态时可改 type。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用与状态色" desc="禁用项不响应点击；页签表达状态时可改 type。" />
 					<view class="demo-card">
 						<view class="demo-tabs-group">
 							<text class="demo-tabs-label">line · warning</text>
@@ -153,15 +77,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">底部分割线</text>
-							<text class="demo-section__desc">默认 1px；放进带描边的卡片时关掉。</text>
-						</view>
-					</view>
+					<demo-section-head title="底部分割线" desc="默认 1px；放进带描边的卡片时关掉。" />
 					<view class="demo-card">
 						<view class="demo-tabs-group">
 							<text class="demo-tabs-label">divider = true</text>
@@ -175,15 +91,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">bgColor 改整条底色，color 改未选中文字。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="bgColor 改整条底色，color 改未选中文字。" />
 					<view class="demo-card">
 						<view class="demo-tabs-group">
 							<text class="demo-tabs-label">bgColor + color</text>
@@ -199,15 +107,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">页签与内容</text>
-							<text class="demo-section__desc">页签只切视图，内容按索引换，外框交给卡片。</text>
-						</view>
-					</view>
+					<demo-section-head title="页签与内容" desc="页签只切视图，内容按索引换，外框交给卡片。" />
 					<view class="demo-card demo-tabs-card">
 						<vx-tabs v-model="tabsComposeActive" :items="tabsComposeEntries" :divider="false" />
 						<view class="demo-tabs-body">
@@ -218,95 +118,26 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">竖向标签</text>
-							<text class="demo-section__desc">每项一整行，左侧竖条标出当前项；宽度默认 96，可传数字改。</text>
-						</view>
-					</view>
+					<demo-section-head title="可滚动页签" desc="scrollable 解除等宽约束，页签按文案宽度排；超出容器横向滑，选中项自动滚入可视区。" />
 					<view class="demo-card">
-						<view class="demo-tabs-vertical">
-							<vx-tabs v-model="tabsVerticalActive" :items="tabsVerticalEntries" direction="vertical" />
-							<view class="demo-tabs-vertical__body">
-								<text class="demo-tabs-vertical__title">{{ tabsVerticalPanel.title }}</text>
-								<text class="demo-tabs-vertical__copy">{{ tabsVerticalPanel.body }}</text>
-							</view>
-						</view>
-						<text class="demo-hint demo-tabs-hint">竖排只负责切视图，右侧内容按索引由业务渲染。</text>
-					</view>
-					<view class="demo-card demo-card--spaced">
-						<view class="demo-tabs-group">
-							<text class="demo-tabs-label">soft · vertical-width 120</text>
-							<vx-tabs v-model="tabsVerticalSoftActive" :items="tabsVerticalEntries" direction="vertical"
-								variant="soft" :vertical-width="120" />
-						</view>
-						<view class="demo-tabs-group demo-tabs-group--last">
-							<text class="demo-tabs-label">lg · 分割线与禁用项</text>
-							<vx-tabs v-model="tabsVerticalLgActive" :items="tabsVerticalStateEntries" direction="vertical"
-								size="lg" />
-						</view>
-						<text class="demo-hint demo-tabs-hint">宽度按 px 数字传，传 0 时跟随容器撑满；竖排不支持 inverse，会按 soft 渲染。</text>
+						<vx-tabs v-model="tabsScrollActive" :items="tabsScrollEntries" variant="soft" scrollable
+							:divider="false" @change="onTabsScrollChange" />
+						<text class="demo-hint demo-tabs-hint">{{ tabsScrollLastChange }}</text>
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">滚动形态</text>
-							<text class="demo-section__desc">解除等宽，超出容器横向滑；先隐藏再显示、中途改 options，指示条仍落在当前页签下。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<view class="demo-actions">
-							<view class="demo-actions__item">
-								<vx-button block size="sm" type="default" :text="tabsScrollVisible ? '隐藏页签' : '显示页签'"
-									@click="tabsScrollVisible = !tabsScrollVisible" />
-							</view>
-							<view class="demo-actions__item demo-actions__item--last">
-								<vx-button block size="sm" type="default" :text="tabsScrollWide ? '换成短文案' : '换成长文案'"
-									@click="toggleScrollEntries" />
-							</view>
-						</view>
-						<view class="demo-tabs-group demo-tabs-group--last">
-							<vx-tabs v-if="tabsScrollVisible" v-model="tabsScrollActive" :items="tabsScrollEntries"
-								scrollable />
-						</view>
-						<text class="demo-hint">当前第 {{ tabsScrollActive + 1 }} 项 · {{ tabsScrollLabel }}；文案宽度变了，指示条要跟着挪到同一项下面。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="tabs" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-footer />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.66.2</text>
-				</view>
+
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 标签页演示：基础、角标、禁用和组合各用一份数据，切外观时文字不变。
 	type TabsDemoItem = {
@@ -348,28 +179,16 @@
 		{ text: '明日预告' }
 	]
 
-	// 竖排示例用分类名：每项要能塞进 96px 宽的一整行。
-	const tabsVerticalEntries: TabsDemoItem[] = [
+	// 可滚动示例：页数故意超过一屏，横向滑动和选中项自动滚入才有得看。
+	const tabsScrollEntries: TabsDemoItem[] = [
 		{ text: '推荐' },
-		{ text: '当季新品', badge: 3 },
-		{ text: '限时特惠' },
-		{ text: '会员专享' },
-		{ text: '猜你喜欢' }
-	]
-
-	const tabsVerticalStateEntries: TabsDemoItem[] = [
-		{ text: '全部' },
-		{ text: '待处理', badge: 2 },
-		{ text: '已完成' },
-		{ text: '禁用状态', disabled: true }
-	]
-
-	const tabsVerticalPanels: TabsDemoPanel[] = [
-		{ title: '推荐', body: '按浏览和下单记录排的默认分组。' },
-		{ title: '当季新品', body: '本周上新 3 件，会员可提前 1 小时看。' },
-		{ title: '限时特惠', body: '今天 20:00 结束，库存还剩 12 件。' },
-		{ title: '会员专享', body: '黄金会员起可下单，按等级差价。' },
-		{ title: '猜你喜欢', body: '根据近 30 天的浏览记录推荐。' }
+		{ text: '热卖' },
+		{ text: '新品首发' },
+		{ text: '家居日用' },
+		{ text: '数码电器' },
+		{ text: '服饰鞋包' },
+		{ text: '食品生鲜' },
+		{ text: '会员专享' }
 	]
 
 	const tabsComposePanels: TabsDemoPanel[] = [
@@ -381,6 +200,11 @@
 	const tabsBasicActive = ref(0)
 
 	const tabsLineActive = ref(1)
+
+	// 可滚动示例的状态：选中下标和最近一次切换的说明。
+	const tabsScrollActive = ref(0)
+
+	const tabsScrollLastChange = ref('当前在第 1 项 · 推荐')
 
 	const tabsSoftActive = ref(0)
 
@@ -403,63 +227,26 @@
 	const tabsDividerOffActive = ref(1)
 
 	const tabsBrandActive = ref(0)
+
 	const tabsPlainActive = ref(0)
 
 	const tabsComposeActive = ref(0)
 
-	const tabsVerticalActive = ref(0)
-
-	const tabsVerticalSoftActive = ref(1)
-
-	const tabsVerticalLgActive = ref(1)
-
 	const tabsLastChange = ref('还没有切换')
-
-	// 09 滚动形态：v-if 控制显隐，两组文案宽度不同；指示条是量出来的，重挂和换文案后都要落在当前项下面
-	const tabsScrollVisible = ref(true)
-	const tabsScrollWide = ref(false)
-	const tabsScrollActive = ref(1)
-	const tabsScrollShort: TabsDemoItem[] = [
-		{ text: '今日特拼' },
-		{ text: '全部' },
-		{ text: '新品' },
-		{ text: '品牌' }
-	]
-	const tabsScrollLong: TabsDemoItem[] = [
-		{ text: '今日限时特价拼团' },
-		{ text: '全部商品分类' },
-		{ text: '新品首发预告' },
-		{ text: '品牌旗舰专区' },
-		{ text: '附近门店' }
-	]
-
-	const tabsScrollEntries = computed((): TabsDemoItem[] => {
-		return tabsScrollWide.value ? tabsScrollLong : tabsScrollShort
-	})
-
-	const tabsScrollLabel = computed((): string => {
-		const list = tabsScrollEntries.value
-		if (tabsScrollActive.value < 0 || tabsScrollActive.value >= list.length) return '—'
-		return list[tabsScrollActive.value].text ?? '—'
-	})
-
-	const toggleScrollEntries = () => {
-		tabsScrollWide.value = !tabsScrollWide.value
-		if (tabsScrollActive.value >= tabsScrollEntries.value.length) tabsScrollActive.value = 0
-	}
 
 	const onTabsChange = (index: number) => {
 		tabsLastChange.value = `切换到第 ${index + 1} 个页签`
 	}
 
+	const onTabsScrollChange = (index: number) => {
+		const entry = tabsScrollEntries[index]
+		const text = entry != null && entry.text != null ? entry.text : ''
+		tabsScrollLastChange.value = `切到第 ${index + 1} 项 · ${text}；页签条自动滚到选中项`
+	}
+
 	const tabsComposePanel = computed((): TabsDemoPanel => {
 		const panel = tabsComposePanels[tabsComposeActive.value]
 		return panel != null ? panel : tabsComposePanels[0]
-	})
-
-	const tabsVerticalPanel = computed((): TabsDemoPanel => {
-		const panel = tabsVerticalPanels[tabsVerticalActive.value]
-		return panel != null ? panel : tabsVerticalPanels[0]
 	})
 
 	const isDark = demoIsDark
@@ -468,64 +255,8 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/collapse/collapse'
-	const nextPath: string = '/pages/demo/sticky/sticky'
-	const prevName = '折叠面板'
-	const nextName = '吸顶容器'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
 	})
 </script>
-
-<style>
-	/* 竖排页签和右侧内容并排：页签自己定宽，内容吃剩下的宽度，外框由这层卡片提供。 */
-	.demo-tabs-vertical {
-		flex-direction: row;
-		align-items: stretch;
-		overflow: hidden;
-		border-width: var(--vx-border-width);
-		border-style: solid;
-		border-color: var(--vx-color-border);
-		border-radius: var(--vx-radius-lg);
-		background-color: var(--vx-color-surface);
-	}
-
-	.demo-tabs-vertical__body {
-		flex: 1;
-		padding: var(--vx-space-lg);
-	}
-
-	.demo-tabs-vertical__title {
-		font-size: var(--vx-font-md);
-		line-height: var(--vx-line-md);
-		font-weight: var(--vx-weight-semibold);
-		color: var(--vx-color-text);
-	}
-
-	.demo-tabs-vertical__copy {
-		margin-top: var(--vx-space-xs);
-		font-size: var(--vx-font-sm);
-		line-height: var(--vx-line-sm);
-		color: var(--vx-color-text-secondary);
-	}
-</style>

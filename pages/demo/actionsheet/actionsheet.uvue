@@ -1,70 +1,12 @@
-<!--
-	第 09 节「超长列表」的验证记录：12 条动作看限高和裁切，组件这次改了两处。
-	上限改成打开时在本组件作用域里量 .vx-actionsheet 根节点的高度减 24，量不到才退回 windowHeight − 24；
-	动作区补 min-height: 0，面板补 flex-shrink: 1——App 不把 sheet 的 max-height 分给子项，
-	子项不写 shrink 时按内容高撑出去，取消栏就被裁在屏幕下面。行高、圆角、警告和遮罩都没动。
-
-	真机：XiaoMi 14（1080×2400 / 420dpi / Android 13），HBuilderX 5.34 蒸汽模式  日期：2026-11-12
-	1. 顶部留白与取消：遮罩露出 63px（24dp），面板从 307 起；取消栏 2075–2273（199px，76dp）完整在窗口内，点一下收起。
-	2. 裁切与行高：列表在 2064 处裁断，前 8 条完整，第 9 条「导出」只露 21px；动作行仍是 197px 加 2–3px 分隔线，App 上等于 76，没被压扁。
-	3. 警告条数：1 条。同一次 console.warn 在 logcat 里以 JSConsole 和 console 两个 tag 各出一行；连开 3 次不再增加。
-	4. 2–6 条版式：1 条（基础操作，危险操作同版式）改前改后都是面板顶 1725、高 549；4 条（无提示）都是顶 1266、高 1008；行 76、间隔带 4、取消 76，和改前一致。
-	5. 改 wm size：1080×1800 下先关再开，顶部留白仍是 63px（24dp），取消栏 1475–1673 完整落在窗口内，不再多吃 32px。
-	6. 重启后重开：force-stop 再起，连开两次，上限和上面一致，取消都能点。
--->
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="操作菜单" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="actionsheet" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-actionsheet</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="menu" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">操作菜单</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">动作行沿用列表行高度，标题和说明分两档；取消与动作之间留一条间隔带。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-actionsheet</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础操作</text>
-							<text class="demo-section__desc">说明加一个动作和取消，点动作收起并抛 select。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础操作" desc="说明加一个动作和取消，点动作收起并抛 select。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="默认操作" @click="onActionSheetBasic" />
 						<text class="demo-hint">点「确定」收起；点取消或遮罩也会收起。最近动作：{{ actionSheetLastAction }}。</text>
@@ -72,15 +14,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">危险操作</text>
-							<text class="demo-section__desc">退出登录用 danger，只染文字，不铺红底。</text>
-						</view>
-					</view>
+					<demo-section-head title="危险操作" desc="退出登录用 danger，只染文字，不铺红底。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="退出登录" @click="onActionSheetDanger" />
 						<text class="demo-hint">危险色只表达不可逆操作；标题和说明仍是中性色，取消始终是普通文字。</text>
@@ -88,15 +22,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">提示文本样式</text>
-							<text class="demo-section__desc">说明换成危险色，确认提示更醒目。</text>
-						</view>
-					</view>
+					<demo-section-head title="提示文本样式" desc="说明换成危险色，确认提示更醒目。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="提示文本样式" @click="onActionSheetTinted" />
 						<text class="demo-hint">descriptionColor 只改说明；传 var(--vx-color-*) 时跟随亮暗主题，字面值由业务保证对比度。</text>
@@ -104,15 +30,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">无提示</text>
-							<text class="demo-section__desc">不传标题和说明，动作直接从面板顶部开始。</text>
-						</view>
-					</view>
+					<demo-section-head title="无提示" desc="不传标题和说明，动作直接从面板顶部开始。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="无提示操作" @click="onActionSheetNoHeader" />
 						<text class="demo-hint">点赞、评论、收藏、分享四条动作，头部整块省掉，第一条动作上方只有面板圆角。</text>
@@ -120,15 +38,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">无取消按钮</text>
-							<text class="demo-section__desc">showCancel=false 只留动作，安全区仍在。</text>
-						</view>
-					</view>
+					<demo-section-head title="无取消按钮" desc="showCancel=false 只留动作，安全区仍在。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="选择您的性别" @click="onActionSheetNoCancel" />
 						<text class="demo-hint">没有取消行时末条动作下面仍留安全区；点遮罩可以关闭。</text>
@@ -136,15 +46,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">遮罩不可点击</text>
-							<text class="demo-section__desc">maskClosable=false 时只能用取消退出。</text>
-						</view>
-					</view>
+					<demo-section-head title="遮罩不可点击" desc="maskClosable=false 时只能用取消退出。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="Mask 不可点击" @click="onActionSheetMaskLocked" />
 						<text class="demo-hint">点遮罩不关闭，也不抛 cancel；强制选择时仍要保留取消按钮，给用户一条出口。</text>
@@ -152,15 +54,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">选中状态</text>
-							<text class="demo-section__desc">closeOnSelect=false 时保持打开，选中项显示勾。</text>
-						</view>
-					</view>
+					<demo-section-head title="选中状态" desc="closeOnSelect=false 时保持打开，选中项显示勾。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="选择您的性别" @click="onActionSheetSelectable" />
 						<view class="demo-actionsheet-status">
@@ -172,15 +66,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法</text>
-							<text class="demo-section__desc">ref 拿实例，open() 打开，close() 只收起。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法" desc="ref 拿实例，open() 打开，close() 只收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -194,41 +80,9 @@
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">超长列表</text>
-							<text class="demo-section__desc">规范是 2–6 条，这里故意 12 条，用来看限高和裁切。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<vx-button block type="default" text="12 条动作" @click="onActionSheetLongList" />
-						<text class="demo-hint">面板最高是可视区高度减 24，顶部一直留着一条遮罩；动作行不压缩，多出来的从列表里裁掉，取消栏始终在屏内。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="actionsheet" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -242,7 +96,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 操作菜单演示：一个实例切换全部配置，页面根上不叠多张面板。
 	type ActionSheetDemoItem = {
@@ -265,6 +119,7 @@
 	type ActionSheetApi = {
 		open?: () => void
 		close?: () => void
+		cancel?: () => void
 	}
 
 	const actionSheetVisible = ref(false)
@@ -392,56 +247,19 @@
 		actionSheetRef.value?.close?.()
 	}
 
-	// 12 条只为看限高和裁切，不新建实例，也不改默认尺寸和取消按钮。
-	const onActionSheetLongList = () => {
-		openActionSheet({
-			description: '规范是 2–6 条，这里故意 12 条',
-			items: [
-				{ text: '复制' },
-				{ text: '转发' },
-				{ text: '收藏' },
-				{ text: '置顶' },
-				{ text: '标记' },
-				{ text: '提醒' },
-				{ text: '免打扰' },
-				{ text: '分享' },
-				{ text: '导出' },
-				{ text: '举报' },
-				{ text: '删除' },
-				{ text: '更多' }
-			]
-		})
-	}
-
 	const isDark = demoIsDark
 
 	const pageClass = computed((): string => {
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/no-data/no-data'
-	const nextPath: string = '/pages/demo/modal/modal'
-	const prevName = '暂无数据'
-	const nextName = '弹框'
 
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
+	// 系统返回键优先关浮层；组件没有页面生命周期，返回键由页面接住后走组件的 cancel 链路。
+	onBackPress(() => {
+		if (!actionSheetVisible.value) return false
+		actionSheetRef.value?.cancel?.()
+		return true
+	})
 
 	onShow(() => {
 		syncDemoTheme()

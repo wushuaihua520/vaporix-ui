@@ -1,70 +1,24 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="滑动菜单" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="swipe-action" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-swipe-action</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="arrow-left" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">滑动菜单</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一次只展开一行，拖动超过一半或快速轻扫才展开；点内容只收起不触发行点击。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-swipe-action</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础用法</text>
-							<text class="demo-section__desc">左滑过半展开；点内容只收起，不触发行点击。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础用法" desc="左滑过半展开；点内容只收起，不触发行点击。" />
 					<view class="demo-card">
 						<vx-list-view>
-							<vx-swipe-action group="b" name="order-20261026" :actions="swipeBasicActions"
+							<vx-swipe-action name="order-20261026" :actions="swipeBasicActions"
 								@select="onSwipeSelect">
 								<vx-list-cell title="订单 20261026" description="今天 18:00 前付款" value="待付款"
 									@click="onSwipeRowTap('订单 20261026')" />
 							</vx-swipe-action>
-							<vx-swipe-action group="b" name="membership" :actions="swipeBasicActions"
-								@select="onSwipeSelect">
+							<vx-swipe-action name="membership" :actions="swipeBasicActions" @select="onSwipeSelect">
 								<vx-list-cell title="会员续费" description="11 月 3 日到期" value="待付款"
 									@click="onSwipeRowTap('会员续费')" />
 							</vx-swipe-action>
-							<vx-swipe-action group="b" name="address" :actions="swipeBasicActions"
-								@select="onSwipeSelect">
+							<vx-swipe-action name="address" :actions="swipeBasicActions" @select="onSwipeSelect">
 								<vx-list-cell title="收货地址" description="上海市浦东新区" value="常用" :divider="false"
 									@click="onSwipeRowTap('收货地址')" />
 							</vx-swipe-action>
@@ -78,15 +32,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">动作类型</text>
-							<text class="demo-section__desc">六种语义色；default 浅灰底，warning 用深色字。</text>
-						</view>
-					</view>
+					<demo-section-head title="动作类型" desc="六种语义色；default 浅灰底，warning 用深色字。" />
 					<view class="demo-card">
 						<vx-list-view>
 							<vx-swipe-action name="type-a" :actions="swipeTypeActionsA" @select="onSwipeSelect">
@@ -106,15 +52,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">图标、宽度与禁用</text>
-							<text class="demo-section__desc">图标 18 排在文案上方；width 单位 px，默认 72。</text>
-						</view>
-					</view>
+					<demo-section-head title="图标、宽度与禁用" desc="图标 18 排在文案上方；width 单位 px，默认 72。" />
 					<view class="demo-card">
 						<vx-list-view>
 							<vx-swipe-action name="icons" :actions="swipeTypeActionsB" @select="onSwipeSelect">
@@ -134,15 +72,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">点击按钮时不关闭</text>
-							<text class="demo-section__desc">closeOnSelect=false，点动作只抛 select。</text>
-						</view>
-					</view>
+					<demo-section-head title="点击按钮时不关闭" desc="closeOnSelect=false，点动作只抛 select。" />
 					<view class="demo-card">
 						<vx-list-view>
 							<vx-swipe-action v-model:open="swipeHoldOpen" name="hold" :actions="swipeHoldActions"
@@ -160,15 +90,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁止滑动</text>
-							<text class="demo-section__desc">swipeable=false 只停手势，程序控制仍能展开。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁止滑动" desc="swipeable=false 只停手势，程序控制仍能展开。" />
 					<view class="demo-card">
 						<vx-list-view>
 							<vx-swipe-action v-model:open="swipeLockedOpen" name="locked" :actions="swipeBasicActions"
@@ -192,15 +114,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">变量控制与方法</text>
-							<text class="demo-section__desc">v-model:open 控制显隐，ref 调 open / close / toggle。</text>
-						</view>
-					</view>
+					<demo-section-head title="变量控制与方法" desc="v-model:open 控制显隐，ref 调 open / close / toggle。" />
 					<view class="demo-card">
 						<vx-list-view>
 							<vx-swipe-action ref="swipeControlledRef" v-model:open="swipeControlledOpen"
@@ -235,26 +149,18 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">可同时打开多行菜单</text>
-							<text class="demo-section__desc">multiple 打开后，多行互不影响。</text>
-						</view>
-					</view>
+					<demo-section-head title="可同时打开多行菜单" desc="multiple 打开后，多行互不影响。" />
 					<view class="demo-card">
 						<vx-list-view>
-							<vx-swipe-action multiple group="a" name="multi-a" :actions="swipeMultipleActions"
+							<vx-swipe-action multiple name="multi-a" :actions="swipeMultipleActions"
 								@select="onSwipeMultipleSelect">
 								<vx-list-cell title="打开关闭互不影响" description="multiple 打开后，多行可以同时展开" />
 							</vx-swipe-action>
-							<vx-swipe-action multiple group="a" name="multi-b" :actions="swipeMultipleActions"
+							<vx-swipe-action multiple name="multi-b" :actions="swipeMultipleActions"
 								@select="onSwipeMultipleSelect">
 								<vx-list-cell title="打开关闭互不影响" description="当前这一行也保持展开" />
 							</vx-swipe-action>
-							<vx-swipe-action multiple group="a" name="multi-c" :actions="swipeMultipleActions"
+							<vx-swipe-action multiple name="multi-c" :actions="swipeMultipleActions"
 								@select="onSwipeMultipleSelect">
 								<vx-list-cell title="打开关闭互不影响" description="点内容或点动作才会收起"
 									:divider="false" />
@@ -264,20 +170,12 @@
 							<text class="demo-tabs-status__label">select</text>
 							<text class="demo-tabs-status__text">{{ swipeMultipleLast }}</text>
 						</view>
-						<text class="demo-hint">两个列表各传一个 group，互不干扰；都不传时同页只留一行。多行适合批处理，普通列表不要一次露出太多颜色。</text>
+						<text class="demo-hint">默认只留一行；多行适合批处理，普通列表不要一次露出太多颜色。</text>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义操作菜单</text>
-							<text class="demo-section__desc">不传 actions，改用 extra 插槽和 extra-width。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义操作菜单" desc="不传 actions，改用 extra 插槽和 extra-width。" />
 					<view class="demo-card">
 						<vx-list-view>
 							<vx-swipe-action name="custom" :extra-width="132">
@@ -308,15 +206,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">订单列表组合</text>
-							<text class="demo-section__desc">删除先收起菜单，再用弹框确认。</text>
-						</view>
-					</view>
+					<demo-section-head title="订单列表组合" desc="删除先收起菜单，再用弹框确认。" />
 					<view class="demo-card">
 						<vx-list-view v-if="swipeOrders.length > 0">
 							<vx-swipe-action v-for="(order, index) in swipeOrders" :key="order.id" :name="order.id"
@@ -336,25 +226,9 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="swipe-action" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -365,7 +239,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 滑动菜单演示：动作、图标、宽度、保持打开、禁止滑动、变量、多行、自定义和组合各用一组数据。
 	type SwipeDemoAction = {
@@ -548,29 +422,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/footer/footer'
-	const nextPath: string = '/pages/demo/time-axis/time-axis'
-	const prevName = '页脚'
-	const nextName = '时间轴'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

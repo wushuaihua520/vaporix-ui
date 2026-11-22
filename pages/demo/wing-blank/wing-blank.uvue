@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="左右留白" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="wing-blank" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-wing-blank</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="align-left" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">左右留白</text>
-								<text class="demo-hero__title demo-hero__title--accent">5 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">只加左右内边距：三档间距、自定义宽度，页面边距只收一次。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-wing-blank</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">默认 md 在左右各留 12，内容放在默认插槽里。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="默认 md 在左右各留 12，内容放在默认插槽里。" />
 					<view class="demo-wb-frame">
 						<vx-wing-blank>
 							<view class="demo-wb-box">
@@ -64,15 +20,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">三档尺寸</text>
-							<text class="demo-section__desc">sm / md / lg 对应 8 / 12 / 16，直接取间距令牌。</text>
-						</view>
-					</view>
+					<demo-section-head title="三档尺寸" desc="sm / md / lg 对应 8 / 12 / 16，直接取间距令牌。" />
 					<view class="demo-wb-scale">
 						<view class="demo-wb-scale__head">
 							<text class="demo-wb-scale__name">sm</text>
@@ -116,15 +64,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义间距</text>
-							<text class="demo-section__desc">gap 传带单位的值时盖过 size，px、rpx 和百分比都可以。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义间距" desc="gap 传带单位的值时盖过 size，px、rpx 和百分比都可以。" />
 					<view class="demo-wb-scale">
 						<view class="demo-wb-scale__head">
 							<text class="demo-wb-scale__name">24px</text>
@@ -168,15 +108,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">页面边距</text>
-							<text class="demo-section__desc">通栏区块用 lg 把内容拉回页面边距，和上面的标题对齐。</text>
-						</view>
-					</view>
+					<demo-section-head title="页面边距" desc="通栏区块用 lg 把内容拉回页面边距，和上面的标题对齐。" />
 					<view class="demo-wb-page">
 						<text class="demo-wb-page__eyebrow">PAGE MARGIN</text>
 						<text class="demo-wb-page__title">页面标题</text>
@@ -192,15 +124,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">左右交给 wing-blank，上下交给 white-space，内容再用列表和标题栏排。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="左右交给 wing-blank，上下交给 white-space，内容再用列表和标题栏排。" />
 					<view class="demo-wb-bleed">
 						<vx-wing-blank size="lg">
 							<vx-section title="账户与安全" description="最近 30 天内更新" marker />
@@ -229,32 +153,16 @@
 					<text class="demo-hint demo-wb-hint">两个组件都不承载点击；行、按钮和链接由插槽内容自己提供。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="wing-blank" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	const isDark = demoIsDark
 
@@ -269,15 +177,6 @@
 
 	const onCellClick = (label: string) => {
 		uni.showToast({ title: label, icon: 'none' })
-	}
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
 	}
 
 	const goPrev = () => {

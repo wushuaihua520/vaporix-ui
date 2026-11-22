@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="图片组合" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="image-group" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-image-group</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="image" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">图片组合</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">方框 40 / 64 / 88 三档，offset 控制贴边、留缝和堆叠；多行只走 wrap。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-image-group</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">单张和三张，默认横向排列；点击抛索引和 item。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="单张和三张，默认横向排列；点击抛索引和 item。" />
 					<view class="demo-image-lab">
 						<view class="demo-image-lab__item">
 							<text class="demo-image-label">单张</text>
@@ -69,15 +25,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">形状</text>
-							<text class="demo-section__desc">小圆角、圆形和平角，只改方框形状。</text>
-						</view>
-					</view>
+					<demo-section-head title="形状" desc="小圆角、圆形和平角，只改方框形状。" />
 					<view class="demo-image-row">
 						<view class="demo-image-cell">
 							<text class="demo-image-label">rounded</text>
@@ -96,15 +44,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">40 / 64 / 88 三档，同一组只用一档。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="40 / 64 / 88 三档，同一组只用一档。" />
 					<view class="demo-image-row">
 						<view class="demo-image-cell">
 							<text class="demo-image-label">sm · 40px</text>
@@ -123,15 +63,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">偏移</text>
-							<text class="demo-section__desc">负值重叠、正值留缝、0 贴边；重叠时可加圆环。</text>
-						</view>
-					</view>
+					<demo-section-head title="偏移" desc="负值重叠、正值留缝、0 贴边；重叠时可加圆环。" />
 					<view class="demo-image-lab">
 						<view class="demo-image-lab__item">
 							<text class="demo-image-label">重叠 · offset -12 · ring</text>
@@ -152,15 +84,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">多行</text>
-							<text class="demo-section__desc">row 下打开 wrap，每行铺满后换行；负 offset 按 0 处理。</text>
-						</view>
-					</view>
+					<demo-section-head title="多行" desc="row 下打开 wrap，每行铺满后换行；负 offset 按 0 处理。" />
 					<view class="demo-image-lab">
 						<view class="demo-image-lab__item">
 							<text class="demo-image-label">9 张 · 圆形 · offset 8 · 容器 280</text>
@@ -180,15 +104,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">纵向</text>
-							<text class="demo-section__desc">direction="column" 排一列，可重叠也可留缝。</text>
-						</view>
-					</view>
+					<demo-section-head title="纵向" desc="direction=&quot;column&quot; 排一列，可重叠也可留缝。" />
 					<view class="demo-image-columns">
 						<view class="demo-image-column">
 							<text class="demo-image-label">重叠 · offset -12</text>
@@ -205,15 +121,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">圆环与填充</text>
-							<text class="demo-section__desc">ring 区分相邻图；mode 切裁剪、等比和拉伸。</text>
-						</view>
-					</view>
+					<demo-section-head title="圆环与填充" desc="ring 区分相邻图；mode 切裁剪、等比和拉伸。" />
 					<view class="demo-image-lab">
 						<view class="demo-image-lab__item">
 							<text class="demo-image-label">无圆环 · offset -12</text>
@@ -249,18 +157,10 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">卡片里的相册、列表行里的群聊头像。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="卡片里的相册、列表行里的群聊头像。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item">
-							<vx-card title="订单照片" meta="3 张" footer="点击图片查看大图">
+							<vx-card title="订单照片" meta="3 张" footer="点击图片回传索引，预览由外层接入">
 								<vx-image-group :items="threeItems" :offset="8" @click="onImageClick" />
 							</vx-card>
 						</view>
@@ -282,32 +182,16 @@
 					<text class="demo-hint demo-image-hint">组合里由外层卡片和列表行提供标题、边界和操作；缩略图只负责图和点击。最近点击：{{ imageLastAction }}。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="image-group" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 图片组合演示：只维护一份照片列表，各分组按需要切片。
 	type ImageDemoItem = {
@@ -352,29 +236,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/col/col'
-	const nextPath: string = '/pages/demo/qrcode/qrcode'
-	const prevName = '多端适配'
-	const nextName = '二维码'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

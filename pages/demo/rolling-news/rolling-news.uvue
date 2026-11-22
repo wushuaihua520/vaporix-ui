@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="滚动消息" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="rolling-news" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-rolling-news</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="volume-high" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">滚动消息</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">纵向或横向轮播消息，间隔和暂停都可控；当前条滑出、下一条滑入，不往回滚。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-rolling-news</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">滚动消息基础</text>
-							<text class="demo-section__desc">左侧图标、中间轮播、右侧箭头，点击抛当前条。</text>
-						</view>
-					</view>
+					<demo-section-head title="滚动消息基础" desc="左侧图标、中间轮播、右侧箭头，点击抛当前条。" />
 					<view class="demo-card">
 						<vx-rolling-news :items="rollingNewsEntries" icon="volume-high" arrow
 							@click="onRollingNewsClick" />
@@ -63,15 +19,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">轮播方向</text>
-							<text class="demo-section__desc">纵向往上走一格，横向往左走一格；步长都是一整条。</text>
-						</view>
-					</view>
+					<demo-section-head title="轮播方向" desc="纵向往上走一格，横向往左走一格；步长都是一整条。" />
 					<view class="demo-card">
 						<view class="demo-rolling-group">
 							<text class="demo-rolling-label">vertical · 纵向</text>
@@ -86,15 +34,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">三种外观</text>
-							<text class="demo-section__desc">card 带描边，soft 浅底，plain 透明；plain 不收左右内边距。</text>
-						</view>
-					</view>
+					<demo-section-head title="三种外观" desc="card 带描边，soft 浅底，plain 透明；plain 不收左右内边距。" />
 					<view class="demo-card">
 						<view class="demo-rolling-group">
 							<text class="demo-rolling-label">card · 描边卡片</text>
@@ -115,15 +55,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">行高 32 / 40 / 48，字号 13 / 15 / 17，图标同档。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="行高 32 / 40 / 48，字号 13 / 15 / 17，图标同档。" />
 					<view class="demo-card">
 						<view class="demo-rolling-group">
 							<text class="demo-rolling-label">sm · 32</text>
@@ -142,15 +74,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">图标与插槽</text>
-							<text class="demo-section__desc">icon 换左侧图标，iconColor 换色；prefix / suffix 替换两侧内容。</text>
-						</view>
-					</view>
+					<demo-section-head title="图标与插槽" desc="icon 换左侧图标，iconColor 换色；prefix / suffix 替换两侧内容。" />
 					<view class="demo-card">
 						<view class="demo-rolling-group">
 							<text class="demo-rolling-label">iconColor · warning-ink</text>
@@ -176,15 +100,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">间隔与暂停</text>
-							<text class="demo-section__desc">interval 是两次切换的间隔；autoplay 关掉后停在第一条。</text>
-						</view>
-					</view>
+					<demo-section-head title="间隔与暂停" desc="interval 是两次切换的间隔；autoplay 关掉后停在第一条。" />
 					<view class="demo-card">
 						<view class="demo-rolling-group">
 							<text class="demo-rolling-label">interval · 1200</text>
@@ -207,15 +123,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">消息数据</text>
-							<text class="demo-section__desc">一条不轮播，空数组不渲染；静态展示关掉 clickable。</text>
-						</view>
-					</view>
+					<demo-section-head title="消息数据" desc="一条不轮播，空数组不渲染；静态展示关掉 clickable。" />
 					<view class="demo-card">
 						<view class="demo-rolling-group">
 							<text class="demo-rolling-label">items · 1 条</text>
@@ -237,15 +145,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">页面通告、搜索框热词和卡片内公告，底色与圆角跟着场景走。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="页面通告、搜索框热词和卡片内公告，底色与圆角跟着场景走。" />
 					<view class="demo-card">
 						<vx-rolling-news :items="rollingNewsNotices" variant="soft"
 							bg-color="var(--vx-color-warning-soft)" icon="alert-triangle"
@@ -274,32 +174,16 @@
 					<text class="demo-hint demo-rolling-hint">通告条用浅底加语义图标色，搜索框用胶囊；两者都只负责轮播，点击和关闭由业务处理。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="rolling-news" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 滚动消息演示：新闻、热词和通告各用一份数据，点哪一条都能在状态里看到。
 	type RollingNewsDemoItem = {
@@ -362,29 +246,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/countdown/countdown'
-	const nextPath: string = '/pages/demo/notice-bar/notice-bar'
-	const prevName = '倒计时'
-	const nextName = '通告栏'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

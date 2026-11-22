@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="步骤条" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="steps" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">导航与展示</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-steps</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="list-checks" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">步骤条</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">节点固定正圆，连线 1px；待处理态只换描边和文字色，不提供形状选项。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">导航与展示</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-steps</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">水平方向</text>
-							<text class="demo-section__desc">当前步骤用勾，之前的步骤用小圆点；当前步骤之前的连线用语义色。</text>
-						</view>
-					</view>
+					<demo-section-head title="水平方向" desc="当前步骤用勾，之前的步骤用小圆点；当前步骤之前的连线用语义色。" />
 					<view class="demo-card">
 						<vx-steps :items="stepsPlainEntries" :active="1" />
 					</view>
@@ -58,15 +14,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">数字步骤</text>
-							<text class="demo-section__desc">已完成和待处理都显示序号，当前步骤仍然是勾。</text>
-						</view>
-					</view>
+					<demo-section-head title="数字步骤" desc="已完成和待处理都显示序号，当前步骤仍然是勾。" />
 					<view class="demo-card">
 						<vx-steps :items="stepsPlainEntries" :active="2" variant="number" />
 					</view>
@@ -74,15 +22,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">垂直方向</text>
-							<text class="demo-section__desc">success 圆点、danger 序号；纵向步骤之间留 24。</text>
-						</view>
-					</view>
+					<demo-section-head title="垂直方向" desc="success 圆点、danger 序号；纵向步骤之间留 24。" />
 					<view class="demo-card">
 						<view class="demo-steps-group">
 							<text class="demo-steps-label">success · dot</text>
@@ -98,15 +38,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义图标</text>
-							<text class="demo-section__desc">icon 覆盖圆点和序号；已完成浅底，当前实心，待处理浅灰。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义图标" desc="icon 覆盖圆点和序号；已完成浅底，当前实心，待处理浅灰。" />
 					<view class="demo-card">
 						<text class="demo-steps-label">icon · line-style="dashed"</text>
 						<vx-steps :items="stepsIconEntries" :active="2" line-style="dashed" />
@@ -115,15 +47,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">节点 20 / 24 / 28，圆点 6 / 8 / 10，序号 12 / 13 / 14。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="节点 20 / 24 / 28，圆点 6 / 8 / 10，序号 12 / 13 / 14。" />
 					<view class="demo-card">
 						<view class="demo-steps-group">
 							<text class="demo-steps-label">sm · 节点 20</text>
@@ -142,15 +66,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">语义色</text>
-							<text class="demo-section__desc">type 同时改当前节点、当前标题和已完成连线。</text>
-						</view>
-					</view>
+					<demo-section-head title="语义色" desc="type 同时改当前节点、当前标题和已完成连线。" />
 					<view class="demo-card">
 						<view class="demo-steps-type">
 							<text class="demo-steps-type__name">primary</text>
@@ -193,15 +109,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">线条样式</text>
-							<text class="demo-section__desc">solid 实线、dashed 虚线，只改 1px 连线。</text>
-						</view>
-					</view>
+					<demo-section-head title="线条样式" desc="solid 实线、dashed 虚线，只改 1px 连线。" />
 					<view class="demo-card">
 						<view class="demo-steps-group">
 							<text class="demo-steps-label">solid</text>
@@ -216,15 +124,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">可点击</text>
-							<text class="demo-section__desc">clickable 打开整步热区，click 只抛索引。</text>
-						</view>
-					</view>
+					<demo-section-head title="可点击" desc="clickable 打开整步热区，click 只抛索引。" />
 					<view class="demo-card">
 						<vx-steps :items="stepsPlainEntries" :active="stepsInteractiveActive" clickable
 							@click="onStepsClick" />
@@ -248,15 +148,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">标题、单号和操作交给卡片，步骤条只负责进度。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="标题、单号和操作交给卡片，步骤条只负责进度。" />
 					<vx-card title="订单进度" meta="订单 20261025">
 						<vx-steps direction="vertical" :items="stepsOrderEntries" :active="stepsCompositionActive" />
 						<template #suffix>
@@ -269,32 +161,16 @@
 					<text class="demo-hint">步骤条不染色卡片，也不承载按钮；进度放卡片正文，标题、单号和操作由卡片头部、底部承担。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="steps" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -435,29 +311,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/time-axis/time-axis'
-	const nextPath: string = '/pages/demo/progress/progress'
-	const prevName = '时间轴'
-	const nextName = '进度条'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

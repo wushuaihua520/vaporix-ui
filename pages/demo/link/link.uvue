@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="超链接" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="link" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">基础</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-link</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="link" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">超链接</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">正文里的文字入口：Web 新开标签页，App 和小程序复制链接并提示；电话和邮箱按平台交给系统。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">基础</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-link</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">href 是目标地址；不传 text 时显示 href 本身。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="href 是目标地址；不传 text 时显示 href 本身。" />
 					<view class="demo-lk-stage">
 						<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="查看开源仓库" @click="onClick" />
 						<view class="demo-lk-gap">
@@ -64,15 +20,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">默认 primary；secondary 用于正文里不该抢眼的内联入口。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="默认 primary；secondary 用于正文里不该抢眼的内联入口。" />
 					<view class="demo-lk-stage">
 						<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" text="primary · 品牌色入口" @click="onClick" />
 						<view class="demo-lk-gap">
@@ -95,15 +43,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸与字重</text>
-							<text class="demo-section__desc">三档 13 / 15 / 17，四档字重，默认 medium。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸与字重" desc="三档 13 / 15 / 17，四档字重，默认 medium。" />
 					<view class="demo-lk-stage">
 						<vx-link block size="sm" href="https://gitee.com/DonkeySmall/vaporix-ui" text="sm · 13 / 20" @click="onClick" />
 						<view class="demo-lk-gap">
@@ -128,15 +68,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">下划线</text>
-							<text class="demo-section__desc">underline 跟随文字色；默认关闭，同一段文字只加一种装饰线。</text>
-						</view>
-					</view>
+					<demo-section-head title="下划线" desc="underline 跟随文字色；默认关闭，同一段文字只加一种装饰线。" />
 					<view class="demo-lk-stage">
 						<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="不加下划线 · 默认" @click="onClick" />
 						<view class="demo-lk-gap">
@@ -150,15 +82,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">打开方式</text>
-							<text class="demo-section__desc">auto 按平台处理，copy 只复制，none 只抛 click 交给业务。</text>
-						</view>
-					</view>
+					<demo-section-head title="打开方式" desc="auto 按平台处理，copy 只复制，none 只抛 click 交给业务。" />
 					<view class="demo-lk-stage">
 						<text class="demo-lk-label">action="auto" · 默认</text>
 						<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" text="Web 新开标签页，App 复制链接" @click="onClick" />
@@ -181,15 +105,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">插槽</text>
-							<text class="demo-section__desc">默认插槽替换整段文案，prefix / suffix 各放一个图标，和文案留 4px。</text>
-						</view>
-					</view>
+					<demo-section-head title="插槽" desc="默认插槽替换整段文案，prefix / suffix 各放一个图标，和文案留 4px。" />
 					<view class="demo-lk-stage">
 						<vx-link block href="https://gitee.com/DonkeySmall/vaporix-ui" @click="onClick">
 							<template #prefix>
@@ -215,15 +131,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态与组合</text>
-							<text class="demo-section__desc">禁用转 disabled-text 且不抛事件；下面是一段夹着链接的协议文案。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态与组合" desc="禁用转 disabled-text 且不抛事件；下面是一段夹着链接的协议文案。" />
 					<view class="demo-lk-stage">
 						<vx-link block disabled href="https://gitee.com/DonkeySmall/vaporix-ui" text="已停用 · 不响应点按" @click="onClick" />
 						<view class="demo-lk-divider"></view>
@@ -232,38 +140,22 @@
 							<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="《服务协议》" @click="onClick" />
 							<text class="demo-lk-flow__text">和</text>
 							<vx-link href="https://gitee.com/DonkeySmall/vaporix-ui" text="《隐私政策》" @click="onClick" />
-							<text class="demo-lk-flow__text">，并授权我们处理订单信息。</text>
+							<text class="demo-lk-flow__text">同时授权我们处理订单信息。</text>
 						</view>
 					</view>
 					<text class="demo-hint">可点时点按停在链接上，不触发外层列表行或卡片；静态和禁用链接不拦点击。Web 端不进入 Tab 顺序，键盘入口由外层提供。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="link" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 链接演示：点击只记录，打开和复制由组件按平台处理。
 	const isDark = demoIsDark
@@ -282,29 +174,6 @@
 		lastAction.value = '复制了「' + value + '」'
 	}
 
-	const prevPath: string = '/pages/demo/text/text'
-	const nextPath: string = '/pages/demo/number-box/number-box'
-	const prevName = '文本'
-	const nextName = '数字框'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

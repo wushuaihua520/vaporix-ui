@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="输入框" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="input" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-input</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="edit" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">输入框</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">描边盒与表单行两种形态，标题与内容同字号，靠字重和颜色分层。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-input</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础用法</text>
-							<text class="demo-section__desc">三档尺寸，输入即更新 v-model。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础用法" desc="三档尺寸，输入即更新 v-model。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="personName" placeholder="请输入姓名" clearable />
@@ -66,15 +22,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标题与必填</text>
-							<text class="demo-section__desc">label 放标题，required 加星号，label-width 对齐。</text>
-						</view>
-					</view>
+					<demo-section-head title="标题与必填" desc="label 放标题，required 加星号，label-width 对齐。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="contactName" label="姓名" label-width="80px" placeholder="请输入姓名" />
@@ -92,19 +40,11 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">清除与单位</text>
-							<text class="demo-section__desc">有值才出现清除。unit 只展示，不进值。</text>
-						</view>
-					</view>
+					<demo-section-head title="清除与单位" desc="有值才出现清除。unit 只展示，不进值。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="searchKeyword" label="关键词" label-width="80px" clearable
-								placeholder="有值时出现清除" @input="onKeywordInput" @clear="onKeywordClear" />
+								placeholder="有值时出现清除" />
 						</view>
 						<view class="demo-field">
 							<vx-input v-model="percentValue" label="百分比" label-width="80px" align="right" unit="%"
@@ -115,20 +55,11 @@
 								type="digit" placeholder="请输入金额" />
 						</view>
 						<text class="demo-hint">百分比：{{ percentValue.length > 0 ? percentValue : '未填写' }} · 金额：{{ amountValue.length > 0 ? amountValue : '未填写' }}</text>
-						<text class="demo-hint">最近 input：{{ keywordInputText }}；clear：{{ keywordClearText }}</text>
 					</view>
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">形态与轮廓</text>
-							<text class="demo-section__desc">outline 描边盒，line 只留底边。</text>
-						</view>
-					</view>
+					<demo-section-head title="形态与轮廓" desc="outline 描边盒，line 只留底边。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input placeholder="默认描边 · rounded" />
@@ -149,15 +80,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">前后缀</text>
-							<text class="demo-section__desc">prefix 放前面，suffix 放后面。</text>
-						</view>
-					</view>
+					<demo-section-head title="前后缀" desc="prefix 放前面，suffix 放后面。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="prefixPhone" label="手机号" label-width="80px" type="number" clearable
@@ -188,15 +111,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">只读与选择</text>
-							<text class="demo-section__desc">readonly 不弹键盘，点整行触发 click。</text>
-						</view>
-					</view>
+					<demo-section-head title="只读与选择" desc="readonly 不弹键盘，点整行触发 click。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="regionValue" label="地区" label-width="80px" required readonly arrow
@@ -214,15 +129,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态</text>
-							<text class="demo-section__desc">聚焦、错误、禁用。错误只改描边。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态" desc="聚焦、错误、禁用。错误只改描边。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="nicknameValue" label="昵称" label-width="80px" clearable
@@ -243,15 +150,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">登录表单</text>
-							<text class="demo-section__desc">和按钮一起做成表单。</text>
-						</view>
-					</view>
+					<demo-section-head title="登录表单" desc="和按钮一起做成表单。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="loginPhone" label="手机号" label-width="80px" type="number" :maxlength="11"
@@ -281,68 +180,18 @@
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">搜索变体</text>
-							<text class="demo-section__desc">浅底胶囊、前置图标；有值或聚焦才出现取消，键盘确认抛 search。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<view class="demo-field">
-							<vx-input v-model="searchQuery" variant="search" clearable placeholder="搜索商品、品牌或订单"
-								@search="onSearchConfirm" @cancel="onSearchCancel" />
-						</view>
-						<view class="demo-field">
-							<vx-input v-model="searchLargeValue" variant="search" size="lg" clearable
-								placeholder="大号搜索框 · 48" />
-						</view>
-						<view class="demo-field demo-field--last">
-							<vx-input v-model="searchSmallValue" variant="search" size="sm" clearable
-								placeholder="小号搜索框 · 32" />
-						</view>
-						<text class="demo-hint">搜索框没有标题位：label / required / unit 在 search 下不渲染。</text>
-					</view>
-					<view class="demo-card demo-card--spaced">
-						<view class="demo-field">
-							<vx-input model-value="元汽UI" variant="search" disabled placeholder="禁用" />
-						</view>
-						<view class="demo-field demo-field--last">
-							<vx-input model-value="只读展示" variant="search" readonly />
-						</view>
-						<text class="demo-hint">{{ searchEventText }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="input" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-footer />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.66.2</text>
-				</view>
+
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -420,17 +269,6 @@
 
 	const loginPassword = ref('')
 
-	const searchQuery = ref('')
-
-	const searchLargeValue = ref('')
-
-	const searchSmallValue = ref('')
-
-	const searchEventText = ref('键盘确认抛 search，点取消清空并抛 cancel。')
-	// 清除同时抛 input('') 和 clear，两个分开记，才能看出是不是都到了
-	const keywordInputText = ref('—')
-	const keywordClearText = ref('—')
-
 	const sendingCode = ref(false)
 
 	const signingIn = ref(false)
@@ -465,22 +303,6 @@
 		uni.showToast({ title: '演示：开始搜索', icon: 'none' })
 	}
 
-	const onSearchConfirm = (value: string) => {
-		searchEventText.value = value.length > 0 ? `search：${value}` : 'search：空值'
-	}
-
-	const onSearchCancel = () => {
-		searchEventText.value = 'cancel：已清空并收起键盘'
-	}
-
-	const onKeywordInput = (value: string) => {
-		keywordInputText.value = `"${value}"`
-	}
-
-	const onKeywordClear = () => {
-		keywordClearText.value = '已抛 clear'
-	}
-
 	// 先改状态再调 open()：同一条提示连点也重新计时，不用先关再开。
 	const showToast = (options: ToastOptions) => {
 		toastType.value = options.type
@@ -501,29 +323,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/badge/badge'
-	const nextPath: string = '/pages/demo/textarea/textarea'
-	const prevName = '徽章'
-	const nextName = '多行输入框'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="卡片" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="card" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-card</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="layout-dashboard" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">卡片</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">卡片只保留描边一种层级，标题、正文、meta 和 footer 按尺寸取档。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-card</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">默认卡片</text>
-							<text class="demo-section__desc">头像、标题、时间、正文和底部。头部默认带分割线。</text>
-						</view>
-					</view>
+					<demo-section-head title="默认卡片" desc="头像、标题、时间、正文和底部。头部默认带分割线。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item">
 							<vx-card title="CSDN云计算" meta="1小时前" avatar="/static/demo/card/avatar-cs.png"
@@ -65,15 +21,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">头部设置</text>
-							<text class="demo-section__desc">头像形状、标题和时间颜色、头部底色与分割线。</text>
-						</view>
-					</view>
+					<demo-section-head title="头部设置" desc="头像形状、标题和时间颜色、头部底色与分割线。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item">
 							<vx-card title="标题文本" meta="1小时前" avatar="/static/demo/card/avatar-js.png"
@@ -106,15 +54,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">sm / md / lg 改内边距、头像和标题；正文 sm 用 13。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="sm / md / lg 改内边距、头像和标题；正文 sm 用 13。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item">
 							<vx-card size="sm" title="小号卡片" meta="sm" avatar="/static/demo/card/avatar-cs.png"
@@ -133,15 +73,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">通栏</text>
-							<text class="demo-section__desc">去掉左右描边和圆角，留下上下描边；默认的描边卡片不加阴影。</text>
-						</view>
-					</view>
+					<demo-section-head title="通栏" desc="去掉左右描边和圆角，留下上下描边；默认的描边卡片不加阴影。" />
 					<view class="demo-card-bleed">
 						<vx-card full title="通栏卡片" meta="full" avatar="/static/demo/card/avatar-cs.png"
 							header-bg="var(--vx-color-default-soft)" :header-divider="false"
@@ -152,15 +84,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">富内容</text>
-							<text class="demo-section__desc">封面、文章行和展开操作；bodyPadded=false 让内容贴边。</text>
-						</view>
-					</view>
+					<demo-section-head title="富内容" desc="封面、文章行和展开操作；bodyPadded=false 让内容贴边。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item demo-card-lab__item--last">
 							<vx-card title="JavaScript" meta="昨天" avatar="/static/demo/card/avatar-js.png"
@@ -239,15 +163,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">图文网格</text>
-							<text class="demo-section__desc">一段正文加九宫格，底部放地点和时间。</text>
-						</view>
-					</view>
+					<demo-section-head title="图文网格" desc="一段正文加九宫格，底部放地点和时间。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item demo-card-lab__item--last">
 							<vx-card title="CSDN云计算" meta="7小时前" avatar="/static/demo/card/avatar-cs.png"
@@ -265,15 +181,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">可点击卡片</text>
-							<text class="demo-section__desc">整卡可点时按下变淡并抛 click；卡片里不要再放按钮和链接。</text>
-						</view>
-					</view>
+					<demo-section-head title="可点击卡片" desc="整卡可点时按下变淡并抛 click；卡片里不要再放按钮和链接。" />
 					<view class="demo-card-lab">
 						<view class="demo-card-lab__item demo-card-lab__item--last">
 							<vx-card clickable title="可点击卡片" avatar="/static/demo/card/avatar-cs.png"
@@ -294,64 +202,19 @@
 					<text class="demo-hint demo-card-hint">最近点击：{{ cardLastAction }}。其他分区的卡片保持静态，整卡默认不可点。</text>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">卡片放进可点区域</text>
-							<text class="demo-section__desc">静态卡片把点击交给外层；clickable 打开后点击停在卡片上。</text>
-						</view>
-					</view>
-					<view class="demo-card-lab">
-						<view class="demo-card-lab__item" @click="onCardOuterTap('静态卡片')">
-							<vx-card title="静态卡片" content="clickable 关闭，点整卡应该触发外层区块。" />
-						</view>
-						<view class="demo-card-lab__item demo-card-lab__item--last"
-							@click="onCardOuterTap('可点卡片')">
-							<vx-card clickable title="可点卡片" content="点整卡停在卡片上，外层区块收不到。"
-								@click="onCardAction('可点卡片')" />
-						</view>
-					</view>
-					<text class="demo-hint demo-card-hint">最近触发：{{ cardOuterTrace }}；卡片自身：{{ cardLastAction }}。</text>
-				</view>
+				<demo-page-nav current-key="card" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 卡片演示：展开状态、最近点击和九宫格图集共用一份数据。
 	const cardLastAction = ref('还没有点击')
-	// 外层区块的点击结果单独记：静态卡片的点击应该落到这里，可点卡片的不应该
-	const cardOuterTrace = ref('还没有点击')
-
-	const onCardOuterTap = (label: string) => {
-		cardOuterTrace.value = `${label}的外层区块收到点击`
-	}
 
 	const cardFeedExpanded = ref(false)
 
@@ -389,29 +252,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/list-view/list-view'
-	const nextPath: string = '/pages/demo/section/section'
-	const prevName = '列表'
-	const nextName = '标题栏'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

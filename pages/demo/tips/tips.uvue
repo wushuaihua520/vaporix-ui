@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="消息提示" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="tips" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-tips</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="info" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">消息提示</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">一条浮层覆盖六种语义和三种位置，浮层不占布局，默认两秒收起。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-tips</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">位置</text>
-							<text class="demo-section__desc">顶部铺满整条，居中、底部收成圆角浮层。</text>
-						</view>
-					</view>
+					<demo-section-head title="位置" desc="顶部铺满整条，居中、底部收成圆角浮层。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -71,15 +27,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">六种语义色，跟随当前选中的位置。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="六种语义色，跟随当前选中的位置。" />
 					<view class="demo-card">
 						<view class="demo-cluster">
 							<view class="demo-cluster__item">
@@ -106,15 +54,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">长文案</text>
-							<text class="demo-section__desc">超出最大宽度就换行，浮层跟着长高。</text>
-						</view>
-					</view>
+					<demo-section-head title="长文案" desc="超出最大宽度就换行，浮层跟着长高。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="长文字消息提示" @click="onTipsLong" />
 						<text class="demo-hint demo-tips-note">maxWidth 默认 320px，行高 22，浮层跟着长高，不裁掉后面的行。</text>
@@ -122,15 +62,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">时长</text>
-							<text class="demo-section__desc">默认 2000ms，0 表示常驻。</text>
-						</view>
-					</view>
+					<demo-section-head title="时长" desc="默认 2000ms，0 表示常驻。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -148,15 +80,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">图标与关闭</text>
-							<text class="demo-section__desc">图标在文案前，closable 显示关闭并让整条可点。</text>
-						</view>
-					</view>
+					<demo-section-head title="图标与关闭" desc="图标在文案前，closable 显示关闭并让整条可点。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -171,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">底色和文字各管一处，不随主题推导。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="底色和文字各管一处，不随主题推导。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -195,15 +111,22 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
+					<demo-section-head title="透明度" desc="opacity 让整条一起淡；bgOpacity 只压底色，两者相乘。" />
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="整条 60%" @click="onTipsOpacity" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="底色 × 整条" @click="onTipsOpacityMixed" />
+							</view>
 						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">默认插槽</text>
-							<text class="demo-section__desc">两行内容用插槽，颜色和字号自己带。</text>
-						</view>
+						<text class="demo-hint demo-tips-note">两条都按顶部横幅弹，方便看清压在导航栏下面。低于 1 时正文对比度归业务。</text>
 					</view>
+				</view>
+
+				<view class="demo-section">
+					<demo-section-head title="默认插槽" desc="两行内容用插槽，颜色和字号自己带。" />
 					<view class="demo-card">
 						<vx-button block type="success" text="两行内容" @click="onTipsRich" />
 						<text class="demo-hint demo-tips-note">传了默认插槽就不再渲染 text；插槽内容不继承前景色。</text>
@@ -211,15 +134,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法</text>
-							<text class="demo-section__desc">ref 拿实例，open() 重新计时，close() 立刻收起。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法" desc="ref 拿实例，open() 重新计时，close() 立刻收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -233,32 +148,16 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="tips" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
 		<!-- 提示也挂在页面根上，和滚动容器平级；放进 scroll-view 会被滚动和裁剪。 -->
 		<vx-tips ref="tipsRef" v-model:show="tipsVisible" :text="tipsText" :type="tipsType"
 			:position="tipsPosition" :duration="tipsDuration" :icon="tipsIcon" :closable="tipsClosable"
-			:bg-color="tipsBgColor" :bg-opacity="tipsBgOpacity" :color="tipsColor" />
+			:bg-color="tipsBgColor" :bg-opacity="tipsBgOpacity" :color="tipsColor" :opacity="tipsOpacity" />
 
 		<!-- 默认插槽会替换 text，两行内容用独立实例，不去抢主实例的插槽。 -->
 		<vx-tips v-model:show="richTipsVisible" type="success" :duration="4000" closable>
@@ -271,7 +170,7 @@
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type TipsSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -288,6 +187,7 @@
 		bgColor?: string
 		bgOpacity?: number
 		color?: string
+		opacity?: number
 	}
 
 	// 提示只放一个实例演示全部位置和类型：先改状态再显示，文案和类型不会串到上一条。
@@ -311,6 +211,8 @@
 
 	const tipsColor = ref('')
 
+	const tipsOpacity = ref(1)
+
 	const richTipsVisible = ref(false)
 
 	const tipsRef = ref<VxTipsComponentPublicInstance | null>(null)
@@ -328,6 +230,7 @@
 		tipsBgColor.value = options.bgColor != null ? options.bgColor : ''
 		tipsBgOpacity.value = options.bgOpacity != null ? options.bgOpacity : 1
 		tipsColor.value = options.color != null ? options.color : ''
+		tipsOpacity.value = options.opacity != null ? options.opacity : 1
 		// 一屏同时只显示一条：切到主实例时收起插槽那条。
 		richTipsVisible.value = false
 		tipsRef.value?.open?.()
@@ -410,6 +313,19 @@
 		})
 	}
 
+	const onTipsOpacity = () => {
+		showTips('top', { text: '整条 60% 不透明', type: 'primary', opacity: 0.6 })
+	}
+
+	const onTipsOpacityMixed = () => {
+		showTips('top', {
+			text: '底色 0.7 × 整条 0.8',
+			type: 'primary',
+			opacity: 0.8,
+			bgOpacity: 0.7
+		})
+	}
+
 	const onTipsRich = () => {
 		tipsVisible.value = false
 		richTipsVisible.value = true
@@ -425,6 +341,7 @@
 		tipsBgColor.value = ''
 		tipsBgOpacity.value = 1
 		tipsColor.value = ''
+		tipsOpacity.value = 1
 		richTipsVisible.value = false
 		tipsRef.value?.open?.()
 	}
@@ -439,29 +356,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/form/form'
-	const nextPath: string = '/pages/demo/toast/toast'
-	const prevName = '表单'
-	const nextName = '轻提示'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

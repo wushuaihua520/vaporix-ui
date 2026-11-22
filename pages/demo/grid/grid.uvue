@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="宫格" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="grid" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-grid · vx-grid-item</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="grid-2x2" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">宫格</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">按列数均分宽度，格子高度三档；图片用 32 / 40 / 48 的方框按比例展示。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-grid · vx-grid-item</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">宫格基础</text>
-							<text class="demo-section__desc">三列入口，图标在上、文案在下；第一行和第一列不画内部线。</text>
-						</view>
-					</view>
+					<demo-section-head title="宫格基础" desc="三列入口，图标在上、文案在下；第一行和第一列不画内部线。" />
 					<view class="demo-grid-lab">
 						<vx-grid>
 							<vx-grid-item v-for="(entry, index) in gridEntries" :key="entry.title" :columns="3"
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">列数</text>
-							<text class="demo-section__desc">两列、四列和五列。列数越多，文案越短。</text>
-						</view>
-					</view>
+					<demo-section-head title="列数" desc="两列、四列和五列。列数越多，文案越短。" />
 					<view class="demo-grid-lab">
 						<view class="demo-grid-lab__item">
 							<text class="demo-grid-label">两列</text>
@@ -101,15 +49,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">分隔线与形态</text>
-							<text class="demo-section__desc">内部线默认打开；card 有外框，plain 只保留 surface 底。</text>
-						</view>
-					</view>
+					<demo-section-head title="分隔线与形态" desc="内部线默认打开；card 有外框，plain 只保留 surface 底。" />
 					<view class="demo-grid-lab">
 						<view class="demo-grid-lab__item">
 							<text class="demo-grid-label">card · 有内部线</text>
@@ -140,15 +80,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">三档最小高度 72 / 88 / 104，图标 18 / 22，方框和图片 32 / 40 / 48。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="三档最小高度 72 / 88 / 104，图标 18 / 22，方框和图片 32 / 40 / 48。" />
 					<view class="demo-grid-lab">
 						<view class="demo-grid-lab__item">
 							<text class="demo-grid-label">sm · 72px</text>
@@ -179,15 +111,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">图标与角标</text>
-							<text class="demo-section__desc">字体图标、图片和 icon 插槽三选一；extra 贴右上角。</text>
-						</view>
-					</view>
+					<demo-section-head title="图标与角标" desc="字体图标、图片和 icon 插槽三选一；extra 贴右上角。" />
 					<view class="demo-grid-lab">
 						<vx-grid>
 							<vx-grid-item :columns="4" :index="0" icon="alert-triangle" title="待处理" type="warning"
@@ -215,15 +139,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">格子状态</text>
-							<text class="demo-section__desc">可点击、静态和禁用。静态格没有按下态，禁用格不抛 click。</text>
-						</view>
-					</view>
+					<demo-section-head title="格子状态" desc="可点击、静态和禁用。静态格没有按下态，禁用格不抛 click。" />
 					<view class="demo-grid-lab">
 						<vx-grid>
 							<vx-grid-item :columns="3" :index="0" icon="check-circle" title="可点击" @click="onGridAction('可点击格子')" />
@@ -235,15 +151,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">宫格组合</text>
-							<text class="demo-section__desc">四列服务入口配角标，两列宽格子放一句说明。</text>
-						</view>
-					</view>
+					<demo-section-head title="宫格组合" desc="四列服务入口配角标，两列宽格子放一句说明。" />
 					<view class="demo-grid-lab">
 						<view class="demo-grid-block">
 							<text class="demo-grid-block__title">常用服务</text>
@@ -275,15 +183,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">色底与无边框</text>
-							<text class="demo-section__desc">bgColor 铺色底，plain + divider=false 去掉所有边框。</text>
-						</view>
-					</view>
+					<demo-section-head title="色底与无边框" desc="bgColor 铺色底，plain + divider=false 去掉所有边框。" />
 					<view class="demo-grid-lab">
 						<view class="demo-grid-lab__item">
 							<text class="demo-grid-label">5 列 · 色底</text>
@@ -322,32 +222,16 @@
 					<text class="demo-hint demo-grid-hint">色底是字面值，不跟主题；有底色时按下改用整体透明度。无边框用 plain 去掉外框，再在每个格子关掉 divider。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="grid" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 宫格演示：一组入口数据，列数写在格子上，index 按行优先递增。
 	type GridDemoEntry = {
@@ -407,29 +291,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/wing-blank/wing-blank'
-	const nextPath: string = '/pages/demo/row/row'
-	const prevName = '左右留白'
-	const nextName = '栅格布局'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

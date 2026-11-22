@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="多行输入框" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="textarea" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-textarea</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="file-text" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">多行输入框</text>
-								<text class="demo-hero__title demo-hero__title--accent">7 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">和输入框共用一套令牌，标题顶端对齐，计数与扩展放在内容区底部。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-textarea</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础与计数</text>
-							<text class="demo-section__desc">默认三行。标题跟首行对齐。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础与计数" desc="默认三行。标题跟首行对齐。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-textarea v-model="introValue" label="简介" label-width="72px" required counter
@@ -65,15 +21,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">三档只改字号、内边距、圆角和高度。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="三档只改字号、内边距、圆角和高度。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-textarea v-model="sizeSmIntroValue" size="sm" placeholder="小号 · 14px" />
@@ -89,15 +37,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">高度</text>
-							<text class="demo-section__desc">height 固定高度，auto-height 随内容增高。</text>
-						</view>
-					</view>
+					<demo-section-head title="高度" desc="height 固定高度，auto-height 随内容增高。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-textarea v-model="shortIntroValue" height="64px" placeholder="内容区高度 64px" />
@@ -114,15 +54,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">形态与轮廓</text>
-							<text class="demo-section__desc">outline 描边，plain 无边框，line 只留底边。</text>
-						</view>
-					</view>
+					<demo-section-head title="形态与轮廓" desc="outline 描边，plain 无边框，line 只留底边。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-textarea v-model="outlineIntroValue" placeholder="默认描边 · outline" />
@@ -145,15 +77,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">字数与扩展</text>
-							<text class="demo-section__desc">extra 在计数左边。</text>
-						</view>
-					</view>
+					<demo-section-head title="字数与扩展" desc="extra 在计数左边。" />
 					<view class="demo-card">
 						<view class="demo-field demo-field--last">
 							<vx-textarea v-model="counterIntroValue" counter :maxlength="140" placeholder="请输入简介">
@@ -167,15 +91,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态</text>
-							<text class="demo-section__desc">invalid 只改描边。disabled 不能输入。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态" desc="invalid 只改描边。disabled 不能输入。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-textarea v-model="invalidIntroValue" invalid placeholder="校验失败状态" />
@@ -192,78 +108,30 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">反馈表单</text>
-							<text class="demo-section__desc">标题、计数和按钮放在一起。</text>
-						</view>
-					</view>
+					<demo-section-head title="反馈表单" desc="标题、计数和按钮放在一起。" />
 					<view class="demo-card">
 						<view class="demo-field">
-							<vx-input v-model="feedbackTitle" label="反馈标题" label-width="72px" size="sm" required
-								placeholder="sm · 一句话说明问题" />
-						</view>
-						<view class="demo-field">
-							<vx-textarea v-model="feedbackValueSm" label="反馈内容" label-width="72px" size="sm"
-								required counter :maxlength="200" min-height="60px" placeholder="sm · 请描述你遇到的问题" />
-						</view>
-						<view class="demo-field">
-							<vx-input v-model="feedbackTitleMd" label="反馈标题" label-width="80px" required
-								placeholder="md · 一句话说明问题" />
-						</view>
-						<view class="demo-field">
 							<vx-textarea v-model="feedbackValue" label="反馈内容" label-width="80px" required counter
-								:maxlength="200" min-height="88px" placeholder="md · 请描述你遇到的问题" />
-						</view>
-						<view class="demo-field">
-							<vx-input v-model="feedbackTitleLg" label="反馈标题" label-width="88px" size="lg" required
-								placeholder="lg · 一句话说明问题" />
-						</view>
-						<view class="demo-field">
-							<vx-textarea v-model="feedbackValueLg" label="反馈内容" label-width="88px" size="lg"
-								required counter :maxlength="200" min-height="104px" placeholder="lg · 请描述你遇到的问题">
-								<template #extra>
-									<text class="demo-hint">最多 200 字</text>
-								</template>
-							</vx-textarea>
+								:maxlength="200" min-height="88px" placeholder="请描述你遇到的问题，便于我们定位" />
 						</view>
 						<view class="demo-field demo-field--last">
 							<vx-button block type="primary" text="提交反馈" :loading="submittingFeedback"
 								@click="onFeedbackSubmit" />
 						</view>
-						<text class="demo-hint">三档各一组输入框 + 多行输入框：标题和正文左缘应在同一条竖线上；计数和 extra 落在右下角。</text>
+						<text class="demo-hint">演示，不发请求。</text>
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="textarea" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -332,12 +200,6 @@
 	const invalidIntroValue = ref('')
 
 	const feedbackValue = ref('')
-	// 三档各一组，用来比对输入框和多行输入框的标题、正文左缘
-	const feedbackTitle = ref('')
-	const feedbackValueSm = ref('')
-	const feedbackTitleMd = ref('')
-	const feedbackTitleLg = ref('')
-	const feedbackValueLg = ref('')
 
 	const submittingFeedback = ref(false)
 
@@ -370,29 +232,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/input/input'
-	const nextPath: string = '/pages/demo/text/text'
-	const prevName = '输入框'
-	const nextName = '文本'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

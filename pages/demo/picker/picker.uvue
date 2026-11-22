@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="联动选择" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="picker" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-picker</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="map-pin" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">联动选择</text>
-								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">树形数据按 children 逐级联动。滚动只改草稿，点确定才写回；分支提前结束时列数跟着少一列。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-picker</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">三级联动</text>
-							<text class="demo-section__desc">省、市、区三列，换省时下面两列自动回到第一项。</text>
-						</view>
-					</view>
+					<demo-section-head title="三级联动" desc="省、市、区三列，换省时下面两列自动回到第一项。" />
 					<view class="demo-card">
 						<vx-button block type="primary" text="请选择省市区" @click="onOpenBasic" />
 						<view class="demo-picker-status">
@@ -62,15 +18,33 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
+					<demo-section-head title="三条关闭路径"
+						desc="单列实例：三个按钮各开一次，分别用确定、取消、遮罩关掉，便于连续各开 5 次。" />
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="primary" text="确定关闭"
+									@click="onOpenClosePath('confirm')" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="取消关闭"
+									@click="onOpenClosePath('cancel')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="遮罩关闭"
+									@click="onOpenClosePath('mask')" />
+							</view>
 						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">数据层级</text>
-							<text class="demo-section__desc">列数由树深度决定：两级省市、四级园区房间。</text>
+						<view class="demo-picker-status">
+							<text class="demo-picker-status__text">{{ closePathStatus }}</text>
+							<text class="demo-picker-status__meta">confirm / cancel</text>
 						</view>
+						<text class="demo-hint">确定写回 v-model 并抛 confirm，取消抛 cancel，遮罩按取消处理。三个按钮都可以反复点，关掉再开就是下一次；面板标题写着这次该用哪条出口。</text>
 					</view>
+				</view>
+
+				<view class="demo-section">
+					<demo-section-head title="数据层级" desc="列数由树深度决定：两级省市、四级园区房间。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -90,15 +64,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">默认值</text>
-							<text class="demo-section__desc">v-model 存每一级的值，打开时定位到保存过的路径。</text>
-						</view>
-					</view>
+					<demo-section-head title="默认值" desc="v-model 存每一级的值，打开时定位到保存过的路径。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="打开广东省 / 深圳市 / 南山区" @click="onOpenPreset" />
 						<view class="demo-picker-status">
@@ -110,15 +76,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用选项</text>
-							<text class="demo-section__desc">不可选的节点留在滚轮里转灰，停上去时确定置灰。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用选项" desc="不可选的节点留在滚轮里转灰，停上去时确定置灰。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="打开含不可选项的地区" @click="onOpenDisabled" />
 						<text class="demo-hint">深圳市龙岗区、宁波市镇海区、绵阳市安州区、九龙深水埗区标了 disabled。滚到这些行时头部换成「该选项不可选」，确定置灰，取消和遮罩仍可退出。</text>
@@ -126,15 +84,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用状态</text>
-							<text class="demo-section__desc">入口由业务提供，不可用时禁用只读行或按钮。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用状态" desc="入口由业务提供，不可用时禁用只读行或按钮。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input v-model="disabledRegion" label="所在地区" label-width="88px" readonly arrow disabled
@@ -146,15 +96,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">空数据</text>
-							<text class="demo-section__desc">options 为空时留一块和滚轮等高的空状态。</text>
-						</view>
-					</view>
+					<demo-section-head title="空数据" desc="options 为空时留一块和滚轮等高的空状态。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="打开空数据" @click="onOpenEmpty" />
 						<text class="demo-hint">空树不渲染 picker-view，面板高度不跳；确定置灰，取消和遮罩仍能退出。</text>
@@ -162,15 +104,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">标题与遮罩</text>
-							<text class="demo-section__desc">title 居中，maskColor 只改遮罩。</text>
-						</view>
-					</view>
+					<demo-section-head title="标题与遮罩" desc="title 居中，maskColor 只改遮罩。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="标题 + 品牌遮罩" @click="onOpenCustom" />
 						<text class="demo-hint">标题太长时单行省略；遮罩传 var(--vx-color-*) 时跟随亮暗主题，传字面值时对比度由业务保证。</text>
@@ -178,15 +112,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法与事件</text>
-							<text class="demo-section__desc">open() 打开，close() 只收起；change 只在路径可选且变了时抛。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法与事件" desc="open() 打开，close() 只收起；change 只在路径可选且变了时抛。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -209,15 +135,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">分隔符与结果</text>
-							<text class="demo-section__desc">confirm 带 values、texts、indices 和拼好的 text。</text>
-						</view>
-					</view>
+					<demo-section-head title="分隔符与结果" desc="confirm 带 values、texts、indices 和拼好的 text。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -246,15 +164,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">表单组合</text>
-							<text class="demo-section__desc">只读输入行加箭头，点整行打开；两个值各用一个实例。</text>
-						</view>
-					</view>
+					<demo-section-head title="表单组合" desc="只读输入行加箭头，点整行打开；两个值各用一个实例。" />
 					<view class="demo-card">
 						<view class="demo-field">
 							<vx-input :model-value="receiveLabel" label="所在地区" label-width="88px" readonly arrow
@@ -268,25 +178,9 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="picker" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -295,6 +189,11 @@
 			:options="pickerOptions" :title="pickerTitle" :separator="pickerSeparator"
 			:mask-color="pickerMaskColor" @confirm="onPickerConfirm" @change="onPickerChange"
 			@cancel="onPickerCancel" />
+
+		<!-- 关闭路径单独一台：单列数据，三个入口轮流开，反复进出互不干扰。 -->
+		<vx-picker ref="closePathRef" v-model="closePathValues" v-model:show="closePathVisible"
+			:options="closePathOptions" :title="closePathTitle" @confirm="onClosePathConfirm"
+			@cancel="onClosePathCancel" />
 
 		<!-- 数据层级单独一台：两级、四级和地区实验室互不共享状态。 -->
 		<vx-picker v-model="levelValues" v-model:show="levelVisible" :options="levelOptions"
@@ -325,11 +224,12 @@
 		vxPickerColumns,
 		vxPickerText
 	} from '@/uni_modules/vaporix-ui/libs/picker'
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type PickerDemoApi = {
 		open?: () => void
 		close?: () => void
+		cancel?: () => void
 	}
 
 	type PickerDemoConfig = {
@@ -364,6 +264,34 @@
 		if (pickerValues.value.length === 0) return '请选择'
 		return vxPickerText(pickerOptions.value, pickerValues.value, pickerSeparator.value)
 	})
+
+	// 三条关闭路径：单列数据，三个按钮只改标题再打开，面板里的确定 / 取消 / 遮罩各走一次。
+	const closePathVisible = ref(false)
+	const closePathRef = ref<PickerDemoApi | null>(null)
+	const closePathTitle = ref('确定关闭')
+	const closePathStatus = ref('还没有关闭')
+	const closePathValues = ref<Array<string>>(['a'])
+	const closePathOptions: Array<VxPickerOption> = [
+		{ text: '选项一', value: 'a' },
+		{ text: '选项二', value: 'b' },
+		{ text: '选项三', value: 'c' }
+	]
+
+	const onOpenClosePath = (path: string) => {
+		if (path === 'confirm') closePathTitle.value = '确定关闭'
+		else if (path === 'cancel') closePathTitle.value = '取消关闭'
+		else closePathTitle.value = '遮罩关闭'
+		closePathVisible.value = true
+		closePathStatus.value = '已打开 · ' + closePathTitle.value
+	}
+
+	const onClosePathConfirm = (result: VxPickerResult) => {
+		closePathStatus.value = 'confirm · ' + result.text
+	}
+
+	const onClosePathCancel = () => {
+		closePathStatus.value = 'cancel · 面板已关闭'
+	}
 
 	// 数据层级单独一台选择器：两级和四级切换时只改这里，不碰地区实验室的当前值。
 	const levelVisible = ref(false)
@@ -553,29 +481,31 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/datetime/datetime'
-	const nextPath: string = '/pages/demo/calendar/calendar'
-	const prevName = '日期时间'
-	const nextName = '日历'
 
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
+	// 系统返回键优先关浮层；主实例走组件 cancel，联动示例没有暴露 ref，直接收起。
+	onBackPress(() => {
+		if (pickerVisible.value) {
+			pickerRef.value?.cancel?.()
+			return true
 		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
+		if (closePathVisible.value) {
+			closePathRef.value?.cancel?.()
+			return true
+		}
+		if (levelVisible.value) {
+			levelVisible.value = false
+			return true
+		}
+		if (receiveVisible.value) {
+			receiveVisible.value = false
+			return true
+		}
+		if (buildingVisible.value) {
+			buildingVisible.value = false
+			return true
+		}
+		return false
+	})
 
 	onShow(() => {
 		syncDemoTheme()

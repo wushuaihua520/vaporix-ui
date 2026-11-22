@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="弹框" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="modal" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-modal</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="message-square" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">弹框</text>
-								<text class="demo-hero__title demo-hero__title--accent">13 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">居中对话框，动作取紧凑高度；确认可异步、可禁用，遮罩和关闭方式都能配。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-modal</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">默认两个按钮，标题和正文居中，点确定收起并抛 confirm。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="默认两个按钮，标题和正文居中，点确定收起并抛 confirm。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="默认弹框" @click="onModalBasic" />
 						<view class="demo-modal-status">
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">提示文本样式</text>
-							<text class="demo-section__desc">正文换成危险色，只改 content 一处，标题和按钮不变。</text>
-						</view>
-					</view>
+					<demo-section-head title="提示文本样式" desc="正文换成危险色，只改 content 一处，标题和按钮不变。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="危险提示文本" @click="onModalTinted" />
 						<text class="demo-hint">contentColor 只作用于 content，不影响标题和默认插槽；传 var(--vx-color-*) 时跟随亮暗主题。</text>
@@ -78,15 +26,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">危险确认</text>
-							<text class="demo-section__desc">删除不可逆，取消和确定都标危险色，按钮仍是一实一空。</text>
-						</view>
-					</view>
+					<demo-section-head title="危险确认" desc="删除不可逆，取消和确定都标危险色，按钮仍是一实一空。" />
 					<view class="demo-card">
 						<vx-button block type="danger" variant="soft" text="删除项目" @click="onModalDanger" />
 						<text class="demo-hint">危险色只表达删除、退出这类不可逆操作；文案写清后果，不只靠颜色。</text>
@@ -94,15 +34,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">单个按钮</text>
-							<text class="demo-section__desc">showCancel=false 只留一个按钮；状态图标放在标题上方。</text>
-						</view>
-					</view>
+					<demo-section-head title="单个按钮" desc="showCancel=false 只留一个按钮；状态图标放在标题上方。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="提交成功的反馈" @click="onModalSingle" />
 						<text class="demo-hint">icon 是可选状态图标，iconType=success 时圆用 success-soft，图标用 success-pressed；不传 icon 时头部只剩标题。</text>
@@ -110,15 +42,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">多个按钮</text>
-							<text class="demo-section__desc">三个以上动作纵向排列，role="cancel" 仍然收起并抛 cancel。</text>
-						</view>
-					</view>
+					<demo-section-head title="多个按钮" desc="三个以上动作纵向排列，role=&quot;cancel&quot; 仍然收起并抛 cancel。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="未保存的修改" @click="onModalMultiple" />
 						<view class="demo-modal-status">
@@ -130,15 +54,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">圆角按钮</text>
-							<text class="demo-section__desc">actionShape="pill" 让整组动作变胶囊，面板圆角不变。</text>
-						</view>
-					</view>
+					<demo-section-head title="圆角按钮" desc="actionShape=&quot;pill&quot; 让整组动作变胶囊，面板圆角不变。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="胶囊按钮" @click="onModalPill" />
 						<text class="demo-hint">形状只作用于动作，同一个弹框里保持一致；面板仍用 lg 圆角。</text>
@@ -146,15 +62,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">按钮颜色</text>
-							<text class="demo-section__desc">自定义 actions 用三种语义色，三个动作自动改成纵向。</text>
-						</view>
-					</view>
+					<demo-section-head title="按钮颜色" desc="自定义 actions 用三种语义色，三个动作自动改成纵向。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="选择支付方式" @click="onModalColors" />
 						<view class="demo-modal-status">
@@ -166,15 +74,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">size 只改面板最大宽度，字号和动作高度都不变。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="size 只改面板最大宽度，字号和动作高度都不变。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -192,15 +92,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">遮罩不可点</text>
-							<text class="demo-section__desc">maskClosable=false，点遮罩不关闭也不抛 cancel。</text>
-						</view>
-					</view>
+					<demo-section-head title="遮罩不可点" desc="maskClosable=false，点遮罩不关闭也不抛 cancel。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="遮罩不可点击" @click="onModalMaskLocked" />
 						<text class="demo-hint">强制确认时至少留一个动作出口；不要同时关掉遮罩和全部按钮。</text>
@@ -208,15 +100,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">关闭按钮</text>
-							<text class="demo-section__desc">closable=true 后右上角显示关闭叉，点击直接收起并抛 cancel。</text>
-						</view>
-					</view>
+					<demo-section-head title="关闭按钮" desc="closable=true 后右上角显示关闭叉，点击直接收起并抛 cancel。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="带关闭叉的弹框" @click="onModalClosable" />
 						<view class="demo-modal-status">
@@ -228,15 +112,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">11</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义内容</text>
-							<text class="demo-section__desc">默认插槽放输入框和提交按钮，showActions=false 关掉内置动作。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义内容" desc="默认插槽放输入框和提交按钮，showActions=false 关掉内置动作。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="输入邮箱" @click="onModalEmailOpen" />
 						<text class="demo-hint">自定义正文不继承正文色和字号；弹框仍只负责面板、遮罩和标题，提交逻辑由内容自己处理。</text>
@@ -244,15 +120,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">12</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">异步确认</text>
-							<text class="demo-section__desc">closeOnAction=false + confirmLoading，提交完成后再 close()。</text>
-						</view>
-					</view>
+					<demo-section-head title="异步确认" desc="closeOnAction=false + confirmLoading，提交完成后再 close()。" />
 					<view class="demo-card">
 						<vx-button block type="primary" text="提交审核" @click="onModalAsync" />
 						<text class="demo-hint">提交期间确定按钮转圈且不响应点击；遮罩锁住，取消和右上角关闭叉仍可退出，都会停表。完成后由业务收起。</text>
@@ -260,15 +128,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">13</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法</text>
-							<text class="demo-section__desc">ref 拿实例，open() 打开，close() 只收起。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法" desc="ref 拿实例，open() 打开，close() 只收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -282,52 +142,15 @@
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">14</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">长正文</text>
-							<text class="demo-section__desc">正文 60 行时面板按窗口高收口，确定和取消始终在屏内。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<vx-button block type="default" text="打开 60 行正文"
-							@click="longModalVisible = true" />
-						<text class="demo-hint">正文超过可视高度时被压住并裁切，动作区不收缩；需要滚动请自己放 scroll-view 或改用弹出层。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="modal" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-footer />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+
 			</view>
 		</scroll-view>
 
 		<!-- 弹框同样挂在页面根上，层级高于操作菜单和消息提示，低于加载浮层和轻提示。 -->
-		<vx-modal v-model:show="longModalVisible" title="服务协议摘要" :show-actions="true">
-			<view>
-				<text v-for="line in longModalLines" :key="line">{{ line }}</text>
-			</view>
-		</vx-modal>
-
 		<vx-modal ref="modalRef" v-model:show="modalVisible" :title="modalTitle" :content="modalContent"
 			:size="modalSize" :icon="modalIcon" :icon-type="modalIconType" :actions="modalActions"
 			:show-actions="modalShowActions" :show-cancel="modalShowCancel" :cancel-text="modalCancelText"
@@ -347,11 +170,16 @@
 				</view>
 			</view>
 		</vx-modal>
+
+		<!-- 演示页共用轻提示：showToast 先写状态再调 open()。此前漏挂这个节点，toastRef.open() 静默失效。 -->
+		<vx-toast ref="toastRef" :text="toastText" :type="toastType" :duration="toastDuration"
+			:icon="toastIcon" :image="toastImage" :show-icon="toastShowIcon" :bg-color="toastBgColor"
+			:bg-opacity="toastBgOpacity" :color="toastColor" />
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -449,6 +277,7 @@
 	type ModalApi = {
 		open?: () => void
 		close?: () => void
+		cancel?: () => void
 	}
 
 	const modalVisible = ref(false)
@@ -498,13 +327,6 @@
 	const modalRef = ref<ModalApi | null>(null)
 
 	const customModalVisible = ref(false)
-	const longModalVisible = ref(false)
-
-	// 60 行正文：验面板按窗口高收口之后，确定和取消仍在屏内
-	const longModalLines: string[] = []
-	for (let i = 1; i <= 60; i++) {
-		longModalLines.push(`第 ${i} 条：这是一段用来把正文撑到 60 行的协议文字。`)
-	}
 
 	const modalEmail = ref('')
 
@@ -730,29 +552,20 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/actionsheet/actionsheet'
-	const nextPath: string = '/pages/demo/drawer/drawer'
-	const prevName = '操作菜单'
-	const nextName = '抽屉'
 
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
+	// 系统返回键优先关浮层；自定义正文实例没有内置取消按钮，按 cancel 语义手动收起。
+	onBackPress(() => {
+		if (customModalVisible.value) {
+			customModalVisible.value = false
+			onModalEmailCancel()
+			return true
 		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
+		if (modalVisible.value) {
+			modalRef.value?.cancel?.()
+			return true
+		}
+		return false
+	})
 
 	onShow(() => {
 		syncDemoTheme()

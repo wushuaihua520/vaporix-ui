@@ -1,58 +1,12 @@
-<!-- 真机 2026-11-13：XiaoMi 14 / Android 13 / HBuilderX 5.34 标准基座 5.34.15179（蒸汽模式 bytecode）。
-2. 通过：长内容抽屉正文滚到中下部（首条「优惠券将在 3 天后过期」、末条「客服回复了您的咨询」）后关闭再开，回到「订单 20261026 已发货」；再滚一次、再关再开，仍在顶部。本抽屉没有输入框，输入内容不被清掉这一项没有对应用例。 -->
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="抽屉" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="drawer" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-drawer</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="menu" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">抽屉</text>
-								<text class="demo-hero__title demo-hero__title--accent">10 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">贴着屏幕一条边，面板只圆朝向页面的两个角；长内容在面板内部滚动。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-drawer</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">默认从右侧滑出，宽度 280；点遮罩或内容里的按钮收起。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="默认从右侧滑出，宽度 280；点遮罩或内容里的按钮收起。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="从右边弹出 Drawer" @click="drawerBasicVisible = true" />
 						<text class="demo-hint">遮罩盖住页面，面板贴右边、只圆左侧两角；内容比面板高时在内部滚动。</text>
@@ -60,15 +14,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">位置</text>
-							<text class="demo-section__desc">left / right / top / bottom，四条边各试一次。</text>
-						</view>
-					</view>
+					<demo-section-head title="位置" desc="left / right / top / bottom，四条边各试一次。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -99,15 +45,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">width / height 覆盖默认宽高，必须带单位。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="width / height 覆盖默认宽高，必须带单位。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -138,15 +76,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">头部</text>
-							<text class="demo-section__desc">标题、关闭叉，标题前放图标、后面放标签。</text>
-						</view>
-					</view>
+					<demo-section-head title="头部" desc="标题、关闭叉，标题前放图标、后面放标签。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="带标题的抽屉" @click="drawerHeaderVisible = true" />
 						<text class="demo-hint">title 单行省略，closable 在行尾加 44 的关闭叉；prefix 和 extra 插槽不挤占标题宽度。</text>
@@ -154,15 +84,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">贴边与底栏</text>
-							<text class="demo-section__desc">正文贴边放列表，suffix 固定在面板底部。</text>
-						</view>
-					</view>
+					<demo-section-head title="贴边与底栏" desc="正文贴边放列表，suffix 固定在面板底部。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="订单抽屉" @click="drawerOrdersVisible = true" />
 						<text class="demo-hint">body-padded=false 去掉正文内边距；底栏不参与滚动，也带自己的 1px 分割线。</text>
@@ -170,15 +92,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">长内容</text>
-							<text class="demo-section__desc">正文在面板里滚动，头部和底栏保持不动。</text>
-						</view>
-					</view>
+					<demo-section-head title="长内容" desc="正文在面板里滚动，头部和底栏保持不动。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="长内容抽屉" @click="drawerScrollVisible = true" />
 						<text class="demo-hint">这里放了 14 条通知；滚到底不会带动页面，底栏的「全部标记已读」一直在。</text>
@@ -186,15 +100,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">遮罩受限</text>
-							<text class="demo-section__desc">maskClosable=false 时点遮罩不关闭，必须留一个出口。</text>
-						</view>
-					</view>
+					<demo-section-head title="遮罩受限" desc="maskClosable=false 时点遮罩不关闭，必须留一个出口。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="遮罩不可点击" @click="drawerMaskVisible = true" />
 						<text class="demo-hint">关闭叉和内容里的按钮都能退出；遮罩换成蓝色只影响这一处，字面值不跟随主题。</text>
@@ -202,15 +108,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义颜色</text>
-							<text class="demo-section__desc">bgColor 只改面板底色，面板里的文字色自己带。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义颜色" desc="bgColor 只改面板底色，面板里的文字色自己带。" />
 					<view class="demo-card">
 						<vx-button block type="default" text="浅色品牌面板" @click="drawerColorVisible = true" />
 						<text class="demo-hint">这里用品牌浅底，标题和正文写死深色；换深色面板时同时换文字色，不要只改底色。</text>
@@ -218,15 +116,38 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
+					<demo-section-head title="覆盖导航栏" desc="coverNavbar=false 让出顶部导航栏，返回和主题开关仍可点。" />
+					<view class="demo-card">
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="左侧 · 保留导航栏"
+									@click="onDrawerBelowNav('left')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="右侧 · 保留导航栏"
+									@click="onDrawerBelowNav('right')" />
+							</view>
 						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法与事件</text>
-							<text class="demo-section__desc">ref 上暴露 open() / close()，close 只在用户收起时抛。</text>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="顶部 · 保留导航栏"
+									@click="onDrawerBelowNav('top')" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="底部 · 保留导航栏"
+									@click="onDrawerBelowNav('bottom')" />
+							</view>
 						</view>
+						<view class="demo-drawer-status">
+							<text class="demo-drawer-status__text">当前方向：{{ drawerBelowNavText }}</text>
+							<text class="demo-drawer-status__meta">coverNavbar=false</text>
+						</view>
+						<text class="demo-hint">遮罩和面板都从导航栏下方开始，按状态栏 + 48px 行高让位；默认 true 时仍盖住整页。</text>
 					</view>
+				</view>
+
+				<view class="demo-section">
+					<demo-section-head title="方法与事件" desc="ref 上暴露 open() / close()，close 只在用户收起时抛。" />
 					<view class="demo-card">
 						<view class="demo-actions">
 							<view class="demo-actions__item">
@@ -245,15 +166,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">商品页的筛选入口，重置和应用留在底栏。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="商品页的筛选入口，重置和应用留在底栏。" />
 					<view class="demo-card">
 						<view class="demo-drawer-product">
 							<view class="demo-drawer-product__copy">
@@ -270,25 +183,9 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="drawer" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 
@@ -394,6 +291,15 @@
 			</view>
 		</vx-drawer>
 
+		<vx-drawer v-model:show="drawerBelowNavVisible" :position="drawerBelowNavPosition" :cover-navbar="false"
+			title="保留导航栏" closable>
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-title">{{ drawerBelowNavText }}</text>
+				<text class="demo-drawer-text">抽屉从导航栏下方开始，返回键和主题开关仍可点；遮罩也只盖导航栏以下。</text>
+				<vx-button block type="primary" text="关闭抽屉" @click="drawerBelowNavVisible = false" />
+			</view>
+		</vx-drawer>
+
 		<vx-drawer ref="drawerRef" v-model:show="drawerMethodsVisible" title="方法" closable
 			@close="onDrawerCloseEvent">
 			<view class="demo-drawer-body">
@@ -434,11 +340,16 @@
 				</view>
 			</template>
 		</vx-drawer>
+
+		<!-- 演示页共用轻提示：showToast 先写状态再调 open()。此前漏挂这个节点，toastRef.open() 静默失效。 -->
+		<vx-toast ref="toastRef" :text="toastText" :type="toastType" :duration="toastDuration"
+			:icon="toastIcon" :image="toastImage" :show-icon="toastShowIcon" :bg-color="toastBgColor"
+			:bg-opacity="toastBgOpacity" :color="toastColor" />
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type ToastSemantic = 'primary' | 'success' | 'info' | 'warning' | 'danger' | 'default'
 
@@ -523,6 +434,23 @@
 	const drawerMaskVisible = ref(false)
 
 	const drawerColorVisible = ref(false)
+
+	const drawerBelowNavVisible = ref(false)
+
+	const drawerBelowNavPosition = ref<DrawerDemoPosition>('right')
+
+	const drawerBelowNavText = computed((): string => {
+		const position = drawerBelowNavPosition.value
+		if (position === 'left') return '左侧'
+		if (position === 'top') return '顶部'
+		if (position === 'bottom') return '底部'
+		return '右侧'
+	})
+
+	const onDrawerBelowNav = (position: DrawerDemoPosition) => {
+		drawerBelowNavPosition.value = position
+		drawerBelowNavVisible.value = true
+	}
 
 	const drawerMethodsVisible = ref(false)
 
@@ -640,29 +568,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/modal/modal'
-	const nextPath: string = '/pages/demo/bubble-popup/bubble-popup'
-	const prevName = '弹框'
-	const nextName = '气泡弹框'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

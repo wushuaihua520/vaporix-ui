@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="折叠面板" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="collapse" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">布局</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-collapse · vx-collapse-item</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="chevron-down" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">折叠面板</text>
-								<text class="demo-hero__title demo-hero__title--accent">9 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">标题行沿用列表行高度，展开用 220ms 过渡；默认展开的面板不会滑进来。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">布局</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-collapse · vx-collapse-item</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础折叠</text>
-							<text class="demo-section__desc">v-model 是展开面板的 name 数组，第一项默认展开。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础折叠" desc="v-model 是展开面板的 name 数组，第一项默认展开。" />
 					<view class="demo-collapse-stage">
 						<vx-collapse v-model="collapseBasicOpen">
 							<vx-collapse-item v-for="(item, index) in collapseFaq" :key="item.name" :index="index" :name="item.name"
@@ -63,15 +19,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">手风琴</text>
-							<text class="demo-section__desc">accordion 打开后同一时间只展开一项。</text>
-						</view>
-					</view>
+					<demo-section-head title="手风琴" desc="accordion 打开后同一时间只展开一项。" />
 					<view class="demo-collapse-stage">
 						<vx-collapse v-model="collapseAccordionOpen" accordion @change="onCollapseChange">
 							<vx-collapse-item v-for="(item, index) in collapseAccount" :key="item.name" :index="index" :name="item.name"
@@ -88,15 +36,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">卡片与平面</text>
-							<text class="demo-section__desc">card 带描边和圆角，plain 只保留 surface 底。</text>
-						</view>
-					</view>
+					<demo-section-head title="卡片与平面" desc="card 带描边和圆角，plain 只保留 surface 底。" />
 					<view class="demo-collapse-stage">
 						<view class="demo-collapse__group">
 							<text class="demo-collapse__label">card</text>
@@ -121,15 +61,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">标题行 44 / 48 / 52，标题 13 / 15 / 17，箭头 14 / 18 / 22。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="标题行 44 / 48 / 52，标题 13 / 15 / 17，箭头 14 / 18 / 22。" />
 					<view class="demo-collapse-stage">
 						<view class="demo-collapse__group">
 							<text class="demo-collapse__label">sm · 44</text>
@@ -141,7 +73,7 @@
 							</vx-collapse>
 						</view>
 						<view class="demo-collapse__group demo-collapse__group--divided">
-							<text class="demo-collapse__label">md · 52</text>
+							<text class="demo-collapse__label">md · 48</text>
 							<vx-collapse v-model="collapseSizeMdOpen">
 								<vx-collapse-item v-for="(item, index) in collapseShort" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
@@ -150,7 +82,7 @@
 							</vx-collapse>
 						</view>
 						<view class="demo-collapse__group demo-collapse__group--divided">
-							<text class="demo-collapse__label">lg · 60</text>
+							<text class="demo-collapse__label">lg · 52</text>
 							<vx-collapse v-model="collapseSizeLgOpen" size="lg">
 								<vx-collapse-item v-for="(item, index) in collapseShort" :key="item.name" :index="index" :name="item.name"
 									:title="item.title">
@@ -163,15 +95,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">禁用与无箭头</text>
-							<text class="demo-section__desc">disabled 只挡点击，arrow=false 只去掉箭头。</text>
-						</view>
-					</view>
+					<demo-section-head title="禁用与无箭头" desc="disabled 只挡点击，arrow=false 只去掉箭头。" />
 					<view class="demo-collapse-stage">
 						<view class="demo-collapse__group">
 							<text class="demo-collapse__label">disabled</text>
@@ -199,15 +123,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">固定内容高度</text>
-							<text class="demo-section__desc">contentHeight 固定内容区，超出部分在内部滚动。</text>
-						</view>
-					</view>
+					<demo-section-head title="固定内容高度" desc="contentHeight 固定内容区，超出部分在内部滚动。" />
 					<view class="demo-collapse-stage">
 						<vx-collapse v-model="collapseHeightOpen">
 							<vx-collapse-item name="terms" title="服务条款" content-height="96px">
@@ -226,15 +142,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">前缀与角标</text>
-							<text class="demo-section__desc">prefix 放图标，extra 放标签、徽章或状态。</text>
-						</view>
-					</view>
+					<demo-section-head title="前缀与角标" desc="prefix 放图标，extra 放标签、徽章或状态。" />
 					<view class="demo-collapse-stage">
 						<vx-collapse v-model="collapseSlotsOpen">
 							<vx-collapse-item name="notice" title="消息通知">
@@ -265,15 +173,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">卡片组合</text>
-							<text class="demo-section__desc">卡片负责标题、状态和底部，plain 折叠面板只负责展开。</text>
-						</view>
-					</view>
+					<demo-section-head title="卡片组合" desc="卡片负责标题、状态和底部，plain 折叠面板只负责展开。" />
 					<vx-card title="账号设置" meta="仅保存在本机" :body-padded="false">
 						<vx-collapse v-model="collapseComposeOpen" variant="plain">
 							<vx-collapse-item name="notice" title="消息通知">
@@ -307,15 +207,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">容器方法与事件</text>
-							<text class="demo-section__desc">ref 调 open / close / toggle，change 带 name 和 open。</text>
-						</view>
-					</view>
+					<demo-section-head title="容器方法与事件" desc="ref 调 open / close / toggle，change 带 name 和 open。" />
 					<view class="demo-collapse-stage">
 						<vx-collapse ref="collapseMethodRef" v-model="collapseMethodOpen" @change="onCollapseChange">
 							<vx-collapse-item v-for="(item, index) in collapseFaq" :key="item.name" :index="index" :name="item.name"
@@ -342,118 +234,16 @@
 					<text class="demo-hint">方法只改 v-model 并抛 change，不受 disabled 限制；父级也可以只用 v-model 维护展开名单。</text>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">中间插入</text>
-							<text class="demo-section__desc">v-for 中间插一项，只有真正的最后一项不画分割线。</text>
-						</view>
-					</view>
-					<view class="demo-collapse-stage">
-						<vx-button block size="sm" type="default" text="在第 1 项后面插一项"
-							@click="insertCollapseMiddle" />
-						<view class="demo-collapse__group demo-collapse__group--divided">
-							<vx-collapse v-model="collapseInsertOpen">
-								<vx-collapse-item v-for="(item, index) in collapseInsertItems" :key="item.name" :index="index"
-									:name="item.name" :title="item.title">
-									<text class="demo-collapse__body">{{ item.body }}</text>
-								</vx-collapse-item>
-							</vx-collapse>
-						</view>
-						<text class="demo-hint">{{ collapseInsertItems.length }} 项该有 {{ collapseInsertDividers }} 条分割线；插在末尾那一项不该抢走「最后一项」。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="collapse" />
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">11</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">和列表行同排</text>
-							<text class="demo-section__desc">同一卡片里 list-cell 和 collapse-item 上下排，三档箭头的字形大小和右缘一致。</text>
-						</view>
-					</view>
-					<view class="demo-collapse-stage">
-						<vx-card :body-padded="false">
-							<vx-list-cell size="sm" title="消息通知（sm）" value="已开启" arrow />
-							<vx-collapse v-model="collapseMixedSmOpen" variant="plain" size="sm">
-								<vx-collapse-item name="mix-sm" title="高级设置（sm）" :index="0">
-									<text class="demo-collapse__body">折叠项箭头和上面那行列表行的箭头同档。</text>
-								</vx-collapse-item>
-							</vx-collapse>
-						</vx-card>
-						<vx-card :body-padded="false">
-							<vx-list-cell title="消息通知（md）" value="已开启" arrow />
-							<vx-collapse v-model="collapseMixedMdOpen" variant="plain">
-								<vx-collapse-item name="mix-md" title="高级设置（md）" :index="0">
-									<text class="demo-collapse__body">折叠项箭头和上面那行列表行的箭头同档。</text>
-								</vx-collapse-item>
-							</vx-collapse>
-						</vx-card>
-						<vx-card :body-padded="false">
-							<vx-list-cell size="lg" title="消息通知（lg）" value="已开启" arrow />
-							<vx-collapse v-model="collapseMixedLgOpen" variant="plain" size="lg">
-								<vx-collapse-item name="mix-lg" title="高级设置（lg）" :index="0">
-									<text class="demo-collapse__body">折叠项箭头和上面那行列表行的箭头同档。</text>
-								</vx-collapse-item>
-							</vx-collapse>
-						</vx-card>
-						<text class="demo-hint">箭头是辅助图标档 14 / 14 / 18，和列表行一致；展开时只旋转，中心不位移。</text>
-					</view>
-				</view>
-
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">12</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">超长内容</text>
-							<text class="demo-section__desc">内容高于 2000px 时展开不截断，节奏仍是 220ms。</text>
-						</view>
-					</view>
-					<view class="demo-collapse-stage">
-						<vx-collapse v-model="collapseTallOpen" variant="card">
-							<vx-collapse-item name="tall" title="约 2400px 的内容" :index="0">
-								<view>
-									<text v-for="line in collapseTallLines" :key="line" class="demo-collapse__body">{{ line }}</text>
-								</view>
-							</vx-collapse-item>
-						</vx-collapse>
-						<text class="demo-hint">展开后量正文节点高度：{{ collapseTallLines.length }} 行，低于 2000 就是被截断了。</text>
-					</view>
-				</view>
-
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.68.1</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	type CollapseDemoItem = {
 		name: string
@@ -551,49 +341,6 @@
 
 	const collapseLastChange = ref('还没有操作')
 
-	// 10 动态插入：插完重排 index，验「最后一项」按 index 认，不按挂载先后
-	const collapseInsertItems = ref<CollapseDemoItem[]>([
-		{ name: 'insert-a', title: '第一项', body: '第一项的内容。' },
-		{ name: 'insert-b', title: '第二项', body: '第二项的内容。' },
-		{ name: 'insert-c', title: '第三项', body: '第三项的内容。' }
-	])
-	const collapseInsertOpen = ref<Array<string>>([])
-
-	const collapseInsertDividers = computed((): number => {
-		const total = collapseInsertItems.value.length
-		return total > 0 ? total - 1 : 0
-	})
-
-	const insertCollapseMiddle = () => {
-		const list = collapseInsertItems.value
-		const next: CollapseDemoItem[] = []
-		for (let i = 0; i < list.length; i++) {
-			next.push(list[i])
-			// 插在第 1 项后面：新项的 index 是 1，原来的第 2 项顺延
-			if (i === 0) {
-				const order = list.length
-				next.push({
-					name: `insert-x-${order}`,
-					title: `插入的第 ${order} 项`,
-					body: '这一项插在中间，挂载顺序排在后面，index 却在前。'
-				})
-			}
-		}
-		collapseInsertItems.value = next
-	}
-
-	// 11 和列表行同排
-	const collapseMixedSmOpen = ref<Array<string>>([])
-	const collapseMixedMdOpen = ref<Array<string>>([])
-	const collapseMixedLgOpen = ref<Array<string>>([])
-
-	// 12 超长内容：100 行正文，展开后总量超过 2000px
-	const collapseTallOpen = ref<Array<string>>([])
-	const collapseTallLines: Array<string> = []
-	for (let i = 1; i <= 100; i++) {
-		collapseTallLines.push(`第 ${i} 行：展开后这一段不该被 2000px 的旧上限截掉。`)
-	}
-
 	const collapseTitleOf = (name: string): string => {
 		for (let index = 0; index < collapseFaq.length; index++) {
 			if (collapseFaq[index].name === name) return collapseFaq[index].title
@@ -640,29 +387,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/qrcode/qrcode'
-	const nextPath: string = '/pages/demo/tabs/tabs'
-	const prevName = '二维码'
-	const nextName = '标签页'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

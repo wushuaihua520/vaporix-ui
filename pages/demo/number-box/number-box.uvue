@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="数字框" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="number-box" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">表单</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-number-box</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="plus" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">数字框</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">减号、输入区和加号三段式，边界状态和浮点精度都由组件收口。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">表单</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-number-box</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基本用法</text>
-							<text class="demo-section__desc">v-model 绑定数值，中间可以直接输入。</text>
-						</view>
-					</view>
+					<demo-section-head title="基本用法" desc="v-model 绑定数值，中间可以直接输入。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">基本用法</text>
@@ -61,15 +17,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">设置最小值和最大值</text>
-							<text class="demo-section__desc">到边界后对应按钮转灰，另一个方向仍然可用。</text>
-						</view>
-					</view>
+					<demo-section-head title="设置最小值和最大值" desc="到边界后对应按钮转灰，另一个方向仍然可用。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">1–10</text>
@@ -84,15 +32,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">设置步长</text>
-							<text class="demo-section__desc">step 只决定加减量，小数按参与运算的精度收口。</text>
-						</view>
-					</view>
+					<demo-section-head title="设置步长" desc="step 只决定加减量，小数按参与运算的精度收口。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">步长 0.1</text>
@@ -108,15 +48,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">设置大小</text>
-							<text class="demo-section__desc">三档高度 32 / 40 / 48，数值区宽度和图标同步。</text>
-						</view>
-					</view>
+					<demo-section-head title="设置大小" desc="三档高度 32 / 40 / 48，数值区宽度和图标同步。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">sm · 32</text>
@@ -135,15 +67,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">调整样式</text>
-							<text class="demo-section__desc">outline 给表单，soft 给列表行；shape 控制整组轮廓。</text>
-						</view>
-					</view>
+					<demo-section-head title="调整样式" desc="outline 给表单，soft 给列表行；shape 控制整组轮廓。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">描边 · rounded</text>
@@ -166,15 +90,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态</text>
-							<text class="demo-section__desc">invalid 只改描边；disabled 同时停下输入和加减。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态" desc="invalid 只改描边；disabled 同时停下输入和加减。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">校验失败</text>
@@ -189,15 +105,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">调整颜色</text>
-							<text class="demo-section__desc">bgColor / color / iconColor 分别覆盖底色、数值和图标。</text>
-						</view>
-					</view>
+					<demo-section-head title="调整颜色" desc="bgColor / color / iconColor 分别覆盖底色、数值和图标。" />
 					<view class="demo-card">
 						<view class="demo-number-box-row">
 							<text class="demo-number-box-label">暖色底</text>
@@ -214,15 +122,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合与取值</text>
-							<text class="demo-section__desc">放进购物车行，组件只把数值交给业务计算。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合与取值" desc="放进购物车行，组件只把数值交给业务计算。" />
 					<view class="demo-card">
 						<view class="demo-number-box-product">
 							<view class="demo-number-box-product__copy">
@@ -246,32 +146,16 @@
 					</view>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="number-box" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 数字框演示：每组独立一份值，改一档不牵动另一档。
 	const numberBoxBasic = ref(1)
@@ -326,29 +210,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/link/link'
-	const nextPath: string = '/pages/demo/radio/radio'
-	const prevName = '超链接'
-	const nextName = '单项选择器'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()

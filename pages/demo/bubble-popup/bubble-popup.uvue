@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="气泡弹框" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="bubble-popup" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-bubble-popup</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="message-square" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">气泡弹框</text>
-								<text class="demo-hero__title demo-hero__title--accent">11 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">贴着触发元素打开的轻量菜单，也可以排成行内聊天气泡。打开时量一次触发区位置和面板尺寸，方向和间距由 placement、align 和 offset 落点。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-bubble-popup</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础</text>
-							<text class="demo-section__desc">右上角菜单：气泡挂在触发元素下方，右边缘对齐。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础" desc="右上角菜单：气泡挂在触发元素下方，右边缘对齐。" />
 					<view class="demo-card">
 						<view class="demo-bubble-bar">
 							<text class="demo-bubble-bar__label">项目主页</text>
@@ -71,15 +27,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">上方弹出</text>
-							<text class="demo-section__desc">placement="top" 时气泡在触发元素上方，箭头朝下。</text>
-						</view>
-					</view>
+					<demo-section-head title="上方弹出" desc="placement=&quot;top&quot; 时气泡在触发元素上方，箭头朝下。" />
 					<view class="demo-card">
 						<view class="demo-bubble-center">
 							<vx-bubble-popup v-model:show="menuTop" placement="top" align="center" :items="topItems"
@@ -92,15 +40,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型与图标</text>
-							<text class="demo-section__desc">主操作和危险操作用文字色标出，图标跟着同一份颜色。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型与图标" desc="主操作和危险操作用文字色标出，图标跟着同一份颜色。" />
 					<view class="demo-card">
 						<vx-bubble-popup v-model:show="menuTypes" placement="bottom" align="start" :items="typeItems"
 							divider @select="onMenuSelect" @close="onMenuClose">
@@ -111,15 +51,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">选中与禁用</text>
-							<text class="demo-section__desc">closeOnSelect=false 时保持打开，选中项显示勾。</text>
-						</view>
-					</view>
+					<demo-section-head title="选中与禁用" desc="closeOnSelect=false 时保持打开，选中项显示勾。" />
 					<view class="demo-card">
 						<vx-bubble-popup v-model:show="menuStates" placement="bottom" align="start"
 							:items="genderItems" :close-on-select="false" @select="onGenderSelect" @close="onMenuClose">
@@ -134,15 +66,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">遮罩</text>
-							<text class="demo-section__desc">mask 打开后压暗页面，点遮罩收起；默认只有透明点击层。</text>
-						</view>
-					</view>
+					<demo-section-head title="遮罩" desc="mask 打开后压暗页面，点遮罩收起；默认只有透明点击层。" />
 					<view class="demo-card">
 						<vx-bubble-popup v-model:show="menuMask" placement="bottom" align="start" :items="maskItems"
 							mask @select="onMenuSelect" @close="onMenuClose">
@@ -153,15 +77,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">聊天气泡</text>
-							<text class="demo-section__desc">inline 模式不渲染触发区，默认插槽或 content 是气泡内容。</text>
-						</view>
-					</view>
+					<demo-section-head title="聊天气泡" desc="inline 模式不渲染触发区，默认插槽或 content 是气泡内容。" />
 					<view class="demo-card">
 						<view class="demo-bubble-chat">
 							<view class="demo-bubble-chat__row">
@@ -190,15 +106,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">气泡颜色</text>
-							<text class="demo-section__desc">variant="solid" 用语义实心底，前景取对应的 on-*。</text>
-						</view>
-					</view>
+					<demo-section-head title="气泡颜色" desc="variant=&quot;solid&quot; 用语义实心底，前景取对应的 on-*。" />
 					<view class="demo-card">
 						<view v-for="entry in bubbleTones" :key="entry.type"
 							:class="entry.type === 'danger' ? 'demo-bubble-tone demo-bubble-tone--last' : 'demo-bubble-tone'">
@@ -211,15 +119,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">自定义内容</text>
-							<text class="demo-section__desc">只传 extra 插槽时，气泡就是一块自定义面板。</text>
-						</view>
-					</view>
+					<demo-section-head title="自定义内容" desc="只传 extra 插槽时，气泡就是一块自定义面板。" />
 					<view class="demo-card">
 						<vx-bubble-popup v-model:show="menuCustom" placement="bottom" align="start">
 							<vx-button text="账户信息" @click="menuCustom = !menuCustom" />
@@ -244,15 +144,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">09</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方向与对齐</text>
-							<text class="demo-section__desc">placement 四向，align 三档，offset 和 arrowOffset 做微调。</text>
-						</view>
-					</view>
+					<demo-section-head title="方向与对齐" desc="placement 四向，align 三档，offset 和 arrowOffset 做微调。" />
 					<view class="demo-card">
 						<view class="demo-bubble-left">
 							<vx-bubble-popup v-model:show="menuSide" placement="right" align="center"
@@ -265,15 +157,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">10</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">方法</text>
-							<text class="demo-section__desc">ref 拿实例，open() / close() / toggle() 控制显隐。</text>
-						</view>
-					</view>
+					<demo-section-head title="方法" desc="ref 拿实例，open() / close() / toggle() 控制显隐。" />
 					<view class="demo-card">
 						<view class="demo-bubble-methods">
 							<vx-bubble-popup ref="methodsRef" v-model:show="menuMethods" placement="bottom"
@@ -298,15 +182,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">11</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">卡片头部的更多按钮打开账户菜单，选中后由页面处理。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="卡片头部的更多按钮打开账户菜单，选中后由页面处理。" />
 					<view class="demo-card">
 						<view class="demo-bubble-account">
 							<view class="demo-bubble-account__head">
@@ -335,60 +211,16 @@
 					</view>
 				</view>
 
-				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">12</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">50 个关闭实例</text>
-							<text class="demo-section__desc">全部关闭时不该挂窗口监听；打开一个才挂，收起即摘。</text>
-						</view>
-					</view>
-					<view class="demo-card">
-						<vx-button block size="sm" type="default"
-							:text="bubbleManyVisible ? '卸载这 50 个' : '挂 50 个（全部关闭）'"
-							@click="bubbleManyVisible = !bubbleManyVisible" />
-						<view v-if="bubbleManyVisible">
-							<view v-for="row in bubbleManyRows" :key="row" class="demo-bubble-bar">
-								<text class="demo-bubble-bar__label">第 {{ row }} 行</text>
-								<vx-bubble-popup :show="false" placement="bottom" align="end" :items="basicItems">
-									<view class="demo-bubble-icon-btn" hover-class="demo-bubble-icon-btn--pressed">
-										<vx-icon name="more-horizontal" size="md" />
-									</view>
-								</vx-bubble-popup>
-							</view>
-						</view>
-						<text class="demo-hint">用性能面板录一次滚动：这 50 个都关着，不该有 onWindowScroll 回调。第 01 节打开一个再滚，气泡收起后回调也跟着消失。</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="bubble-popup" />
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
-
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 	import { VxBubblePopupItem } from '@/uni_modules/vaporix-ui/components/vx-bubble-popup/props'
 
 	type BubblePopupApi = {
@@ -403,12 +235,6 @@
 	}
 
 	const menuBasic = ref(false)
-	// 50 个全部关闭的实例：验关着的实例不挂窗口 scroll 监听
-	const bubbleManyVisible = ref(false)
-	const bubbleManyRows: Array<number> = []
-	for (let i = 1; i <= 50; i++) {
-		bubbleManyRows.push(i)
-	}
 	const menuTop = ref(false)
 	const menuTypes = ref(false)
 	const menuStates = ref(false)
@@ -510,29 +336,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/drawer/drawer'
-	const nextPath: string = '/pages/demo/list-view/list-view'
-	const prevName = '抽屉'
-	const nextName = '列表'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
@@ -541,6 +344,7 @@
 
 <style>
 	/* 演示页只摆触发区和舞台；气泡的位置和尺寸都由组件自己负责。 */
+	/* 下沿的分隔线交给下面的状态行画：两边都画会在行下出现两条贴得很近的细线。 */
 	.demo-bubble-bar {
 		flex-direction: row;
 		align-items: center;
@@ -548,9 +352,6 @@
 		box-sizing: border-box;
 		width: 100%;
 		padding-bottom: var(--vx-space-sm);
-		border-bottom-width: var(--vx-border-width);
-		border-bottom-style: solid;
-		border-bottom-color: var(--vx-color-divider);
 	}
 
 	.demo-bubble-bar__label {

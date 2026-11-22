@@ -1,56 +1,12 @@
 <template>
 	<view :class="pageClass">
+		<demo-topbar title="暂无数据" />
 		<scroll-view id="demo-scroll" class="demo-scroll" direction="vertical">
+			<demo-hero current-key="no-data" />
+
 			<view class="demo-shell">
-				<view class="demo-pagebar">
-					<view class="demo-crumb">
-						<view class="demo-crumb__back" hover-class="demo-crumb__back--pressed" @click="goCatalog">
-							<vx-icon name="chevron-left" size="sm" />
-							<text class="demo-crumb__back-text">组件</text>
-						</view>
-						<text class="demo-crumb__sep">/</text>
-						<text class="demo-crumb__current">反馈</text>
-					</view>
-					<view class="demo-theme-toggle" hover-class="demo-theme-toggle--pressed"
-						@click="toggleDemoPageTheme">
-						<vx-icon :name="isDark ? 'sun' : 'moon'" size="md" />
-					</view>
-				</view>
-
-				<view class="demo-hero">
-					<text class="demo-hero__eyebrow">VAPORIX UI · vx-no-data</text>
-					<view class="demo-hero__top">
-						<view class="demo-hero__icon">
-							<vx-icon name="folder" size="lg" type="primary" />
-						</view>
-						<view class="demo-hero__heading">
-							<view class="demo-hero__title-wrap">
-								<text class="demo-hero__title">暂无数据</text>
-								<text class="demo-hero__title demo-hero__title--accent">8 组示例</text>
-							</view>
-						</view>
-					</view>
-					<text class="demo-hero__lead">内置线稿、字体图标、自定义图片和插槽都能换，动作和文案一起收尾。</text>
-					<view class="demo-hero__chips">
-						<view class="demo-chip">
-							<text class="demo-chip__text">反馈</text>
-						</view>
-						<view class="demo-chip demo-chip--neutral">
-							<text class="demo-chip__text demo-chip__text--neutral">vx-no-data</text>
-						</view>
-					</view>
-				</view>
-
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">01</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">基础空状态</text>
-							<text class="demo-section__desc">默认线稿加一句文案；说明可选，没有动作时只居中显示。</text>
-						</view>
-					</view>
+					<demo-section-head title="基础空状态" desc="默认线稿加一句文案；说明可选，没有动作时只居中显示。" />
 					<view class="demo-card demo-card--flush">
 						<view class="demo-no-data-board">
 							<vx-no-data text="暂无数据" />
@@ -62,15 +18,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">02</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">插图</text>
-							<text class="demo-section__desc">默认线稿、字体图标和自定义图片；icon 插槽再换一层。</text>
-						</view>
-					</view>
+					<demo-section-head title="插图" desc="默认线稿、字体图标和自定义图片；icon 插槽再换一层。" />
 					<view class="demo-card">
 						<view class="demo-no-data-grid">
 							<view class="demo-no-data-tile">
@@ -109,15 +57,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">03</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">类型</text>
-							<text class="demo-section__desc">语义色只给插图和图标圆，文案保持正文色。</text>
-						</view>
-					</view>
+					<demo-section-head title="类型" desc="语义色只给插图和图标圆，文案保持正文色。" />
 					<view class="demo-card">
 						<view class="demo-no-data-types">
 							<view class="demo-no-data-type">
@@ -162,15 +102,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">04</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">尺寸</text>
-							<text class="demo-section__desc">插图 96 / 128 / 160，主文案 13 / 15 / 17。</text>
-						</view>
-					</view>
+					<demo-section-head title="尺寸" desc="插图 96 / 128 / 160，主文案 13 / 15 / 17。" />
 					<view class="demo-card">
 						<view class="demo-no-data-size">
 							<text class="demo-no-data-size__label">sm · 96</text>
@@ -189,15 +121,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">05</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">动作</text>
-							<text class="demo-section__desc">动作复用 vx-button；文案为空时不占位置。</text>
-						</view>
-					</view>
+					<demo-section-head title="动作" desc="动作复用 vx-button；文案为空时不占位置。" />
 					<view class="demo-card demo-card--flush">
 						<view class="demo-no-data-board">
 							<vx-no-data text="您还没有购买任何商品~" action-text="去逛逛"
@@ -219,15 +143,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">06</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">状态</text>
-							<text class="demo-section__desc">动作可以转圈或禁用；空状态本身没有禁用态。</text>
-						</view>
-					</view>
+					<demo-section-head title="状态" desc="动作可以转圈或禁用；空状态本身没有禁用态。" />
 					<view class="demo-card demo-card--flush">
 						<view class="demo-no-data-board">
 							<vx-no-data text="正在重新加载" description="稍等片刻" action-text="重新加载"
@@ -241,15 +157,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">07</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">插槽</text>
-							<text class="demo-section__desc">默认插槽换文案，icon 换插图，extra 换动作。</text>
-						</view>
-					</view>
+					<demo-section-head title="插槽" desc="默认插槽换文案，icon 换插图，extra 换动作。" />
 					<view class="demo-card demo-card--flush">
 						<view class="demo-no-data-board">
 							<vx-no-data>
@@ -286,15 +194,7 @@
 				</view>
 
 				<view class="demo-section">
-					<view class="demo-section__head">
-						<view class="demo-section__num">
-							<text class="demo-section__num-text">08</text>
-						</view>
-						<view class="demo-section__copy">
-							<text class="demo-section__title">组合</text>
-							<text class="demo-section__desc">fill 在固定高度里居中；放进卡片时由卡片提供边界。</text>
-						</view>
-					</view>
+					<demo-section-head title="组合" desc="fill 在固定高度里居中；放进卡片时由卡片提供边界。" />
 					<view class="demo-card demo-card--flush">
 						<view class="demo-no-data-board">
 							<view class="demo-no-data-stage">
@@ -313,32 +213,16 @@
 					<text class="demo-hint">fill 只是 flex: 1，父级需要是纵向 flex；普通页面区块直接留在文档流里，不画外框、底色和阴影。</text>
 				</view>
 
-				<view class="demo-page-nav">
-					<view class="demo-page-nav__item"
-						:class="prevPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goPrev">
-						<text class="demo-page-nav__label">上一个</text>
-						<text class="demo-page-nav__name">{{ prevName }}</text>
-					</view>
-					<view class="demo-page-nav__item demo-page-nav__item--next"
-						:class="nextPath === '' ? 'demo-page-nav__item--disabled' : ''"
-						hover-class="demo-page-nav__item--pressed" @click="goNext">
-						<text class="demo-page-nav__label">下一个</text>
-						<text class="demo-page-nav__name">{{ nextName }}</text>
-					</view>
-				</view>
+				<demo-page-nav current-key="no-data" />
 
-				<view class="demo-footer">
-					<text class="demo-footer__text">元汽UI · MIT</text>
-					<text class="demo-footer__meta">VAPORIX UI · 组件演示 · v0.59.0</text>
-				</view>
+				<demo-footer />
 			</view>
 		</scroll-view>
 	</view>
 </template>
 
 <script setup>
-	import { demoIsDark, syncDemoTheme, toggleDemoPageTheme } from '@/pages/demo/shared/theme'
+	import { demoIsDark, syncDemoTheme } from '@/pages/demo/shared/theme'
 
 	// 空状态只抛 action，演示里记下最后一次点的是哪个动作。
 	const noDataLastAction = ref('还没有点击')
@@ -353,29 +237,6 @@
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'
 	})
 
-	const prevPath: string = '/pages/demo/loading/loading'
-	const nextPath: string = '/pages/demo/actionsheet/actionsheet'
-	const prevName = '加载与尾部'
-	const nextName = '操作菜单'
-
-	const goCatalog = () => {
-		const pages = getCurrentPages()
-		if (pages.length > 1) {
-			uni.navigateBack({ delta: 1 })
-			return
-		}
-		uni.switchTab({ url: '/pages/index/index' })
-	}
-
-	const goPrev = () => {
-		if (prevPath === '') return
-		uni.redirectTo({ url: prevPath })
-	}
-
-	const goNext = () => {
-		if (nextPath === '') return
-		uni.redirectTo({ url: nextPath })
-	}
 
 	onShow(() => {
 		syncDemoTheme()
