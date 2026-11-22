@@ -166,4 +166,10 @@
 		flex-direction: row;
 		margin-top: var(--vx-space-md);
 	}
+
+	/* 主题切换按钮与左侧眉标的间距：原来定义在旧版首页的 style 块里（全局生效），
+	   首页改版后收回页面自持。 */
+	.demo-home__theme {
+		margin-left: var(--vx-space-sm);
+	}
 </style>
