@@ -22,6 +22,7 @@
 		plain: false,
 		round: false,
 		shadow: false,
+		gradient: '',
 		block: false,
 		width: '',
 		height: '',
@@ -97,6 +98,10 @@
 		// block 优先占满整行；自定义宽度只在非 block 时生效。
 		if (!props.block && props.width.length > 0) style += `width: ${props.width};`
 		if (props.height.length > 0) style += `height: ${props.height};`
+		if (resolvedVariant.value === 'solid' && !props.disabled && props.gradient.length > 0) {
+			style += `border-color: transparent;`
+			style += `background-image: ${props.gradient};`
+		}
 		return style
 	})
 

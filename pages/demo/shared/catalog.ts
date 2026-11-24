@@ -12,7 +12,7 @@ export type DemoComponent = {
 export const DEMO_CATEGORIES: string[] = ['基础', '表单', '反馈', '布局', '导航与展示']
 
 export const DEMO_COMPONENTS: DemoComponent[] = [
-	{ key: 'button', name: '按钮', en: 'vx-button', icon: 'check-circle', category: '基础', desc: '一套按钮覆盖主操作、次操作、危险操作和纯文字链接，加载与禁用不改尺寸。' },
+	{ key: 'button', name: '按钮', en: 'vx-button', icon: 'check-circle', category: '基础', desc: '一套按钮覆盖主操作、次操作、危险操作、渐变背景和纯文字链接，加载与禁用不改尺寸。' },
 	{ key: 'icon', name: '图标', en: 'vx-icon', icon: 'star', category: '基础', desc: 'core 112 个默认加载，extend 1000 个按需引入；尺寸只有 14 / 18 / 22 三档。' },
 	{ key: 'tag', name: '标签', en: 'vx-tag', icon: 'tag', category: '基础', desc: '标签只承载展示与关闭，没有点击态；自定义颜色分文字、底色和描边三处。' },
 	{ key: 'badge', name: '徽章', en: 'vx-badge', icon: 'bell', category: '基础', desc: '默认危险色表达未读；计数封顶 99，圆点在计数前生效，叠图标时加一圈描边。' },
@@ -95,7 +95,7 @@ function countNamedComponents(): number {
 }
 
 // 版本号单源：页脚、首页胶囊都引这里，发版时与 uni_modules/vaporix-ui/package.json 一致。
-export const DEMO_VERSION = 'v0.75.0'
+export const DEMO_VERSION = 'v0.76.0'
 
 export const DEMO_PAGE_COUNT = DEMO_COMPONENTS.length
 export const DEMO_COMPONENT_COUNT = countNamedComponents()

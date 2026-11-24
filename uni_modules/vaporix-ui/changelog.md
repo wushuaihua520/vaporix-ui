@@ -1,3 +1,9 @@
+## 0.76.0（2026-11-24）
+
+- `vx-button` 新增 `gradient`：传入 `linear-gradient(...)` 为启用中的实心按钮铺渐变背景；镂空、浅底、纯文字和禁用态保持原外观，加载态保留渐变。
+- 渐变按钮隐藏可见边框，保留 `1px` 边框宽度，尺寸和热区不变；App 端方向使用 `to right` / `to bottom` 等关键字，渐变不支持时回落到 `type` 的纯色底。
+- 按钮演示页、库内 API 和文档站补充横向主题渐变、纵向品牌渐变、加载与禁用示例。Web、微信小程序和 iOS 蒸汽模式已验证。
+
 ## 0.75.0 (2026-11-22)
 - `vx-loader` 液面动画节奏调快：2800/3200ms → 1800/2200ms（亮暗两套令牌同步），横移幅度大，再快不显急躁。
 - 演示工程对齐 Pro 版式：`demo-topbar` / `demo-hero` / `demo-section-head` / `demo-page-nav` / `demo-footer` 5 个壳组件与 demo.css / pro-demo.css / catalog 54 条目录数据搬进免费库单源；54 个组件演示页整页替换（`navigationStyle: custom`）；首页重写为轮播 hero + 吸顶搜索/页签目录。

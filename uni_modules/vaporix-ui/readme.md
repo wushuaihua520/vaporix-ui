@@ -79,7 +79,7 @@ App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css
 
 | 组件 | 说明 |
 | --- | --- |
-| [vx-button](https://www.vaporix-ui.com/components/button) | 按钮，一屏一个实心主操作 |
+| [vx-button](https://www.vaporix-ui.com/components/button) | 按钮，一屏一个实心主操作，支持渐变背景 |
 | [vx-icon](https://www.vaporix-ui.com/components/icon) | 图标，core 112 + extend 1000 |
 | [vx-text](https://www.vaporix-ui.com/components/text) | 文本，正文、金额、证件格式化 |
 | [vx-link](https://www.vaporix-ui.com/components/link) | 超链接，Web 新开标签页，App 复制 |

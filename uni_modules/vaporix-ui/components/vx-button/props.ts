@@ -15,6 +15,7 @@ export type VxButtonProps = {
 	plain?: boolean
 	round?: boolean
 	shadow?: boolean
+	gradient?: string
 	block?: boolean
 	width?: string
 	height?: string

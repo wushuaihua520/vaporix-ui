@@ -37,6 +37,28 @@
 				</view>
 
 				<view class="demo-section">
+					<demo-section-head title="渐变按钮" desc="gradient 只改实心背景并隐藏边框，文字和状态沿用语义色。" />
+					<view class="demo-card">
+						<view class="bt-row">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="主题渐变" gradient="linear-gradient(to right, var(--vx-color-primary), var(--vx-color-info))" />
+							</view>
+							<view class="bt-row__item">
+								<vx-button block type="primary" text="品牌渐变" gradient="linear-gradient(to bottom, #6366f1, #ec4899)" />
+							</view>
+						</view>
+						<view class="bt-row bt-row--last">
+							<view class="bt-row__item bt-row__item--gap">
+								<vx-button block type="primary" text="加载中…" gradient="linear-gradient(to right, #6366f1, #ec4899)" loading />
+							</view>
+							<view class="bt-row__item">
+								<vx-button block type="primary" text="已禁用" gradient="linear-gradient(to right, #6366f1, #ec4899)" disabled />
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<view class="demo-section">
 					<demo-section-head title="加载与禁用" desc="转圈在前、文案在后，两种状态都不改尺寸。" />
 					<view class="demo-card">
 						<view class="bt-row bt-row--last">
