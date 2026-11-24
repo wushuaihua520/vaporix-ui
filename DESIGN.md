@@ -532,14 +532,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 
 1. 同一件事的高配版本：select、slider、segmented-control、code-input、data-checkbox、index-list、divide-list、gallery、loader、skeleton、msg、circular-progress、landscape、pagination、waterfall、swiper、count-to。
 2. 跨控件的组合件：`vx-page` 把导航栏、状态栏、安全区和滚动容器收成一件。表单容器与校验从 0.62.0 起在免费层，不再作为付费组合件规划。
-3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text、drag-list。
+3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text、drag-list、signature。
 4. 服务：暗色与主题、i18n、无障碍、升级协助、源码授权。
 
-第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补，`drag-list` 由 1.38.0 补上；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
+第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补，`drag-list` 由 1.38.0 补上，`vx-signature` 由 1.41.0 补上；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
 
 ### 迁移（0.56.0 起）
 
-分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，1.38.0 补 `vx-drag-list`，当前付费层 31 件。
+分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，1.38.0 补 `vx-drag-list`，1.41.0 补 `vx-signature`，当前付费层 32 件。
 
 每个转出的组件跟着改：两包 readme 的清单、两包 changelog、文档站 `nav.ts` 的 `pro` 标记、`content` 中英文 meta 的「会员组件」、首页与索引页的组件数、Pro 的演示与依赖说明。免费库还要补演示页、`catalog.ts`、`pages.json`。全部迁完删掉本节。
 
