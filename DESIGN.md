@@ -532,14 +532,14 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 
 1. 同一件事的高配版本：select、slider、segmented-control、code-input、data-checkbox、index-list、divide-list、gallery、loader、skeleton、msg、circular-progress、landscape、pagination、waterfall、swiper、count-to。
 2. 跨控件的组合件：`vx-page` 把导航栏、状态栏、安全区和滚动容器收成一件。表单容器与校验从 0.62.0 起在免费层，不再作为付费组合件规划。
-3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text、drag-list、signature、image-cropper。
+3. 重型单品：upload、table、virtual-list、tree 与 cascader、rich-text、drag-list、signature、image-cropper、slide-verify。
 4. 服务：暗色与主题、i18n、无障碍、升级协助、源码授权。
 
-第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补，`drag-list` 由 1.38.0 补上，`vx-signature` 由 1.41.0 补上，`vx-image-cropper` 由 1.42.0 补上；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
+第 2 类由 1.28.0 的 `vx-page` 补齐；第 3 类的 `upload`、`table`、`virtual-list` 和 `rich-text` 已补，tree 与 cascader 也已补，`drag-list` 由 1.38.0 补上，`vx-signature` 由 1.41.0 补上，`vx-image-cropper` 由 1.42.0 补上，`vx-slide-verify` 由 1.43.0 补上并在 1.44.0 重做视觉与状态层；富文本编辑器不归组件库，渲染交给 `vx-rich-text`。图表不进：uCharts 一类免费够用，除非按本库令牌重绘并带手势。
 
 ### 迁移（0.56.0 起）
 
-分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，1.38.0 补 `vx-drag-list`，1.41.0 补 `vx-signature`，1.42.0 补 `vx-image-cropper`，当前付费层 33 件。
+分三批迁完，数量从 45 / 19 变成 53 / 11，0.62.0 免费层再增到 55，0.63.0 补 `vx-popup` 到 56，0.64.0 补 `vx-image`、`vx-divider`、`vx-safe-area` 到 59：0.56.0 转 `vx-row`、`vx-col`、`vx-status-bar`；0.57.0 转 `vx-text`、`vx-link`；0.58.0 转 `vx-radio`、`vx-radio-group`、`vx-checkbox`、`vx-checkbox-group`、`vx-switch`。免费层的清单见上表，付费层只剩高配版本、组合件、重型单品和服务。0.59.0 起 Pro 再补 `vx-upload` 和 `vx-skeleton`；1.23.0 补 `vx-landscape`，1.24.0 补 `vx-pagination`，1.25.0 补 `vx-waterfall`，1.26.0 补 `vx-keyboard` / `vx-keyboard-input`，1.27.0 补 `vx-tree-view`，1.28.0 补 `vx-page`，1.29.0 补 `vx-table`，1.30.0 补 `vx-virtual-list`，1.31.0 补 `vx-swiper` / `vx-count-to`，1.32.0 补 `vx-dropdown` / `vx-back-top`，1.33.0 补 `vx-scroll-list` / `vx-cascader` / `vx-guide`。0.62.0 起表单容器与校验在免费层，Pro 不再规划表单容器。0.65.0 补 `vx-avatar` 到 60。1.37.0 补 `vx-rich-text`，1.38.0 补 `vx-drag-list`，1.41.0 补 `vx-signature`，1.42.0 补 `vx-image-cropper`，1.43.0 补 `vx-slide-verify`，当前付费层 34 件。
 
 每个转出的组件跟着改：两包 readme 的清单、两包 changelog、文档站 `nav.ts` 的 `pro` 标记、`content` 中英文 meta 的「会员组件」、首页与索引页的组件数、Pro 的演示与依赖说明。免费库还要补演示页、`catalog.ts`、`pages.json`。全部迁完删掉本节。
 
@@ -1040,6 +1040,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 图标分 `core` 112 和 `extend` 1000 两档。core 只放高频常用图标，随 `variables.css` 默认加载；extend 放长尾/专业图标，用到时必须引入 `libs/style/icons-extend.css`。
 - 每档都有 `variant="regular" / "fill"`，四套字体共用同一组名字和码点。`fill` 给选中、强调、小尺寸。同一组不要混用，除非实心表示选中。
 - `vx-icon` 根据 `name` 的 tier 自动选 core / extend 字体，业务不手动选 `font-family`。
+- 两档字体在包里的载体不同：core 直接进 `variables.css`，extend 进 `icons-extend.css`；Web 用 woff2 分片，App / 小程序用整份 TTF。0.77.0 起 extend 字形在 Web 上由 `libs/extend-glyph-shift.ts` 按当前浏览器实测度量写入 `--vx-extend-glyph-shift`：Chrome 对带 `unicode-range` 的分片 face 度量偏大，需要下移约 0.14em；WebKit 无偏差，写入 0em。组件只写 `transform: translateY(var(--vx-extend-glyph-shift, 0em))`，不写死 px。
 - 尺寸只有 `sm` 14px、`md` 18px、`lg` 22px，对应 `--vx-icon-*`，也就是字号（em）。实际绘制区约为字号的 0.84–0.9，不要再乘系数，也不要新增第四档。
 - 宫格的字体图标沿用这三档：`sm` 格子取 18，`md` / `lg` 格子取 22，不套底色；默认用 `text-secondary`，语义色交给 `type`，`iconVariant` 切 regular / fill。图片用 32 / 40 / 48 方框（`--vx-grid-media-*`）按 `aspectFit` 展示。方框尺寸不并入图标三档。
 - 标签栏的字体图标沿用 `--vx-icon-*`：`sm` 用 18，`md` / `lg` 用 22；图片图标用 `--vx-tabbar-media-*` 的 20 / 24 / 28 方框按 `aspectFit` 展示，选中换 `activeImage`。字体图标跟选中色，图片不能染色；`iconVariant` / `activeIconVariant` 只切字体字重。

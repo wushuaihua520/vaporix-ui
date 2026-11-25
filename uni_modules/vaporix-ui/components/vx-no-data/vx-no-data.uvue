@@ -51,6 +51,7 @@
 <script setup>
 	import { VxNoDataProps } from './props'
 	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+	import { ensureExtendGlyphShift } from '../../libs/extend-glyph-shift'
 
 	const props = withDefaults(defineProps<VxNoDataProps>(), {
 		text: '暂无数据',
@@ -153,6 +154,13 @@
 		}
 		return name
 	})
+
+	// extend 字形在 Web 上按浏览器实测度量做垂直校正，见 libs/extend-glyph-shift.ts。
+	const syncExtendShift = (tier: string) => {
+		if (tier === 'extend') ensureExtendGlyphShift()
+	}
+	syncExtendShift(VX_ICON_TIER[iconName.value])
+	watch(() => iconName.value, (name) => syncExtendShift(VX_ICON_TIER[name]))
 
 	const textClass = computed((): string => {
 		return props.size === 'md' ? 'vx-no-data__text' : `vx-no-data__text vx-no-data__text--${props.size}`
@@ -551,9 +559,22 @@
 		font-family: VaporixIconsExtend;
 	}
 
+	/* #ifdef WEB */
+	/* 变量由 libs/extend-glyph-shift.ts 按当前浏览器实测写入；没有度量偏差的引擎是 0em。 */
+	.vx-no-data__glyph--extend {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+	/* #endif */
+
 	.vx-no-data__glyph--extend-fill {
 		font-family: VaporixIconsExtendFill;
 	}
+
+	/* #ifdef WEB */
+	.vx-no-data__glyph--extend-fill {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+	/* #endif */
 
 	.vx-no-data__copy {
 		flex-direction: column;

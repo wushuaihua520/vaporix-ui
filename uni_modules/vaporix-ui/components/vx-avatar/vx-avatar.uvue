@@ -21,6 +21,7 @@
 	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
 	import { VxSemantic, VxSize } from '../../libs/types/common'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { ensureExtendGlyphShift } from '../../libs/extend-glyph-shift'
 
 	const props = withDefaults(defineProps<VxAvatarProps>(), {
 		src: '',
@@ -110,6 +111,13 @@
 		const tier = VX_ICON_TIER[iconName.value]
 		return tier === 'extend' ? 'extend' : 'core'
 	})
+
+	// extend 字形在 Web 上按浏览器实测度量做垂直校正，见 libs/extend-glyph-shift.ts。
+	const syncExtendShift = (tier: string) => {
+		if (tier === 'extend') ensureExtendGlyphShift()
+	}
+	syncExtendShift(glyphTier.value)
+	watch(glyphTier, (tier) => syncExtendShift(tier))
 
 	// 蒸汽模式没有稳定的 attrs，声明过的 @click 只留在 vnode.props 上。
 	// 业务只写 @click 也算可点；显式 clickable=false 时不放行，@click 照旧冒泡。
@@ -332,6 +340,13 @@
 	.vx-avatar__glyph--extend {
 		font-family: VaporixIconsExtend;
 	}
+
+	/* #ifdef WEB */
+	/* 变量由 libs/extend-glyph-shift.ts 按当前浏览器实测写入；没有度量偏差的引擎是 0em。 */
+	.vx-avatar__glyph--extend {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+	/* #endif */
 
 	/* 首字和图标的语义前景色单独写：text 不继承根节点的 color，直接按类型落色。 */
 	.vx-avatar__fg--default {

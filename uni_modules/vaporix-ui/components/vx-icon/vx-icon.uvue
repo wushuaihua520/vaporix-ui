@@ -4,6 +4,7 @@
 
 <script setup>
 	import { VxIconProps } from './props'
+	import { ensureExtendGlyphShift } from '../../libs/extend-glyph-shift'
 	import { VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
 
 	const props = withDefaults(defineProps<VxIconProps>(), {
@@ -13,6 +14,13 @@
 		color: '',
 		hit: false
 	})
+
+	// extend 字形在 Web 上要按浏览器实测度量做垂直校正，见 libs/extend-glyph-shift.ts。
+	const syncExtendShift = (name: string) => {
+		if (VX_ICON_TIER[name] === 'extend') ensureExtendGlyphShift()
+	}
+	syncExtendShift(props.name)
+	watch(() => props.name, (name) => syncExtendShift(name))
 
 	const glyph = computed((): string => {
 		const value = VX_ICON_GLYPHS[props.name]
@@ -72,6 +80,20 @@
 		font-size: var(--vx-icon-sm);
 		line-height: var(--vx-icon-sm);
 	}
+
+	/* #ifdef WEB */
+	/* extend 字体在 Web 上按 unicode-range 切成 4 个 face。Chrome 对分片 face 算出的字体度量偏大
+	   （100px 下实测 ascent 106 / descent 34，正确值 100 / 0），行盒因此上移，字形整体偏高约 0.14em
+	   （22px 约 3px）；WebKit 没有这个偏差。位移量由 libs/extend-glyph-shift.ts 运行时实测写入变量，
+	   没有偏差的引擎写 0em，所以这里不能写死 px。 */
+	.vx-icon--extend {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+
+	.vx-icon--extend-fill {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+	/* #endif */
 
 	/* 单独可点的图标撑到 44 热区，字号不变，行高同热区把字形垂直居中。 */
 	.vx-icon--hit {

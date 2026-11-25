@@ -1,3 +1,12 @@
+## 0.77.0（2026-11-25）
+
+- 修扩展图标（extend 1000 个）在 Web 上的垂直居中。字体文件没问题：四份 TTF 与八份 woff2 的 `hhea` / `OS/2` 完全一致（upm 1000、ascent 1000、descent 0、typo 1000/0、win 1000/0），字形轮廓也在同一位置。问题在 Web 把 extend 按 `unicode-range` 拆成 4 个 `@font-face` 分片：**Chrome 对这类分片 face 算出的字体度量偏大**（实测 100px 下 ascent 106 / descent 34，正确是 100 / 0），行盒上移，字形整体偏高约 0.14em。
+- 不能写死补偿：**WebKit 没有这个偏差**（同一份文件在 Safari 里量到 100 / 0、渲染居中），固定 `translateY(0.14em)` 会把 Safari 的图标压低 3px。
+- 修法：新增 `libs/extend-glyph-shift.ts`。extend 字形首次渲染时按当前浏览器实测度量，把需要下移的量写进根节点的 `--vx-extend-glyph-shift`（em）；`vx-icon` / `vx-avatar` / `vx-no-data` / `vx-toast` 的 extend 类改成 `transform: translateY(var(--vx-extend-glyph-shift, 0em))`，整条规则仍在 `#ifdef WEB` 内。Chrome 量到 0.140em、WebKit 量到 0em，等于没偏差的引擎不补。
+- 只量 regular 家族：WebKit 下 fill 家族在 canvas 里的量法不稳定（同一份 CSS 给 90 / 25，单独的 `@font-face` 又是 100 / 0），不拿它当依据；Chrome 两档偏差一致，共用一个值。
+- 验证：18px extend 图标在头像里的墨迹中心与圆心偏差，Chrome 修正后 dx 0.13 / dy −0.11px（修正前偏高约 2.5px），WebKit dx 0.00 / dy −0.38px（不加补偿）；`cli launch app-ios --compile true` 与 `cli launch mp-weixin --compile true` 通过，两端产物里没有这条 transform。
+
+
 ## 0.76.0（2026-11-24）
 
 - `vx-button` 新增 `gradient`：传入 `linear-gradient(...)` 为启用中的实心按钮铺渐变背景；镂空、浅底、纯文字和禁用态保持原外观，加载态保留渐变。

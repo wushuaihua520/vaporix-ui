@@ -18,6 +18,7 @@
 <script setup>
 	import { VxToastProps } from './props'
 	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
+	import { ensureExtendGlyphShift } from '../../libs/extend-glyph-shift'
 	import { VX_OVERLAY_TOAST_LAYER } from '../../libs/overlay'
 
 	const props = withDefaults(defineProps<VxToastProps>(), {
@@ -134,6 +135,13 @@
 		}
 		return name
 	})
+
+	// extend 字形在 Web 上按浏览器实测度量做垂直校正，见 libs/extend-glyph-shift.ts。
+	const syncExtendShift = (tier: string) => {
+		if (tier === 'extend') ensureExtendGlyphShift()
+	}
+	syncExtendShift(VX_ICON_TIER[iconName.value])
+	watch(() => iconName.value, (name) => syncExtendShift(VX_ICON_TIER[name]))
 
 	// 外层已经看过 showIcon，这里只分图片和字形。
 	const hasImage = computed((): boolean => {
@@ -267,9 +275,22 @@
 		font-family: VaporixIconsExtend;
 	}
 
+	/* #ifdef WEB */
+	/* 变量由 libs/extend-glyph-shift.ts 按当前浏览器实测写入；没有度量偏差的引擎是 0em。 */
+	.vx-toast__glyph--extend {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+	/* #endif */
+
 	.vx-toast__glyph--extend-fill {
 		font-family: VaporixIconsExtendFill;
 	}
+
+	/* #ifdef WEB */
+	.vx-toast__glyph--extend-fill {
+		transform: translateY(var(--vx-extend-glyph-shift, 0em));
+	}
+	/* #endif */
 
 	/* 文案用正文档，不借控件字号。
 	   这一层在纵向 flex 里，收缩发生在高度上，所以不压缩；换行靠最小宽度压成 0。
