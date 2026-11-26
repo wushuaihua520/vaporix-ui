@@ -475,6 +475,17 @@
 	--vx-tabbar-gap-md: 2px;
 	--vx-tabbar-gap-lg: 4px;
 
+	/* 液态玻璃：悬浮胶囊的左右和底部留白、玻璃底、发丝描边，选中胶囊的四周收边。
+	   App 没有背景模糊，玻璃底不透明度给足；Web 端换更透的 bg-blur 配 backdrop-filter。
+	   暗色玻璃要更实才不陷进底色，描边改白色发丝线。投影用浮层同档 --vx-shadow-lg。 */
+	--vx-tabbar-glass-inset-x: 12px;
+	--vx-tabbar-glass-inset-bottom: 12px;
+	--vx-tabbar-glass-bg: rgba(255, 255, 255, 0.86);
+	--vx-tabbar-glass-bg-blur: rgba(255, 255, 255, 0.55);
+	--vx-tabbar-glass-border: rgba(255, 255, 255, 0.65);
+	--vx-tabbar-glass-thumb-gap-x: 4px;
+	--vx-tabbar-glass-thumb-gap-y: 4px;
+
 	/* 轻提示：图标比图标三档大，盒子收窄后居中 */
 	--vx-toast-icon-size: 40px;
 	--vx-toast-min-width: 120px;
@@ -1217,6 +1228,15 @@
 	--vx-tabbar-gap-sm: 2px;
 	--vx-tabbar-gap-md: 2px;
 	--vx-tabbar-gap-lg: 4px;
+
+	/* 液态玻璃（与亮色同组）：暗色玻璃要更实才不陷进底色，描边用白色发丝线 */
+	--vx-tabbar-glass-inset-x: 12px;
+	--vx-tabbar-glass-inset-bottom: 12px;
+	--vx-tabbar-glass-bg: rgba(28, 31, 39, 0.88);
+	--vx-tabbar-glass-bg-blur: rgba(26, 29, 36, 0.45);
+	--vx-tabbar-glass-border: rgba(255, 255, 255, 0.14);
+	--vx-tabbar-glass-thumb-gap-x: 4px;
+	--vx-tabbar-glass-thumb-gap-y: 4px;
 
 	/* 轻提示（与亮色一致） */
 	--vx-toast-icon-size: 40px;

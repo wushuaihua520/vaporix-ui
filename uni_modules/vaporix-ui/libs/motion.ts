@@ -92,3 +92,9 @@ export const VX_TABBAR_POP_SETTLE = 50
  * 和 variables.css 的 --vx-duration-normal 手工保持一致；App 没有关键帧，两段接力同一条 transform 过渡。
  */
 export const VX_TABBAR_POP_DURATION = 220
+
+/**
+ * 液态玻璃选中胶囊滑到新列的时长，单位毫秒。
+ * 比回弹的 normal 档略长，滑行才读得出「液」；variables.css 没有对应档位，这里独立写。
+ */
+export const VX_TABBAR_GLASS_SLIDE = 280

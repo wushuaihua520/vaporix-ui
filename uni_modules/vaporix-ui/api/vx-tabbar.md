@@ -1,6 +1,6 @@
 # vx-tabbar
 
-自定义底部标签栏。`items` 按顺序等宽排列，`v-model` 是当前索引。字体图标跟选中色，图片图标成对传 `activeImage`；中间项可以凸起成主按钮，`action` 项只抛点击、不参与选中。
+自定义底部标签栏。`items` 按顺序等宽排列，`v-model` 是当前索引。字体图标跟选中色，图片图标成对传 `activeImage`；中间项可以凸起成主按钮，`action` 项只抛点击、不参与选中。`liquidGlass` 切液态玻璃风格：整条收成悬浮胶囊，选中项用浅色胶囊滑动指示。
 
 ## 示例
 
@@ -8,6 +8,7 @@
 <vx-tabbar v-model="active" :items="tabs" @change="onTabChange" @click="onTabClick" />
 <vx-tabbar v-model="active" :items="imageTabs" :fixed="false" />
 <vx-tabbar v-model="active" :items="raisedTabs" :fixed="false" />
+<vx-tabbar v-model="active" :items="glassTabs" liquid-glass />
 ```
 
 项是 `{ text, icon?, activeIcon?, image?, activeImage?, badge?, dot?, disabled?, raised?, action? }`；有凸起主按钮时给那一项传 `raised` 和 `action`。
@@ -24,6 +25,7 @@
 | placeholder | boolean | `true` | 固定时补一个等高占位；只在标签栏放在页面末尾时生效 |
 | safeArea | boolean | `true` | 为底部手势条留白，栏底色一直铺到屏幕底边 |
 | divider | boolean | `true` | 顶部 1px 分割线 |
+| liquidGlass | boolean | `false` | 液态玻璃风格：整条收成悬浮胶囊，半透明玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示 |
 | bgColor | string | `''` | 整条底色，字面值或主题令牌；不传时用 `surface` |
 | color | string | `''` | 未选中文字和字体图标的颜色；图片不受影响 |
 | badgeMax | number | `99` | 计数角标封顶值 |
@@ -65,6 +67,8 @@
 - 选中态同时换文字色和字重；图片图标不能染色，选中态靠 `activeImage`。
 - `fixed` 和 `placeholder` 默认打开，组件放在页面根节点末尾；用 `scroll-view` 加底栏的列布局时改 `:fixed="false"`。
 - `safeArea` 默认打开，安全区算在栏内；放进已经有底部安全区的容器时关掉，避免多出一截。
+- `liquidGlass` 打开后：栏收成左右和底部各留 12px 的悬浮胶囊，顶部分割线换成整圈发丝描边；选中项底下有一枚 `type` 浅色胶囊滑动指示，App 没有 `backdrop-filter`，玻璃底不透明度给足，Web 端才开背景模糊。
+- 玻璃风格里凸起圆钮按普通项渲染（`raised` 不生效，`action` 照常只抛点击）；`bgColor` 照常盖玻璃底色，`divider` 开关不再影响外观。
 - 角标跟图标走，项没有 `icon` / `image` 时不渲染；`disabled` 只停这一项，不抛 `change` 和 `click`。
 - 用了本组件就不要再配 `pages.json` 的 `tabBar`，否则两条底栏会叠在一起；层级固定 1，低于吸顶条和导航栏。
 - 从 ThorUI `tui-tabbar` 迁移：`tabBar` → `items`，`current` 换成 `v-model`，`iconPath` / `selectedIconPath` → `image` / `activeImage`，`num` → `badge`，`hump` → `raised`；`verify` / `pagePath` 去掉，登录校验和路由在 `click` 里做。

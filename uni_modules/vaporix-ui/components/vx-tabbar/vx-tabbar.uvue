@@ -2,50 +2,60 @@
 	<!-- 标签栏是自定义 tabBar：只负责选中和点击，页面内容、路由和权限交给业务。 -->
 	<!-- 一个标签栏最多一个凸起项，多传时只认最先出现的那一项。只有圆钮能点，圆钮仍切换这一项。 -->
 	<view v-if="items.length > 0" :class="hostClass">
-		<!-- 固定时补一个等高占位，高度只算普通栏高和安全区。凸起圆钮上方的透明段不占位，
-		     正文铺到栏顶下面，从这段透出来；点透明段落到页面，不切 tab。 -->
+		<!-- 固定时补一个等高占位，高度只算普通栏高和安全区；玻璃风格再多算一段悬浮间隙。
+		     凸起圆钮上方的透明段不占位，正文铺到栏顶下面，从这段透出来；点透明段落到页面，不切 tab。 -->
 		<view v-if="showSpacer" class="vx-tabbar__spacer">
 			<view :class="spacerClass"></view>
 			<view v-if="safeArea" class="vx-tabbar__spacer-safe"></view>
+			<view v-if="liquidGlass" class="vx-tabbar__spacer-glass"></view>
 		</view>
 
 		<view :class="rootClass" :style="rootStyle">
-			<!-- 底色单独一层，只铺栏身。栏顶以上的透明段不在这个盒子里。 -->
-			<view :class="surfaceClass" :style="surfaceStyle"></view>
+			<!-- 悬浮层包住底色、选中胶囊和行：surface 铺的是这一层，安全区留白也在这层补。
+			     玻璃风格再收边距成悬浮胶囊；平时不收，视觉和从前一致。 -->
+			<view :class="floatClass">
+				<!-- 底色单独一层，只铺栏身。栏顶以上的透明段不在这个盒子里。 -->
+				<view :class="surfaceClass" :style="surfaceStyle"></view>
 
-			<view :class="rowClass">
-				<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
-					:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onColumnClick(row.index)">
-					<view class="vx-tabbar__stack" :style="row.stackStyle">
-						<!-- 凸起项也留同高的图标位，标签才和普通项落在同一条线上。
-						     刚换成当前项时图标位在这里先收一档再弹回，不弹的项行内样式为空。 -->
-						<view v-if="hasMedia" :class="row.mediaClass" :style="row.mediaStyle">
-							<template v-if="row.barMediaVisible">
-								<vx-icon v-if="row.iconVisible" :name="row.iconName" :size="row.iconSize"
-									:variant="row.iconVariant" :color="row.iconColor" />
-								<image v-else :class="row.imageClass" :src="row.imageSrc" mode="aspectFit" />
+				<!-- 液态玻璃的选中胶囊：宽度按列数等分，translateX 的 100% 正好滑一格。 -->
+				<view v-if="thumbVisible" :class="thumbClass" :style="thumbStyle">
+					<view class="vx-tabbar__thumb-pill" :style="thumbPillStyle"></view>
+				</view>
+
+				<view :class="rowClass">
+					<view v-for="row in rows" :key="row.index" :class="row.itemClass" :hover-class="row.hoverClass"
+						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onColumnClick(row.index)">
+						<view class="vx-tabbar__stack" :style="row.stackStyle">
+							<!-- 凸起项也留同高的图标位，标签才和普通项落在同一条线上。
+							     刚换成当前项时图标位在这里先收一档再弹回，不弹的项行内样式为空。 -->
+							<view v-if="hasMedia" :class="row.mediaClass" :style="row.mediaStyle">
+								<template v-if="row.barMediaVisible">
+									<vx-icon v-if="row.iconVisible" :name="row.iconName" :size="row.iconSize"
+										:variant="row.iconVariant" :color="row.iconColor" />
+									<image v-else :class="row.imageClass" :src="row.imageSrc" mode="aspectFit" />
+									<view v-if="row.badgeVisible" :class="row.markClass">
+										<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
+											:type="badgeType" />
+									</view>
+								</template>
+							</view>
+
+							<text v-if="row.text.length > 0" :class="row.textClass"
+								:style="row.textStyle">{{ row.text }}</text>
+						</view>
+
+						<!-- 圆钮伸出栏顶，点击只绑在圆钮上。透明段没有别的 view，点下去落到页面。 -->
+						<view v-if="row.raised" :class="row.bubbleClass" :hover-class="row.bubbleHoverClass"
+							:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
+							<view :class="row.mediaClass">
+								<vx-icon v-if="row.iconVisible" :name="row.bubbleIconName" :size="row.bubbleIconSize"
+									:variant="row.bubbleIconVariant" :color="row.bubbleIconColor" />
+								<image v-else-if="row.imageVisible" :class="row.imageClass" :src="row.bubbleImageSrc"
+									mode="aspectFit" />
 								<view v-if="row.badgeVisible" :class="row.markClass">
 									<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
 										:type="badgeType" />
 								</view>
-							</template>
-						</view>
-
-						<text v-if="row.text.length > 0" :class="row.textClass"
-							:style="row.textStyle">{{ row.text }}</text>
-					</view>
-
-					<!-- 圆钮伸出栏顶，点击只绑在圆钮上。透明段没有别的 view，点下去落到页面。 -->
-					<view v-if="row.raised" :class="row.bubbleClass" :hover-class="row.bubbleHoverClass"
-						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onClick(row.index)">
-						<view :class="row.mediaClass">
-							<vx-icon v-if="row.iconVisible" :name="row.bubbleIconName" :size="row.bubbleIconSize"
-								:variant="row.bubbleIconVariant" :color="row.bubbleIconColor" />
-							<image v-else-if="row.imageVisible" :class="row.imageClass" :src="row.bubbleImageSrc"
-								mode="aspectFit" />
-							<view v-if="row.badgeVisible" :class="row.markClass">
-								<vx-badge :value="row.badge" :dot="row.dot" :max="badgeMax" :size="sizeName"
-									:type="badgeType" />
 							</view>
 						</view>
 					</view>
@@ -59,7 +69,7 @@
 	import { VxTabbarProps, VxTabbarItem } from './props'
 	import { VxIconVariant, VxSemantic, VxSize } from '../../libs/types/common'
 	import { VxIconName } from '../../libs/icons/codepoints'
-	import { VX_PRESSED_STAY_TIME, VX_TABBAR_POP_SETTLE, VX_TABBAR_POP_DURATION } from '../../libs/motion'
+	import { VX_PRESSED_STAY_TIME, VX_TABBAR_GLASS_SLIDE, VX_TABBAR_POP_SETTLE, VX_TABBAR_POP_DURATION } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxTabbarProps>(), {
 		items: (): Array<VxTabbarItem> => [],
@@ -69,6 +79,7 @@
 		placeholder: true,
 		safeArea: true,
 		divider: true,
+		liquidGlass: false,
 		animated: true,
 		bgColor: '',
 		color: '',
@@ -170,7 +181,9 @@
 	})
 
 	// 多传凸起项时只认第一个，后面的按普通项排，避免两个圆钮叠在同一条加高的栏上。
+	// 液态玻璃收成悬浮胶囊，圆钮混在里面不好看，也不跟选中胶囊对齐：玻璃风格里 raised 按普通项排。
 	const raisedIndex = computed((): number => {
+		if (props.liquidGlass === true) return -1
 		const source = props.items
 		for (let index = 0; index < source.length; index++) {
 			if (source[index].raised === true) return index
@@ -207,7 +220,15 @@
 	const rootClass = computed((): string => {
 		let name = 'vx-tabbar'
 		if (props.fixed) name += ' vx-tabbar--fixed'
-		if (props.safeArea) name += ' vx-tabbar--safe'
+		return name
+	})
+
+	// 安全区留白挪到悬浮层上：surface 铺的是悬浮层，底色才一直铺到屏幕底边。
+	// 玻璃风格再收左右和底部边距成胶囊，留白改用外边距，外边距不是 view，不接点击。
+	const floatClass = computed((): string => {
+		let name = 'vx-tabbar__float'
+		if (props.safeArea) name += ' vx-tabbar__float--safe'
+		if (props.liquidGlass === true) name += ' vx-tabbar__float--glass'
 		return name
 	})
 
@@ -218,9 +239,16 @@
 	})
 
 	// 底色只铺栏身。凸起时栏顶以上不在这个盒子里，那段没有 view。
+	// 玻璃底高度跟栏高令牌走（和 thumb 同一套），不引用安全区变量：
+	// --uni-safe-area-inset-bottom 在 App / 小程序上由运行时全局注入（iPhone 形态是 34），
+	// 和 safeArea 开关无关，拿它当 bottom 会把 56 的栏裁成 22。
 	const surfaceClass = computed((): string => {
 		let name = 'vx-tabbar__surface'
 		if (!props.divider) name += ' vx-tabbar__surface--no-divider'
+		if (props.liquidGlass === true) {
+			name += ' vx-tabbar__surface--glass'
+			if (sizeName.value !== 'md') name += ` vx-tabbar__surface--glass-${sizeName.value}`
+		}
 		return name
 	})
 
@@ -304,6 +332,37 @@
 		return popSettled.value
 			? `transform: translateY(0); transition-duration: ${VX_TABBAR_POP_DURATION}ms;`
 			: 'transform: translateY(3px);'
+	})
+
+	// —— 液态玻璃 ——
+	// 选中胶囊只在玻璃风格渲染；当前索引指向 action 项时没有选中态，胶囊跟着藏掉。
+	const thumbVisible = computed((): boolean => {
+		if (props.liquidGlass !== true) return false
+		const current = activeIndex.value
+		if (current < 0 || current >= props.items.length) return false
+		const entry = props.items[current]
+		return entry != null && entry.action !== true
+	})
+
+	// 宽度按列数等分；translateX 的百分比按胶囊自身宽算，一格正好一列。
+	// 过渡属性写在样式表、时长由行内给，和回弹同一个路子；首次挂载直接落位，不播滑动。
+	const thumbStyle = computed((): string => {
+		if (!thumbVisible.value) return ''
+		const width = 100 / props.items.length
+		return `width: ${width}%; transform: translateX(${activeIndex.value * 100}%); transition-duration: ${VX_TABBAR_GLASS_SLIDE}ms;`
+	})
+
+	// 外层高度跟栏高令牌走，换尺寸时胶囊跟着换档。
+	const thumbClass = computed((): string => {
+		let name = 'vx-tabbar__thumb'
+		if (sizeName.value !== 'md') name += ` vx-tabbar__thumb--${sizeName.value}`
+		return name
+	})
+
+	// 胶囊底跟 type 的浅色，和选中文字同一语义；warning 仍是浅底配 ink 文字。
+	const thumbPillStyle = computed((): string => {
+		if (!thumbVisible.value) return ''
+		return `background-color: var(--vx-color-${typeName.value}-soft);`
 	})
 
 	const spacerClass = computed((): string => {
@@ -498,10 +557,26 @@
 		width: auto;
 	}
 
+	/* 悬浮层包住底色、选中胶囊和行，surface 铺的是这一层。必须写 relative：App 没有 static，
+	   不写的话 absolute 的 surface 会越过往上找定位祖先。App 默认 overflow 是 hidden，
+	   角标和圆钮画出这一层，overflow 保持 visible，不要加 flatten。 */
+	.vx-tabbar__float {
+		position: relative;
+		flex-direction: column;
+		overflow: visible;
+	}
+
 	/* 安全区算在栏内：底色一直铺到屏幕底边，内容仍落在手势条之上。
 	   5.26 没有 calc，高度和留白分开写，不合并成一个值。 */
-	.vx-tabbar--safe {
+	.vx-tabbar__float--safe {
 		padding-bottom: var(--uni-safe-area-inset-bottom, 0px);
+	}
+
+	/* 玻璃风格收成悬浮胶囊：左右和底部各让一截。间隙是外边距，不是 view，不接点击。 */
+	.vx-tabbar__float--glass {
+		margin-left: var(--vx-tabbar-glass-inset-x);
+		margin-right: var(--vx-tabbar-glass-inset-x);
+		margin-bottom: var(--vx-tabbar-glass-inset-bottom);
 	}
 
 	/* 底色层撑满栏身，包含底部安全区；顶部 1px 分割线画在这里。
@@ -522,6 +597,75 @@
 	/* 写在描边后面，只关掉线宽，底色仍保留。 */
 	.vx-tabbar__surface--no-divider {
 		border-top-width: 0;
+	}
+
+	/* 玻璃底：整圈发丝描边代替顶部分割线，胶囊圆角，投影用浮层同档。
+	   高度用栏高令牌显式声明（thumb 同款）：不引用安全区变量——它由运行时全局注入，
+	   iPhone 形态上是 34，和 safeArea 开关无关，拿它当 bottom 会把栏裁短；
+	   安全区留白只由 --float--safe 的 padding 承担。
+	   App 没有背景模糊，玻璃底的不透明度给足；Web 在文件末尾的 #ifdef WEB 里开 backdrop-filter。
+	   写在 --no-divider 后面：分割线开关不影响玻璃描边。 */
+	.vx-tabbar__surface--glass {
+		height: var(--vx-tabbar-height-md);
+		border-top-width: 1px;
+		border-right-width: 1px;
+		border-bottom-width: 1px;
+		border-left-width: 1px;
+		border-top-style: solid;
+		border-right-style: solid;
+		border-bottom-style: solid;
+		border-left-style: solid;
+		border-top-color: var(--vx-tabbar-glass-border);
+		border-right-color: var(--vx-tabbar-glass-border);
+		border-bottom-color: var(--vx-tabbar-glass-border);
+		border-left-color: var(--vx-tabbar-glass-border);
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-tabbar-glass-bg);
+		box-shadow: var(--vx-shadow-lg);
+	}
+
+	.vx-tabbar__surface--glass-sm {
+		height: var(--vx-tabbar-height-sm);
+	}
+
+	.vx-tabbar__surface--glass-lg {
+		height: var(--vx-tabbar-height-lg);
+	}
+
+	/* —— 液态玻璃 ——
+	   外层只管几何：宽度按列数用行内百分比，translateX 的 100% 正好滑一格；
+	   高度用栏高令牌显式声明——这里不能引用安全区变量，它由运行时全局注入
+	   （iPhone 形态上是 34），和 safeArea 开关无关，拿它当 bottom 会把栏裁短。
+	   top 与行顶对齐，高度就是栏高；安全区留白在悬浮层的 padding 上，轮不到胶囊管。
+	   过渡属性写在样式表、时长由行内给，和回弹同一个路子。 */
+	.vx-tabbar__thumb {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 0;
+		height: var(--vx-tabbar-height-md);
+		overflow: visible;
+		transition-property: transform;
+		transition-timing-function: var(--vx-ease-standard);
+	}
+
+	.vx-tabbar__thumb--sm {
+		height: var(--vx-tabbar-height-sm);
+	}
+
+	.vx-tabbar__thumb--lg {
+		height: var(--vx-tabbar-height-lg);
+	}
+
+	/* 胶囊本体用 absolute 四边 inset 收边（surface 同款机制），四周留一点才不顶着描边和栏边。
+	   不用 flex 撑高，也不用外边距：App / 小程序上这两条对填充都不保证。 */
+	.vx-tabbar__thumb-pill {
+		position: absolute;
+		top: var(--vx-tabbar-glass-thumb-gap-y);
+		right: var(--vx-tabbar-glass-thumb-gap-x);
+		bottom: var(--vx-tabbar-glass-thumb-gap-y);
+		left: var(--vx-tabbar-glass-thumb-gap-x);
+		border-radius: var(--vx-radius-pill);
 	}
 
 	/* 行高始终是栏高，凸起也不加高。圆钮用负的 top 伸出栏顶。
@@ -804,6 +948,12 @@
 		height: var(--uni-safe-area-inset-bottom, 0px);
 	}
 
+	/* 玻璃风格的占位多补一段：胶囊离屏幕底边的悬浮间隙也要让出来。 */
+	.vx-tabbar__spacer-glass {
+		width: 100%;
+		height: var(--vx-tabbar-glass-inset-bottom);
+	}
+
 	/* #ifdef WEB */
 	.vx-tabbar__item {
 		cursor: pointer;
@@ -824,6 +974,16 @@
 
 	.vx-tabbar__bubble--disabled {
 		cursor: not-allowed;
+	}
+
+	/* 玻璃底在 Web 上开背景模糊，饱和度一起拉，底色才透得高级；支持 backdrop-filter
+	   才换成更透的 blur 档，不支持的引擎停在给足不透明度的普通玻璃底上。 */
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-tabbar__surface--glass {
+			-webkit-backdrop-filter: blur(18px) saturate(1.8);
+			backdrop-filter: blur(18px) saturate(1.8);
+			background-color: var(--vx-tabbar-glass-bg-blur);
+		}
 	}
 	/* #endif */
 </style>

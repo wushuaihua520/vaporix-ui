@@ -128,6 +128,22 @@
 				</view>
 
 				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="liquidGlass 收成悬浮胶囊：玻璃底加深色描边，选中项用浅色胶囊滑过去。" />
+					<view class="demo-card">
+						<view class="demo-tabbar-group">
+							<text class="demo-tabbar-label">primary · 5 项</text>
+							<vx-tabbar v-model="glassActive" :items="glassEntries" :fixed="false" :safe-area="false" liquid-glass />
+						</view>
+						<view class="demo-tabbar-group demo-tabbar-group--last">
+							<text class="demo-tabbar-label">danger · 3 项</text>
+							<vx-tabbar v-model="glassAltActive" :items="glassAltEntries" :fixed="false" :safe-area="false"
+								liquid-glass type="danger" />
+						</view>
+						<text class="demo-hint demo-tabbar-hint">App 没有背景模糊，玻璃底不透明度给足；Web 端开 backdrop-filter。玻璃风格里凸起圆钮按普通项渲染，顶部分割线由整圈描边替代。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
 					<demo-section-head title="自定义颜色" desc="bgColor 改整条底色，color 改未选中文字和字体图标。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
@@ -255,6 +271,20 @@
 		{ text: '我的', icon: 'user' }
 	]
 
+	const glassEntries: TabbarDemoItem[] = [
+		{ text: '首页', icon: 'home' },
+		{ text: '分类', icon: 'grid-2x2' },
+		{ text: '消息', icon: 'bell' },
+		{ text: '会员', icon: 'star' },
+		{ text: '我的', icon: 'user' }
+	]
+
+	const glassAltEntries: TabbarDemoItem[] = [
+		{ text: '代码', icon: 'code' },
+		{ text: '复制', icon: 'copy' },
+		{ text: '指南', icon: 'compass' }
+	]
+
 	const composeEntries: TabbarDemoItem[] = [
 		{ text: '首页', icon: 'home' },
 		{ text: '分类', icon: 'grid-2x2' },
@@ -291,6 +321,8 @@
 	const disabledActive = ref(0)
 	const dividerOnActive = ref(1)
 	const dividerOffActive = ref(1)
+	const glassActive = ref(0)
+	const glassAltActive = ref(1)
 	const customActive = ref(0)
 	const plainActive = ref(0)
 	const fixedActive = ref(0)

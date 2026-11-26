@@ -40,6 +40,8 @@ export type VxTabbarProps = {
 	safeArea?: boolean
 	/** 顶部 1px 分割线，默认打开。 */
 	divider?: boolean
+	/** 液态玻璃风格：整条收成悬浮胶囊，半透明玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示，默认关闭。 */
+	liquidGlass?: boolean
 	/** 切换选中项时的回弹动画：新选中的图标先收一档再弹回，文案同时上浮归位，默认打开；关闭后切换直接落位。 */
 	animated?: boolean
 	/** 整条底色，字面值或主题令牌；不传时用 surface。 */

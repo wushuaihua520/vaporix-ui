@@ -479,6 +479,12 @@ tabbar:
     sm: 2px
     md: 2px
     lg: 4px
+  glassInset:
+    x: 12px
+    bottom: 12px
+  glassThumbGap:
+    x: 4px
+    y: 4px
 motion:
   fast: 120ms
   normal: 220ms
@@ -587,6 +593,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 环形进度的轨道默认 `default-soft`，弧线跟随 `type`：`warning` 取 `warning-pressed`，`default` 取正文色。中心数值默认跟弧线色，`warning` 的数值改用 `warning-ink`，白底上才够 4.5:1。`color` 只改弧线和默认数值，`textColor` 只改数值，`trackColor` 只改轨道，`bgColor` 只改圆心，四者都是字面值；半圆的 `bgColor` 铺成上半圆。弧线只画实色，不用渐变表达状态。
 - 标签页的选中态用 `type` 的语义色，普通导航保持 `primary`，不要给每组页签换一种颜色。`soft` 的文字落在 `*-soft` 底上，取对应的 `*-pressed`，warning 取 `warning-ink`。角标默认 `danger`，和徽章一样只表达未读、待处理；`inverse` 默认整条用正文色，品牌底色由 `bgColor` 显式传入，普通导航不要默认铺 `primary`。
 - 标签栏的栏底色用 `surface`，顶部 1px `divider`；未选中文字和字体图标用 `text-secondary`，选中态跟 `type`，warning 用 `warning-ink`。凸起圆钮是实心的 `type` 色：warning 取 `warning-pressed`，图标取对应的 `on-*`，`default` 用正文色底配 `text-inverse`，禁用时换成 `disabled-bg` / `disabled-text`。角标默认 `danger`，规则和徽章一致。`bgColor` / `color` 是字面值，不跟随主题；选中态仍跟 `type`，对比度由业务保证。
+- 标签栏的液态玻璃风格用 `--vx-tabbar-glass-*` 的半透明底和发丝描边，亮暗各一套；暗色玻璃更实才不陷进底色，描边改白色发丝线。选中胶囊用 `type` 的浅色底，选中文字仍跟选中态色（warning 取 `warning-ink`）。App 没有背景模糊，玻璃底不透明度给足，Web 才开 `backdrop-filter`；`bgColor` 仍可整条覆盖玻璃底。
 - 滑动菜单的动作底色跟着 `type`：`default` 用 `default-soft` 浅底配正文色，其余五种用实心底配对应的 `on-*`；warning 的琥珀底配 `on-warning` 深色字。自定义 `bgColor` / `color` 是字面值，禁用时两者都不生效。
 - 区块标题栏的标题用 `text`，说明用 `text-secondary`；竖线默认 `primary`，只作区块标记，不表达状态，也不占用一屏一个实心主操作的名额。`soft` 浅底用 `default-soft`，分割线用 `border`；`soft` 浅底上的说明亮色改用 `text`、暗色仍用 `text-secondary`（`--vx-section-soft-desc`），次要灰在 `default-soft` 上不到 4.5:1。`titleColor` / `descriptionColor` / `markerColor` / `dividerColor` 各只覆盖一处，都是字面值，不跟随主题。
 - 通告栏默认用 `warning` 的琥珀浅底表达「需要留意」；普通公告用 `info`，中性说明用 `default`，结果用 `success` / `danger`。`soft` 用对应的 `*-soft` 底，文案和图标取 `*-pressed`，warning 取 `warning-ink`；`solid` 用语义实心底配 `on-*`，default 用正文色反相底配反色字；`plain` 透明。`bgColor` 只改底色，`color` 改文案并作为图标默认色，`iconColor` 只改图标和关闭叉；组件不做明暗推导。字面值不跟随主题时，亮暗两套对比度由业务保证。
@@ -854,6 +861,7 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 标签页一屏 2–5 个，按格等宽，不横向滚动；文案 2–4 个字（5 个时 2–3 个字）、不换行，放不下时先缩短文案或减少分组，不要缩小字号。导航行左右各留 12px，给末项角标留出余量。
 - 标签栏栏高单独三档：`sm` 48px、`md` 56px、`lg` 64px（`--vx-tabbar-height-*`），图标位 20 / 24 / 28（`--vx-tabbar-media-*`），不并入图标、控件和列表行三档。一屏 3–5 个，按格等宽，不横向滚动；文案 2–4 个字，单行省略。图标和文案间距 2 / 2 / 4（`--vx-tabbar-gap-*`），不借页面留白。
 - 有凸起项时栏顶再让出 22 / 24 / 26（`--vx-tabbar-raise-lift-*`），整行高 70 / 80 / 90（`--vx-tabbar-row-raised-*`）；凸起圆钮 44 / 52 / 60（`--vx-tabbar-raise-size-*`），固定正圆，和所在列等宽对齐。每一列都按伸出段下移内容，图标位仍在栏内居中，标签才落在同一条线上。只有圆钮是热区，透明带把点击让给页面。多传凸起项时只认第一个。
+- 液态玻璃把整条收成悬浮胶囊：左右和底部各让 12（`--vx-tabbar-glass-inset-x` / `--vx-tabbar-glass-inset-bottom`），选中胶囊按列数等宽、四周收边 4（`--vx-tabbar-glass-thumb-gap-*`），`transform` 滑到当前列。固定时占位多补一段悬浮间隙；玻璃风格里凸起圆钮按普通项渲染，顶部分割线由整圈发丝描边替代。
 - 固定标签栏的占位只算可见栏高加 `--uni-safe-area-inset-bottom`，凸起圆钮伸出的透明段不占位；栏底色一直铺到屏幕底边，图标和文案仍落在手势条之上。水平方向让开 `--uni-safe-area-inset-left` / `--uni-safe-area-inset-right`。
 - 滑动菜单一行动作 1–3 条，按数组顺序从左到右排；每条默认宽 72px，`extra` 插槽默认宽 80px，宽度都是像素，不跟屏宽缩放。动作文案 2–3 个字，4 个字或英文长标签时把 `width` 加到 96 这类值，不缩小字号、不换行。
 - 滑动菜单整行高度由内容决定，建议不低于 44px；带图标时 18 + 4 + 22 正好 44，低于 44 只用文案。展开距离等于所有动作宽度之和，拖动超过一半或快速轻扫时展开。

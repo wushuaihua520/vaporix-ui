@@ -1,3 +1,14 @@
+## 0.78.0（2026-11-27）
+
+- `vx-tabbar` 新增 `liquidGlass` 液态玻璃风格：整条收成悬浮胶囊，左右和底部各让 12px（`--vx-tabbar-glass-inset-*`），半透明玻璃底配整圈 1px 发丝描边和浮层同档阴影（`--vx-shadow-lg`）；顶部分割线由描边替代，`divider` 开关在玻璃模式下不再影响外观。
+- 选中项底下多一枚 `type` 浅色胶囊（`*-soft`）滑动指示：宽度按列数等分，`transform: translateX(index * 100%)` 滑到当前列，时长 280ms（`VX_TABBAR_GLASS_SLIDE`，variables.css 没有对应档位，独立一个值）；当前索引指向 `action` 项时没有选中态，胶囊跟着藏掉。App 没有 CSS 关键帧，滑动沿用回弹同一条 transform 过渡的路子：过渡属性写在样式表、时长由行内给，首次挂载直接落位不播滑行。几何全用写死的机制：玻璃底和胶囊外层的高度都取 `--vx-tabbar-height-*` 显式声明，胶囊本体用 absolute 四边 inset 收边（surface 同款）。第一版把玻璃底和胶囊的 bottom 绑在 `--uni-safe-area-inset-bottom` 上，编译产物没问题、渲染全错：这个变量由运行时在页面根上全局注入（iPhone 形态的模拟器和真机上是 34），和 `safeArea` 开关无关，把 56 的栏裁成 22，胶囊悬在玻璃条外面——Web 上变量是 0，才一直没暴露。宽度百分比和 translateX 百分比两端实测正常，保留。
+- App 端没有 `backdrop-filter`，玻璃底不透明度给足（亮 0.86 / 暗 0.88，`--vx-tabbar-glass-bg`），不模糊也读得清；Web 端在 `#ifdef WEB` 里用 `@supports` 探测，支持 `backdrop-filter` 才开 `blur(18px) saturate(1.8)` 并把底色换成更透的一档（亮 0.55 / 暗 0.45，`--vx-tabbar-glass-bg-blur`），不支持的引擎停在普通玻璃底上。暗色玻璃更实才不陷进底色，描边用白色发丝线。
+- 玻璃风格里 `raised` 凸起圆钮按普通项渲染（`action` 照常只抛点击）：实心圆钮混进胶囊栏里不好看，也不跟选中胶囊对齐。`bgColor` 照常整条盖玻璃底，`type` / `size` / `color` / 角标 / 禁用 / 回弹动画的行为都不变。
+- 布局新增一层 `__float` 悬浮层包住底色、胶囊和行：安全区留白从根节点挪到这一层（`__float--safe`），surface 铺的还是同一块区域，普通模式的视觉和从前一致；玻璃模式再在这一层收边距（`__float--glass`），固定时占位多补一段 12px 悬浮间隙（`__spacer-glass`）。悬浮间隙是外边距，不是 view，不接点击。
+- 演示页、库内 API 文档、文档站（中英）和 DESIGN.md 补液态玻璃章节与令牌；文档站 TabbarMock 加 `tabbar-liquid-glass` 实时演示，`VX_VERSION` 升到 0.78.0。
+- 验证：文档站 Web 预览通过——亮暗两套玻璃底、发丝描边与浮层阴影，Chrome 实测 `backdrop-filter: blur(18px) saturate(1.8)` 生效且底色切到透档，点击后胶囊滑动与 `v-model` 双向、暗色切换都正常；`vue-tsc` 通过。微信小程序模拟器（iPhone 形态，全局安全区变量 34）实测玻璃底、胶囊外层、胶囊本体三层的 boundingClientRect 全部落在设计值（285×56 / 57×56 / 49×48，3 项栏 95×56 / 87×48），选中切换正常；App 端没有背景模糊，玻璃底走给足不透明度的兜底，同一份修复随 iOS 运行会话热更新，发版前照例真机复核。
+
+
 ## 0.77.0（2026-11-25）
 
 - 修扩展图标（extend 1000 个）在 Web 上的垂直居中。字体文件没问题：四份 TTF 与八份 woff2 的 `hhea` / `OS/2` 完全一致（upm 1000、ascent 1000、descent 0、typo 1000/0、win 1000/0），字形轮廓也在同一位置。问题在 Web 把 extend 按 `unicode-range` 拆成 4 个 `@font-face` 分片：**Chrome 对这类分片 face 算出的字体度量偏大**（实测 100px 下 ascent 106 / descent 34，正确是 100 / 0），行盒上移，字形整体偏高约 0.14em。
