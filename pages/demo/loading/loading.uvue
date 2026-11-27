@@ -36,13 +36,13 @@
 						<view class="demo-loading-columns">
 							<view class="demo-loading-column demo-loading-column--first">
 								<text class="demo-loading-label">row · 横排</text>
-								<view class="demo-loading-center">
+								<view class="demo-loading-center demo-loading-center--slot">
 									<vx-loading text="正在加载..." />
 								</view>
 							</view>
 							<view class="demo-loading-column">
 								<text class="demo-loading-label">column · 纵排</text>
-								<view class="demo-loading-center">
+								<view class="demo-loading-center demo-loading-center--slot">
 									<vx-loading text="正在加载..." layout="column" />
 								</view>
 							</view>
@@ -57,19 +57,19 @@
 						<view class="demo-loading-sizes">
 							<view class="demo-loading-size">
 								<text class="demo-loading-label">sm</text>
-								<view class="demo-loading-center">
+								<view class="demo-loading-center demo-loading-center--slot">
 									<vx-loading text="加载中" size="sm" layout="column" />
 								</view>
 							</view>
 							<view class="demo-loading-size">
 								<text class="demo-loading-label">md</text>
-								<view class="demo-loading-center">
+								<view class="demo-loading-center demo-loading-center--slot">
 									<vx-loading text="加载中" size="md" layout="column" />
 								</view>
 							</view>
 							<view class="demo-loading-size demo-loading-size--last">
 								<text class="demo-loading-label">lg</text>
-								<view class="demo-loading-center">
+								<view class="demo-loading-center demo-loading-center--slot">
 									<vx-loading text="加载中" size="lg" layout="column" />
 								</view>
 							</view>

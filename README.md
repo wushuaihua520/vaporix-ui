@@ -34,6 +34,10 @@
 	官网链接：<a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
 </p>
 
+<p align="center">
+	<img src="static/readme/vaporix-ui_cover.jpg" alt="一套组件，多端原生运行">
+</p>
+
 ## 设计概念
 
 冷色、低饱和、细描边。层级靠留白和 1px 描边，阴影只给浮层。

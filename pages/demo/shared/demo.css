@@ -1128,9 +1128,9 @@
 	justify-content: center;
 }
 
-/* 横排 / 纵排内容高度不同，整块居中会把两卡标题顶离同一水平线；槽位定高、槽内居中。 */
-.demo-loading-columns .demo-loading-center,
-.demo-loading-sizes .demo-loading-center {
+/* 横排 / 纵排内容高度不同，整块居中会把两卡标题顶离同一水平线；槽位定高、槽内居中。
+   App 不支持后代选择器，定高写在槽位自己的 class 上。 */
+.demo-loading-center--slot {
 	height: 56px;
 	align-items: center;
 }

@@ -368,8 +368,29 @@
 		height: var(--vx-height-textarea-sm);
 	}
 
-	/* 同 vx-input：uvue.wxss 全局 textarea .textarea-placeholder 特异性 (0,1,1)，
+	/* 同 vx-input：App 丢弃后代选择器，占位符样式直接写在 placeholder-class 上。 */
+	/* #ifdef APP */
+	.vx-textarea__placeholder {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-control-md);
+	}
+
+	.vx-textarea__placeholder--lg {
+		font-size: var(--vx-font-control-lg);
+	}
+
+	.vx-textarea__placeholder--sm {
+		font-size: var(--vx-font-control-sm);
+	}
+
+	.vx-textarea__placeholder--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+	/* #endif */
+
+	/* uvue.wxss 全局 textarea .textarea-placeholder 特异性 (0,1,1)，
 	   借祖先 .vx-textarea 抬到 (0,2,0) 才盖得过全局色。 */
+	/* #ifndef APP */
 	.vx-textarea .vx-textarea__placeholder {
 		color: var(--vx-color-text-secondary);
 		font-size: var(--vx-font-control-md);
@@ -386,6 +407,7 @@
 	.vx-textarea .vx-textarea__placeholder--disabled {
 		color: var(--vx-color-disabled-text);
 	}
+	/* #endif */
 
 	.vx-textarea__footer {
 		flex-direction: row;

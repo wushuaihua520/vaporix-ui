@@ -688,8 +688,30 @@
 		margin-left: var(--vx-space-xs);
 	}
 
+	/* App 只认单个 class，后代选择器整条丢弃，占位符色和字号要写在 placeholder-class 自己身上。
+	   全局 input .input-placeholder 是 uvue.wxss 的规则，App 视图层没有这条后代选择器。 */
+	/* #ifdef APP */
+	.vx-input__placeholder {
+		color: var(--vx-color-text-secondary);
+		font-size: var(--vx-font-control-md);
+	}
+
+	.vx-input__placeholder--lg {
+		font-size: var(--vx-font-control-lg);
+	}
+
+	.vx-input__placeholder--sm {
+		font-size: var(--vx-font-control-sm);
+	}
+
+	.vx-input__placeholder--disabled {
+		color: var(--vx-color-disabled-text);
+	}
+	/* #endif */
+
 	/* uvue.wxss 全局 input .input-placeholder 的特异性是 (0,1,1)，单 class 盖不过它，
 	   借祖先 .vx-input 抬到 (0,2,0)，token 色才能压过全局的 #808080 / 暗色 #5f5f5f。 */
+	/* #ifndef APP */
 	.vx-input .vx-input__placeholder {
 		color: var(--vx-color-text-secondary);
 		font-size: var(--vx-font-control-md);
@@ -706,6 +728,7 @@
 	.vx-input .vx-input__placeholder--disabled {
 		color: var(--vx-color-disabled-text);
 	}
+	/* #endif */
 
 	/* Web 原生 input 会带浏览器字体和焦点框 */
 	/* #ifdef WEB */

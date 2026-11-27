@@ -1,13 +1,13 @@
 {
 	"id": "vaporix-ui",
-	"displayName": "元汽UI",
+	"displayName": "元汽UI（Vaporix UI）",
 	"version": "0.80.0",
-	"description": "元汽UI（Vaporix UI），uni-app x 蒸汽模式的高颜值、原生渲染组件库。",
+	"description": "元汽UI（Vaporix UI），专注ni-app x 蒸汽模式的高颜值、高性能、原生渲染组件库",
 	"keywords": [
     "uni-app",
     "x",
     "蒸汽模式",
-    "UI",
+    "原生渲染",
     "组件库"
   ],
 	"license": "MIT",

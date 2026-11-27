@@ -34,6 +34,10 @@
 	Website: <a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
 </p>
 
+<p align="center">
+	<img src="static/readme/vaporix-ui_cover.jpg" alt="One component set, native on every target">
+</p>
+
 ## Design language
 
 Cool, low saturation, thin borders. Depth comes from whitespace and 1px borders; shadows are for overlays only.
