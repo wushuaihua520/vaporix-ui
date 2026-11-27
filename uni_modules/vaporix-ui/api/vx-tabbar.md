@@ -71,6 +71,7 @@
 - `liquidGlass` 打开后：栏收成左右和底部各留 12px 的悬浮胶囊，顶部分割线换成整圈发丝描边；选中项底下有一枚 `type` 浅色胶囊滑动指示。磨砂分平台：iOS 用 `glass-effect-view` 出系统液态玻璃（iOS 26+；15~25 降级为系统毛玻璃），材质跟随系统外观；Android / 鸿蒙蒸汽与 Web 用 `backdrop-filter: blur`；小程序没有模糊，玻璃底不透明度给足。
 - 玻璃风格里凸起圆钮按普通项渲染（`raised` 不生效，`action` 照常只抛点击）；`bgColor` 不作用于玻璃底（材质底色由令牌 `--vx-tabbar-glass-*` 控制），`divider` 开关不再影响外观。
 - `glassStyle="clear"` 换透档：iOS 直传系统 clear 材质，Android / 鸿蒙 / Web 把底色降到接近全透（`--vx-tabbar-glass-bg-clear`），小程序端不生效。透档可读性弱一档，浅色页面近乎隐形，正文色块丰富的页面才建议用。
+- 固定玻璃栏想看到内容从栏底下穿过（苹果式沉浸），页面传 `:placeholder="false"` 让滚动区铺满全屏，内容末尾自己留一段栏高加悬浮间隙的空白；默认的占位会把滚动区压短，栏底下只剩页面底色。
 - 角标跟图标走，项没有 `icon` / `image` 时不渲染；`disabled` 只停这一项，不抛 `change` 和 `click`。
 - 用了本组件就不要再配 `pages.json` 的 `tabBar`，否则两条底栏会叠在一起；层级固定 1，低于吸顶条和导航栏。
 - 从 ThorUI `tui-tabbar` 迁移：`tabBar` → `items`，`current` 换成 `v-model`，`iconPath` / `selectedIconPath` → `image` / `activeImage`，`num` → `badge`，`hump` → `raised`；`verify` / `pagePath` 去掉，登录校验和路由在 `click` 里做。

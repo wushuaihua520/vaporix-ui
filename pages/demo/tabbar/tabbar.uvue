@@ -210,8 +210,9 @@
 			</view>
 		</scroll-view>
 
-		<!-- 固定演示：放在页面根节点的末尾，占位和滚动区各让出栏高。玻璃风格时正文从玻璃底下穿过。 -->
-		<vx-tabbar v-if="fixedVisible" v-model="fixedActive" :items="fixedEntries" liquid-glass />
+		<!-- 固定演示：放在页面根节点的末尾。玻璃风格时占位关掉，滚动内容从玻璃栏和底部透明段穿过；
+		     内容末尾由 demo-footer 自带的留白兜底，末尾条目不会被栏压住。 -->
+		<vx-tabbar v-if="fixedVisible" v-model="fixedActive" :items="fixedEntries" liquid-glass :placeholder="false" />
 	</view>
 </template>
 
