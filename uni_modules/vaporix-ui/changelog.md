@@ -1,3 +1,6 @@
+## 0.81.0（2026-11-28）
+- 新增全局控件风格配置：`libs/global-style.ts` 提供 `vxStyle` / `isGlassStyle` / `vxSetStyle()`，风格 key `default` / `liquid-glass`。本版本只落配置底座，组件从下一版本起逐个接入；液态玻璃组件在全局风格为 liquid-glass 时默认玻璃化，组件 prop 显式传值仍可覆盖。
+- 示例应用「我的」页新增控件风格选择卡（默认 / 液态玻璃），选择持久化，重启恢复。
 ## 0.80.0 (2026-11-28)
 - `vx-tabbar` 玻璃底新增 `glassStyle` 透档：`regular`（默认）是常规磨砂；`clear` 更透——iOS 直传系统 clear 材质（`glass-effect-view` 的 `glass-style`），Android / 鸿蒙 / Web 底色换 `--vx-tabbar-glass-bg-clear`（亮 0.18 / 暗 0.32），小程序无磨砂、不生效。透档可读性弱一档，给正文色块丰富的页面用。
 - 修 Web 兜底回归：0.79 把 `--glass` 基础底色换成透档后，不支持 `backdrop-filter` 的引擎会停在「透底且无模糊」；现在 `#ifdef WEB` 先落回 `--vx-tabbar-glass-bg`（0.86），`@supports` 内才换透档，clear 同一结构。

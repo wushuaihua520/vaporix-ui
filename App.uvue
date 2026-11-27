@@ -1,6 +1,9 @@
 <script setup>
+	import { restoreDemoStyle } from '@/pages/demo/shared/style'
+
 	onLaunch(() => {
 		console.log('[Vaporix UI] app launched')
+		restoreDemoStyle()
 	})
 </script>
 

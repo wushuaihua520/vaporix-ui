@@ -94,6 +94,46 @@
 							</view>
 						</view>
 						<text class="demo-hint">切主题会同时刷新原生导航栏、窗口底色和底部 tabBar；重新打开应用仍然保持上次的选择。</text>
+
+						<!-- 控件风格是全局开关：玻璃档下支持玻璃化的组件默认走玻璃面，组件显式传值优先。
+						     玻璃预览铺一块主题色舞台，sheet 半透叠在上面示意，不依赖真磨砂。 -->
+						<view class="demo-style-block">
+							<view class="demo-theme-picker">
+								<view class="demo-theme-picker__item" @click="selectStyle('default')">
+									<view class="demo-style-preview">
+										<view class="demo-style-preview__sheet demo-style-preview__sheet--solid">
+											<text class="demo-style-preview__aa">Aa</text>
+											<view class="demo-style-preview__line"></view>
+											<view class="demo-style-preview__line demo-style-preview__line--short"></view>
+										</view>
+									</view>
+									<view class="demo-theme-picker__foot">
+										<text class="demo-theme-picker__name">默认</text>
+										<view :class="radioClass(!isGlass)">
+											<view v-if="!isGlass" class="demo-theme-picker__radio-dot"></view>
+										</view>
+									</view>
+								</view>
+
+								<view class="demo-theme-picker__item demo-theme-picker__item--last"
+									@click="selectStyle('liquid-glass')">
+									<view class="demo-style-preview">
+										<view class="demo-style-preview__sheet demo-style-preview__sheet--glass">
+											<text class="demo-style-preview__aa">Aa</text>
+											<view class="demo-style-preview__line"></view>
+											<view class="demo-style-preview__line demo-style-preview__line--short"></view>
+										</view>
+									</view>
+									<view class="demo-theme-picker__foot">
+										<text class="demo-theme-picker__name">液态玻璃</text>
+										<view :class="radioClass(isGlass)">
+											<view v-if="isGlass" class="demo-theme-picker__radio-dot"></view>
+										</view>
+									</view>
+								</view>
+							</view>
+							<text class="demo-hint">控件风格是全局开关：液态玻璃档下，支持玻璃化的组件默认走玻璃面（iOS 系统材质、Android / 鸿蒙 / Web 磨砂、小程序实底近似）；组件上传了显式开关时以组件为准。</text>
+						</view>
 					</view>
 				</view>
 
@@ -196,6 +236,8 @@
 	import { DEMO_API_MODULES } from '@/pages/api/shared/modules'
 	import { DEMO_COMPONENT_COUNT, DEMO_ICON_COUNT, DEMO_PAGE_COUNT } from '@/pages/demo/shared/catalog'
 	import { demoIsDark, setDemoTabTheme, syncDemoTabTheme } from '@/pages/demo/shared/theme'
+	import { demoStyle, setDemoStyle } from '@/pages/demo/shared/style'
+	import { VxStyleKey } from '@/uni_modules/vaporix-ui/libs/global-style'
 
 	type DemoFooterLink = {
 		text: string
@@ -227,6 +269,13 @@
 
 	const selectTheme = (dark: boolean) => {
 		setDemoTabTheme(dark)
+	}
+
+	// 控件风格跟库 store 走：玻璃档下支持玻璃化的组件默认玻璃化，组件 prop 显式传值优先。
+	const isGlass = computed((): boolean => demoStyle.value === 'liquid-glass')
+
+	const selectStyle = (style: VxStyleKey) => {
+		setDemoStyle(style)
 	}
 
 	const resetTheme = () => {
@@ -423,6 +472,59 @@
 		height: 8px;
 		border-radius: var(--vx-radius-pill);
 		background-color: var(--vx-color-primary);
+	}
+
+	.demo-style-block {
+		margin-top: var(--vx-space-lg);
+	}
+
+	.demo-style-preview {
+		box-sizing: border-box;
+		height: 76px;
+		padding: var(--vx-space-sm);
+		border-radius: var(--vx-radius-sm);
+		background-color: var(--vx-color-primary);
+	}
+
+	.demo-style-preview__sheet {
+		flex: 1;
+		box-sizing: border-box;
+		padding: var(--vx-space-xs);
+		border-width: var(--vx-border-width);
+		border-style: solid;
+		border-radius: var(--vx-radius-sm);
+	}
+
+	.demo-style-preview__sheet--solid {
+		background-color: var(--vx-color-surface);
+		border-color: var(--vx-color-border);
+	}
+
+	/* 玻璃示意：半透白 sheet 叠在主题色舞台上配白色发丝描边；字面 rgba 不随主题翻，
+	   舞台用 primary 亮暗都在，观感稳定。 */
+	.demo-style-preview__sheet--glass {
+		background-color: rgba(255, 255, 255, 0.42);
+		border-color: rgba(255, 255, 255, 0.7);
+	}
+
+	.demo-style-preview__aa {
+		color: var(--vx-color-text);
+		font-size: var(--vx-font-sm);
+		line-height: var(--vx-line-sm);
+		font-weight: var(--vx-weight-semibold);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-style-preview__line {
+		height: 4px;
+		border-radius: var(--vx-radius-pill);
+		background-color: var(--vx-color-divider);
+		margin-bottom: var(--vx-space-xs);
+	}
+
+	.demo-style-preview__line--short {
+		width: 60%;
+		margin-bottom: 0;
 	}
 
 	.demo-mine__actions {
