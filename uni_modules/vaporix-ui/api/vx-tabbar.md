@@ -26,6 +26,7 @@
 | safeArea | boolean | `true` | 为底部手势条留白，栏底色一直铺到屏幕底边 |
 | divider | boolean | `true` | 顶部 1px 分割线 |
 | liquidGlass | boolean | `false` | 液态玻璃风格：整条收成悬浮胶囊，磨砂玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示 |
+| glassStyle | `regular` \| `clear` | `regular` | 玻璃透档：clear 更透（iOS 换系统 clear 材质，Android / 鸿蒙 / Web 换更透的底色）；小程序无磨砂不生效。仅在 `liquidGlass` 下有意义 |
 | bgColor | string | `''` | 整条底色，字面值或主题令牌；不传时用 `surface` |
 | color | string | `''` | 未选中文字和字体图标的颜色；图片不受影响 |
 | badgeMax | number | `99` | 计数角标封顶值 |
@@ -69,6 +70,7 @@
 - `safeArea` 默认打开，安全区算在栏内；放进已经有底部安全区的容器时关掉，避免多出一截。
 - `liquidGlass` 打开后：栏收成左右和底部各留 12px 的悬浮胶囊，顶部分割线换成整圈发丝描边；选中项底下有一枚 `type` 浅色胶囊滑动指示。磨砂分平台：iOS 用 `glass-effect-view` 出系统液态玻璃（iOS 26+；15~25 降级为系统毛玻璃），材质跟随系统外观；Android / 鸿蒙蒸汽与 Web 用 `backdrop-filter: blur`；小程序没有模糊，玻璃底不透明度给足。
 - 玻璃风格里凸起圆钮按普通项渲染（`raised` 不生效，`action` 照常只抛点击）；`bgColor` 不作用于玻璃底（材质底色由令牌 `--vx-tabbar-glass-*` 控制），`divider` 开关不再影响外观。
+- `glassStyle="clear"` 换透档：iOS 直传系统 clear 材质，Android / 鸿蒙 / Web 把底色降到接近全透（`--vx-tabbar-glass-bg-clear`），小程序端不生效。透档可读性弱一档，浅色页面近乎隐形，正文色块丰富的页面才建议用。
 - 角标跟图标走，项没有 `icon` / `image` 时不渲染；`disabled` 只停这一项，不抛 `change` 和 `click`。
 - 用了本组件就不要再配 `pages.json` 的 `tabBar`，否则两条底栏会叠在一起；层级固定 1，低于吸顶条和导航栏。
 - 从 ThorUI `tui-tabbar` 迁移：`tabBar` → `items`，`current` 换成 `v-model`，`iconPath` / `selectedIconPath` → `image` / `activeImage`，`num` → `badge`，`hump` → `raised`；`verify` / `pagePath` 去掉，登录校验和路由在 `click` 里做。

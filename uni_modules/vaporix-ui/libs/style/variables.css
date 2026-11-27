@@ -478,12 +478,14 @@
 	/* 液态玻璃：悬浮胶囊的左右和底部留白、玻璃底、发丝描边，选中胶囊的四周收边。
 	   磨砂分两档：iOS 用 glass-effect-view 出系统液态玻璃（iOS 26+），Android / 鸿蒙
 	   蒸汽与 Web 用 backdrop-filter 配更透的 bg-blur；小程序没有模糊，用给足
-	   不透明度的 bg。玻璃投影是分层浮起：近距接触影 + 远距环境影 + 上下 inset 高光。
+	   不透明度的 bg。clear 透档换 bg-clear（iOS 直传系统 clear 材质），MP 端忽略。
+	   玻璃投影是分层浮起：近距接触影 + 远距环境影 + 上下 inset 高光。
 	   暗色玻璃要更实才不陷进底色，描边改白色发丝线。 */
 	--vx-tabbar-glass-inset-x: 12px;
 	--vx-tabbar-glass-inset-bottom: 12px;
 	--vx-tabbar-glass-bg: rgba(255, 255, 255, 0.86);
 	--vx-tabbar-glass-bg-blur: rgba(255, 255, 255, 0.52);
+	--vx-tabbar-glass-bg-clear: rgba(255, 255, 255, 0.18);
 	--vx-tabbar-glass-border: rgba(255, 255, 255, 0.65);
 	--vx-tabbar-glass-shadow: 0 2px 6px rgba(16, 18, 22, 0.08), 0 12px 32px rgba(16, 18, 22, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.55), inset 0 -1px 1px rgba(255, 255, 255, 0.18);
 	--vx-tabbar-glass-thumb-gap-x: 4px;
@@ -1237,6 +1239,7 @@
 	--vx-tabbar-glass-inset-bottom: 12px;
 	--vx-tabbar-glass-bg: rgba(28, 31, 39, 0.88);
 	--vx-tabbar-glass-bg-blur: rgba(26, 29, 36, 0.58);
+	--vx-tabbar-glass-bg-clear: rgba(26, 29, 36, 0.32);
 	--vx-tabbar-glass-border: rgba(255, 255, 255, 0.14);
 	--vx-tabbar-glass-shadow: 0 2px 6px rgba(0, 0, 0, 0.28), 0 12px 32px rgba(0, 0, 0, 0.44), inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 -1px 1px rgba(255, 255, 255, 0.06);
 	--vx-tabbar-glass-thumb-gap-x: 4px;

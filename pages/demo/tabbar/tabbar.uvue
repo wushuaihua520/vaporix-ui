@@ -134,12 +134,17 @@
 							<text class="demo-tabbar-label">primary · 5 项</text>
 							<vx-tabbar v-model="glassActive" :items="glassEntries" :fixed="false" :safe-area="false" liquid-glass />
 						</view>
-						<view class="demo-tabbar-group demo-tabbar-group--last">
+						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">danger · 3 项</text>
 							<vx-tabbar v-model="glassAltActive" :items="glassAltEntries" :fixed="false" :safe-area="false"
 								liquid-glass type="danger" />
 						</view>
-						<text class="demo-hint demo-tabbar-hint">iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；玻璃底不接 bgColor。玻璃风格里凸起圆钮按普通项渲染，顶部分割线由整圈描边替代。</text>
+						<view class="demo-tabbar-group demo-tabbar-group--last">
+							<text class="demo-tabbar-label">clear · 透档</text>
+							<vx-tabbar v-model="glassClearActive" :items="glassEntries" :fixed="false" :safe-area="false"
+								liquid-glass glass-style="clear" />
+						</view>
+						<text class="demo-hint demo-tabbar-hint">iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观，glassStyle=clear 换更透的系统材质；Android / 鸿蒙 / Web 磨砂，小程序半透明底。玻璃底不接 bgColor。</text>
 					</view>
 				</view>
 
@@ -323,6 +328,7 @@
 	const dividerOffActive = ref(1)
 	const glassActive = ref(0)
 	const glassAltActive = ref(1)
+	const glassClearActive = ref(0)
 	const customActive = ref(0)
 	const plainActive = ref(0)
 	const fixedActive = ref(0)

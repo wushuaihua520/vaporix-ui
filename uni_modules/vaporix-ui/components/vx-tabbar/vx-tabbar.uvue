@@ -19,7 +19,7 @@
 				     15~25 自动降级为系统毛玻璃；材质跟随系统外观，bgColor 不作用于玻璃底。
 				     其余平台仍是 view，模糊由样式表按平台开关。 -->
 				<!-- #ifdef APP-IOS -->
-				<glass-effect-view v-if="liquidGlass" :class="surfaceClass" glass-style="regular"></glass-effect-view>
+				<glass-effect-view v-if="liquidGlass" :class="surfaceClass" :glass-style="glassStyleName"></glass-effect-view>
 				<view v-else :class="surfaceClass" :style="surfaceStyle"></view>
 				<!-- #endif -->
 				<!-- #ifndef APP-IOS -->
@@ -89,6 +89,7 @@
 		safeArea: true,
 		divider: true,
 		liquidGlass: false,
+		glassStyle: 'regular',
 		animated: true,
 		bgColor: '',
 		color: '',
@@ -166,6 +167,11 @@
 			return type
 		}
 		return 'default'
+	})
+
+	// 玻璃透档：只有 clear 被单独对待，其余（含非法值）都按 regular。
+	const glassStyleName = computed((): string => {
+		return props.glassStyle === 'clear' ? 'clear' : 'regular'
 	})
 
 	// 选中文字和图标共用一档：warning 落在浅色底上要用 ink，default 用正文色。
@@ -256,6 +262,7 @@
 		if (!props.divider) name += ' vx-tabbar__surface--no-divider'
 		if (props.liquidGlass === true) {
 			name += ' vx-tabbar__surface--glass'
+			if (glassStyleName.value === 'clear') name += ' vx-tabbar__surface--glass-clear'
 			if (sizeName.value !== 'md') name += ` vx-tabbar__surface--glass-${sizeName.value}`
 		}
 		return name
@@ -647,6 +654,12 @@
 		height: var(--vx-tabbar-height-lg);
 	}
 
+	/* clear 档只换底色，模糊和描边沿用 --glass 的：iOS 换系统 clear 材质，
+	   Android / 鸿蒙 / Web 换接近全透的底。MP 块在文件末尾把底色盖回实底，等于忽略 clear。 */
+	.vx-tabbar__surface--glass-clear {
+		background-color: var(--vx-tabbar-glass-bg-clear);
+	}
+
 	/* —— 液态玻璃 ——
 	   外层只管几何：宽度按列数用行内百分比，translateX 的 100% 正好滑一格；
 	   高度用栏高令牌显式声明——这里不能引用安全区变量，它由运行时全局注入
@@ -997,6 +1010,12 @@
 	/* #endif */
 
 	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档；
+	   clear 档同理：无模糊兜底用 clear 底色，有模糊换 blur 档。写在 glass 后面按 class 顺序盖过它。 */
+	.vx-tabbar__surface--glass {
+		background-color: var(--vx-tabbar-glass-bg);
+	}
+
 	.vx-tabbar__item {
 		cursor: pointer;
 	}
@@ -1018,13 +1037,16 @@
 		cursor: not-allowed;
 	}
 
-	/* 玻璃底在 Web 上开背景模糊，饱和度一起拉，底色才透得高级；支持 backdrop-filter
-	   才换成更透的 blur 档，不支持的引擎停在给足不透明度的普通玻璃底上。 */
+	/* 玻璃底在 Web 上开背景模糊，饱和度一起拉，底色才透得高级。 */
 	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 		.vx-tabbar__surface--glass {
 			-webkit-backdrop-filter: blur(24px) saturate(1.8);
 			backdrop-filter: blur(24px) saturate(1.8);
 			background-color: var(--vx-tabbar-glass-bg-blur);
+		}
+
+		.vx-tabbar__surface--glass-clear {
+			background-color: var(--vx-tabbar-glass-bg-clear);
 		}
 	}
 	/* #endif */

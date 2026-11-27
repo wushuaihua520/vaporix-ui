@@ -1,3 +1,8 @@
+## 0.80.0（2026-11-27）
+
+- `vx-tabbar` 玻璃底新增 `glassStyle` 透档：`regular`（默认）是常规磨砂；`clear` 更透——iOS 直传系统 clear 材质（`glass-effect-view` 的 `glass-style`），Android / 鸿蒙 / Web 底色换 `--vx-tabbar-glass-bg-clear`（亮 0.18 / 暗 0.32），小程序无磨砂、不生效。透档可读性弱一档，给正文色块丰富的页面用。
+- 修 Web 兜底回归：0.79 把 `--glass` 基础底色换成透档后，不支持 `backdrop-filter` 的引擎会停在「透底且无模糊」；现在 `#ifdef WEB` 先落回 `--vx-tabbar-glass-bg`（0.86），`@supports` 内才换透档，clear 同一结构。
+
 ## 0.79.0（2026-11-27）
 
 - `vx-tabbar` 液态玻璃升级为系统材质优先：iOS 上玻璃底换 `glass-effect-view`（uni-app x 5.25+ 蒸汽模式内置组件），iOS 26+ 出真·液态玻璃（边缘折射、系统发丝描边和亮暗自适应），15~25 自动降级为系统毛玻璃；材质跟随系统外观，不读应用的 `vx-theme-*`。Android / 鸿蒙蒸汽与 Web 走 `backdrop-filter: blur`（App 端 5.25+ 支持，官方兼容表实锤；App 只认 `blur()`，`saturate(1.8)` 只写进 WEB 块），小程序维持给足不透明度的半透明底。
