@@ -6,7 +6,7 @@
 | --- | --- |
 | 某个组件有哪些属性、事件、插槽、方法 | 下表的同名链接，或直接打开 `vx-<name>.md` |
 | 组件长什么样、能做什么 | 文档站 https://www.vaporix-ui.com/components |
-| 怎么把库放进项目 | [`readme.md`](../readme.md) 的「接入」 |
+| 怎么把库放进项目 | [`readme.md`](../readme.md) 的「快速开始」 |
 | 为什么这个尺寸、这个间距 | 仓库根目录 `DESIGN.md` |
 | 这一版改了什么 | [`changelog.md`](../changelog.md) |
 

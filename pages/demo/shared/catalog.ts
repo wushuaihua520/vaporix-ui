@@ -95,7 +95,7 @@ function countNamedComponents(): number {
 }
 
 // 版本号单源：页脚、首页胶囊都引这里，发版时与 uni_modules/vaporix-ui/package.json 一致。
-export const DEMO_VERSION = 'v0.77.0'
+export const DEMO_VERSION = 'v0.80.0'
 
 export const DEMO_PAGE_COUNT = DEMO_COMPONENTS.length
 export const DEMO_COMPONENT_COUNT = countNamedComponents()

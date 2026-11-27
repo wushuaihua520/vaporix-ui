@@ -1,6 +1,55 @@
-# 元汽UI
+<p align="center">
+	<img src="https://www.vaporix-ui.com/logo-tile.png" width="88" height="88" alt="元汽UI">
+</p>
 
-**uni-app x 蒸汽模式的高颜值、原生渲染组件库。60 个基础组件、1112 个图标、亮暗两套主题、五端同一套源码，MIT 免费商用。**
+<h1 align="center">元汽UI · Vaporix UI</h1>
+
+<p align="center">
+	uni-app x 蒸汽模式的高颜值、原生渲染组件库<br>
+</p>
+
+<p align="center">
+	60+ 个组件 · 1112 个图标 · 亮暗两套令牌 · 免费层 MIT
+</p>
+
+<p align="center">
+	<a href="https://www.vaporix-ui.com">文档</a> ·
+	<a href="https://www.vaporix-ui.com/components">组件</a> ·
+	<a href="https://www.vaporix-ui.com/docs/install">安装</a> ·
+	<a href="https://ext.dcloud.net.cn/plugin?name=vaporix-ui">插件市场</a> ·
+	<a href="https://www.vaporix-ui.com/docs/pro">Pro 组件</a> ·
+	<a href="./changelog.md">更新日志</a>
+</p>
+
+<p align="center">
+	<a href="https://www.vaporix-ui.com/docs/install"><img src="https://img.shields.io/badge/uni--app%20x-%E8%92%B8%E6%B1%BD%E6%A8%A1%E5%BC%8F-2b6be0?style=flat-square" alt="uni-app x 蒸汽模式"></a>
+	<a href="https://www.vaporix-ui.com/docs/install"><img src="https://img.shields.io/badge/HBuilderX-5.26%2B-6b7280?style=flat-square" alt="HBuilderX 5.26 及以上"></a>
+	<a href="https://www.vaporix-ui.com/components"><img src="https://img.shields.io/badge/%E7%BB%84%E4%BB%B6-60-2b6be0?style=flat-square" alt="60+ 个组件"></a>
+	<a href="https://www.vaporix-ui.com/components/icon"><img src="https://img.shields.io/badge/%E5%9B%BE%E6%A0%87-1112-0b7c46?style=flat-square" alt="1112 个图标"></a>
+	<a href="./license.md"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT 许可"></a>
+</p>
+
+<p align="center">
+	官网链接：<a href="https://www.vaporix-ui.com">https://www.vaporix-ui.com</a>
+</p>
+
+<p align="center">
+	<img src="https://gitee.com/DonkeySmall/vaporix-ui/raw/master/static/readme/vaporix-ui_cover.jpg" alt="一套组件，多端原生运行">
+</p>
+
+## 设计概念
+
+冷色、低饱和、细描边。层级靠留白和 1px 描边，阴影只给浮层。
+
+| 项 | 取值 |
+| --- | --- |
+| 令牌 | 颜色、字号、间距、圆角、高度全取 `--vx-*`，亮暗各一份 |
+| 字号 | 页面品牌 28、区块标题 17、正文 15、辅助 13 |
+| 控件 | 高度 32 / 40 / 48，文案 14 / 16 / 18 |
+| 圆角 | 控件 6 / 8 / 10，容器 8，贴边面板 12 |
+| 动效 | 按下 120ms，过渡 220ms，加载旋转 700ms |
+
+## 截图
 
 <p align="center">
 	<img src="https://www.vaporix-ui.com/readme/showcase-catalog.png" width="200" alt="组件目录">
@@ -8,16 +57,18 @@
 	<img src="https://www.vaporix-ui.com/readme/showcase-card.png" width="200" alt="卡片演示页">
 </p>
 
-## 优势
+<p align="center">
+	<sub>组件目录 · 按钮 · 卡片（Web 演示，App 为原生渲染）</sub>
+</p>
 
-**一个页面从零到上线，不用再引第二个组件库。**
+## 为什么用元汽UI
 
-- **原生渲染**：组件是 `.uvue`，蒸汽模式编译成原生视图。App 端不走 WebView，没有第三方运行时。
-- **一套令牌**：颜色、字号、间距、圆角、高度全取 `--vx-*`。亮暗主题只换页面根节点一个 class。
-- **五端同源**：Android、iOS、鸿蒙、Web、微信小程序共用一份代码，平台差异收在组件内部。
-- **不缺件**：基础、表单、反馈、布局、导航五类共 60 件，缺一个控件就得换库的项目也够用。
-- **复制即用**：放进 `uni_modules` 自动注册，不用写 `custom` 正则。
-- **MIT**：个人和商业项目都能用，不要求署名，不限项目数量。
+| 能力 | 说明 |
+| --- | --- |
+| **原生渲染** | 蒸汽模式把 uvue 编译成原生视图，App 端不走 WebView。 |
+| **免费层不缺件** | 60 个组件够空项目走到上线，Pro 只补高配版和重型件。 |
+| **复制即用** | 放进 `uni_modules`，easycom 自动扫描。引令牌、开蒸汽模式即可。 |
+| **图标够用** | Phosphor 2.1.2，core 112 默认加载，extend 1000 按需引入。 |
 
 ## 平台
 
@@ -26,7 +77,7 @@
 | Android / iOS / 鸿蒙 / Web / 微信小程序 | √ |
 | 其他小程序、uni-app（vue2 / vue3）、nvue | — |
 
-## 环境要求
+## 快速开始
 
 | 项 | 要求 |
 | --- | --- |
@@ -35,11 +86,13 @@
 | 样式隔离 | `manifest.json` 里开启 2.0 |
 | App 动效 | `@keyframes` 要 5.31 起，更早版本加载圈不旋转 |
 
-## 接入
+**1. 放入模块**
 
-1. 把 `vaporix-ui` 目录放到项目的 `uni_modules` 下。
+从 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?name=vaporix-ui) 导入，或把本目录复制到项目的 `uni_modules` 下。
 
-2. 引入令牌。App 端写在 `App.uvue` 的 `<style>` 里：
+**2. 引入令牌**
+
+App 端在 `App.uvue`：
 
 ```vue
 <style>
@@ -49,7 +102,7 @@
 </style>
 ```
 
-Web 端在样式隔离 2.0 下改在 `main.uts`：
+Web 端在 `main.uts`：
 
 ```ts
 // #ifdef WEB
@@ -57,133 +110,85 @@ import "@/uni_modules/vaporix-ui/libs/style/variables.css"
 // #endif
 ```
 
-App 端图标字体不需要额外配置：`variables.css` 和 `icons-extend.css` 在 App 分支里内嵌 base64，字体随样式一起进包。Web 用包内 woff2，extend 分四段各带 `unicode-range`，页面只下载用到的段；小程序内嵌 base64。
+App 端图标字体随样式进包：`variables.css` 和 `icons-extend.css` 在 App 分支里内嵌 base64。Web 用包内 woff2，extend 分四段，各带 `unicode-range`，页面只下载用到的段。小程序内嵌 base64。
 
-3. 页面根节点加 `vx-theme-light` 或 `vx-theme-dark`。
+**3. 开蒸汽模式，挂主题**
 
-4. 组件目录符合 easycom 规范，`autoscan` 会自动注册，不需要写 `custom` 正则：
+`manifest.json`：
 
 ```json
-"easycom": {
-	"autoscan": true
+{
+	"uni-app-x": {
+		"vapor": true,
+		"styleIsolationVersion": "2",
+		"vapor-render-target": "bytecode"
+	}
 }
 ```
 
-同时安装 `vaporix-ui-pro` 时也不要写一条 `^vx-(.*)`，否则所有 `vx-` 标签都会指向其中一个目录。
+页面根节点挂 `vx-theme-light` 或 `vx-theme-dark`：
+
+```vue
+<template>
+	<view class="vx-theme-light">
+		<vx-input v-model="keyword" placeholder="请输入关键词" clearable />
+		<vx-tag type="success" variant="soft" text="已完成" />
+		<vx-button text="确定" type="primary" size="lg" />
+	</view>
+</template>
+```
+
+easycom 自动扫描，组件直接使用。同时安装 `vaporix-ui-pro` 时也保持自动扫描。写了 `^vx-(.*)` 的话，所有 `vx-` 标签都会指到其中一个目录。
+
+属性表在包内 `api/vx-<name>.md`，也可看[组件文档](https://www.vaporix-ui.com/components)。
 
 ## 组件一览
 
-一个组件一个 API 文件，放在包内 `api/` 目录，文件名就是标签名。下表的组件名链到文档站的同名页面。
+| 分类 | 数量 | 组件 |
+| --- | :---: | --- |
+| 基础 | 6 | [按钮](https://www.vaporix-ui.com/components/button) · [图标](https://www.vaporix-ui.com/components/icon) · [标签](https://www.vaporix-ui.com/components/tag) · [徽章](https://www.vaporix-ui.com/components/badge) · [文本](https://www.vaporix-ui.com/components/text) · [超链接](https://www.vaporix-ui.com/components/link) |
+| 表单 | 12 | [输入框](https://www.vaporix-ui.com/components/input) · [多行输入框](https://www.vaporix-ui.com/components/textarea) · [数字框](https://www.vaporix-ui.com/components/number-box) · [单项选择器](https://www.vaporix-ui.com/components/radio) · [多项选择器](https://www.vaporix-ui.com/components/checkbox) · [开关选择器](https://www.vaporix-ui.com/components/switch) · [评分](https://www.vaporix-ui.com/components/rate) · [日期时间](https://www.vaporix-ui.com/components/datetime) · [联动选择](https://www.vaporix-ui.com/components/picker) · [日历](https://www.vaporix-ui.com/components/calendar) · [表单](https://www.vaporix-ui.com/components/form) · [表单项](https://www.vaporix-ui.com/components/form-item) |
+| 反馈 | 11 | [消息提示](https://www.vaporix-ui.com/components/tips) · [轻提示](https://www.vaporix-ui.com/components/toast) · [加载中](https://www.vaporix-ui.com/components/loading) · [加载更多](https://www.vaporix-ui.com/components/loadmore) · [没有更多](https://www.vaporix-ui.com/components/nomore) · [暂无数据](https://www.vaporix-ui.com/components/no-data) · [操作菜单](https://www.vaporix-ui.com/components/actionsheet) · [弹框](https://www.vaporix-ui.com/components/modal) · [抽屉](https://www.vaporix-ui.com/components/drawer) · [气泡弹框](https://www.vaporix-ui.com/components/bubble-popup) · [弹出层](https://www.vaporix-ui.com/components/popup) |
+| 布局 | 18 | [列表分组](https://www.vaporix-ui.com/components/list-view) · [列表行](https://www.vaporix-ui.com/components/list-cell) · [卡片](https://www.vaporix-ui.com/components/card) · [标题栏](https://www.vaporix-ui.com/components/section) · [上下留白](https://www.vaporix-ui.com/components/white-space) · [左右留白](https://www.vaporix-ui.com/components/wing-blank) · [宫格](https://www.vaporix-ui.com/components/grid) · [宫格项](https://www.vaporix-ui.com/components/grid-item) · [栅格布局](https://www.vaporix-ui.com/components/row) · [多端适配](https://www.vaporix-ui.com/components/col) · [图片组合](https://www.vaporix-ui.com/components/image-group) · [折叠面板](https://www.vaporix-ui.com/components/collapse) · [折叠项](https://www.vaporix-ui.com/components/collapse-item) · [标签页](https://www.vaporix-ui.com/components/tabs) · [吸顶容器](https://www.vaporix-ui.com/components/sticky) · [图片](https://www.vaporix-ui.com/components/image) · [分割线](https://www.vaporix-ui.com/components/divider) · [安全区](https://www.vaporix-ui.com/components/safe-area) |
+| 导航与展示 | 13 | [二维码](https://www.vaporix-ui.com/components/qrcode) · [导航栏](https://www.vaporix-ui.com/components/navigation-bar) · [状态栏](https://www.vaporix-ui.com/components/status-bar) · [标签栏](https://www.vaporix-ui.com/components/tabbar) · [页脚](https://www.vaporix-ui.com/components/footer) · [滑动菜单](https://www.vaporix-ui.com/components/swipe-action) · [时间轴](https://www.vaporix-ui.com/components/time-axis) · [步骤条](https://www.vaporix-ui.com/components/steps) · [进度条](https://www.vaporix-ui.com/components/progress) · [倒计时](https://www.vaporix-ui.com/components/countdown) · [滚动消息](https://www.vaporix-ui.com/components/rolling-news) · [通告栏](https://www.vaporix-ui.com/components/notice-bar) · [头像](https://www.vaporix-ui.com/components/avatar) |
 
-### 基础
+上表是免费层，Pro 见下一节。
 
-| 组件 | 说明 |
+## Pro 组件
+
+31 个组件，与免费层共用一套 `--vx-*` 令牌和 `vx-` 前缀，并列放在 `uni_modules`，easycom 一起扫描。免费层已有的组件继续留在免费层。
+
+| 类型 | 组件 |
 | --- | --- |
-| [vx-button](https://www.vaporix-ui.com/components/button) | 按钮，一屏一个实心主操作，支持渐变背景 |
-| [vx-icon](https://www.vaporix-ui.com/components/icon) | 图标，core 112 + extend 1000 |
-| [vx-text](https://www.vaporix-ui.com/components/text) | 文本，正文、金额、证件格式化 |
-| [vx-link](https://www.vaporix-ui.com/components/link) | 超链接，Web 新开标签页，App 复制 |
-| [vx-tag](https://www.vaporix-ui.com/components/tag) | 标签，状态和分类 |
-| [vx-badge](https://www.vaporix-ui.com/components/badge) | 徽章，计数、短词和圆点 |
+| 重型件 | [表格](https://www.vaporix-ui.com/components/table) · [虚拟列表](https://www.vaporix-ui.com/components/virtual-list) · [图片上传](https://www.vaporix-ui.com/components/upload) · [富文本](https://www.vaporix-ui.com/components/rich-text) · [拖拽排序](https://www.vaporix-ui.com/components/drag-list) |
+| 组合件 | [页面容器](https://www.vaporix-ui.com/components/page)：导航栏、下拉刷新、触底加载收成一件 |
+| 选择与输入 | [选择框](https://www.vaporix-ui.com/components/select) · [级联选择](https://www.vaporix-ui.com/components/cascader) · [树型菜单](https://www.vaporix-ui.com/components/tree-view) · [滑动选择](https://www.vaporix-ui.com/components/slider) · [分段器](https://www.vaporix-ui.com/components/segmented-control) · [数据选择器](https://www.vaporix-ui.com/components/data-checkbox) · [验证码输入框](https://www.vaporix-ui.com/components/code-input) · [数字键盘](https://www.vaporix-ui.com/components/keyboard) · [数字键盘输入框](https://www.vaporix-ui.com/components/keyboard-input) |
+| 展示与动效 | [图片预览](https://www.vaporix-ui.com/components/gallery) · [轮播图](https://www.vaporix-ui.com/components/swiper) · [瀑布流](https://www.vaporix-ui.com/components/waterfall) · [滚动列表](https://www.vaporix-ui.com/components/scroll-list) · [索引列表](https://www.vaporix-ui.com/components/index-list) · [分隔列表](https://www.vaporix-ui.com/components/divide-list) · [分页器](https://www.vaporix-ui.com/components/pagination) · [筛选栏](https://www.vaporix-ui.com/components/dropdown) · [环形进度条](https://www.vaporix-ui.com/components/circular-progress) · [数字动画](https://www.vaporix-ui.com/components/count-to) · [骨架屏](https://www.vaporix-ui.com/components/skeleton) · [加载动画](https://www.vaporix-ui.com/components/loader) · [提示页](https://www.vaporix-ui.com/components/msg) · [压屏窗](https://www.vaporix-ui.com/components/landscape) · [新手引导](https://www.vaporix-ui.com/components/guide) · [返回顶部](https://www.vaporix-ui.com/components/back-top) |
 
-### 表单
+详见 [Pro 组件](https://www.vaporix-ui.com/docs/pro)。
 
-| 组件 | 说明 |
-| --- | --- |
-| [vx-input](https://www.vaporix-ui.com/components/input) | 输入框，含搜索变体 |
-| [vx-textarea](https://www.vaporix-ui.com/components/textarea) | 多行输入框，字数统计 |
-| [vx-number-box](https://www.vaporix-ui.com/components/number-box) | 数字框，加减和输入 |
-| [vx-radio-group](https://www.vaporix-ui.com/components/radio) / [vx-radio](https://www.vaporix-ui.com/components/radio) | 单项选择器 |
-| [vx-checkbox-group](https://www.vaporix-ui.com/components/checkbox) / [vx-checkbox](https://www.vaporix-ui.com/components/checkbox) | 多项选择器 |
-| [vx-switch](https://www.vaporix-ui.com/components/switch) | 开关，含轨道文字 |
-| [vx-rate](https://www.vaporix-ui.com/components/rate) | 星级评分，半星和滑动 |
-| [vx-datetime](https://www.vaporix-ui.com/components/datetime) | 日期时间滚轮，十种模式 |
-| [vx-picker](https://www.vaporix-ui.com/components/picker) | 联动选择，多列滚轮 |
-| [vx-calendar](https://www.vaporix-ui.com/components/calendar) | 日历，单日或区间 |
-| [vx-form](https://www.vaporix-ui.com/components/form) / [vx-form-item](https://www.vaporix-ui.com/components/form-item) | 表单容器与表单项 |
+## API
 
-### 反馈
-
-| 组件 | 说明 |
-| --- | --- |
-| [vx-tips](https://www.vaporix-ui.com/components/tips) | 消息提示，横幅或浮层 |
-| [vx-toast](https://www.vaporix-ui.com/components/toast) | 轻提示，居中短文案 |
-| [vx-loading](https://www.vaporix-ui.com/components/loading) | 加载中，含全屏浮层 |
-| [vx-loadmore](https://www.vaporix-ui.com/components/loadmore) / [vx-nomore](https://www.vaporix-ui.com/components/nomore) | 列表尾部状态 |
-| [vx-no-data](https://www.vaporix-ui.com/components/no-data) | 空状态 |
-| [vx-actionsheet](https://www.vaporix-ui.com/components/actionsheet) | 操作菜单 |
-| [vx-modal](https://www.vaporix-ui.com/components/modal) | 弹框，可自定义动作 |
-| [vx-drawer](https://www.vaporix-ui.com/components/drawer) | 抽屉，四向滑出 |
-| [vx-bubble-popup](https://www.vaporix-ui.com/components/bubble-popup) | 气泡弹框，也能做聊天气泡 |
-| [vx-popup](https://www.vaporix-ui.com/components/popup) | 弹出层底座 |
-
-### 布局
-
-| 组件 | 说明 |
-| --- | --- |
-| [vx-list-view](https://www.vaporix-ui.com/components/list-view) / [vx-list-cell](https://www.vaporix-ui.com/components/list-cell) | 列表分组与列表行 |
-| [vx-card](https://www.vaporix-ui.com/components/card) | 卡片，头正文底三段 |
-| [vx-section](https://www.vaporix-ui.com/components/section) | 区块标题栏 |
-| [vx-grid](https://www.vaporix-ui.com/components/grid) / [vx-grid-item](https://www.vaporix-ui.com/components/grid-item) | 宫格 |
-| [vx-row](https://www.vaporix-ui.com/components/row) / [vx-col](https://www.vaporix-ui.com/components/col) | 24 栅格，四档断点 |
-| [vx-image](https://www.vaporix-ui.com/components/image) | 图片底座，三态回落 |
-| [vx-image-group](https://www.vaporix-ui.com/components/image-group) | 图片组合，重叠和多行 |
-| [vx-collapse](https://www.vaporix-ui.com/components/collapse) / [vx-collapse-item](https://www.vaporix-ui.com/components/collapse-item) | 折叠面板 |
-| [vx-tabs](https://www.vaporix-ui.com/components/tabs) | 页签，含竖排 |
-| [vx-sticky](https://www.vaporix-ui.com/components/sticky) | 吸顶容器 |
-| [vx-divider](https://www.vaporix-ui.com/components/divider) | 分割线 |
-| [vx-white-space](https://www.vaporix-ui.com/components/white-space) | 上下留白 |
-| [vx-wing-blank](https://www.vaporix-ui.com/components/wing-blank) | 左右留白 |
-| [vx-safe-area](https://www.vaporix-ui.com/components/safe-area) | 安全区占位 |
-
-### 导航与展示
-
-| 组件 | 说明 |
-| --- | --- |
-| [vx-navigation-bar](https://www.vaporix-ui.com/components/navigation-bar) | 自定义导航栏，滚动渐显 |
-| [vx-status-bar](https://www.vaporix-ui.com/components/status-bar) | 状态栏占位 |
-| [vx-tabbar](https://www.vaporix-ui.com/components/tabbar) | 底部标签栏，凸起主按钮 |
-| [vx-footer](https://www.vaporix-ui.com/components/footer) | 页脚，版权和链接 |
-| [vx-swipe-action](https://www.vaporix-ui.com/components/swipe-action) | 滑动菜单 |
-| [vx-time-axis](https://www.vaporix-ui.com/components/time-axis) | 时间轴 |
-| [vx-steps](https://www.vaporix-ui.com/components/steps) | 步骤条 |
-| [vx-progress](https://www.vaporix-ui.com/components/progress) | 进度条 |
-| [vx-countdown](https://www.vaporix-ui.com/components/countdown) | 倒计时 |
-| [vx-rolling-news](https://www.vaporix-ui.com/components/rolling-news) | 滚动消息轮播 |
-| [vx-notice-bar](https://www.vaporix-ui.com/components/notice-bar) | 通告栏 |
-| [vx-avatar](https://www.vaporix-ui.com/components/avatar) | 头像，三态回落 |
-| [vx-qrcode](https://www.vaporix-ui.com/components/qrcode) | 二维码，view 绘制 |
-
-## API 文档
-
-包内 `api/` 目录每个组件一个文件，顺序固定：示例 → 属性 → 事件 → 插槽 → 方法 → 说明，缺的部分不出现。文件名是 `api/vx-<name>.md`，例如 `api/vx-modal.md`。
-
-- 只想知道有什么组件：上面的清单。
-- 想知道某个组件的全部参数：打开 `api/` 下的同名文件，或看文档站的同名页面。
-- 想知道多个组件共用的约定（尺寸档位、语义色、`v-model` 写法、弹层的 `cancel()`）：`api/README.md` 末尾有一节。
-
-可交互预览、属性演示和平台差异：https://www.vaporix-ui.com/components
-
-## 和 Pro 的关系
-
-表格、虚拟列表、图片上传、富文本、级联选择、瀑布流等 31 个重型件在付费的 `vaporix-ui-pro`，共用同一套令牌和 `vx-` 前缀，两个模块并列放进 `uni_modules`。已免费的组件不会挪进 Pro。
-
-范围和授权：https://www.vaporix-ui.com/docs/pro
+包内 `api/` 每个组件一个文件，文件名是 `api/vx-<name>.md`。顺序固定：示例、属性、事件、插槽、方法、说明，缺的部分不出现。多个组件共用的约定在 [`api/README.md`](./api/README.md) 末尾。
 
 ## 约定
 
-- `<script setup>`，不写 `lang`。5.26 按 uts2js 编译 TypeScript 写法，5.31 起默认就是 TypeScript。
-- 公共类型在 `libs/types/common.ts`，组件 Props 在同目录 `props.ts`。
-- 选择器只用单个 class，组合态写成一个，例如 `vx-button--plain-primary`。
-- 颜色、字号、间距、圆角、高度从 `--vx-*` 取；令牌只在 `libs/style/variables.css` 维护一份。
-- JS API 需要的色值和时长分别放在 `libs/theme.ts`、`libs/motion.ts`，与 `variables.css` 同步修改。
+- `<script setup>`，不写 `lang`。5.26 按 uts2js 编译，5.31 起默认 TypeScript。
+- `size` 只有 `sm | md | lg`，默认 `md`。
+- 样式只用单个 class，组合态写成一个，例如 `vx-button--plain-primary`。
+- 颜色、字号、间距、圆角、高度从 `--vx-*` 取，只在 `libs/style/variables.css` 维护一份。脚本里用到的色值和时长在 `libs/theme.ts`、`libs/motion.ts`，改令牌时一起改。
 
-完整设计规范在源码仓库根目录的 `DESIGN.md`。
+数值以源码仓库根目录的 [DESIGN.md](https://gitee.com/DonkeySmall/vaporix-ui/blob/master/DESIGN.md) 为准。
 
 ## 更新
 
-版本记录见 [`changelog.md`](https://gitee.com/DonkeySmall/vaporix-ui/blob/master/uni_modules/vaporix-ui/changelog.md)，每次发版补一条，升级前先看对应版本。
+版本记录见 [changelog.md](./changelog.md)。升级前先看对应版本。
 
 ## 授权
 
-基础组件使用 MIT，全文见 [`license.md`](https://gitee.com/DonkeySmall/vaporix-ui/blob/master/uni_modules/vaporix-ui/license.md)。图标来自 Phosphor 2.1.2（MIT），许可证在 `libs/icons/LICENSE`。
+| 范围 | 内容 | 许可 |
+| --- | --- | --- |
+| 免费层 | 60 个组件、1112 个图标、设计令牌 | [MIT](./license.md)，个人和商业项目都能用 |
+| 高级层 `vaporix-ui-pro` | 表格、虚拟列表、图片预览等 31 个组件 | 单独销售，见 [Pro 组件](https://www.vaporix-ui.com/docs/pro) |
+
+图标来自 Phosphor 2.1.2（MIT），许可全文在 `libs/icons/LICENSE`。

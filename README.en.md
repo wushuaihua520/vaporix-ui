@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-	60 components · 1112 icons · light and dark tokens · MIT free tier
+	60+ components · 1112 icons · light and dark tokens · MIT free tier
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 <p align="center">
 	<a href="https://www.vaporix-ui.com/en/docs/install"><img src="https://img.shields.io/badge/uni--app%20x-vapor%20mode-2b6be0?style=flat-square" alt="uni-app x vapor mode"></a>
 	<a href="https://www.vaporix-ui.com/en/docs/install"><img src="https://img.shields.io/badge/HBuilderX-5.26%2B-6b7280?style=flat-square" alt="HBuilderX 5.26 or newer"></a>
-	<a href="https://www.vaporix-ui.com/en/components"><img src="https://img.shields.io/badge/components-60-2b6be0?style=flat-square" alt="60 components"></a>
+	<a href="https://www.vaporix-ui.com/en/components"><img src="https://img.shields.io/badge/components-60-2b6be0?style=flat-square" alt="60+ components"></a>
 	<a href="https://www.vaporix-ui.com/en/components/icon"><img src="https://img.shields.io/badge/icons-1112-0b7c46?style=flat-square" alt="1112 icons"></a>
 	<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT license"></a>
 </p>

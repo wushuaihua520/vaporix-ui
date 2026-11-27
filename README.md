@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-	60 个组件 · 1112 个图标 · 亮暗两套令牌 · 免费层 MIT
+	60+ 个组件 · 1112 个图标 · 亮暗两套令牌 · 免费层 MIT
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 <p align="center">
 	<a href="https://www.vaporix-ui.com/docs/install"><img src="https://img.shields.io/badge/uni--app%20x-%E8%92%B8%E6%B1%BD%E6%A8%A1%E5%BC%8F-2b6be0?style=flat-square" alt="uni-app x 蒸汽模式"></a>
 	<a href="https://www.vaporix-ui.com/docs/install"><img src="https://img.shields.io/badge/HBuilderX-5.26%2B-6b7280?style=flat-square" alt="HBuilderX 5.26 及以上"></a>
-	<a href="https://www.vaporix-ui.com/components"><img src="https://img.shields.io/badge/%E7%BB%84%E4%BB%B6-60-2b6be0?style=flat-square" alt="60 个组件"></a>
+	<a href="https://www.vaporix-ui.com/components"><img src="https://img.shields.io/badge/%E7%BB%84%E4%BB%B6-60-2b6be0?style=flat-square" alt="60+ 个组件"></a>
 	<a href="https://www.vaporix-ui.com/components/icon"><img src="https://img.shields.io/badge/%E5%9B%BE%E6%A0%87-1112-0b7c46?style=flat-square" alt="1112 个图标"></a>
 	<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1d26?style=flat-square" alt="MIT 许可"></a>
 </p>
