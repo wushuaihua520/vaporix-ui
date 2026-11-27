@@ -14,8 +14,17 @@
 			<!-- 悬浮层包住底色、选中胶囊和行：surface 铺的是这一层，安全区留白也在这层补。
 			     玻璃风格再收边距成悬浮胶囊；平时不收，视觉和从前一致。 -->
 			<view :class="floatClass">
-				<!-- 底色单独一层，只铺栏身。栏顶以上的透明段不在这个盒子里。 -->
+				<!-- 底色单独一层，只铺栏身。栏顶以上的透明段不在这个盒子里。
+				     玻璃风格在 iOS 上换 glass-effect-view：iOS 26+ 是系统液态玻璃（折射、边缘高光），
+				     15~25 自动降级为系统毛玻璃；材质跟随系统外观，bgColor 不作用于玻璃底。
+				     其余平台仍是 view，模糊由样式表按平台开关。 -->
+				<!-- #ifdef APP-IOS -->
+				<glass-effect-view v-if="liquidGlass" :class="surfaceClass" glass-style="regular"></glass-effect-view>
+				<view v-else :class="surfaceClass" :style="surfaceStyle"></view>
+				<!-- #endif -->
+				<!-- #ifndef APP-IOS -->
 				<view :class="surfaceClass" :style="surfaceStyle"></view>
+				<!-- #endif -->
 
 				<!-- 液态玻璃的选中胶囊：宽度按列数等分，translateX 的 100% 正好滑一格。 -->
 				<view v-if="thumbVisible" :class="thumbClass" :style="thumbStyle">
@@ -253,7 +262,8 @@
 	})
 
 	const surfaceStyle = computed((): string => {
-		if (props.bgColor.length === 0) return ''
+		// 玻璃底色交给材质和令牌：bgColor 盖上去会把玻璃糊死，玻璃风格里不接。
+		if (props.bgColor.length === 0 || props.liquidGlass === true) return ''
 		return `background-color: ${props.bgColor};`
 	})
 
@@ -599,11 +609,16 @@
 		border-top-width: 0;
 	}
 
-	/* 玻璃底：整圈发丝描边代替顶部分割线，胶囊圆角，投影用浮层同档。
+	/* 玻璃底：整圈发丝描边代替顶部分割线，胶囊圆角。
 	   高度用栏高令牌显式声明（thumb 同款）：不引用安全区变量——它由运行时全局注入，
 	   iPhone 形态上是 34，和 safeArea 开关无关，拿它当 bottom 会把栏裁短；
 	   安全区留白只由 --float--safe 的 padding 承担。
-	   App 没有背景模糊，玻璃底的不透明度给足；Web 在文件末尾的 #ifdef WEB 里开 backdrop-filter。
+	   磨砂：App 蒸汽 5.25+ 与 Web 支持 backdrop-filter（App 只认 blur()，saturate 只写进
+	   WEB 块），底色用更透的 --glass-bg-blur；小程序没有模糊，#ifdef MP 换回给足
+	   不透明度的 --glass-bg。iOS 上这一层是 glass-effect-view（真液态玻璃），
+	   文件末尾的 #ifdef APP-IOS 块剥掉自绘底色和描边。
+	   阴影用浮层同档分层：近距接触影 + 远距环境影，再加上下 inset 高光，
+	   这是玻璃浮起感的来源（探针 B2 验证 App 端可渲染）。
 	   写在 --no-divider 后面：分割线开关不影响玻璃描边。 */
 	.vx-tabbar__surface--glass {
 		height: var(--vx-tabbar-height-md);
@@ -620,8 +635,8 @@
 		border-bottom-color: var(--vx-tabbar-glass-border);
 		border-left-color: var(--vx-tabbar-glass-border);
 		border-radius: var(--vx-radius-pill);
-		background-color: var(--vx-tabbar-glass-bg);
-		box-shadow: var(--vx-shadow-lg);
+		background-color: var(--vx-tabbar-glass-bg-blur);
+		box-shadow: var(--vx-tabbar-glass-shadow);
 	}
 
 	.vx-tabbar__surface--glass-sm {
@@ -954,6 +969,33 @@
 		height: var(--vx-tabbar-glass-inset-bottom);
 	}
 
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃底交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   这里只留几何和浮起阴影（探针 A7 验证原生玻璃上 box-shadow 可用），
+	   自绘底色和描边剥掉，否则盖住材质。写在 --glass 后面盖过它。 */
+	.vx-tabbar__surface--glass {
+		border-top-width: 0;
+		border-right-width: 0;
+		border-bottom-width: 0;
+		border-left-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-tabbar__surface--glass {
+		background-color: var(--vx-tabbar-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），和 Web 共用更透的底色令牌。 */
+	.vx-tabbar__surface--glass {
+		backdrop-filter: blur(24px);
+	}
+	/* #endif */
+
 	/* #ifdef WEB */
 	.vx-tabbar__item {
 		cursor: pointer;
@@ -980,8 +1022,8 @@
 	   才换成更透的 blur 档，不支持的引擎停在给足不透明度的普通玻璃底上。 */
 	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 		.vx-tabbar__surface--glass {
-			-webkit-backdrop-filter: blur(18px) saturate(1.8);
-			backdrop-filter: blur(18px) saturate(1.8);
+			-webkit-backdrop-filter: blur(24px) saturate(1.8);
+			backdrop-filter: blur(24px) saturate(1.8);
 			background-color: var(--vx-tabbar-glass-bg-blur);
 		}
 	}

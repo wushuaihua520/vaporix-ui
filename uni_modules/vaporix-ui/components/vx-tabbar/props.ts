@@ -40,7 +40,7 @@ export type VxTabbarProps = {
 	safeArea?: boolean
 	/** 顶部 1px 分割线，默认打开。 */
 	divider?: boolean
-	/** 液态玻璃风格：整条收成悬浮胶囊，半透明玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示，默认关闭。 */
+	/** 液态玻璃风格：整条收成悬浮胶囊，磨砂玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示，默认关闭。iOS 26+ 用系统液态玻璃材质（15~25 降级为系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序保持半透明底。玻璃底不接 bgColor。 */
 	liquidGlass?: boolean
 	/** 切换选中项时的回弹动画：新选中的图标先收一档再弹回，文案同时上浮归位，默认打开；关闭后切换直接落位。 */
 	animated?: boolean

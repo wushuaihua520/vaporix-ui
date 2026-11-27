@@ -1,3 +1,11 @@
+## 0.79.0（2026-11-27）
+
+- `vx-tabbar` 液态玻璃升级为系统材质优先：iOS 上玻璃底换 `glass-effect-view`（uni-app x 5.25+ 蒸汽模式内置组件），iOS 26+ 出真·液态玻璃（边缘折射、系统发丝描边和亮暗自适应），15~25 自动降级为系统毛玻璃；材质跟随系统外观，不读应用的 `vx-theme-*`。Android / 鸿蒙蒸汽与 Web 走 `backdrop-filter: blur`（App 端 5.25+ 支持，官方兼容表实锤；App 只认 `blur()`，`saturate(1.8)` 只写进 WEB 块），小程序维持给足不透明度的半透明底。
+- 玻璃投影从单层 `--vx-shadow-lg` 换成 `--vx-tabbar-glass-shadow` 分层浮起：近距接触影 + 远距环境影 + 上下 inset 高光，玻璃的「浮在内容上」感来自这一组；多层与 inset 在 App 蒸汽端探针实测可渲染。发丝描边保留（iOS 剥掉自绘描边交给系统材质）。
+- `bgColor` 不再作用于玻璃底：用户色盖上去会把磨砂糊死，玻璃底色统一由令牌控制，`bgColor` 仅普通模式生效。底色更透一档（亮 blur 档 0.55→0.52，暗 0.45→0.58 提可读性）。
+- 探针页（pro 仓库 `pages/probe/glass.uvue`）留存：glass-effect-view 七种形态（内容在内/盖外、clear、tint、interactive、叠阴影描边）+ backdrop-filter 五组对照 + 组件对照，iOS 27.2 模拟器全绿。
+- 演示页固定演示栏换 `liquid-glass`，正文从玻璃底下穿过；文案同步。
+
 ## 0.78.0（2026-11-27）
 
 - `vx-tabbar` 新增 `liquidGlass` 液态玻璃风格：整条收成悬浮胶囊，左右和底部各让 12px（`--vx-tabbar-glass-inset-*`），半透明玻璃底配整圈 1px 发丝描边和浮层同档阴影（`--vx-shadow-lg`）；顶部分割线由描边替代，`divider` 开关在玻璃模式下不再影响外观。

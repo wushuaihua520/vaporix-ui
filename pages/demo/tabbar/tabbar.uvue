@@ -128,7 +128,7 @@
 				</view>
 
 				<view class="demo-section">
-					<demo-section-head title="液态玻璃" desc="liquidGlass 收成悬浮胶囊：玻璃底加深色描边，选中项用浅色胶囊滑过去。" />
+					<demo-section-head title="液态玻璃" desc="liquidGlass 收成悬浮胶囊：iOS 26+ 是系统液态玻璃材质，Android / 鸿蒙 / Web 磨砂，小程序半透明底，选中项用浅色胶囊滑过去。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
 							<text class="demo-tabbar-label">primary · 5 项</text>
@@ -139,7 +139,7 @@
 							<vx-tabbar v-model="glassAltActive" :items="glassAltEntries" :fixed="false" :safe-area="false"
 								liquid-glass type="danger" />
 						</view>
-						<text class="demo-hint demo-tabbar-hint">App 没有背景模糊，玻璃底不透明度给足；Web 端开 backdrop-filter。玻璃风格里凸起圆钮按普通项渲染，顶部分割线由整圈描边替代。</text>
+						<text class="demo-hint demo-tabbar-hint">iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；玻璃底不接 bgColor。玻璃风格里凸起圆钮按普通项渲染，顶部分割线由整圈描边替代。</text>
 					</view>
 				</view>
 
@@ -205,8 +205,8 @@
 			</view>
 		</scroll-view>
 
-		<!-- 固定演示：放在页面根节点的末尾，占位和滚动区各让出栏高。 -->
-		<vx-tabbar v-if="fixedVisible" v-model="fixedActive" :items="fixedEntries" />
+		<!-- 固定演示：放在页面根节点的末尾，占位和滚动区各让出栏高。玻璃风格时正文从玻璃底下穿过。 -->
+		<vx-tabbar v-if="fixedVisible" v-model="fixedActive" :items="fixedEntries" liquid-glass />
 	</view>
 </template>
 
