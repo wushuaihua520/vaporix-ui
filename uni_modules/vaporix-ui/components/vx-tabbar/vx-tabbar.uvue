@@ -7,7 +7,7 @@
 		<view v-if="showSpacer" class="vx-tabbar__spacer">
 			<view :class="spacerClass"></view>
 			<view v-if="safeArea" class="vx-tabbar__spacer-safe"></view>
-			<view v-if="liquidGlass" class="vx-tabbar__spacer-glass"></view>
+			<view v-if="glassActive" class="vx-tabbar__spacer-glass"></view>
 		</view>
 
 		<view :class="rootClass" :style="rootStyle">
@@ -19,7 +19,7 @@
 				     15~25 自动降级为系统毛玻璃；材质跟随系统外观，bgColor 不作用于玻璃底。
 				     其余平台仍是 view，模糊由样式表按平台开关。 -->
 				<!-- #ifdef APP-IOS -->
-				<glass-effect-view v-if="liquidGlass" :class="surfaceClass" :glass-style="glassStyleName"></glass-effect-view>
+				<glass-effect-view v-if="glassActive" :class="surfaceClass" :glass-style="glassStyleName"></glass-effect-view>
 				<view v-else :class="surfaceClass" :style="surfaceStyle"></view>
 				<!-- #endif -->
 				<!-- #ifndef APP-IOS -->
@@ -78,6 +78,7 @@
 	import { VxTabbarProps, VxTabbarItem } from './props'
 	import { VxIconVariant, VxSemantic, VxSize } from '../../libs/types/common'
 	import { VxIconName } from '../../libs/icons/codepoints'
+	import { isGlassStyle } from '../../libs/global-style'
 	import { VX_PRESSED_STAY_TIME, VX_TABBAR_GLASS_SLIDE, VX_TABBAR_POP_SETTLE, VX_TABBAR_POP_DURATION } from '../../libs/motion'
 
 	const props = withDefaults(defineProps<VxTabbarProps>(), {
@@ -88,7 +89,6 @@
 		placeholder: true,
 		safeArea: true,
 		divider: true,
-		liquidGlass: false,
 		glassStyle: 'regular',
 		animated: true,
 		bgColor: '',
@@ -174,6 +174,13 @@
 		return props.glassStyle === 'clear' ? 'clear' : 'regular'
 	})
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 不能做「显式 false 强制关」的三态：Vue 对无 default 的 Boolean prop 会把缺席
+	// 转成 false（web / mp），App 端缺席才是 null，缺席检测跨端不一致，只能放弃。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	// 选中文字和图标共用一档：warning 落在浅色底上要用 ink，default 用正文色。
 	const activeTone = computed((): string => {
 		const type = typeName.value
@@ -198,7 +205,7 @@
 	// 多传凸起项时只认第一个，后面的按普通项排，避免两个圆钮叠在同一条加高的栏上。
 	// 液态玻璃收成悬浮胶囊，圆钮混在里面不好看，也不跟选中胶囊对齐：玻璃风格里 raised 按普通项排。
 	const raisedIndex = computed((): number => {
-		if (props.liquidGlass === true) return -1
+		if (glassActive.value) return -1
 		const source = props.items
 		for (let index = 0; index < source.length; index++) {
 			if (source[index].raised === true) return index
@@ -243,7 +250,7 @@
 	const floatClass = computed((): string => {
 		let name = 'vx-tabbar__float'
 		if (props.safeArea) name += ' vx-tabbar__float--safe'
-		if (props.liquidGlass === true) name += ' vx-tabbar__float--glass'
+		if (glassActive.value) name += ' vx-tabbar__float--glass'
 		return name
 	})
 
@@ -260,7 +267,7 @@
 	const surfaceClass = computed((): string => {
 		let name = 'vx-tabbar__surface'
 		if (!props.divider) name += ' vx-tabbar__surface--no-divider'
-		if (props.liquidGlass === true) {
+		if (glassActive.value) {
 			name += ' vx-tabbar__surface--glass'
 			if (glassStyleName.value === 'clear') name += ' vx-tabbar__surface--glass-clear'
 			if (sizeName.value !== 'md') name += ` vx-tabbar__surface--glass-${sizeName.value}`
@@ -270,7 +277,7 @@
 
 	const surfaceStyle = computed((): string => {
 		// 玻璃底色交给材质和令牌：bgColor 盖上去会把玻璃糊死，玻璃风格里不接。
-		if (props.bgColor.length === 0 || props.liquidGlass === true) return ''
+		if (props.bgColor.length === 0 || glassActive.value) return ''
 		return `background-color: ${props.bgColor};`
 	})
 
@@ -354,7 +361,7 @@
 	// —— 液态玻璃 ——
 	// 选中胶囊只在玻璃风格渲染；当前索引指向 action 项时没有选中态，胶囊跟着藏掉。
 	const thumbVisible = computed((): boolean => {
-		if (props.liquidGlass !== true) return false
+		if (!glassActive.value) return false
 		const current = activeIndex.value
 		if (current < 0 || current >= props.items.length) return false
 		const entry = props.items[current]
@@ -637,13 +644,13 @@
 		border-right-style: solid;
 		border-bottom-style: solid;
 		border-left-style: solid;
-		border-top-color: var(--vx-tabbar-glass-border);
-		border-right-color: var(--vx-tabbar-glass-border);
-		border-bottom-color: var(--vx-tabbar-glass-border);
-		border-left-color: var(--vx-tabbar-glass-border);
+		border-top-color: var(--vx-glass-border);
+		border-right-color: var(--vx-glass-border);
+		border-bottom-color: var(--vx-glass-border);
+		border-left-color: var(--vx-glass-border);
 		border-radius: var(--vx-radius-pill);
-		background-color: var(--vx-tabbar-glass-bg-blur);
-		box-shadow: var(--vx-tabbar-glass-shadow);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
 	}
 
 	.vx-tabbar__surface--glass-sm {
@@ -657,7 +664,7 @@
 	/* clear 档只换底色，模糊和描边沿用 --glass 的：iOS 换系统 clear 材质，
 	   Android / 鸿蒙 / Web 换接近全透的底。MP 块在文件末尾把底色盖回实底，等于忽略 clear。 */
 	.vx-tabbar__surface--glass-clear {
-		background-color: var(--vx-tabbar-glass-bg-clear);
+		background-color: var(--vx-glass-bg-clear);
 	}
 
 	/* —— 液态玻璃 ——
@@ -998,14 +1005,14 @@
 	/* #ifdef MP */
 	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
 	.vx-tabbar__surface--glass {
-		background-color: var(--vx-tabbar-glass-bg);
+		background-color: var(--vx-glass-bg);
 	}
 	/* #endif */
 
 	/* #ifdef APP-ANDROID || APP-HARMONY */
 	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），和 Web 共用更透的底色令牌。 */
 	.vx-tabbar__surface--glass {
-		backdrop-filter: blur(24px);
+		backdrop-filter: blur(var(--vx-glass-blur));
 	}
 	/* #endif */
 
@@ -1013,7 +1020,7 @@
 	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档；
 	   clear 档同理：无模糊兜底用 clear 底色，有模糊换 blur 档。写在 glass 后面按 class 顺序盖过它。 */
 	.vx-tabbar__surface--glass {
-		background-color: var(--vx-tabbar-glass-bg);
+		background-color: var(--vx-glass-bg);
 	}
 
 	.vx-tabbar__item {
@@ -1040,13 +1047,13 @@
 	/* 玻璃底在 Web 上开背景模糊，饱和度一起拉，底色才透得高级。 */
 	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 		.vx-tabbar__surface--glass {
-			-webkit-backdrop-filter: blur(24px) saturate(1.8);
-			backdrop-filter: blur(24px) saturate(1.8);
-			background-color: var(--vx-tabbar-glass-bg-blur);
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
 		}
 
 		.vx-tabbar__surface--glass-clear {
-			background-color: var(--vx-tabbar-glass-bg-clear);
+			background-color: var(--vx-glass-bg-clear);
 		}
 	}
 	/* #endif */

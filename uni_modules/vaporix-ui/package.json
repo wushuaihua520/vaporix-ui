@@ -1,7 +1,7 @@
 {
 	"id": "vaporix-ui",
 	"displayName": "元汽UI（Vaporix UI）",
-	"version": "0.81.0",
+	"version": "0.82.0",
 	"description": "元汽UI（Vaporix UI），专注ni-app x 蒸汽模式的高颜值、高性能、原生渲染组件库",
 	"keywords": [
     "uni-app",

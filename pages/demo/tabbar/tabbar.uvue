@@ -128,14 +128,14 @@
 				</view>
 
 				<view class="demo-section">
-					<demo-section-head title="液态玻璃" desc="liquidGlass 收成悬浮胶囊：iOS 26+ 是系统液态玻璃材质，Android / 鸿蒙 / Web 磨砂，小程序半透明底，选中项用浅色胶囊滑过去。" />
+					<demo-section-head title="液态玻璃" desc="不传 liquidGlass 时跟随『我的』页的全局控件风格；显式传 true 强制玻璃（全局关闭时也生效）。玻璃档 iOS 26+ 是系统液态玻璃材质，Android / 鸿蒙 / Web 磨砂，小程序半透明底，选中项用浅色胶囊滑过去。" />
 					<view class="demo-card">
 						<view class="demo-tabbar-group">
-							<text class="demo-tabbar-label">primary · 5 项</text>
-							<vx-tabbar v-model="glassActive" :items="glassEntries" :fixed="false" :safe-area="false" liquid-glass />
+							<text class="demo-tabbar-label">primary · 跟随全局</text>
+							<vx-tabbar v-model="glassActive" :items="glassEntries" :fixed="false" :safe-area="false" />
 						</view>
 						<view class="demo-tabbar-group">
-							<text class="demo-tabbar-label">danger · 3 项</text>
+							<text class="demo-tabbar-label">danger · 显式开启</text>
 							<vx-tabbar v-model="glassAltActive" :items="glassAltEntries" :fixed="false" :safe-area="false"
 								liquid-glass type="danger" />
 						</view>
@@ -144,7 +144,7 @@
 							<vx-tabbar v-model="glassClearActive" :items="glassEntries" :fixed="false" :safe-area="false"
 								liquid-glass glass-style="clear" />
 						</view>
-						<text class="demo-hint demo-tabbar-hint">iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观，glassStyle=clear 换更透的系统材质；Android / 鸿蒙 / Web 磨砂，小程序半透明底。玻璃底不接 bgColor。</text>
+						<text class="demo-hint demo-tabbar-hint">示例一不传 liquidGlass，跟随全局开关；示例二显式传 true，全局关闭时也强制玻璃。iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观，glassStyle=clear 换更透的系统材质；Android / 鸿蒙 / Web 磨砂，小程序半透明底。玻璃底不接 bgColor。</text>
 					</view>
 				</view>
 

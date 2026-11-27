@@ -40,7 +40,7 @@ export type VxTabbarProps = {
 	safeArea?: boolean
 	/** 顶部 1px 分割线，默认打开。 */
 	divider?: boolean
-	/** 液态玻璃风格：整条收成悬浮胶囊，磨砂玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示，默认关闭。iOS 26+ 用系统液态玻璃材质（15~25 降级为系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序保持半透明底。玻璃底不接 bgColor。 */
+	/** 液态玻璃风格：整条收成悬浮胶囊，磨砂玻璃底加发丝描边，选中项用 type 的浅色胶囊滑动指示。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 26+ 用系统液态玻璃材质（15~25 降级为系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序保持半透明底。玻璃底不接 bgColor。 */
 	liquidGlass?: boolean
 	/** 玻璃透档：regular 是常规磨砂（默认），clear 更透、内容从底下看得更清；可读性弱一档，浅色页面会近乎隐形。iOS 换系统 clear 材质，Android / 鸿蒙 / Web 换更透的底色，小程序无磨砂、不生效。仅在 liquidGlass 下有意义。 */
 	glassStyle?: 'regular' | 'clear'
