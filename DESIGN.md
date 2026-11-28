@@ -1968,7 +1968,7 @@ iOS 专属差异：组件挂 `glass-effect-view` 后不消费 `--vx-glass-bg` / 
 
 ### glass-ready 组件清单
 
-九件，接入模式一致：两态 prop → `glassActive` computed（两态公式）→ iOS `glass-effect-view` 分支 → 玻璃 modifier class → 平台 CSS 块。
+十件，接入模式一致：两态 prop → `glassActive` computed（两态公式 + 组件条件）→ iOS `glass-effect-view` 分支 → 玻璃 modifier class → 平台 CSS 块。
 
 | 组件 | 版本 | 玻璃面 | 备注 |
 | --- | --- | --- | --- |
@@ -1981,6 +1981,7 @@ iOS 专属差异：组件挂 `glass-effect-view` 后不消费 `--vx-glass-bg` / 
 | `vx-sticky` | 0.86.0 | bar（吸顶条） | 玻璃只在吸顶态出现（探针实测滚动穿透）；分割线与 `shadow` 在玻璃态不画，浮起感由玻璃分层阴影接管 |
 | `vx-toast` | 0.86.0 | box（轻提示盒） | 玻璃态文字用正文色 |
 | `vx-tips` | 0.86.0 | box（轻提示盒） | 语义底色让位，玻璃态文字用正文色 |
+| `vx-bubble-popup` | 0.88.0 | panel（气泡面板） | 玻璃态隐藏箭头与接缝，仅 surface 生效，inline 无分层阴影 |
 
 ### 新组件接入指南
 

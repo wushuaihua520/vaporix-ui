@@ -1,3 +1,9 @@
+## 0.88.0（2026-11-28）
+- `vx-bubble-popup` 支持液态玻璃面：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false`
+  跟随全局控件风格（libs/global-style）；仅 `variant="surface"` 生效，solid 语义实心底不玻璃化。
+  iOS 用 glass-effect-view 系统材质，Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序实底
+  近似。玻璃态隐藏箭头与接缝（材质无法出三角玻璃），气泡成圆角玻璃矩形；遮罩保持实色。
+
 ## 0.87.0（2026-11-28）
 - 新增 DESIGN.md「全局风格与液态玻璃」章：风格轴与 store API（`libs/global-style`）、`--vx-glass-*` 令牌契约、各端玻璃等级表、glass-ready 组件清单（tabbar / navigation-bar / popup / actionsheet / modal / drawer / sticky / toast / tips）、新组件接入指南与设计边界。
 - docs 站同步全局风格指南与 glass-ready 组件的 `liquidGlass` prop 说明。

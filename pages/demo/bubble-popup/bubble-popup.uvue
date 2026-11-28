@@ -157,6 +157,41 @@
 				</view>
 
 				<view class="demo-section">
+					<demo-section-head title="液态玻璃"
+						desc="面板接全局风格轴：传 true 强制玻璃，不传跟随『我的』页的全局控件风格；玻璃态隐藏箭头，solid 变体不玻璃化。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+							<view class="demo-bubble-glass-menu">
+								<vx-bubble-popup v-model:show="menuGlass" placement="bottom" align="end"
+									:items="glassItems" @select="onMenuSelect" @close="onMenuClose">
+									<view class="demo-bubble-glass-trigger" hover-class="demo-bubble-glass-trigger--pressed"
+										@click="menuGlass = !menuGlass">
+										<vx-icon name="more-horizontal" size="md" color="#ffffff" />
+									</view>
+								</vx-bubble-popup>
+							</view>
+							<view class="demo-bubble-glass-float">
+								<vx-bubble-popup inline liquid-glass placement="right" align="start"
+									content="玻璃气泡没有尾巴，指向性由落位补偿">
+									<template #prefix>
+										<view class="demo-bubble-avatar">
+											<text class="demo-bubble-avatar__text">J</text>
+										</view>
+									</template>
+								</vx-bubble-popup>
+							</view>
+						</view>
+						<text class="demo-hint demo-bubble-hint">菜单气泡不传 liquidGlass，跟随全局开关；聊天气泡显式传 true，全局关闭时也强制玻璃。彩底从玻璃面板下穿过：iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；Android / 鸿蒙 / Web 磨砂，小程序实底近似。玻璃态隐藏箭头与接缝，气泡成纯圆角玻璃矩形；solid 语义实心底不玻璃化，inline 沿用无阴影，遮罩保持实色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
 					<demo-section-head title="方法" desc="ref 拿实例，open() / close() / toggle() 控制显隐。" />
 					<view class="demo-card">
 						<view class="demo-bubble-methods">
@@ -241,6 +276,7 @@
 	const menuMask = ref(false)
 	const menuCustom = ref(false)
 	const menuSide = ref(false)
+	const menuGlass = ref(false)
 	const menuMethods = ref(false)
 	const menuComposition = ref(false)
 
@@ -274,6 +310,12 @@
 		{ text: '复制', icon: 'copy' },
 		{ text: '转发', icon: 'share' },
 		{ text: '收藏', icon: 'star' }
+	]
+
+	const glassItems: VxBubblePopupItem[] = [
+		{ text: '置顶', icon: 'star' },
+		{ text: '复制', icon: 'copy' },
+		{ text: '删除', icon: 'trash', type: 'danger' }
 	]
 
 	const methodsItems: VxBubblePopupItem[] = [
@@ -393,6 +435,33 @@
 
 	.demo-bubble-hint {
 		margin-top: var(--vx-space-md);
+	}
+
+	/* 玻璃示例的入口和聊天气泡都压在彩底舞台上：菜单开在舞台上方，彩底从玻璃面板下穿过。
+	   触发钮叠在彩条右上角，白图标才有对比；聊天气泡收在右下角，避开左下的 GLASS 字样。 */
+	.demo-bubble-glass-menu {
+		position: absolute;
+		top: var(--vx-space-md);
+		right: var(--vx-space-md);
+	}
+
+	.demo-bubble-glass-trigger {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: var(--vx-radius-md);
+	}
+
+	.demo-bubble-glass-trigger--pressed {
+		background-color: rgba(255, 255, 255, 0.25);
+	}
+
+	.demo-bubble-glass-float {
+		position: absolute;
+		right: var(--vx-space-md);
+		bottom: var(--vx-space-sm);
 	}
 
 	.demo-bubble-status {

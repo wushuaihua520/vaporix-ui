@@ -45,6 +45,7 @@
 | outsideClosable | boolean | `true` | 点遮罩或外部收起并抛 `close` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
 | zIndex | number | `1000` | 浮层层级 |
+| liquidGlass | boolean | — | 液态玻璃面板：surface 面板换磨砂玻璃面（发丝描边加分层浮起阴影，彩底从面板下透出）。传 `true` 强制玻璃；不传或 `false` 跟随全局控件风格。仅 `variant="surface"` 生效；玻璃态隐藏箭头与接缝 |
 
 `items` 每项：
 
@@ -90,6 +91,7 @@
 - 气泡用 `position: fixed` 落到页面层，卡片和 `scroll-view` 裁不到它；祖先带 `transform` 时坐标原点会变，要避开。
 - 一侧放不下自动翻到对面，两侧都放不下时夹在屏幕内离边 8，箭头跟着触发区中心收口。
 - `surface` 用底色、1px 描边、`md` 圆角和阴影，尾巴用旋转方块加描边；`solid` 用语义实心底配 `on-*`；`maxWidth` 在 App 上只接受 px。
+- `liquidGlass` 接全局控件风格（`libs/global-style`，应用调 `vxSetStyle('liquid-glass')` 后默认玻璃化）：传 `true` 强制玻璃（全局关闭时也生效），不传或 `false` 跟随全局风格；仅 `variant="surface"` 生效，solid 语义实心底不玻璃化。玻璃面换发丝描边和分层浮起阴影（inline 沿用无阴影）；玻璃态隐藏箭头与接缝，气泡成纯圆角玻璃矩形，指向性由落位补偿。磨砂分平台：iOS 用 `glass-effect-view` 出系统液态玻璃（iOS 26+；15~25 降级为系统毛玻璃），材质跟随系统外观；Android / 鸿蒙蒸汽与 Web 用 `backdrop-filter: blur`；小程序没有模糊，玻璃底不透明度给足。遮罩保持实色，`maskColor` 照常生效。
 - 菜单项 44 高，图标 18、文案 15 / 22 / 500、右侧短值 13 / 20；面板四周留 4。
 - 换 `items` 数组或改数量会自动重测；原地改文案或换 `extra` 内容后调 `refresh()`。
 - 遮罩默认关闭但点击层始终接住外部点击；`outsideClosable=false` 时保留触发区、菜单项或 `close()` 作为出口。

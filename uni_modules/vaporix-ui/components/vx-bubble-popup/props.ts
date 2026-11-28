@@ -68,4 +68,6 @@ export type VxBubblePopupProps = {
 	maskColor?: string
 	/** 浮层层级，默认 1000，和操作菜单、抽屉同档。 */
 	zIndex?: number
+	/** 面板换液态玻璃面：磨砂透底加发丝描边，彩底内容从面板下透出。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。仅 variant surface 生效，solid 语义实心底不玻璃化。玻璃态隐藏箭头与接缝（系统材质出不了三角玻璃），气泡成纯圆角玻璃矩形，指向性由落位补偿。 */
+	liquidGlass?: boolean
 }

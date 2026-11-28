@@ -23,6 +23,11 @@
 		<!-- 没量完之前只占位、不可见；量到尺寸再显示，第一帧不会落在错误位置。 -->
 		<view v-if="hasBubble" :class="bubbleClass" :style="bubbleStyle">
 			<view :class="panelClass" @click.stop>
+				<!-- 玻璃态 iOS 在面板底层垫一块 glass-effect-view 出系统材质（圆角由面板的裁切管），
+				     其余平台仍是样式表磨砂；glass-style 必带，漏了整树静默不渲染。 -->
+				<!-- #ifdef APP-IOS -->
+				<glass-effect-view v-if="glassActive" class="vx-bubble-popup__panel-glass" glass-style="regular"></glass-effect-view>
+				<!-- #endif -->
 				<!-- 菜单优先：传了 items 就不再渲染 content 和行内插槽。 -->
 				<view v-if="hasMenu" class="vx-bubble-popup__menu">
 					<view v-for="row in rows" :key="row.index" :class="row.rowClass" :hover-class="row.hoverClass"
@@ -52,9 +57,10 @@
 			</view>
 
 			<!-- 尾巴用一块旋转 45° 的小方块，外层裁掉一半；描边是真正的 1px，和面板同色同粗。
-			     surface 面板的描边会从尾巴底部横穿过去，接缝把这一小段线盖掉。 -->
-			<view v-if="arrow && variant === 'surface'" :class="seamClass" :style="arrowPositionStyle"></view>
-			<view v-if="arrow" :class="arrowClass" :style="arrowPositionStyle">
+			     surface 面板的描边会从尾巴底部横穿过去，接缝把这一小段线盖掉。
+			     玻璃态隐藏箭头与接缝：系统材质出不了三角玻璃，气泡成纯圆角玻璃矩形；solid 不玻璃化，箭头保留。 -->
+			<view v-if="arrow && variant === 'surface' && !glassActive" :class="seamClass" :style="arrowPositionStyle"></view>
+			<view v-if="arrow && !glassActive" :class="arrowClass" :style="arrowPositionStyle">
 				<view :class="arrowTipClass"></view>
 			</view>
 		</view>
@@ -69,6 +75,7 @@
 	import { VxIconName } from '../../libs/icons/codepoints'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
 	import { VX_OVERLAY_LAYER } from '../../libs/overlay'
+	import { isGlassStyle } from '../../libs/global-style'
 	import {
 		VxBubblePopupAlign,
 		VxBubblePopupItem,
@@ -232,6 +239,12 @@
 		return 'var(--vx-color-on-primary)'
 	})
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格，solid 实心底不玻璃化。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return (props.liquidGlass === true || isGlassStyle.value) && props.variant === 'surface'
+	})
+
 	const rootClass = computed((): string => {
 		let name = 'vx-bubble-popup'
 		if (!props.inline) return name
@@ -258,6 +271,8 @@
 		let name = 'vx-bubble-popup__panel'
 		if (props.variant === 'solid') name += ` vx-bubble-popup__panel--solid-${props.type}`
 		else name += ' vx-bubble-popup__panel--surface'
+		// 玻璃态排在 surface 后、inline 前：描边让位给发丝描边，聊天气泡仍由 --inline 清掉阴影。
+		if (glassActive.value) name += ' vx-bubble-popup__panel--glass'
 		if (props.inline) name += ' vx-bubble-popup__panel--inline'
 		if (!props.inline && positionReady.value) name += ' vx-bubble-popup__panel--enter'
 		return name
@@ -940,6 +955,29 @@
 		border-color: var(--vx-color-border);
 	}
 
+	/* 玻璃面：surface 的 1px 描边换通用玻璃发丝描边，底色换透档磨砂，popover 形态阴影换
+	   分层浮起阴影。磨砂分平台：iOS 换 glass-effect-view（模板垫在面板底层，
+	   APP-IOS 块剥自绘底色和描边）；Android / 鸿蒙蒸汽 5.25+ 用 backdrop-filter（只认 blur()）；
+	   小程序没有模糊，MP 块换给足不透明度的实底；Web 老引擎 @supports 兜底落实底。
+	   写在 --surface 后面：surface 的 --color-border 描边在玻璃态让位给发丝描边；
+	   --inline 排在它后面，聊天气泡沿用无阴影的既有决策，玻璃只换面材质。 */
+	.vx-bubble-popup__panel--glass {
+		border-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* iOS 玻璃垫层的落位：铺满面板，圆角由面板的圆角和裁切管，材质不自己描边。
+	   菜单和正文排在它后面，同层子节点按顺序绘制，内容压在玻璃上。 */
+	.vx-bubble-popup__panel-glass {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+	}
+
 	/* 实心底和箭头同色：浅色文字配对应语义底，warning 用 on-warning 深色字。 */
 	.vx-bubble-popup__panel--solid-primary {
 		background-color: var(--vx-color-primary);
@@ -1357,6 +1395,45 @@
 
 		to {
 			transform: scale(1);
+		}
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃面交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色和描边剥掉，浮起阴影保留（0.84 探针验证原生玻璃上 box-shadow 可用）。
+	   写在 --glass 后面盖过它。 */
+	.vx-bubble-popup__panel--glass {
+		border-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-bubble-popup__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-bubble-popup__panel--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-bubble-popup__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-bubble-popup__panel--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
 		}
 	}
 	/* #endif */
