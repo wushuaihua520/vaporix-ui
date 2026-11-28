@@ -1,3 +1,5 @@
+## 0.83.0（2026-11-28）
+- `vx-navigation-bar` 支持液态玻璃底：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`）。玻璃底铺满状态栏和内容行整条；iOS 上换 `glass-effect-view` 系统材质（iOS 26+ 真液态玻璃，15~25 降级系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序半透明实底。玻璃底不接 `bgColor`，`fade` / `transparent` 渐显逻辑不作用于玻璃底，分割线和 `--shadow-md` 阴影在玻璃态不画。
 ## 0.82.0（2026-11-28）
 - 玻璃令牌通用化：`--vx-tabbar-glass-bg / -bg-blur / -bg-clear / -border / -shadow` 迁移为 `--vx-glass-bg / -bg-blur / -bg-clear / -border / -shadow`（新增 `--vx-glass-blur` 磨砂半径），亮暗两份，后续玻璃化组件统一消费；tabbar 布局令牌（inset / thumb-gap）保留原前缀。旧令牌名直接删除，自定义覆盖了旧名的样式需同步改名。
 - `vx-tabbar` 的 `liquidGlass` 接全局风格（`libs/global-style.ts`，0.81.0 引入）：传 `true` 强制玻璃，不传或 `false` 跟随全局风格，全局为 liquid-glass 时默认玻璃化。显式 false 强制关的能力不做——Vue 对无 default 的 Boolean prop 缺席即 false（web / 小程序），App 端缺席是 null，缺席检测跨端不一致。

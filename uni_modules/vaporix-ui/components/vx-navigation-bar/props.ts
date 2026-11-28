@@ -19,7 +19,7 @@ export type VxNavigationBarProps = {
 	title?: string
 	/** 标题和内置返回箭头的颜色，字面值或主题令牌。 */
 	color?: string
-	/** 背景色或渐变，字面值或主题令牌；不传时用 surface。 */
+	/** 背景色或渐变，字面值或主题令牌；不传时用 surface。玻璃底不接 bgColor。 */
 	bgColor?: string
 	/** 底部 1px 分割线，默认关闭；透明和渐显未到 0.85 时不画。 */
 	divider?: boolean
@@ -37,6 +37,8 @@ export type VxNavigationBarProps = {
 	back?: boolean
 	/** 背景始终透明，忽略 fade、maxOpacity、分割线和阴影。 */
 	transparent?: boolean
+	/** 液态玻璃背景：磨砂玻璃底加发丝描边，铺满状态栏和内容行整条。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 26+ 用系统液态玻璃材质（15~25 降级为系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序保持半透明底。玻璃底不接 bgColor，fade / transparent 渐显逻辑也不作用于玻璃底。 */
+	liquidGlass?: boolean
 	/** 背景透明度跟随 scrollTop，从 0 增到 maxOpacity。 */
 	fade?: boolean
 	/** 滚动距离，绑定 scroll-view 的 @scroll detail.scrollTop。 */

@@ -3,8 +3,17 @@
 	     页面用 navigationStyle: custom，导航栏放在页面根节点，内容从下面开始。 -->
 	<view class="vx-navigation-bar" :style="rootStyle">
 		<view :class="barClass" :style="barStyle">
-			<!-- 背景单独一层：渐显只改这一层，标题、图标和插槽始终不透明。 -->
-			<view class="vx-navigation-bar__bg" :style="bgStyle"></view>
+			<!-- 背景单独一层：渐显只改这一层，标题、图标和插槽始终不透明。
+			     玻璃态 iOS 换 glass-effect-view（铺满状态栏和内容行整条，系统材质自带折射、
+			     发丝描边和亮暗自适应），其余平台仍是 view，磨砂由样式表按平台开关；
+			     渐显 opacity 和 bgColor 都不作用于玻璃底。 -->
+			<!-- #ifdef APP-IOS -->
+			<glass-effect-view v-if="glassActive" :class="bgClass" glass-style="regular"></glass-effect-view>
+			<view v-else class="vx-navigation-bar__bg" :style="bgStyle"></view>
+			<!-- #endif -->
+			<!-- #ifndef APP-IOS -->
+			<view :class="bgClass" :style="bgStyle"></view>
+			<!-- #endif -->
 
 			<view v-if="statusBar" class="vx-navigation-bar__status" :style="statusStyle"></view>
 
@@ -43,6 +52,7 @@
 <script setup>
 	import { VxNavigationBarProps, VxNavigationBarInfo } from './props'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxNavigationBarProps>(), {
 		title: '',
@@ -103,6 +113,12 @@
 	let capsuleTries = 0
 	let measureId = 0
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	// 透明直接 0，未开渐显直接 1，这两支不读 scrollTop，滚动时不会跟着算。
 	// 宽度还没量到时按 1 算，滚动 0 仍然是全透明。0、负数和 NaN 收口，避免透明度跑出 0–1。
 	const backgroundOpacity = computed((): number => {
@@ -120,13 +136,15 @@
 	})
 
 	// 透明底上的线和阴影会把头图切一道，等背景够实了再出现。
+	// 玻璃态两样都关：玻璃面自带发丝描边和浮起感，实底分割线和 --shadow-md 叠上去反而脏。
 	const dividerVisible = computed((): boolean => {
+		if (glassActive.value) return false
 		if (!props.divider || props.shadow || props.transparent) return false
 		return backgroundOpacity.value >= VX_NAVIGATION_BAR_LINE_OPACITY
 	})
 
 	const shadowVisible = computed((): boolean => {
-		if (!props.shadow || props.transparent) return false
+		if (glassActive.value || !props.shadow || props.transparent) return false
 		return backgroundOpacity.value >= VX_NAVIGATION_BAR_LINE_OPACITY
 	})
 
@@ -156,10 +174,19 @@
 		return `z-index: ${value};`
 	})
 
+	// 玻璃态底色交给材质和令牌：bgColor 和渐显 opacity 都不作用于玻璃底（bgStyle 返回空）。
 	const bgStyle = computed((): string => {
+		if (glassActive.value) return ''
 		let style = `opacity: ${backgroundOpacity.value};`
 		if (props.bgColor.length > 0) style += ` background: ${props.bgColor};`
 		return style
+	})
+
+	// 背景层的 class：玻璃态挂 --glass modifier，iOS 上玻璃节点也用同一串（APP-IOS 块剥自绘）。
+	const bgClass = computed((): string => {
+		let name = 'vx-navigation-bar__bg'
+		if (glassActive.value) name += ' vx-navigation-bar__bg--glass'
+		return name
 	})
 
 	const titleStyle = computed((): string => {
@@ -427,6 +454,19 @@
 		background-color: var(--vx-color-surface);
 	}
 
+	/* 玻璃底：铺满状态栏和内容行整条，底部发丝描边代替分割线，浮起感用通用玻璃分层阴影。
+	   磨砂分平台：iOS 上这层换 glass-effect-view（APP-IOS 块剥自绘，材质自带折射、
+	   发丝描边和亮暗自适应）；Android / 鸿蒙蒸汽 5.25+ 用 backdrop-filter 配透底
+	   bg-blur（只认 blur()）；小程序没有模糊，MP 块换给足不透明度的实底 bg；
+	   Web 老引擎 @supports 兜底落实底。渐显 opacity 和 bgColor 都不作用于玻璃底。 */
+	.vx-navigation-bar__bg--glass {
+		border-bottom-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
+	}
+
 	/* 状态栏留白跟安全区走；Web 上没有状态栏，变量为 0。
 	   小程序不注入 --uni-safe-area-inset-top，根节点只有 --status-bar-height；
 	   行内高度再写一份系统值，变量没继承到时也不会塌成 0。 */
@@ -551,6 +591,45 @@
 	/* #ifdef WEB */
 	.vx-navigation-bar__back {
 		cursor: pointer;
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃底交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色、描边和浮起阴影剥掉，否则盖住材质。写在 --glass 后面盖过它。 */
+	.vx-navigation-bar__bg--glass {
+		border-bottom-width: 0;
+		background-color: transparent;
+		box-shadow: none;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-navigation-bar__bg--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-navigation-bar__bg--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-navigation-bar__bg--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-navigation-bar__bg--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
+		}
 	}
 	/* #endif */
 </style>

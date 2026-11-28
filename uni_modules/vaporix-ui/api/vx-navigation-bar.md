@@ -73,21 +73,28 @@ const onNavChange = (opacity: number) => {
 }
 ```
 
+液态玻璃：传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`，应用调 `vxSetStyle('liquid-glass')` 后默认玻璃化）。玻璃底铺满状态栏和内容行整条，`bgColor` 与 `fade` / `transparent` 渐显逻辑都不作用于玻璃底：
+
+```vue
+<vx-navigation-bar title="城市漫游" back liquid-glass :placeholder="false" />
+```
+
 ## 属性
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | title | string | `''` | 标题，单行省略；默认插槽有内容时不渲染 |
 | color | string | `''` | 标题和内置返回的颜色，字面值或主题令牌 |
-| bgColor | string | `''` | 背景色或渐变，字面值或主题令牌；不传时用 `surface` |
-| divider | boolean | `false` | 底部 1px 分割线；透明和渐显未到 0.85 时不画 |
+| bgColor | string | `''` | 背景色或渐变，字面值或主题令牌；不传时用 `surface`；玻璃底不接 |
+| divider | boolean | `false` | 底部 1px 分割线；透明和渐显未到 0.85 时不画；玻璃态不画 |
 | dividerColor | string | `''` | 分割线颜色，字面值或主题令牌 |
-| shadow | boolean | `false` | 用 `--vx-shadow-md` 代替分割线 |
+| shadow | boolean | `false` | 用 `--vx-shadow-md` 代替分割线；玻璃态不画 |
 | fixed | boolean | `true` | 固定在页面顶部；关闭后按文档流排在页面里 |
 | placeholder | boolean | `true` | 固定时在文档流里占同高；头图场景关掉 |
 | statusBar | boolean | `true` | 顶部为状态栏留白；非沉浸式或嵌在原生导航下面时关掉 |
 | back | boolean | `false` | 显示内置返回箭头；`prefix` 插槽有内容时不渲染 |
-| transparent | boolean | `false` | 背景始终透明，忽略 `fade` / `maxOpacity`、分割线和阴影 |
+| transparent | boolean | `false` | 背景始终透明，忽略 `fade` / `maxOpacity`、分割线和阴影；玻璃态不作用 |
+| liquidGlass | boolean | — | 液态玻璃底：传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格；磨砂分平台（iOS 用系统材质，Android / 鸿蒙 / Web 用 backdrop-filter，小程序半透明底） |
 | fade | boolean | `false` | 背景透明度跟随 `scrollTop` |
 | scrollTop | number | `0` | 滚动距离，绑定 `scroll-view` 的 `@scroll` |
 | scrollRatio | number | `0.3` | 滚过导航栏宽度 × 该值时达到 `maxOpacity` |
