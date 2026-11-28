@@ -6,9 +6,14 @@
 	<view v-if="rendered" :class="rootClass" :style="rootStyle">
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
-		<!-- 外层只留阴影和圆角，内层裁出四角；App 默认 hidden 会把画出盒子的阴影裁掉。 -->
+		<!-- 外层只留阴影和圆角，内层裁出四角；App 默认 hidden 会把画出盒子的阴影裁掉。
+		     玻璃态 iOS 在面板底层垫一块 glass-effect-view 出系统材质（圆角由内层的裁切管），
+		     其余平台仍是样式表磨砂，遮罩保持实色不玻璃化。 -->
 		<view :class="sheetClass" :style="sheetStyle" @click.stop>
 			<view :class="panelClass" :style="panelStyle">
+				<!-- #ifdef APP-IOS -->
+				<glass-effect-view v-if="glassActive" class="vx-drawer__panel-glass" glass-style="regular"></glass-effect-view>
+				<!-- #endif -->
 				<!-- 标题、关闭叉、prefix、extra 都没有时不渲染头部，正文直接从圆角内侧开始。 -->
 				<view v-if="title.length > 0 || closable || $slots['prefix'] != null || $slots['extra'] != null"
 					class="vx-drawer__head" @touchmove.stop.prevent>
@@ -54,6 +59,7 @@
 	import { VxDrawerPosition, VxDrawerProps } from './props'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
 	import { VX_OVERLAY_DURATION, VX_OVERLAY_DURATION_NONE, VX_OVERLAY_FRAME, VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxDrawerProps>(), {
 		position: 'right',
@@ -124,6 +130,12 @@
 		return name
 	})
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	const sheetClass = computed((): string => {
 		let name = `vx-drawer__sheet vx-drawer__sheet--${placement.value}`
 		if (animateDuration.value > 0) name += ' vx-drawer__sheet--animated'
@@ -131,12 +143,14 @@
 			const axis = placement.value === 'left' || placement.value === 'right' ? 'x' : 'y'
 			name += ` vx-drawer__sheet--in-${axis}`
 		}
+		if (glassActive.value) name += ' vx-drawer__sheet--glass'
 		return name
 	})
 
 	const panelClass = computed((): string => {
 		let name = `vx-drawer__panel vx-drawer__panel--${placement.value}`
 		if (navOffset.value > 0) name += ' vx-drawer__panel--below-nav'
+		if (glassActive.value) name += ' vx-drawer__panel--glass'
 		return name
 	})
 
@@ -185,6 +199,9 @@
 	})
 
 	const panelStyle = computed((): string => {
+		// 玻璃底不接 bgColor：用户色盖上去会把磨砂糊死，玻璃底色统一由通用玻璃令牌控制
+		// （tabbar 0.79 决策延续）。行内样式优先级高于 class，玻璃态直接不写。
+		if (glassActive.value) return ''
 		if (props.bgColor.length === 0) return ''
 		return `background-color: ${props.bgColor};`
 	})
@@ -525,6 +542,46 @@
 		padding-top: 0;
 	}
 
+	/* 玻璃面：整圈发丝描边加分层浮起阴影，磨砂底用通用玻璃令牌，铺满整张面板（含安全区段）。
+	   玻璃只到 sheet 面层，__body 内容区不玻璃化，正文直接铺在玻璃面上，可读性靠磨砂底的
+	   实度兜底（--glass-bg 0.86/0.88 已够实）；浅色页面实测对比度不够时，优先在这个
+	   glass modifier 里叠一层半透底提实度，禁止直接调通用令牌值（通用值一动，全库玻璃组件
+	   一起变）。遮罩保持实色不玻璃化。磨砂分平台：iOS 换 glass-effect-view（模板垫在面板
+	   底层，APP-IOS 块剥自绘底色和描边）；Android / 鸿蒙蒸汽 5.25+ 用 backdrop-filter
+	   （只认 blur()）；小程序没有模糊，MP 块换给足不透明度的实底；Web 老引擎 @supports
+	   兜底落实底。平台块写在文件末尾。写在 panel 基础块后面：同特异性后写的盖前写的。 */
+	.vx-drawer__panel--glass {
+		border-top-width: 1px;
+		border-right-width: 1px;
+		border-bottom-width: 1px;
+		border-left-width: 1px;
+		border-top-style: solid;
+		border-right-style: solid;
+		border-bottom-style: solid;
+		border-left-style: solid;
+		border-top-color: var(--vx-glass-border);
+		border-right-color: var(--vx-glass-border);
+		border-bottom-color: var(--vx-glass-border);
+		border-left-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+	}
+
+	/* 玻璃态浮起阴影画在外层 sheet：内层 panel 的 overflow 是 hidden，阴影画在它身上会被裁；
+	   sheet 的 overflow 是 visible，画在这里才出得来。默认模式没有阴影，只有玻璃态补。 */
+	.vx-drawer__sheet--glass {
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* iOS 玻璃垫层的落位：铺满面板，圆角由面板的圆角和裁切管，材质不自己描边。 */
+	.vx-drawer__panel-glass {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+	}
+
 	/* 头部和底栏整块不收缩，分割线跟着自己那一行；正文滚动不带动它们。 */
 	.vx-drawer__head,
 	.vx-drawer__foot {
@@ -704,6 +761,47 @@
 	.vx-drawer__body {
 		overscroll-behavior: contain;
 		touch-action: pan-y;
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃面交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色和描边剥掉，浮起阴影画在 sheet 上保留。写在 --glass 后面盖过它。 */
+	.vx-drawer__panel--glass {
+		border-top-width: 0;
+		border-right-width: 0;
+		border-bottom-width: 0;
+		border-left-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-drawer__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-drawer__panel--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-drawer__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-drawer__panel--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
+		}
 	}
 	/* #endif */
 </style>

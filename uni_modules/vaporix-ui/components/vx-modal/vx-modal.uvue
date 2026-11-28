@@ -6,7 +6,12 @@
 	<view v-if="rendered" :class="rootClass" :style="rootStyle">
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
+		<!-- 面板玻璃态 iOS 在底层垫一块 glass-effect-view 出系统材质（面板 overflow 是 visible 不裁切，
+		     圆角由玻璃垫层自己声明）；其余平台仍是样式表磨砂，遮罩保持实色不玻璃化。 -->
 		<view :class="panelClass" :style="panelStyle" @click.stop>
+			<!-- #ifdef APP-IOS -->
+			<glass-effect-view v-if="glassActive" class="vx-modal__panel-glass" glass-style="regular"></glass-effect-view>
+			<!-- #endif -->
 			<!-- 关闭叉是独立出口：热区 44，图标 18，和取消共用 cancel；标题左右各让 24，避免压住热区。 -->
 			<view v-if="closable" class="vx-modal__close" hover-class="vx-modal__close--pressed"
 				:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCloseTap">
@@ -43,6 +48,7 @@
 	import { VxSemantic } from '../../libs/types/common'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
 	import { VX_OVERLAY_DURATION, VX_OVERLAY_DURATION_NONE, VX_OVERLAY_FRAME, VX_OVERLAY_MODAL_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
+	import { isGlassStyle } from '../../libs/global-style'
 	import { VxModalAction, VxModalActionVariant, VxModalProps } from './props'
 
 	const props = withDefaults(defineProps<VxModalProps>(), {
@@ -154,10 +160,17 @@
 		return name
 	})
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	const panelClass = computed((): string => {
 		let name = `vx-modal__panel vx-modal__panel--${props.size}`
 		if (animateDuration.value > 0) name += ' vx-modal__panel--animated'
 		if (inState.value) name += ' vx-modal__panel--in'
+		if (glassActive.value) name += ' vx-modal__panel--glass'
 		return name
 	})
 
@@ -558,6 +571,42 @@
 		max-width: var(--vx-modal-max-width-lg);
 	}
 
+	/* 玻璃面：整圈发丝描边加分层浮起阴影，磨砂底用通用玻璃令牌。正文直接铺在玻璃面上，
+	   可读性靠磨砂底的实度兜底（--glass-bg 0.86/0.88 已够实）；浅色页面实测对比度不够时，
+	   优先在这个 glass modifier 里叠一层半透底提实度，禁止直接调通用令牌值（通用值一动，
+	   全库玻璃组件一起变）。遮罩保持实色不玻璃化。磨砂分平台：iOS 换 glass-effect-view
+	   （模板垫在面板底层，APP-IOS 块剥自绘底色和描边）；Android / 鸿蒙蒸汽 5.25+ 用
+	   backdrop-filter（只认 blur()）；小程序没有模糊，MP 块换给足不透明度的实底；
+	   Web 老引擎 @supports 兜底落实底。平台块写在文件末尾。 */
+	.vx-modal__panel--glass {
+		border-top-width: 1px;
+		border-right-width: 1px;
+		border-bottom-width: 1px;
+		border-left-width: 1px;
+		border-top-style: solid;
+		border-right-style: solid;
+		border-bottom-style: solid;
+		border-left-style: solid;
+		border-top-color: var(--vx-glass-border);
+		border-right-color: var(--vx-glass-border);
+		border-bottom-color: var(--vx-glass-border);
+		border-left-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* iOS 玻璃垫层的落位：铺满面板。面板 overflow 是 visible（阴影要画出盒子），
+	   裁切管不住垫层，圆角由垫层自己声明；材质不自己描边。 */
+	.vx-modal__panel-glass {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		border-radius: var(--vx-radius-lg);
+	}
+
 	/* 关闭叉离右上各 8，热区用 --vx-hit-size，不并入控件高度；没有底色，按下用整体透明度。 */
 	.vx-modal__close {
 		position: absolute;
@@ -761,6 +810,47 @@
 
 	.vx-modal__close {
 		cursor: pointer;
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃面交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色和描边剥掉，浮起阴影保留。写在 --glass 后面盖过它。 */
+	.vx-modal__panel--glass {
+		border-top-width: 0;
+		border-right-width: 0;
+		border-bottom-width: 0;
+		border-left-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-modal__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-modal__panel--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-modal__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-modal__panel--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
+		}
 	}
 	/* #endif */
 </style>

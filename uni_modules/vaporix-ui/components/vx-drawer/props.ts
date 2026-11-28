@@ -22,8 +22,10 @@ export type VxDrawerProps = {
 	coverNavbar?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
-	/** 自定义面板底色，字面值；不传时用 --vx-color-surface。 */
+	/** 自定义面板底色，字面值；不传时用 --vx-color-surface。玻璃态忽略（用户色盖上去会把磨砂糊死，玻璃底色统一由通用玻璃令牌控制，tabbar 0.79 决策延续）。 */
 	bgColor?: string
+	/** 液态玻璃抽屉面：磨砂玻璃底加发丝描边和浮起阴影，玻璃只到 sheet 面层，__body 内容区不玻璃化。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 用 glass-effect-view 系统材质（跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序实底近似。遮罩始终实色不玻璃化，maskColor 照常生效，bgColor 玻璃态忽略。 */
+	liquidGlass?: boolean
 	/** 浮层层级，默认 1000，和操作菜单、日期时间选择器、日历弹层同档。 */
 	zIndex?: number
 }

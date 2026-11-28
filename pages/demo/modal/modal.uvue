@@ -142,6 +142,29 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="不传 liquidGlass 时跟随『我的』页的全局控件风格；显式传 true 强制玻璃（全局关闭时也生效）。正文直接铺在玻璃面上，重点看文字对比度；遮罩保持实色不玻璃化。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="跟随全局" @click="modalGlassFollowVisible = true" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="强制玻璃" @click="modalGlassVisible = true" />
+							</view>
+						</view>
+						<text class="demo-hint">把舞台滚到屏幕中部再弹出，彩底从面板下面透出：示例一不传 liquidGlass，跟随全局开关；示例二显式传 true，全局关闭时也强制玻璃。两个示例都是文字密集内容，标题、正文段落和按钮直接落在玻璃面上，亮暗主题各看一遍，确认读得清。iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；Android / 鸿蒙 / Web 磨砂，小程序实底近似。遮罩保持实色。</text>
+					</view>
+				</view>
+
 				<demo-page-nav current-key="modal" />
 
 				<demo-footer />
@@ -169,6 +192,17 @@
 					<vx-button block type="primary" shape="pill" text="立即提交" @click="onModalEmailSubmit" />
 				</view>
 			</view>
+		</vx-modal>
+
+		<!-- 液态玻璃示例：文字密集正文直接铺在面板上，专验玻璃面的对比度；彩底舞台在页面里，
+		     弹出后彩底从玻璃面下透出。示例一显式强制玻璃，示例二跟随全局开关。 -->
+		<vx-modal v-model:show="modalGlassVisible" title="液态玻璃弹框" confirm-text="读得清" cancel-text="关掉"
+			liquid-glass
+			content="这是一段专门用来验证对比度的正文。玻璃面板不再是实底，页面颜色会透过磨砂层漫上来，标题、正文段落和按钮都直接落在玻璃面上。亮色和暗色主题、浅底页面和彩底页面各看一遍，确认文字和按钮仍然读得清；不够实时组件会在自己的玻璃样式里叠半透底提实度，不动通用令牌。">
+		</vx-modal>
+
+		<vx-modal v-model:show="modalGlassFollowVisible" title="跟随全局的弹框"
+			content="不传 liquidGlass，跟『我的』页的全局控件风格——玻璃档磨砂透彩底，默认档实底。正文同样直接铺在面板上，两档都读得清才算过。">
 		</vx-modal>
 
 		<!-- 演示页共用轻提示：showToast 先写状态再调 open()。此前漏挂这个节点，toastRef.open() 静默失效。 -->
@@ -329,6 +363,11 @@
 	const customModalVisible = ref(false)
 
 	const modalEmail = ref('')
+
+	// 液态玻璃示例：显式强制和跟随全局各一个实例，正文密集，专验玻璃面的文字对比度。
+	const modalGlassVisible = ref(false)
+
+	const modalGlassFollowVisible = ref(false)
 
 	// setTimeout 在 App 上返回 number，0 表示没有在计时。
 	let modalAsyncTimer = 0
@@ -558,6 +597,14 @@
 		if (customModalVisible.value) {
 			customModalVisible.value = false
 			onModalEmailCancel()
+			return true
+		}
+		if (modalGlassVisible.value) {
+			modalGlassVisible.value = false
+			return true
+		}
+		if (modalGlassFollowVisible.value) {
+			modalGlassFollowVisible.value = false
 			return true
 		}
 		if (modalVisible.value) {

@@ -71,6 +71,8 @@ export type VxModalProps = {
 	contentColor?: string
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
+	/** 液态玻璃面板：磨砂玻璃底加发丝描边和浮起阴影，正文直接铺在玻璃面上，可读性由磨砂底的实度兜底。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 用 glass-effect-view 系统材质（跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序实底近似。遮罩始终实色不玻璃化，maskColor 照常生效。 */
+	liquidGlass?: boolean
 	/** 浮层层级，默认 1020，低于加载浮层（1050）和轻提示（1100）。 */
 	zIndex?: number
 }

@@ -183,6 +183,29 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="不传 liquidGlass 时跟随『我的』页的全局控件风格；显式传 true 强制玻璃（全局关闭时也生效）。玻璃只到抽屉面层，正文区不另垫底；玻璃态忽略 bgColor，遮罩保持实色。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="跟随全局" @click="drawerGlassFollowVisible = true" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="强制玻璃" @click="drawerGlassVisible = true" />
+							</view>
+						</view>
+						<text class="demo-hint">把舞台滚到屏幕右侧再弹出，彩底从玻璃面下透出：示例一不传 liquidGlass，跟随全局开关；示例二显式传 true，全局关闭时也强制玻璃。四个方向都支持玻璃面，头部、正文和底栏直接铺在玻璃上，亮暗主题各看一遍。iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；Android / 鸿蒙 / Web 磨砂，小程序实底近似。玻璃态忽略 bgColor，遮罩保持实色。</text>
+					</view>
+				</view>
+
 				<demo-page-nav current-key="drawer" />
 
 				<demo-footer />
@@ -341,6 +364,21 @@
 			</template>
 		</vx-drawer>
 
+		<!-- 液态玻璃示例：显式强制和跟随全局各一个实例，彩底舞台在页面里，弹出后彩底从玻璃面下透出。 -->
+		<vx-drawer v-model:show="drawerGlassVisible" position="right" title="液态玻璃抽屉" closable liquid-glass>
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-text">显式传 liquid-glass，全局关闭时也是玻璃面；页面彩底从玻璃面下透出。玻璃只到面层，头部和正文直接铺在上面。</text>
+				<vx-button block type="primary" text="关闭抽屉" @click="drawerGlassVisible = false" />
+			</view>
+		</vx-drawer>
+
+		<vx-drawer v-model:show="drawerGlassFollowVisible" position="right" title="跟随全局的抽屉" closable>
+			<view class="demo-drawer-body">
+				<text class="demo-drawer-text">不传 liquidGlass，跟『我的』页的全局控件风格——玻璃档磨砂透彩底，默认档实底。bgColor 在玻璃态会被忽略。</text>
+				<vx-button block type="primary" text="关闭抽屉" @click="drawerGlassFollowVisible = false" />
+			</view>
+		</vx-drawer>
+
 		<!-- 演示页共用轻提示：showToast 先写状态再调 open()。此前漏挂这个节点，toastRef.open() 静默失效。 -->
 		<vx-toast ref="toastRef" :text="toastText" :type="toastType" :duration="toastDuration"
 			:icon="toastIcon" :image="toastImage" :show-icon="toastShowIcon" :bg-color="toastBgColor"
@@ -459,6 +497,11 @@
 	const drawerLastEvent = ref('还没有操作')
 
 	const drawerFilterVisible = ref(false)
+
+	// 液态玻璃示例：显式强制和跟随全局各一个实例，彩底舞台的彩底从玻璃面下透出。
+	const drawerGlassVisible = ref(false)
+
+	const drawerGlassFollowVisible = ref(false)
 
 	const drawerFilterOptions: string[] = ['包邮', '现货', '新品', '七天无理由']
 
