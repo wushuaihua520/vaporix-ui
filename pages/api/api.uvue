@@ -83,14 +83,7 @@
 					</view>
 					<view class="demo-card">
 						<view class="demo-code">
-							<text class="demo-code__line demo-code__line--muted">// 主题：原生导航栏不读 CSS 变量</text>
-							<text class="demo-code__line">import { vxNavTheme } from '@/uni_modules/vaporix-ui/libs/theme'</text>
-							<text class="demo-code__line"></text>
-							<text class="demo-code__line">const theme = vxNavTheme(true)</text>
-							<text class="demo-code__line">uni.setNavigationBarColor({</text>
-							<text class="demo-code__line">  frontColor: theme.front,</text>
-							<text class="demo-code__line">  backgroundColor: theme.navBackground</text>
-							<text class="demo-code__line">})</text>
+							<text v-for="(line, index) in quickStartCode" :key="index" :class="line.cls">{{ line.text }}</text>
 						</view>
 						<view class="demo-api-note">
 							<text class="demo-hint">每个模块的详情页都有可运行的示例；常量类接口只做说明，不产生副作用。</text>
@@ -134,6 +127,25 @@
 		exportTotal += DEMO_API_MODULES[index].exports.length
 	}
 	const apiCount = exportTotal
+
+	type DemoCodeLine = {
+		text: string
+		cls: string
+	}
+
+	// 代码样例文本放常量、模板只做绑定插值：mp 端 WXML 编译器会把模板文本里
+	// 行尾的 `{` 当成未闭合表达式，api.wxml 曾因此整页编译失败并毒化页面注册表。
+	// 前导空格保留一个，与三端编译产物对齐（源码缩进的空格编译时会被折叠）。
+	const quickStartCode: DemoCodeLine[] = [
+		{ text: '// 主题：原生导航栏不读 CSS 变量', cls: 'demo-code__line demo-code__line--muted' },
+		{ text: "import { vxNavTheme } from '@/uni_modules/vaporix-ui/libs/theme'", cls: 'demo-code__line' },
+		{ text: '', cls: 'demo-code__line' },
+		{ text: 'const theme = vxNavTheme(true)', cls: 'demo-code__line' },
+		{ text: 'uni.setNavigationBarColor({', cls: 'demo-code__line' },
+		{ text: ' frontColor: theme.front,', cls: 'demo-code__line' },
+		{ text: ' backgroundColor: theme.navBackground', cls: 'demo-code__line' },
+		{ text: '})', cls: 'demo-code__line' }
+	]
 
 	const pageClass = computed((): string => {
 		return isDark.value ? 'demo-page vx-theme-dark' : 'demo-page vx-theme-light'

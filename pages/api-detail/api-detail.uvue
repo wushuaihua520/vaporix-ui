@@ -742,7 +742,14 @@
 	}
 
 	onLoad((options) => {
-		const key = options.getString('module')
+		let key: string | null = null
+		// mp 端运行时传给 onLoad 的是普通 query 对象，没有 UTSJSONObject 的 getString，分开取参
+		// #ifdef MP-WEIXIN
+		key = options['module'] as string | null
+		// #endif
+		// #ifndef MP-WEIXIN
+		key = options.getString('module')
+		// #endif
 		if (key != null) {
 			let matched = false
 			for (let index = 0; index < DEMO_API_MODULES.length; index++) {
