@@ -187,6 +187,29 @@
 					</view>
 				</view>
 
+				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="不传 liquidGlass 时跟随『我的』页的全局控件风格；显式传 true 强制玻璃（全局关闭时也生效）。玻璃面铺满整张面板，遮罩保持实色不玻璃化。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="跟随全局" @click="glassFollowVisible = true" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="强制玻璃" @click="glassVisible = true" />
+							</view>
+						</view>
+						<text class="demo-hint">把舞台滚到屏幕底部再弹出，彩底从面板下面透出：示例一不传 liquidGlass，跟随全局开关；示例二显式传 true，全局关闭时也强制玻璃。iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；Android / 鸿蒙 / Web 磨砂，小程序半透明底。遮罩保持实色。</text>
+					</view>
+				</view>
+
 				<demo-page-nav current-key="popup" />
 
 				<demo-footer />
@@ -297,6 +320,23 @@
 			</view>
 		</vx-popup>
 
+		<!-- 玻璃示例也挂页面根节点；彩底舞台在页尾，弹出后彩底从玻璃面下透出。 -->
+		<vx-popup v-model:show="glassVisible" placement="bottom" closable liquid-glass>
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">强制玻璃</text>
+				<text class="demo-popup-text">显式传 liquid-glass，全局关闭时也是玻璃面；彩底从面板下面透出。</text>
+				<vx-button block type="default" text="关闭弹出层" @click="glassVisible = false" />
+			</view>
+		</vx-popup>
+
+		<vx-popup v-model:show="glassFollowVisible" placement="bottom" closable>
+			<view class="demo-popup-body">
+				<text class="demo-popup-title">跟随全局</text>
+				<text class="demo-popup-text">不传 liquidGlass，跟『我的』页的全局控件风格——玻璃档磨砂，默认档实底。</text>
+				<vx-button block type="default" text="关闭弹出层" @click="glassFollowVisible = false" />
+			</view>
+		</vx-popup>
+
 		<!-- 层级自查用：弹框（110）和抽屉（90）都挂页面根节点，和弹出层同屏时各走各的档位。 -->
 		<vx-modal v-model:show="layerModalVisible" title="弹出层之上"
 			content="弹框默认层级 110，压在弹出层 90 上；关掉弹框，弹出层还在。" />
@@ -393,6 +433,10 @@
 		{ value: 'seven', label: '七天无理由', description: '支持无理由退货' },
 		{ value: 'gift', label: '赠品', description: '随包附赠小样' }
 	]
+
+	// 09 液态玻璃
+	const glassVisible = ref(false)
+	const glassFollowVisible = ref(false)
 
 	const placeText = computed((): string => {
 		const placement = placeCurrent.value

@@ -13,8 +13,13 @@
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 		<!-- #endif -->
 
-		<!-- 外层就是面板：位移、圆角、底色和裁切都在这一层。面板不投影、也不描边，层级由遮罩和留白表达。 -->
+		<!-- 外层就是面板：位移、圆角、底色和裁切都在这一层。面板不投影、也不描边，层级由遮罩和留白表达。
+		     玻璃态 iOS 在面板底层垫一块 glass-effect-view 出系统材质（圆角由面板的裁切管），
+		     其余平台仍是样式表磨砂，遮罩保持实色不玻璃化。 -->
 		<view :class="sheetClass" :style="sheetStyle" @click.stop>
+			<!-- #ifdef APP-IOS -->
+			<glass-effect-view v-if="glassActive" class="vx-popup__sheet-glass" glass-style="regular"></glass-effect-view>
+			<!-- #endif -->
 			<!-- 关闭叉在内容上方单占一行：顶部贴边时不会钻进状态栏，也不会压住业务内容。 -->
 			<view v-if="closable" class="vx-popup__bar">
 				<!-- #ifdef WEB -->
@@ -56,6 +61,7 @@
 		vxUnlockPageScroll
 	} from '../../libs/overlay'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxPopupProps>(), {
 		placement: 'bottom',
@@ -156,6 +162,12 @@
 		return placement.value === 'top' || placement.value === 'bottom'
 	})
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	const sheetClass = computed((): string => {
 		let name = `vx-popup__sheet vx-popup__sheet--${placement.value}`
 		if (safeEdge.value.length > 0) name += ` vx-popup__sheet--safe-${safeEdge.value}`
@@ -165,6 +177,7 @@
 			const axis = placement.value === 'top' || placement.value === 'bottom' ? 'y' : 'x'
 			name += ` vx-popup__sheet--in-${axis}`
 		}
+		if (glassActive.value) name += ' vx-popup__sheet--glass'
 		return name
 	})
 
@@ -525,6 +538,38 @@
 		opacity: 1;
 	}
 
+	/* 玻璃面：整圈发丝描边加分层浮起阴影，磨砂底用通用玻璃令牌，铺满整张面板（含底部安全区段）。
+	   遮罩保持实色不玻璃化。磨砂分平台：iOS 换 glass-effect-view（模板垫在面板底层，
+	   APP-IOS 块剥自绘底色和描边）；Android / 鸿蒙蒸汽 5.25+ 用 backdrop-filter（只认 blur()）；
+	   小程序没有模糊，MP 块换给足不透明度的实底；Web 老引擎 @supports 兜底落实底。
+	   写在 --center 后面：居中面板的 --color-border 描边在玻璃态让位给发丝描边。 */
+	.vx-popup__sheet--glass {
+		border-top-width: 1px;
+		border-right-width: 1px;
+		border-bottom-width: 1px;
+		border-left-width: 1px;
+		border-top-style: solid;
+		border-right-style: solid;
+		border-bottom-style: solid;
+		border-left-style: solid;
+		border-top-color: var(--vx-glass-border);
+		border-right-color: var(--vx-glass-border);
+		border-bottom-color: var(--vx-glass-border);
+		border-left-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* iOS 玻璃垫层的落位：铺满面板，圆角由面板的圆角和裁切管，材质不自己描边。 */
+	.vx-popup__sheet-glass {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+	}
+
 	/* 关闭叉单占一行。行高用热区令牌，不跟列表行；右内边距 8，热区缩在面板轮廓内，不顶进圆角。 */
 	.vx-popup__bar {
 		flex-direction: row;
@@ -560,6 +605,48 @@
 
 	.vx-popup__close {
 		cursor: pointer;
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃面交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色和描边剥掉，浮起阴影保留（探针 A7 验证原生玻璃上 box-shadow 可用）。
+	   写在 --glass 后面盖过它。 */
+	.vx-popup__sheet--glass {
+		border-top-width: 0;
+		border-right-width: 0;
+		border-bottom-width: 0;
+		border-left-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-popup__sheet--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-popup__sheet--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-popup__sheet--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-popup__sheet--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
+		}
 	}
 	/* #endif */
 </style>

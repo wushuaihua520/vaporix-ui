@@ -23,6 +23,8 @@ export type VxPopupProps = {
 	maskClosable?: boolean
 	/** 自定义遮罩色，字面值；不传时用 --vx-color-mask。 */
 	maskColor?: string
+	/** 液态玻璃 sheet 面：磨砂玻璃底加发丝描边和浮起阴影，铺满整张面板（含底部安全区）。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 用 glass-effect-view 系统材质（跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序半透明实底。遮罩始终实色不玻璃化，maskColor 照常生效。 */
+	liquidGlass?: boolean
 	/** 上下贴边时由面板内边距让开顶部或底部安全区，默认打开；左右和居中的侧边安全区始终由内边距让开。 */
 	safeArea?: boolean
 	/** 浮层层级，默认 1000，低于数字键盘（1005）、消息提示（1010）、弹框（1020）、加载浮层（1050）和轻提示（1100）。 */

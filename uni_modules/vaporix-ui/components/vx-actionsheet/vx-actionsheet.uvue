@@ -5,9 +5,14 @@
 	<view v-if="rendered" class="vx-actionsheet" :style="rootStyle">
 		<view :class="maskClass" :style="maskStyle" @click="onMaskTap" @touchmove.stop.prevent></view>
 
-		<!-- 外层只负责阴影和滑入；内层裁按下态，避免 overflow 把阴影一起裁掉。 -->
+		<!-- 外层只负责阴影和滑入；内层裁按下态，避免 overflow 把阴影一起裁掉。
+		     玻璃态 iOS 在面板底层垫一块 glass-effect-view 出系统材质（圆角由面板的裁切管），
+		     其余平台仍是样式表磨砂，遮罩保持实色不玻璃化。 -->
 		<view :class="sheetClass" :style="sheetStyle" @click.stop>
-			<view class="vx-actionsheet__panel">
+			<view :class="panelClass">
+				<!-- #ifdef APP-IOS -->
+				<glass-effect-view v-if="glassActive" class="vx-actionsheet__panel-glass" glass-style="regular"></glass-effect-view>
+				<!-- #endif -->
 				<!-- 头部两块都可选：title 用标题档，description 用次要色；都没有时不渲染。 -->
 				<view v-if="hasHeader" class="vx-actionsheet__header" @touchmove.stop.prevent>
 					<text v-if="title.length > 0" class="vx-actionsheet__title" :style="titleStyle">{{ title }}</text>
@@ -30,8 +35,8 @@
 
 				<!-- 取消和动作之间留 4px default-soft 间隔带，取消像一块独立的白色按钮；安全区由面板底部内边距兜住。 -->
 				<view v-if="showCancel" class="vx-actionsheet__cancel-wrap" @touchmove.stop.prevent>
-					<view class="vx-actionsheet__gap"></view>
-					<view class="vx-actionsheet__cancel" hover-class="vx-actionsheet__cancel--pressed"
+					<view :class="gapClass"></view>
+					<view :class="cancelClass" hover-class="vx-actionsheet__cancel--pressed"
 						:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onCancelTap">
 						<text class="vx-actionsheet__cancel-text">{{ cancelText }}</text>
 					</view>
@@ -45,6 +50,7 @@
 	import { VxActionSheetItem, VxActionSheetItemType, VxActionSheetProps } from './props'
 	import { VX_POPUP_MASK_GUARD, VX_PRESSED_STAY_TIME } from '../../libs/motion'
 	import { VX_OVERLAY_DURATION, VX_OVERLAY_FRAME, VX_OVERLAY_LAYER, vxLockPageScroll, vxUnlockPageScroll } from '../../libs/overlay'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxActionSheetProps>(), {
 		items: (): Array<VxActionSheetItem> => [],
@@ -142,6 +148,28 @@
 	// 退场那一下的 class；只挂到遮罩和面板上，根节点不需要状态位。
 	const sheetClass = computed((): string => {
 		return leaving.value ? 'vx-actionsheet__sheet vx-actionsheet__sheet--leaving' : 'vx-actionsheet__sheet'
+	})
+
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
+	// 玻璃态整张面板换玻璃面（含底部安全区段），取消块换半透白、间隔带透明，
+	// 取消才仍像一块独立的按钮而不糊死玻璃。
+	const panelClass = computed((): string => {
+		let name = 'vx-actionsheet__panel'
+		if (glassActive.value) name += ' vx-actionsheet__panel--glass'
+		return name
+	})
+
+	const gapClass = computed((): string => {
+		return glassActive.value ? 'vx-actionsheet__gap vx-actionsheet__gap--glass' : 'vx-actionsheet__gap'
+	})
+
+	const cancelClass = computed((): string => {
+		return glassActive.value ? 'vx-actionsheet__cancel vx-actionsheet__cancel--glass' : 'vx-actionsheet__cancel'
 	})
 
 	const rootStyle = computed((): string => {
@@ -488,6 +516,7 @@
 	   App 不会把 sheet 的 max-height 自动分给这个子项：不写 flex-shrink 时它仍按内容高撑出去，
 	   取消栏被挤到屏幕下方。shrink 和 min-height 一起写，高度才传得进动作区。 */
 	.vx-actionsheet__panel {
+		position: relative;
 		flex-direction: column;
 		flex-shrink: 1;
 		min-height: 0;
@@ -694,6 +723,47 @@
 		text-align: center;
 	}
 
+	/* 玻璃面：整圈发丝描边加分层浮起阴影，磨砂底用通用玻璃令牌，铺满整张面板（含底部安全区段）。
+	   遮罩保持实色不玻璃化。磨砂分平台：iOS 换 glass-effect-view（模板垫在面板底层，
+	   APP-IOS 块剥自绘底色和描边）；Android / 鸿蒙蒸汽 5.25+ 用 backdrop-filter（只认 blur()）；
+	   小程序没有模糊，MP 块换给足不透明度的实底；Web 老引擎 @supports 兜底落实底。
+	   取消块在玻璃底上换半透白、间隔带透明（写在基础块后面盖过它），
+	   取消才仍像一块独立的按钮而不糊死玻璃。 */
+	.vx-actionsheet__panel--glass {
+		border-top-width: 1px;
+		border-right-width: 1px;
+		border-bottom-width: 1px;
+		border-left-width: 1px;
+		border-top-style: solid;
+		border-right-style: solid;
+		border-bottom-style: solid;
+		border-left-style: solid;
+		border-top-color: var(--vx-glass-border);
+		border-right-color: var(--vx-glass-border);
+		border-bottom-color: var(--vx-glass-border);
+		border-left-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* iOS 玻璃垫层的落位：铺满面板，圆角由面板的圆角和裁切管，材质不自己描边。 */
+	.vx-actionsheet__panel-glass {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+	}
+
+	.vx-actionsheet__gap--glass {
+		background-color: transparent;
+	}
+
+	.vx-actionsheet__cancel--glass {
+		background-color: var(--vx-glass-bg-blur);
+	}
+
 	/* 滑入和淡入：5.31 起 App 端支持 @keyframes（vx-loading 的转圈同款语法）。
 	   根节点是 v-if，但关闭时先给遮罩和面板挂 --leaving 让节点多活一帧时长，
 	   退场动画播完才摘，所以进出场都有动画；重新打开会取消计时，节点不重建。
@@ -800,6 +870,61 @@
 
 	.vx-actionsheet__cancel {
 		cursor: pointer;
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃面交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色和描边剥掉，浮起阴影保留（探针 A7 验证原生玻璃上 box-shadow 可用）。
+	   写在 --glass 后面盖过它。 */
+	.vx-actionsheet__panel--glass {
+		border-top-width: 0;
+		border-right-width: 0;
+		border-bottom-width: 0;
+		border-left-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，面板底色不透明度给足，发丝描边保留；
+	   取消块的半透白没有模糊兜不住，同样换实底。 */
+	.vx-actionsheet__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	.vx-actionsheet__cancel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-actionsheet__panel--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-actionsheet__panel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	.vx-actionsheet__cancel--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-actionsheet__panel--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
+		}
+
+		.vx-actionsheet__cancel--glass {
+			background-color: var(--vx-glass-bg-blur);
+		}
 	}
 	/* #endif */
 </style>

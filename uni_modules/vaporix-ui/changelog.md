@@ -1,3 +1,5 @@
+## 0.84.0（2026-11-28）
+- `vx-popup` / `vx-actionsheet` 支持液态玻璃 sheet 面：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`，0.81.0 引入）。玻璃面铺满整张面板（含底部安全区），带发丝描边和分层浮起阴影，操作菜单的取消块换半透白。iOS 用 `glass-effect-view` 系统材质（iOS 26+ 真液态玻璃，15~25 降级系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序实底近似。遮罩保持实色不玻璃化，`maskColor` 照常生效。
 ## 0.83.0（2026-11-28）
 - `vx-navigation-bar` 支持液态玻璃底：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`）。玻璃底铺满状态栏和内容行整条；iOS 上换 `glass-effect-view` 系统材质（iOS 26+ 真液态玻璃，15~25 降级系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序半透明实底。玻璃底不接 `bgColor`，`fade` / `transparent` 渐显逻辑不作用于玻璃底，分割线和 `--shadow-md` 阴影在玻璃态不画。
 ## 0.82.0（2026-11-28）

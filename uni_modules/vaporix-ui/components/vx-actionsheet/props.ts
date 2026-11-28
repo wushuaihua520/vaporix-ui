@@ -36,6 +36,8 @@ export type VxActionSheetProps = {
 	titleColor?: string
 	/** 自定义说明色，字面值；传 var(--vx-color-*) 时跟随主题。 */
 	descriptionColor?: string
+	/** 液态玻璃面板：磨砂玻璃底加发丝描边和浮起阴影，铺满整张面板（含底部安全区）。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 用 glass-effect-view 系统材质（跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序半透明实底。遮罩始终实色不玻璃化，maskColor 照常生效。 */
+	liquidGlass?: boolean
 	/** 浮层层级，默认 1000，低于消息提示（1010）、弹框（1020）、加载浮层（1050）和轻提示（1100）。 */
 	zIndex?: number
 }

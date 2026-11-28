@@ -28,6 +28,7 @@
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
 | titleColor | string | `''` | 自定义标题色，字面值 |
 | descriptionColor | string | `''` | 自定义说明色，字面值 |
+| liquidGlass | boolean | — | 液态玻璃面板：传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格；磨砂分平台（iOS 用系统材质，Android / 鸿蒙 / Web 用 backdrop-filter，小程序半透明实底） |
 | zIndex | number | `1000` | 浮层层级 |
 
 `items` 的每一项：
@@ -57,6 +58,7 @@
 ## 说明
 
 - 面板贴底、只圆上两角；最大宽度 480px，手机上铺满，平板和 Web 上收成居中浮层；遮罩只压页面。
+- `liquidGlass` 接全局控件风格（`libs/global-style`，应用调 `vxSetStyle('liquid-glass')` 后默认玻璃化）：传 `true` 强制玻璃（全局关闭时也生效），不传或 `false` 跟随全局风格。玻璃面铺满整张面板（含底部安全区），带发丝描边和分层浮起阴影，取消块换半透白；遮罩保持实色不玻璃化，`maskColor` 照常生效。磨砂分平台：iOS 用 `glass-effect-view` 出系统液态玻璃（iOS 26+；15~25 降级为系统毛玻璃），材质跟随系统外观；Android / 鸿蒙蒸汽与 Web 用 `backdrop-filter: blur`；小程序没有模糊，玻璃底不透明度给足。
 - 标题 17 / 24 / 600，说明 13 / 20 次要色，动作和取消 15 / 22 / 500，行高 48。
 - 动作默认正文色，`primary` / `danger` 用对应 pressed 色，禁用转灰；分割线用 `divider` 通栏，最后一条不画。
 - `selected` 由业务维护，组件不保存选中值；`closeOnSelect=false` 时不自动收起，适合单选和多选。

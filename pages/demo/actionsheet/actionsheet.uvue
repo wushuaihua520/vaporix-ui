@@ -66,6 +66,29 @@
 				</view>
 
 				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="不传 liquidGlass 时跟随『我的』页的全局控件风格；显式传 true 强制玻璃（全局关闭时也生效）。玻璃面铺满整张面板，遮罩保持实色不玻璃化。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" type="default" text="跟随全局" @click="onActionSheetGlassFollow" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" type="default" text="强制玻璃" @click="onActionSheetGlass" />
+							</view>
+						</view>
+						<text class="demo-hint">把舞台滚到屏幕底部再打开，彩底从面板下面透出：示例一不传 liquidGlass，跟随全局开关；示例二显式传 true，全局关闭时也强制玻璃。iOS 用 glass-effect-view 出系统液态玻璃并跟随系统外观；Android / 鸿蒙 / Web 磨砂，小程序半透明底。遮罩保持实色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
 					<demo-section-head title="方法" desc="ref 拿实例，open() 打开，close() 只收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
@@ -90,8 +113,8 @@
 		<vx-actionsheet ref="actionSheetRef" v-model:show="actionSheetVisible" :title="actionSheetTitle"
 			:description="actionSheetDescription" :items="actionSheetItems" :show-cancel="actionSheetShowCancel"
 			:mask-closable="actionSheetMaskClosable" :close-on-select="actionSheetCloseOnSelect"
-			:description-color="actionSheetDescriptionColor" @select="onActionSheetSelect"
-			@cancel="onActionSheetCancel" />
+			:description-color="actionSheetDescriptionColor" :liquid-glass="actionSheetLiquidGlass"
+			@select="onActionSheetSelect" @cancel="onActionSheetCancel" />
 	</view>
 </template>
 
@@ -114,6 +137,7 @@
 		maskClosable?: boolean
 		closeOnSelect?: boolean
 		descriptionColor?: string
+		liquidGlass?: boolean
 	}
 
 	type ActionSheetApi = {
@@ -138,6 +162,8 @@
 
 	const actionSheetDescriptionColor = ref('')
 
+	const actionSheetLiquidGlass = ref(false)
+
 	const actionSheetLastAction = ref('还没有操作')
 
 	const actionSheetGender = ref('男')
@@ -161,6 +187,8 @@
 		actionSheetMaskClosable.value = config.maskClosable !== false
 		actionSheetCloseOnSelect.value = config.closeOnSelect !== false
 		actionSheetDescriptionColor.value = config.descriptionColor != null ? config.descriptionColor : ''
+		// 两态语义：false 与不传等价（跟随全局），只有 true 才强制玻璃。
+		actionSheetLiquidGlass.value = config.liquidGlass === true
 	}
 
 	const openActionSheet = (config: ActionSheetDemoConfig) => {
@@ -217,6 +245,23 @@
 			title: '选择您的性别',
 			items: genderSheetItems(actionSheetGender.value),
 			closeOnSelect: false
+		})
+	}
+
+	const onActionSheetGlass = () => {
+		openActionSheet({
+			title: '玻璃菜单',
+			description: '显式传 liquid-glass，全局关闭时也是玻璃面。',
+			items: [{ text: '点赞' }, { text: '评论' }, { text: '收藏' }, { text: '分享' }],
+			liquidGlass: true
+		})
+	}
+
+	const onActionSheetGlassFollow = () => {
+		openActionSheet({
+			title: '跟随全局',
+			description: '不传 liquidGlass，跟随全局控件风格。',
+			items: [{ text: '重启' }, { text: '复位布局' }]
 		})
 	}
 

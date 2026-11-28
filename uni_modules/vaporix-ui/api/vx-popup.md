@@ -33,6 +33,7 @@
 | closable | boolean | `false` | 内容上方显示一行关闭叉，点击收起并抛 `close` |
 | maskClosable | boolean | `true` | 点击遮罩收起并抛 `close`；关掉后点遮罩只抛 `click-mask` |
 | maskColor | string | `''` | 自定义遮罩色，字面值 |
+| liquidGlass | boolean | — | 液态玻璃 sheet 面：传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格；磨砂分平台（iOS 用系统材质，Android / 鸿蒙 / Web 用 backdrop-filter，小程序半透明实底） |
 | safeArea | boolean | `true` | 上下贴边时由面板内边距让开顶部或底部安全区；左右和居中的侧边安全区始终让开 |
 | zIndex | number | `1000` | 浮层层级 |
 | duration | number | `220` | 进出场时长，单位毫秒；`0` 直接切换，Web 上跟随系统的减少动效 |
@@ -66,6 +67,7 @@
 
 - 上下贴边默认占满宽度，高度由内容或 `height` 决定；左右贴边占满高度、宽 280，`width` 必须带单位；居中按内容宽度排、最宽 480。
 - 贴屏的一侧不圆角，朝向页面的角取 `round`；面板用 `surface` 底、不加阴影，居中面板另加 1px 描边。
+- `liquidGlass` 接全局控件风格（`libs/global-style`，应用调 `vxSetStyle('liquid-glass')` 后默认玻璃化）：传 `true` 强制玻璃（全局关闭时也生效），不传或 `false` 跟随全局风格。玻璃面铺满整张面板（含底部安全区），带发丝描边和分层浮起阴影；遮罩保持实色不玻璃化，`maskColor` 照常生效。磨砂分平台：iOS 用 `glass-effect-view` 出系统液态玻璃（iOS 26+；15~25 降级为系统毛玻璃），材质跟随系统外观；Android / 鸿蒙蒸汽与 Web 用 `backdrop-filter: blur`；小程序没有模糊，玻璃底不透明度给足。
 - 面板不预留内容内边距，内容自己留 16；安全区由面板内边距让开。
 - 关闭叉单占一行，高沿用列表行、图标 18；`maskClosable=false` 时点遮罩只抛 `click-mask`。
 - `close()` 只收起；`cancel()` 收起并抛 `close`，给 `onBackPress` 用。
