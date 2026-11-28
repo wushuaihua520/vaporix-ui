@@ -1917,6 +1917,91 @@ uni-app x 蒸汽模式组件库，覆盖 Android、iOS、鸿蒙、Web、小程�
 - 每个组件同时交付：`vx-<block>.uvue`、`props.ts`、独立的 `pages/demo/<name>/<name>.uvue` 演示页、`pages/demo/shared/catalog.ts` 登记、`uni_modules/vaporix-ui/api/README.md` 清单和 `uni_modules/vaporix-ui/api/vx-<name>.md`。`readme.md` 只留接入和组件清单，属性表写进 api 目录。
 - 单文件顺序：`template` → `script setup` → `style`。`style` 与元素 class 字符串都按「基础 → 尺寸 → 类型 → 形状 → 状态 → 文本」排列。
 
+## 全局风格与液态玻璃
+
+全局控件风格是库级的一根风格轴：应用选一个 key，支持玻璃化的组件默认按它渲染。只做 store 不做页面根 class——iOS 的 `glass-effect-view` 是模板分支必须 JS 感知，小程序样式隔离让页面 class 跨不进组件，双开关必失步。
+
+### 风格轴与 store
+
+- 风格 key 只有 `default`（默认实底）和 `liquid-glass`（液态玻璃面）两档，定义在 `libs/global-style.ts`。
+- store 三个导出：`vxStyle`（当前 key，ref）、`isGlassStyle`（是否玻璃态，computed）、`vxSetStyle(key)`（切换）。组件读 `isGlassStyle` 拼 glass modifier class 或做模板分支。
+- 状态不落盘：`vxSetStyle` 只改内存，重启即回 `default`。持久化是应用侧的事，demo 的做法可照抄（`pages/demo/shared/style.ts`）：选择写 `uni.setStorageSync`，`App.uvue` 的 `onLaunch` 调一次 `vxSetStyle` 恢复。应用侧开玻璃就是 `vxSetStyle('liquid-glass')` 一行。
+- 优先级契约：组件 prop 显式值 > 全局风格 > 默认实底。
+- 玻璃开关 prop（`liquidGlass`）是两态语义：传 `true` 强制玻璃，不传或 `false` 跟随全局。不做「显式 false 强制关」的三态设计——Vue 对无 default 的 Boolean prop 缺席即 `false`（Web / 小程序），App 端缺席是 `null`，缺席检测跨端不一致（0.82 实测踩坑）。
+- 组件内的开关公式统一是 `glassActive = (props.liquidGlass === true) || isGlassStyle.value`。
+
+### 令牌契约
+
+通用玻璃令牌 `--vx-glass-*` 亮暗各一份，玻璃化组件统一消费；改值去 `libs/style/variables.css`，与本表一起改。
+
+| 令牌 | 亮色 | 暗色 | 语义与端差异 |
+| --- | --- | --- | --- |
+| `--vx-glass-bg` | rgba(255, 255, 255, 0.86) | rgba(28, 31, 39, 0.88) | 无模糊引擎的实底兜底（小程序、不支持 backdrop-filter 的 Web 引擎） |
+| `--vx-glass-bg-blur` | rgba(255, 255, 255, 0.52) | rgba(26, 29, 36, 0.58) | 有模糊引擎的透底（Android / 鸿蒙蒸汽 5.25+ 与现代 Web） |
+| `--vx-glass-bg-clear` | rgba(255, 255, 255, 0.18) | rgba(26, 29, 36, 0.32) | clear 透档：iOS 直传系统 clear 材质，其余磨砂平台降底色，小程序不生效 |
+| `--vx-glass-blur` | 24px | 24px | 磨砂半径 |
+| `--vx-glass-border` | rgba(255, 255, 255, 0.65) | rgba(255, 255, 255, 0.14) | 发丝描边；暗色玻璃更实才不陷进底色，描边改白色发丝线 |
+| `--vx-glass-shadow` | 0 2px 6px rgba(16, 18, 22, 0.08), 0 12px 32px rgba(16, 18, 22, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.55), inset 0 -1px 1px rgba(255, 255, 255, 0.18) | 0 2px 6px rgba(0, 0, 0, 0.28), 0 12px 32px rgba(0, 0, 0, 0.44), inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 -1px 1px rgba(255, 255, 255, 0.06) | 分层浮起：近距接触影 + 远距环境影 + 上下 inset 高光，玻璃「浮在内容上」感的来源 |
+
+三条纪律：
+
+- 令牌块必须单 class 规则（`.vx-theme-light` / `.vx-theme-dark` 各一条）：蒸汽模式对组合选择器上的变量不稳，两个主题 class 不写在一条规则里。
+- 组件内不写死玻璃色值：底、描边、阴影一律取 `--vx-glass-*`。组件私有布局令牌（如 tabbar 的 inset / thumb-gap）保留自己的前缀、值为字面量——App 不能写 `--a: var(--b)`。
+- 禁止为单个组件调通用令牌值：对比度不够、要再垫一层的，写组件自己的 glass modifier 叠层解决（modal 的做法），不牵动全库。
+
+### 各端玻璃等级
+
+| 端 | 玻璃等级 |
+| --- | --- |
+| iOS（蒸汽 5.25+） | `glass-effect-view` 系统材质：iOS 26+ 真液态玻璃（边缘折射、系统发丝描边、亮暗自适应），15~25 自动降级为系统毛玻璃 |
+| Android / 鸿蒙（蒸汽 5.25+） | CSS `backdrop-filter` 磨砂，App 端只认 `blur()`；`saturate(1.8)` 只写进 WEB 块 |
+| Web | `backdrop-filter: blur() saturate()`；老引擎由 `@supports` 探测，不支持的落 `--vx-glass-bg` 实底兜底 |
+| 小程序 | 无模糊，`--vx-glass-bg` 给足不透明度的实底近似，透底可读性靠实度兜 |
+
+三条系统级限制，文档与演示不得回避：
+
+- iOS 材质跟随系统外观：`glass-effect-view` 的亮暗由系统决定，页面的 `vx-theme-dark` 翻不动它。
+- App 端（Android / 鸿蒙）的 `backdrop-filter` 只认 `blur()`，`saturate()` 一概不生效。
+- 小程序没有模糊引擎，玻璃只是实底近似。
+
+iOS 专属差异：组件挂 `glass-effect-view` 后不消费 `--vx-glass-bg` / `--vx-glass-blur`（材质自带底与模糊），描边阴影除外；自绘描边在 APP-IOS 块剥掉交给系统材质。
+
+### glass-ready 组件清单
+
+九件，接入模式一致：两态 prop → `glassActive` computed（两态公式）→ iOS `glass-effect-view` 分支 → 玻璃 modifier class → 平台 CSS 块。
+
+| 组件 | 版本 | 玻璃面 | 备注 |
+| --- | --- | --- | --- |
+| `vx-tabbar` | 0.82.0 | bar（悬浮胶囊栏身） | `glassStyle="clear"` 透档仍是实例 prop；raised 凸钮按普通项渲染；玻璃底与悬浮间隙透出页面，固定穿底要页面传 `placeholder="false"` 并在内容末尾留白 |
+| `vx-navigation-bar` | 0.83.0 | bar（状态栏 + 内容行整条） | `fade` / `transparent` 渐显逻辑不作用于玻璃底，分割线与 `--shadow-md` 阴影在玻璃态不画 |
+| `vx-popup` | 0.84.0 | sheet（整张面板含底部安全区） | 遮罩保持实色不玻璃化，`maskColor` 照常生效 |
+| `vx-actionsheet` | 0.84.0 | sheet（同 popup） | 取消块换半透白 |
+| `vx-modal` | 0.85.0 | panel（弹框面板） | 正文直接铺玻璃面，对比度由磨砂底实度兜底；组件自叠半透底，不改通用令牌 |
+| `vx-drawer` | 0.85.0 | panel（抽屉面板） | 玻璃只到面层，正文区不另垫底 |
+| `vx-sticky` | 0.86.0 | bar（吸顶条） | 玻璃只在吸顶态出现（探针实测滚动穿透）；分割线与 `shadow` 在玻璃态不画，浮起感由玻璃分层阴影接管 |
+| `vx-toast` | 0.86.0 | box（轻提示盒） | 玻璃态文字用正文色 |
+| `vx-tips` | 0.86.0 | box（轻提示盒） | 语义底色让位，玻璃态文字用正文色 |
+
+### 新组件接入指南
+
+复刻 tabbar 模式，按序八步：
+
+1. `props.ts` 加两态 `liquidGlass?: boolean`，注释写清两态语义与不做三态的原因。
+2. 组件内落 `glassActive = (props.liquidGlass === true) || isGlassStyle.value`，从 `libs/global-style` 引 `isGlassStyle`。
+3. iOS 分支：模板按玻璃开关挂 `glass-effect-view`（`glass-style="regular"`），玻璃面独立成层，圆角与裁切交给面板层。
+4. 玻璃 modifier class（如 `--glass`）挂到面层节点，控件按它切玻璃态。
+5. 平台 CSS 块：APP-IOS 剥自绘描边交给系统材质；APP（Android / 鸿蒙蒸汽）直接 `backdrop-filter: blur(var(--vx-glass-blur))` 配 `--vx-glass-bg-blur`；WEB 块外层落 `--vx-glass-bg` 兜底，`@supports (backdrop-filter: …)` 内才换 `--vx-glass-bg-blur` 与 `blur() saturate()`；MP 实底直接用 `--vx-glass-bg`。
+6. 产物核查：grep 编译产物，glass-effect-view 与 backdrop-filter 只应出现在目标平台产物，mp 产物 0 处。
+7. 四端验证矩阵：iOS 模拟器（真材质 + simctl 切亮暗 + 内容穿透 + prop 两态）；Web 5173 computed style 断言 + 反转 `@supports` 模拟兜底引擎；mp 产物 grep + 实底截图；Android / 鸿蒙无设备时按蒸汽 5.25+ 兼容表结论标注「未实测」。
+8. 默认风格回归：全局关玻璃时所有页面与上一版逐像素一致，这是最高验收线。
+
+### 设计边界
+
+- 玻璃只给 chrome 层：bars、sheets、悬浮控件。内容层组件（cell / card / 表单）不做全局玻璃化。
+- 遮罩/蒙层永不玻璃化：玻璃的只是面层，遮罩保持实色，`maskColor` 照常生效。
+- 玻璃底不接 `bgColor`：用户色盖上去会把磨砂糊死，玻璃底色统一由令牌控制，`bgColor` 仅普通模式生效。
+- v1 全局只带 regular 档：`glassStyle`（clear 透档）仍是 tabbar 的实例 prop，其余组件不暴露 clear，避免每件都验两档。
+
 ## Do's and Don'ts
 
 Do：

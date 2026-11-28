@@ -1,3 +1,6 @@
+## 0.87.0（2026-11-28）
+- 新增 DESIGN.md「全局风格与液态玻璃」章：风格轴与 store API（`libs/global-style`）、`--vx-glass-*` 令牌契约、各端玻璃等级表、glass-ready 组件清单（tabbar / navigation-bar / popup / actionsheet / modal / drawer / sticky / toast / tips）、新组件接入指南与设计边界。
+- docs 站同步全局风格指南与 glass-ready 组件的 `liquidGlass` prop 说明。
 ## 0.86.0（2026-11-28）
 - `vx-sticky` / `vx-toast` / `vx-tips` 支持液态玻璃面：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`）。iOS 用 `glass-effect-view` 系统材质（iOS 26+ 真液态玻璃，15~25 降级系统毛玻璃，跟随系统外观；toast / tips 小盒形态与 sticky 吸顶条滚动穿透经探针页实测），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂（fixed 吸顶条采样滚动内容经探针验证，只认 `blur()`，`saturate(1.8)` 仅 Web 块），小程序实底近似。玻璃面不接 `bgColor`；toast / tips 玻璃态文字用正文色（`vx-tips` 语义底色同样让位）；sticky 玻璃只在吸顶态出现，分割线与 `shadow` 在玻璃态不画，浮起感由玻璃分层阴影接管。
 ## 0.85.0（2026-11-28）
