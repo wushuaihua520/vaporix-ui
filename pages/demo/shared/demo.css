@@ -1320,6 +1320,52 @@
 	width: 100%;
 }
 
+/* 液态玻璃示例的彩色 suffix 块：吸顶后从玻璃条下穿过，看磨砂采样和折射。 */
+.demo-sticky-glass-band {
+	flex-direction: row;
+	align-items: center;
+	height: 88px;
+	padding-left: var(--vx-space-lg);
+	padding-right: var(--vx-space-lg);
+}
+
+.demo-sticky-glass-band__text {
+	color: #ffffff;
+	font-size: var(--vx-font-lg);
+	line-height: var(--vx-line-lg);
+	font-weight: var(--vx-weight-semibold);
+}
+
+.demo-sticky-glass-band--red {
+	background-color: #e11d48;
+}
+
+.demo-sticky-glass-band--orange {
+	background-color: #f79009;
+}
+
+.demo-sticky-glass-band--green {
+	background-color: #10b981;
+}
+
+.demo-sticky-glass-band--blue {
+	background-color: #2b6be0;
+}
+
+.demo-sticky-glass-band--purple {
+	background-color: #7c3aed;
+}
+
+.demo-sticky-glass-band--orange-deep {
+	background-color: #d97706;
+}
+
+/* 末行收底圆角跟卡片外框；单角只写一个长度（App 不吃两个值的椭圆角）。 */
+.demo-sticky-glass-band--last {
+	border-bottom-left-radius: var(--vx-radius-lg);
+	border-bottom-right-radius: var(--vx-radius-lg);
+}
+
 /* ---------- 时间轴 ---------- */
 /* 三档尺寸各自一组，组间用一条浅线分开；组内只留标签和时间轴的间距。 */
 .demo-timeaxis-group {

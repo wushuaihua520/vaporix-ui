@@ -134,6 +134,32 @@
 				</view>
 
 				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="把彩底舞台滚到屏幕中部再弹出，彩底从玻璃条下透出。示例一不传 liquidGlass，跟随『我的』页的全局控件风格；示例二显式传 true，全局关闭时也强制玻璃。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" text="跟随全局" @click="onTipsGlassFollow" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" text="显式玻璃" @click="onTipsGlassForce" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="玻璃+bgColor" @click="onTipsGlassBg" />
+							</view>
+						</view>
+						<text class="demo-hint">玻璃面不接 bgColor，语义底色（type）同样让位：玻璃激活时底色归玻璃材质和令牌，文字用正文色。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
 					<demo-section-head title="方法" desc="ref 拿实例，open() 重新计时，close() 立刻收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
@@ -166,6 +192,10 @@
 				<text class="demo-tips-rich__meta">3 个文件 · 12.4 MB</text>
 			</view>
 		</vx-tips>
+
+		<!-- 液态玻璃示例专用实例：liquid-glass 显式强制；bgColor 传入验证让位（玻璃面忽略它）。 -->
+		<vx-tips ref="glassTipsRef" v-model:show="glassTipsVisible" :text="glassTipsText"
+			:bg-color="glassTipsBgColor" position="center" :duration="4000" liquid-glass />
 	</view>
 </template>
 
@@ -214,6 +244,15 @@
 	const tipsOpacity = ref(1)
 
 	const richTipsVisible = ref(false)
+
+	// 液态玻璃示例的第二条实例：显式 liquid-glass，bgColor 只用来验证玻璃面让位。
+	const glassTipsVisible = ref(false)
+
+	const glassTipsText = ref('')
+
+	const glassTipsBgColor = ref('')
+
+	const glassTipsRef = ref<VxTipsComponentPublicInstance | null>(null)
 
 	const tipsRef = ref<VxTipsComponentPublicInstance | null>(null)
 
@@ -329,6 +368,24 @@
 	const onTipsRich = () => {
 		tipsVisible.value = false
 		richTipsVisible.value = true
+	}
+
+	const onTipsGlassFollow = () => {
+		showTips('center', { text: '跟随全局的玻璃提示~', type: 'default', duration: 4000 })
+	}
+
+	const onTipsGlassForce = () => {
+		glassTipsVisible.value = false
+		glassTipsText.value = '显式传 true 的玻璃提示'
+		glassTipsBgColor.value = ''
+		glassTipsRef.value?.open?.()
+	}
+
+	const onTipsGlassBg = () => {
+		glassTipsVisible.value = false
+		glassTipsText.value = '玻璃面忽略 bgColor'
+		glassTipsBgColor.value = '#2b6be0'
+		glassTipsRef.value?.open?.()
 	}
 
 	const onTipsOpen = () => {

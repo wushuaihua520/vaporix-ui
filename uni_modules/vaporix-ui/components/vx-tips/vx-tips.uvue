@@ -2,11 +2,19 @@
 	<!-- 提示是浮层：fixed 定位，挂在页面根节点，不要放进 scroll-view 或卡片里。
 	     App 上 fixed 的原点是页面内容顶，小程序上是屏幕顶，顶部横幅都由脚本让开状态栏和导航栏行；
 	     Web 上相对视口，框架导航栏按 windowTop 让开，自绘导航栏补一行行高。 -->
-	<view v-if="show" :class="rootClass" :style="rootStyle">
-		<view :class="boxClass" :style="boxStyle" :hover-class="boxHoverClass"
-			:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onBoxTap">
-			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明；整条一起淡用 opacity。 -->
-			<view :class="bgClass" :style="bgStyle"></view>
+		<view v-if="show" :class="rootClass" :style="rootStyle">
+			<view :class="boxClass" :style="boxStyle" :hover-class="boxHoverClass"
+				:hover-stay-time="VX_PRESSED_STAY_TIME" @click.stop="onBoxTap">
+				<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明；整条一起淡用 opacity。
+				     玻璃态 iOS 换 glass-effect-view（系统材质自带折射、发丝描边和亮暗自适应），
+				     其余平台仍是 view，磨砂由样式表按平台开关；bgColor、bgOpacity 和语义底色都不作用于玻璃底。 -->
+				<!-- #ifdef APP-IOS -->
+				<glass-effect-view v-if="glassActive" :class="bgClass" glass-style="regular"></glass-effect-view>
+				<view v-else :class="bgClass" :style="bgStyle"></view>
+				<!-- #endif -->
+				<!-- #ifndef APP-IOS -->
+				<view :class="bgClass" :style="bgStyle"></view>
+				<!-- #endif -->
 			<view v-if="showBalance" class="vx-tips__balance"></view>
 			<view v-if="hasIcon" class="vx-tips__icon">
 				<vx-icon :name="iconName" size="md" :color="foregroundColor" />
@@ -28,6 +36,7 @@
 	import { VxIconName } from '../../libs/icons/codepoints'
 	import { VX_PRESSED_STAY_TIME } from '../../libs/motion'
 	import { VX_OVERLAY_TIPS_LAYER } from '../../libs/overlay'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxTipsProps>(), {
 		text: '',
@@ -112,9 +121,17 @@
 		return props.type === 'default' ? '' : `on-${props.type}`
 	})
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	// vx-icon 不继承父级颜色，图标和关闭图标都单独传，自定义色优先。
+	// 玻璃底是浅色调，反相白字读不清，玻璃态默认换正文色（语义底色让位后 on-* 也不适用）。
 	const foregroundColor = computed((): string => {
 		if (props.color.length > 0) return props.color
+		if (glassActive.value) return 'var(--vx-color-text)'
 		if (props.type === 'default') return 'var(--vx-color-text-inverse)'
 		return `var(--vx-color-on-${props.type})`
 	})
@@ -142,12 +159,19 @@
 		let name = 'vx-tips__box'
 		if (props.position === 'top') name += ' vx-tips__box--top'
 		if (props.closable) name += ' vx-tips__box--closable'
+		if (glassActive.value) name += ' vx-tips__box--glass'
 		return name
 	})
 
-	// 语义色只在 bg 层上换，盒子本身不再铺底色；位置决定 bg 的圆角。
+	// 底色层的 class：玻璃态底色归玻璃——bgColor、语义底色都不上，bgStyle 同时返回空；
+	// iOS 上玻璃节点也用同一串（APP-IOS 块剥自绘）。顶部横幅用 --glass-top 换直角和单边描边。
 	const bgClass = computed((): string => {
 		let name = 'vx-tips__bg'
+		if (glassActive.value) {
+			if (props.position === 'top') name += ' vx-tips__bg--glass-top'
+			else name += ' vx-tips__bg--glass'
+			return name
+		}
 		if (props.type !== 'default') name += ` vx-tips__bg--${props.type}`
 		if (props.position === 'top') name += ' vx-tips__bg--top'
 		return name
@@ -161,6 +185,8 @@
 	})
 
 	const bgStyle = computed((): string => {
+		// 玻璃态底色交给材质和令牌：bgColor 和 bgOpacity 都不作用于玻璃底（bgStyle 返回空）。
+		if (glassActive.value) return ''
 		let style = ''
 		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
 		style += `opacity: ${bgOpacity.value};`
@@ -223,6 +249,11 @@
 
 	const textClass = computed((): string => {
 		let name = 'vx-tips__text'
+		// 玻璃态文字换正文色，语义 on-* 色随语义底色一起让位。
+		if (glassActive.value) {
+			name += ' vx-tips__text--glass'
+			return name
+		}
 		if (textTone.value.length > 0) name += ` vx-tips__text--${textTone.value}`
 		return name
 	})
@@ -421,6 +452,37 @@
 		color: var(--vx-color-on-danger);
 	}
 
+	/* 玻璃盒：阴影换通用玻璃分层阴影；玻璃面在 bg 层上换（盒子本身透明，探针已证
+	   glass-effect-view 在 tips 盒尺寸圆角正常、彩底折射观感优于 CSS 磨砂）。
+	   磨砂分平台：iOS 上 bg 层换 glass-effect-view（APP-IOS 块剥自绘）；Android / 鸿蒙
+	   蒸汽 5.25+ 用 backdrop-filter 配透底 bg-blur（只认 blur()）；小程序没有模糊，
+	   MP 块换给足不透明度的实底 bg；Web 老引擎 @supports 兜底落实底。
+	   玻璃面不接 bgColor，语义底色（type）让位，文字默认换正文色。 */
+	.vx-tips__box--glass {
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* 浮层形态：发丝描边全周（盒是小浮块，不是贴边条），透底用更透的 bg-blur。 */
+	.vx-tips__bg--glass {
+		border-width: 1px;
+		border-style: solid;
+		border-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+	}
+
+	/* 顶部横幅：直角、只留底部发丝线，与导航栏玻璃底同构。 */
+	.vx-tips__bg--glass-top {
+		border-radius: 0;
+		border-bottom-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+	}
+
+	.vx-tips__text--glass {
+		color: var(--vx-color-text);
+	}
+
 	/* 5.26 的 App 端没有 CSS 关键帧，淡入只在 Web 生效；
 	   不支持动画时元素直接按正常样式出现，不会留在透明态。
 	   Web 上定位层不接指针，提示两侧的留白不挡下面的点击；
@@ -470,14 +532,75 @@
 		cursor: pointer;
 	}
 
-	@keyframes vx-tips-in {
-		from {
-			opacity: 0;
+		@keyframes vx-tips-in {
+			from {
+				opacity: 0;
+			}
+
+			to {
+				opacity: 1;
+			}
+		}
+		/* #endif */
+
+		/* #ifdef APP-IOS */
+		/* iOS 玻璃底交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+		   自绘底色和描边剥掉，否则盖住材质。写在 --glass 后面盖过它。 */
+		.vx-tips__bg--glass {
+			border-width: 0;
+			background-color: transparent;
 		}
 
-		to {
-			opacity: 1;
+		.vx-tips__bg--glass-top {
+			border-bottom-width: 0;
+			background-color: transparent;
 		}
-	}
-	/* #endif */
-</style>
+		/* #endif */
+
+		/* #ifdef MP */
+		/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+		.vx-tips__bg--glass {
+			background-color: var(--vx-glass-bg);
+		}
+
+		.vx-tips__bg--glass-top {
+			background-color: var(--vx-glass-bg);
+		}
+		/* #endif */
+
+		/* #ifdef APP-ANDROID || APP-HARMONY */
+		/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+		.vx-tips__bg--glass {
+			backdrop-filter: blur(var(--vx-glass-blur));
+		}
+
+		.vx-tips__bg--glass-top {
+			backdrop-filter: blur(var(--vx-glass-blur));
+		}
+		/* #endif */
+
+		/* #ifdef WEB */
+		/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+		.vx-tips__bg--glass {
+			background-color: var(--vx-glass-bg);
+		}
+
+		.vx-tips__bg--glass-top {
+			background-color: var(--vx-glass-bg);
+		}
+
+		@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+			.vx-tips__bg--glass {
+				-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+				backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+				background-color: var(--vx-glass-bg-blur);
+			}
+
+			.vx-tips__bg--glass-top {
+				-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+				backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+				background-color: var(--vx-glass-bg-blur);
+			}
+		}
+		/* #endif */
+	</style>

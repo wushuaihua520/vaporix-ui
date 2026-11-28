@@ -21,12 +21,14 @@ export type VxTipsProps = {
 	closable?: boolean
 	/** 浮层层级，默认 1010（VX_OVERLAY_TIPS_LAYER），压在弹层和数字键盘之上。 */
 	zIndex?: number
-	/** 自定义底色，字面值。 */
+	/** 自定义底色，字面值。玻璃面不接 bgColor，玻璃激活时忽略。 */
 	bgColor?: string
-	/** 底色不透明度，0–1，默认 1；只作用在底色上，文字和图标保持不透明。 */
+	/** 底色不透明度，0–1，默认 1；只作用在底色上，文字和图标保持不透明。玻璃态底色归玻璃，本项不作用。 */
 	bgOpacity?: number
 	/** 自定义文字和图标色，字面值。 */
 	color?: string
 	/** 整条提示的不透明度，0–1，默认 1。底色、文字、图标和阴影一起淡；和 bgOpacity 相乘。 */
 	opacity?: number
+	/** 底层换液态玻璃面：磨砂透底加发丝描边，页面内容从条下透出。传 true 强制玻璃；不传或 false 跟随全局控件风格（libs/global-style 的 isGlassStyle）。iOS 用 glass-effect-view 系统材质（iOS 26+ 真液态玻璃，15~25 降级为系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序实底近似。玻璃面不接 bgColor，语义底色（type）同样让位，文字用正文色。 */
+	liquidGlass?: boolean
 }

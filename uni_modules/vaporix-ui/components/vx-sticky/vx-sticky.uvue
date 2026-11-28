@@ -7,7 +7,19 @@
 		<view class="vx-sticky__ruler"></view>
 
 		<view :class="barClass" :style="barStyle">
+			<!-- 玻璃面单独一层：只在吸顶态出现，铺满条身。iOS 换 glass-effect-view（系统材质自带
+			     折射、发丝描边和亮暗自适应），其余平台条本身就是玻璃面，磨砂由样式表按平台开关。
+			     插槽内容包一层压在玻璃上，默认插槽的其他平台仍直挂，不引入多余节点。 -->
+			<!-- #ifdef APP-IOS -->
+			<glass-effect-view v-if="glassStuck" class="vx-sticky__glass" glass-style="regular"></glass-effect-view>
+			<view v-if="glassStuck" class="vx-sticky__slot">
+				<slot></slot>
+			</view>
+			<slot v-if="!glassStuck"></slot>
+			<!-- #endif -->
+			<!-- #ifndef APP-IOS -->
 			<slot></slot>
+			<!-- #endif -->
 			<view v-if="showDivider" class="vx-sticky__divider"></view>
 		</view>
 
@@ -22,6 +34,7 @@
 
 <script setup>
 	import { VxStickyProps } from './props'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxStickyProps>(), {
 		scrollTop: 0,
@@ -54,6 +67,12 @@
 	// 负数和 NaN 都不让吸顶条钻到安全区里。
 	const offset = computed((): number => {
 		return props.offsetTop > 0 ? props.offsetTop : 0
+	})
+
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
 	})
 
 	// NaN 比大小永远是 false，不限定范围的条会被直接当成已吸顶。负数留着，回弹时才能松开。
@@ -92,10 +111,16 @@
 		return pushedTop < stickyLine.value ? pushedTop : stickyLine.value
 	})
 
+	// 玻璃面只在吸顶态出现：未吸顶条保持透明，和默认语义一致。
+	const glassStuck = computed((): boolean => {
+		return glassActive.value && stuck.value
+	})
+
 	// 吸顶时保持原来的横向位置和宽度，缩进、卡片内的窄条都跟文档流一致。
+	// 玻璃态底色归玻璃面，bgColor 不作用（bgClass 由 --glass 接管）。
 	const barStyle = computed((): string => {
 		let style = ''
-		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
+		if (props.bgColor.length > 0 && !glassStuck.value) style += `background-color: ${props.bgColor};`
 		if (!stuck.value) return style
 		// top、left 取整：半像素时固定层的文字会发虚。宽度不取整，避免少 1px 把内容挤换行。
 		style += `position: fixed; top: ${Math.round(barTop.value)}px; left: ${Math.round(rootLeft.value)}px; width: ${rootWidth.value}px; z-index: ${props.zIndex};`
@@ -106,12 +131,14 @@
 		let name = 'vx-sticky__bar'
 		if (!stuck.value) return name
 		name += ' vx-sticky__bar--stuck'
-		if (props.shadow) name += ' vx-sticky__bar--shadow'
+		// 玻璃态浮起感由玻璃分层阴影接管，--shadow 不叠加；--glass 靠后声明盖过 --stuck 的实底。
+		if (props.shadow && !glassActive.value) name += ' vx-sticky__bar--shadow'
+		if (glassActive.value) name += ' vx-sticky__bar--glass'
 		return name
 	})
 
 	const showDivider = computed((): boolean => {
-		return stuck.value && !props.shadow
+		return stuck.value && !props.shadow && !glassActive.value
 	})
 
 	const placeholderStyle = computed((): string => {
@@ -308,6 +335,76 @@
 		height: var(--vx-border-width);
 		background-color: var(--vx-color-border);
 	}
+
+	/* iOS 玻璃面：铺满条身的 glass-effect-view 下方垫底，插槽内容包在这层里压在玻璃上。 */
+	.vx-sticky__glass {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+	}
+
+	.vx-sticky__slot {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+	}
+
+	/* 玻璃面：吸顶后的条底换玻璃，发丝描边在条底，浮起感用通用玻璃分层阴影。
+	   磨砂分平台：iOS 上玻璃换 glass-effect-view（APP-IOS 块剥自绘，材质自带折射、
+	   发丝描边和亮暗自适应）；Android / 鸿蒙蒸汽 5.25+ 用 backdrop-filter 配透底
+	   bg-blur（只认 blur()，探针已证采样得到滚过内容）；小程序没有模糊，MP 块换给足
+	   不透明度的实底 bg；Web 老引擎 @supports 兜底落实底。分割线和 --shadow 在玻璃态不画。 */
+	.vx-sticky__bar--glass {
+		border-bottom-width: 1px;
+		border-bottom-style: solid;
+		border-bottom-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃底交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色、描边和浮起阴影剥掉，否则盖住材质。写在 --glass 后面盖过它。 */
+	.vx-sticky__bar--glass {
+		border-bottom-width: 0;
+		background-color: transparent;
+		box-shadow: none;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-sticky__bar--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-sticky__bar--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-sticky__bar--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-sticky__bar--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
+		}
+	}
+	/* #endif */
 
 	/* 等高占位由脚本给 height；透明，不画任何东西。 */
 	.vx-sticky__placeholder {

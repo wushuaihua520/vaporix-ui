@@ -99,6 +99,32 @@
 				</view>
 
 				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="把彩底舞台滚到屏幕中部再弹出，彩底从玻璃盒下透出。示例一不传 liquidGlass，跟随『我的』页的全局控件风格；示例二显式传 true，全局关闭时也强制玻璃。" />
+					<view class="demo-card">
+						<view class="demo-glass-stage">
+							<view class="demo-glass-stage__band demo-glass-stage__band--red"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--orange"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--green"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--blue"></view>
+							<view class="demo-glass-stage__band demo-glass-stage__band--purple"></view>
+							<text class="demo-glass-stage__word">GLASS</text>
+						</view>
+						<view class="demo-actions">
+							<view class="demo-actions__item">
+								<vx-button block size="sm" text="跟随全局" @click="onToastGlassFollow" />
+							</view>
+							<view class="demo-actions__item">
+								<vx-button block size="sm" text="显式玻璃" @click="onToastGlassForce" />
+							</view>
+							<view class="demo-actions__item demo-actions__item--last">
+								<vx-button block size="sm" text="玻璃+bgColor" @click="onToastGlassBg" />
+							</view>
+						</view>
+						<text class="demo-hint">玻璃面不接 bgColor：显式传了也被忽略，底色归玻璃材质和令牌。玻璃态文字用正文色，玻璃底是浅色调，亮暗主题各看一遍。</text>
+					</view>
+				</view>
+
+				<view class="demo-section">
 					<demo-section-head title="方法" desc="ref 拿实例，open() 重新计时，close() 立刻收起。" />
 					<view class="demo-card">
 						<view class="demo-actions">
@@ -123,6 +149,10 @@
 		<vx-toast ref="toastRef" v-model:show="toastVisible" :text="toastText" :type="toastType"
 			:duration="toastDuration" :icon="toastIcon" :image="toastImage" :show-icon="toastShowIcon"
 			:bg-color="toastBgColor" :bg-opacity="toastBgOpacity" :color="toastColor" />
+
+		<!-- 液态玻璃示例专用实例：liquid-glass 显式强制；bgColor 传入验证让位（玻璃面忽略它）。 -->
+		<vx-toast ref="glassToastRef" v-model:show="glassToastVisible" :text="glassToastText"
+			:duration="4000" :bg-color="glassToastBgColor" liquid-glass />
 	</view>
 </template>
 
@@ -167,6 +197,15 @@
 	const toastColor = ref('')
 
 	const toastRef = ref<VxToastComponentPublicInstance | null>(null)
+
+	// 液态玻璃示例的第二条实例：显式 liquid-glass，bgColor 只用来验证玻璃面让位。
+	const glassToastVisible = ref(false)
+
+	const glassToastText = ref('')
+
+	const glassToastBgColor = ref('')
+
+	const glassToastRef = ref<VxToastComponentPublicInstance | null>(null)
 
 	// 演示用的小图，业务换成自己的 icon 地址即可。
 	const toastCustomImage = '/static/demo/toast-custom.png'
@@ -246,6 +285,22 @@
 
 	const onToastOpen = () => {
 		showToast({ text: '由 open() 打开，2 秒后自动收起', type: 'success' })
+	}
+
+	const onToastGlassFollow = () => {
+		showToast({ text: '跟随全局的玻璃轻提示', type: 'info', duration: 4000 })
+	}
+
+	const onToastGlassForce = () => {
+		glassToastText.value = '显式传 true 的玻璃轻提示'
+		glassToastBgColor.value = ''
+		glassToastRef.value?.open?.()
+	}
+
+	const onToastGlassBg = () => {
+		glassToastText.value = '玻璃面忽略 bgColor'
+		glassToastBgColor.value = '#2b6be0'
+		glassToastRef.value?.open?.()
 	}
 
 	const onToastClose = () => {

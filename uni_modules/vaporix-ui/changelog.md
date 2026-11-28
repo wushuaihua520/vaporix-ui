@@ -1,3 +1,5 @@
+## 0.86.0（2026-11-28）
+- `vx-sticky` / `vx-toast` / `vx-tips` 支持液态玻璃面：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`）。iOS 用 `glass-effect-view` 系统材质（iOS 26+ 真液态玻璃，15~25 降级系统毛玻璃，跟随系统外观；toast / tips 小盒形态与 sticky 吸顶条滚动穿透经探针页实测），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂（fixed 吸顶条采样滚动内容经探针验证，只认 `blur()`，`saturate(1.8)` 仅 Web 块），小程序实底近似。玻璃面不接 `bgColor`；toast / tips 玻璃态文字用正文色（`vx-tips` 语义底色同样让位）；sticky 玻璃只在吸顶态出现，分割线与 `shadow` 在玻璃态不画，浮起感由玻璃分层阴影接管。
 ## 0.85.0（2026-11-28）
 - `vx-modal` / `vx-drawer` 支持液态玻璃面：新增 `liquidGlass`，传 `true` 强制玻璃，不传或 `false` 跟随全局控件风格（`libs/global-style`）。iOS 用 `glass-effect-view` 系统材质（iOS 26+ 真液态玻璃，15~25 降级系统毛玻璃，跟随系统外观），Android / 鸿蒙 / Web 用 backdrop-filter 磨砂，小程序实底近似。遮罩保持实色不玻璃化，`maskColor` 照常生效；抽屉玻璃面不接 `bgColor`，玻璃只到面层，正文区不另垫底。弹框正文直接铺在玻璃面上，可读性由磨砂底实度兜底，组件玻璃样式可自叠半透底，不改通用令牌。
 ## 0.84.0（2026-11-28）

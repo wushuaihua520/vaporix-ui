@@ -145,6 +145,66 @@
 					<text class="demo-hint">阴影只使用 --vx-shadow-md；bgColor 是字面值，亮色、暗色都保持同一个品牌色，对比度由业务保证。</text>
 				</view>
 
+				<view class="demo-section">
+					<demo-section-head title="液态玻璃" desc="吸顶后条面换玻璃：滚动的彩底从条下穿过实时折射。示例一不传 liquidGlass，跟随『我的』页的全局控件风格；示例二显式传 true，全局关闭时也强制玻璃。" />
+					<view class="demo-sticky-card">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight"
+							@change="onStickyGlassFollowChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">跟随全局</text>
+									<text class="demo-sticky-bar__meta">不传 liquidGlass</text>
+								</view>
+								<text class="demo-sticky-bar__state">{{ stickyGlassFollowStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--red">
+									<text class="demo-sticky-glass-band__text">GLASS · 红</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--orange">
+									<text class="demo-sticky-glass-band__text">GLASS · 橙</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--green">
+									<text class="demo-sticky-glass-band__text">GLASS · 绿</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--blue demo-sticky-glass-band--last">
+									<text class="demo-sticky-glass-band__text">GLASS · 蓝</text>
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<view class="demo-sticky-card demo-sticky-card--gap">
+						<vx-sticky :scroll-top="demoScrollTop" :offset-top="navHeight" liquid-glass
+							@change="onStickyGlassForceChange">
+							<view class="demo-sticky-bar">
+								<view class="demo-sticky-bar__main">
+									<text class="demo-sticky-bar__title">显式开启</text>
+									<text class="demo-sticky-bar__meta">liquid-glass</text>
+								</view>
+								<text class="demo-sticky-bar__state">{{ stickyGlassForceStuck ? '吸顶中' : '未吸顶' }}</text>
+							</view>
+							<template #suffix>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--blue">
+									<text class="demo-sticky-glass-band__text">穿过 · 上</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--green">
+									<text class="demo-sticky-glass-band__text">穿过 · 中</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--red">
+									<text class="demo-sticky-glass-band__text">穿过 · 下</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--purple">
+									<text class="demo-sticky-glass-band__text">穿过 · 紫</text>
+								</view>
+								<view class="demo-sticky-glass-band demo-sticky-glass-band--orange-deep demo-sticky-glass-band--last">
+									<text class="demo-sticky-glass-band__text">穿过 · 琥珀</text>
+								</view>
+							</template>
+						</vx-sticky>
+					</view>
+					<text class="demo-hint">把这一组滚到吸顶：玻璃条浮在彩底上，内容从条下穿过。玻璃态不画分割线也不叠 --shadow，浮起感由玻璃分层阴影接管。iOS 用 glass-effect-view 系统材质并跟随系统外观；Android / 鸿蒙 / Web 磨砂，小程序实底近似。</text>
+				</view>
+
 				<demo-page-nav current-key="sticky" />
 
 				<demo-footer />
@@ -239,6 +299,10 @@
 
 	const stickyBrandStuck = ref(false)
 
+	const stickyGlassFollowStuck = ref(false)
+
+	const stickyGlassForceStuck = ref(false)
+
 	const onStickyBasicChange = (stuck: boolean) => {
 		stickyBasicStuck.value = stuck
 	}
@@ -261,6 +325,14 @@
 
 	const onStickyBrandChange = (stuck: boolean) => {
 		stickyBrandStuck.value = stuck
+	}
+
+	const onStickyGlassFollowChange = (stuck: boolean) => {
+		stickyGlassFollowStuck.value = stuck
+	}
+
+	const onStickyGlassForceChange = (stuck: boolean) => {
+		stickyGlassForceStuck.value = stuck
 	}
 
 	// 未吸顶时跟上卡片上圆角；吸顶后条离开卡片，不再收角。

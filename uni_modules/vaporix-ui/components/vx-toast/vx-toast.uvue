@@ -2,9 +2,17 @@
 	<!-- 轻提示是全屏浮层：盒子居中，拦住盒子外面的点击，不占布局。
 	     App 上相对页面（导航栏下方）定位，Web 上相对视口。 -->
 	<view v-if="show" class="vx-toast" :style="rootStyle" @click.stop="onTap">
-		<view class="vx-toast__box" :style="boxStyle">
-			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明。 -->
-			<view class="vx-toast__bg" :style="bgStyle"></view>
+		<view :class="boxClass" :style="boxStyle">
+			<!-- 底色单独一层：bgOpacity 只调这一层，文字和图标始终不透明。
+			     玻璃态 iOS 换 glass-effect-view（系统材质自带折射、发丝描边和亮暗自适应），
+			     其余平台仍是 view，磨砂由样式表按平台开关；bgColor 和 bgOpacity 都不作用于玻璃底。 -->
+			<!-- #ifdef APP-IOS -->
+			<glass-effect-view v-if="glassActive" :class="bgClass" glass-style="regular"></glass-effect-view>
+			<view v-else class="vx-toast__bg" :style="bgStyle"></view>
+			<!-- #endif -->
+			<!-- #ifndef APP-IOS -->
+			<view :class="bgClass" :style="bgStyle"></view>
+			<!-- #endif -->
 			<view v-if="showIcon" class="vx-toast__icon">
 				<!-- 自定义图标地址优先；图片按原样展示，不做圆角裁切。 -->
 				<image v-if="hasImage" class="vx-toast__image" :src="image" mode="aspectFit" />
@@ -20,6 +28,7 @@
 	import { VxIconName, VX_ICON_GLYPHS, VX_ICON_TIER } from '../../libs/icons/codepoints'
 	import { ensureExtendGlyphShift } from '../../libs/extend-glyph-shift'
 	import { VX_OVERLAY_TOAST_LAYER } from '../../libs/overlay'
+	import { isGlassStyle } from '../../libs/global-style'
 
 	const props = withDefaults(defineProps<VxToastProps>(), {
 		text: '',
@@ -108,6 +117,12 @@
 		return 'info'
 	}
 
+	// 玻璃开关：显式传 true 强制玻璃；不传或 false 跟随全局控件风格。
+	// 三态缺席检测跨端不一致（Vue 对无 default 的 Boolean prop 缺席即 false），统一两态公式。
+	const glassActive = computed((): boolean => {
+		return props.liquidGlass === true || isGlassStyle.value
+	})
+
 	const iconName = computed((): VxIconName => {
 		if (props.icon != null && props.icon.length > 0) return props.icon
 		return defaultIcon(props.type)
@@ -119,9 +134,11 @@
 	})
 
 	// 图标和文案共用前景色，color 只改这一处；图片不参与着色。
+	// 玻璃底是浅色调，反相白字读不清，玻璃态默认换正文色。
 	const foregroundStyle = computed((): string => {
-		if (props.color.length === 0) return ''
-		return `color: ${props.color};`
+		if (props.color.length > 0) return `color: ${props.color};`
+		if (glassActive.value) return 'color: var(--vx-color-text);'
+		return ''
 	})
 
 	// extend 图标要业务先引入 icons-extend.css；font-family 仍由组件按 tier 切。
@@ -159,6 +176,20 @@
 		return style
 	})
 
+	// 玻璃态阴影换玻璃分层阴影，浮起感跟材质走。
+	const boxClass = computed((): string => {
+		let name = 'vx-toast__box'
+		if (glassActive.value) name += ' vx-toast__box--glass'
+		return name
+	})
+
+	// 背景层的 class：玻璃态挂 --glass modifier，iOS 上玻璃节点也用同一串（APP-IOS 块剥自绘）。
+	const bgClass = computed((): string => {
+		let name = 'vx-toast__bg'
+		if (glassActive.value) name += ' vx-toast__bg--glass'
+		return name
+	})
+
 	// 透明度只作用在底色上，不把文字和图标一起淡掉。
 	const bgOpacity = computed((): number => {
 		const value = props.bgOpacity
@@ -166,7 +197,9 @@
 		return value > 1 ? 1 : value
 	})
 
+	// 玻璃态底色交给材质和令牌：bgColor 和 bgOpacity 都不作用于玻璃底（bgStyle 返回空）。
 	const bgStyle = computed((): string => {
+		if (glassActive.value) return ''
 		let style = ''
 		if (props.bgColor.length > 0) style += `background-color: ${props.bgColor};`
 		style += `opacity: ${bgOpacity.value};`
@@ -311,6 +344,24 @@
 		text-align: center;
 	}
 
+	/* 玻璃盒：阴影换通用玻璃分层阴影（接触影 + 环境影 + inset 高光），探针已证
+	   glass-effect-view 在 toast 盒尺寸圆角正常、彩底折射观感优于 CSS 磨砂。
+	   磨砂分平台：iOS 上盒底换 glass-effect-view（APP-IOS 块剥自绘）；Android / 鸿蒙
+	   蒸汽 5.25+ 用 backdrop-filter 配透底 bg-blur（只认 blur()）；小程序没有模糊，
+	   MP 块换给足不透明度的实底 bg；Web 老引擎 @supports 兜底落实底。
+	   玻璃面不接 bgColor，bgOpacity 不作用，文字默认换正文色。 */
+	.vx-toast__box--glass {
+		box-shadow: var(--vx-glass-shadow);
+	}
+
+	/* 玻璃底：发丝描边全周（盒是小浮块，不是贴边条），透底用更透的 bg-blur。 */
+	.vx-toast__bg--glass {
+		border-width: 1px;
+		border-style: solid;
+		border-color: var(--vx-glass-border);
+		background-color: var(--vx-glass-bg-blur);
+	}
+
 	/* 5.26 的 App 端没有 CSS 关键帧，淡入只在 Web 生效；
 	   不支持动画时元素直接按正常样式出现，不会留在透明态。
 	   Web 上这一层要接住点击，同时不要把手势传给下面的页面。 */
@@ -359,6 +410,44 @@
 
 		to {
 			opacity: 1;
+		}
+	}
+	/* #endif */
+
+	/* #ifdef APP-IOS */
+	/* iOS 玻璃底交给 glass-effect-view：系统材质自带折射、发丝描边和亮暗自适应，
+	   自绘底色和描边剥掉，否则盖住材质。写在 --glass 后面盖过它。 */
+	.vx-toast__bg--glass {
+		border-width: 0;
+		background-color: transparent;
+	}
+	/* #endif */
+
+	/* #ifdef MP */
+	/* 小程序没有背景模糊，底色不透明度给足，发丝描边保留。 */
+	.vx-toast__bg--glass {
+		background-color: var(--vx-glass-bg);
+	}
+	/* #endif */
+
+	/* #ifdef APP-ANDROID || APP-HARMONY */
+	/* App 蒸汽模式 5.25+ 支持 backdrop-filter（只认 blur()），透底沿用通用令牌。 */
+	.vx-toast__bg--glass {
+		backdrop-filter: blur(var(--vx-glass-blur));
+	}
+	/* #endif */
+
+	/* #ifdef WEB */
+	/* 不支持 backdrop-filter 的引擎先落回给足不透明度的实底，@supports 里才换透档。 */
+	.vx-toast__bg--glass {
+		background-color: var(--vx-glass-bg);
+	}
+
+	@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.vx-toast__bg--glass {
+			-webkit-backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			backdrop-filter: blur(var(--vx-glass-blur)) saturate(1.8);
+			background-color: var(--vx-glass-bg-blur);
 		}
 	}
 	/* #endif */
