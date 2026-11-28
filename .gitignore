@@ -124,3 +124,7 @@ tools/icons/out/
 # 探针页截图（一次性核对证据，不随仓库发布）
 .probe-shots/
 .DS_Store
+
+# 微信开发者工具借 appid 开窗产物，勿提交
+project.config.json
+project.private.config.json
